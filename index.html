@@ -5,35 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Caynana</title>
 
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-
-  <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
-    .card{transition:transform .15s ease, box-shadow .15s ease}
-    .card:hover{transform:translateY(-2px); box-shadow:0 16px 40px rgba(0,0,0,.06)}
     .line-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .line-4{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+    .card{transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease}
+    .card:hover{transform:translateY(-2px);box-shadow:0 16px 40px rgba(0,0,0,.06)}
+    .skeleton{background:linear-gradient(90deg,rgba(226,232,240,.65) 25%,rgba(241,245,249,.95) 37%,rgba(226,232,240,.65) 63%);background-size:400% 100%;animation:sk 1.2s ease infinite}
+    @keyframes sk{0%{background-position:100% 0}100%{background-position:0 0}}
+    .chip{border:1px solid rgba(15,23,42,.12);background:#fff;border-radius:999px;padding:4px 8px;font-size:12px;color:#64748b;font-weight:700}
+    .btn{border-radius:14px;padding:10px 12px;font-weight:800}
+    .btn-primary{background:#0f172a;color:#fff}
+    .btn-ghost{border:1px solid rgba(15,23,42,.14);background:#fff;color:#0f172a}
+    .badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;border:1px solid rgba(15,23,42,.10);font-size:12px;font-weight:800}
+    .b-strong{background:rgba(212,175,55,.10);border-color:rgba(212,175,55,.25);color:#a77918}
+    .b-smart{background:rgba(0,122,255,.10);border-color:rgba(0,122,255,.22);color:#0b5bd3}
+    .b-value{background:rgba(175,82,222,.10);border-color:rgba(175,82,222,.22);color:#7c2bb3}
+    .b-saver{background:rgba(255,149,0,.10);border-color:rgba(255,149,0,.22);color:#b45a00}
+    .b-caution{background:rgba(255,59,48,.10);border-color:rgba(255,59,48,.22);color:#b42318}
+    .top-card{border-color:rgba(212,175,55,.45)}
   </style>
 </head>
 
 <body class="bg-white text-slate-900">
 
-<!-- HEADER / GLOBAL SEARCH -->
 <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200">
   <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
     <div class="flex items-center gap-2">
-      <div class="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center font-extrabold">
-        C
-      </div>
+      <div class="w-9 h-9 rounded-xl border border-slate-200 flex items-center justify-center font-extrabold">C</div>
       <div>
         <div class="font-extrabold tracking-tight leading-5">Caynana</div>
         <div class="text-xs text-slate-500 -mt-0.5">Alışverişte son söz</div>
@@ -43,26 +49,19 @@
     <div class="flex-1">
       <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-full px-4 py-2">
         <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
-        <input id="q" type="text"
-          class="w-full bg-transparent outline-none text-sm"
-          placeholder="Ürün adı yaz veya link yapıştır…"
-          autocomplete="off"
-        />
+        <input id="q" type="text" class="w-full bg-transparent outline-none text-sm"
+               placeholder="Ürün adı yaz veya link yapıştır…" autocomplete="off" />
       </div>
     </div>
 
-    <button id="btnSearch"
-      class="px-4 py-2 rounded-full bg-slate-900 text-white font-semibold hover:opacity-90">
-      Caynana’ya Sor
-    </button>
+    <button id="btnSearch" class="btn btn-primary hover:opacity-90">Caynana’ya Sor</button>
   </div>
 </header>
 
-<!-- MAIN -->
-<main class="max-w-6xl mx-auto px-4 py-8">
+<main class="max-w-6xl mx-auto px-4 py-10">
 
-  <!-- HERO -->
-  <section class="text-center mb-10">
+  <!-- HOME (Google-style) -->
+  <section id="home" class="text-center">
     <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
       Almadan önce Caynana’ya sor.
     </h1>
@@ -70,59 +69,75 @@
       Fiyatı, yorumu ve riski tartar. Net konuşur.
     </p>
     <p class="mt-1 text-xs text-slate-400">Akıllı analizle.</p>
+
+    <div class="mt-7 max-w-2xl mx-auto">
+      <div class="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-full px-5 py-3">
+        <i class="fa-solid fa-link text-slate-400"></i>
+        <input id="q2" type="text" class="w-full bg-transparent outline-none text-sm"
+               placeholder="Link yapıştır (Trendyol, Hepsiburada) veya ürün adı yaz…" autocomplete="off" />
+        <button id="btnSearch2" class="btn btn-primary px-5 hover:opacity-90">Sor</button>
+      </div>
+
+      <div class="mt-4 flex flex-wrap justify-center gap-2">
+        <button class="chip" data-preset="samsung a07">samsung a07</button>
+        <button class="chip" data-preset="robot süpürge">robot süpürge</button>
+        <button class="chip" data-preset="airfryer 5.5 lt">airfryer 5.5 lt</button>
+        <button class="chip" data-preset="kulaklık anc">kulaklık anc</button>
+      </div>
+    </div>
   </section>
 
   <!-- STATUS -->
-  <div id="status"
-       class="hidden mb-6 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-600">
-  </div>
+  <div id="status" class="hidden mt-8 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-600"></div>
 
   <!-- RESULTS -->
-  <section>
+  <section id="resultsWrap" class="hidden mt-10">
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-lg font-extrabold tracking-tight">Caynana Önerileri</h2>
       <div id="meta" class="text-xs text-slate-500"></div>
     </div>
-
     <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-
-    <div id="empty" class="hidden text-center text-slate-400 py-16">
-      Bir şey ara, Caynana konuşsun.
-    </div>
+    <div id="empty" class="hidden text-center text-slate-400 py-16">Sonuç bulunamadı.</div>
   </section>
 
-  <!-- TRENDING -->
-  <section class="mt-12 border-t border-slate-200 pt-8">
-    <h3 class="text-sm font-extrabold tracking-wide uppercase">
-      Bugün Caynana’ya En Çok Sorulanlar
-    </h3>
-    <p class="text-xs text-slate-500 mt-1">Kullanıcılar şu an ne arıyor?</p>
-
-    <div class="mt-4 flex gap-3 overflow-x-auto">
-      <span class="px-4 py-2 rounded-full border border-slate-200 bg-slate-50 text-sm whitespace-nowrap">samsung a07</span>
-      <span class="px-4 py-2 rounded-full border border-slate-200 bg-slate-50 text-sm whitespace-nowrap">robot süpürge</span>
-      <span class="px-4 py-2 rounded-full border border-slate-200 bg-slate-50 text-sm whitespace-nowrap">airfryer 5.5 lt</span>
-      <span class="px-4 py-2 rounded-full border border-slate-200 bg-slate-50 text-sm whitespace-nowrap">kulaklık anc</span>
-    </div>
-  </section>
+  <footer class="mt-16 border-t border-slate-200 pt-6 text-center text-xs text-slate-500">
+    Caynana, veriye dayalı <strong>akıllı analiz</strong> kullanır. Amacı satmak değil, korumaktır.
+  </footer>
 
 </main>
 
-<!-- FOOTER -->
-<footer class="mt-16 border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-  Caynana, veriye dayalı <strong>akıllı analiz</strong> kullanır. Amacı satmak değil, korumaktır.
-</footer>
+<template id="tplSkel">
+  <div class="card bg-white border border-slate-200 rounded-2xl p-4">
+    <div class="w-full h-40 rounded-xl skeleton"></div>
+    <div class="mt-3 h-4 rounded skeleton w-11/12"></div>
+    <div class="mt-2 h-4 rounded skeleton w-8/12"></div>
+    <div class="mt-3 h-6 rounded skeleton w-5/12"></div>
+    <div class="mt-4 h-10 rounded-xl skeleton w-full"></div>
+  </div>
+</template>
 
-<!-- SCRIPT -->
 <script>
   const API_BASE = "https://bikonomi-api-1.onrender.com";
 
-  const qEl = document.getElementById("q");
-  const btn = document.getElementById("btnSearch");
+  const q = document.getElementById("q");
+  const q2 = document.getElementById("q2");
+  const btnSearch = document.getElementById("btnSearch");
+  const btnSearch2 = document.getElementById("btnSearch2");
+
+  const home = document.getElementById("home");
+  const resultsWrap = document.getElementById("resultsWrap");
   const grid = document.getElementById("grid");
   const empty = document.getElementById("empty");
   const statusEl = document.getElementById("status");
   const metaEl = document.getElementById("meta");
+  const tplSkel = document.getElementById("tplSkel");
+
+  const microLines = [
+    "Caynana bakıyor…",
+    "Detaylar tartılıyor…",
+    "Riskler kontrol ediliyor…",
+    "Caynana netleştiriyor…"
+  ];
 
   function showStatus(txt){
     statusEl.textContent = txt;
@@ -131,84 +146,168 @@
   function hideStatus(){
     statusEl.classList.add("hidden");
   }
-
   function escapeHtml(s){
     return String(s ?? "")
       .replace(/&/g,"&amp;")
       .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;");
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
   }
 
-  function card(p){
-    const badge = p.platform?.label || "Diğer";
-    const rating = p.rating ? `★ ${p.rating}` : "Puan yok";
+  function badgeByIndex(i){
+    if (i === 0) return { cls:"b-strong", icon:"fa-crown", text:"STRONGLY RECOMMENDS" };
+    if (i === 1) return { cls:"b-smart", icon:"fa-lightbulb", text:"SMART CHOICE" };
+    if (i === 2) return { cls:"b-value", icon:"fa-gem", text:"LONG-TERM VALUE" };
+    if (i === 3) return { cls:"b-saver", icon:"fa-piggy-bank", text:"BUDGET FRIENDLY" };
+    return { cls:"b-caution", icon:"fa-triangle-exclamation", text:"BE CAREFUL" };
+  }
+
+  function card(p, i){
+    const title = escapeHtml(p?.title || "Ürün");
+    const img = escapeHtml(p?.image || "https://placehold.co/600x600");
+    const price = escapeHtml(p?.price || "Fiyat yok");
+    const url = escapeHtml(p?.url || "");
+    const platform = escapeHtml(p?.platform?.label || "Diğer");
+    const rating = (p?.rating && Number(p.rating) > 0) ? `★ ${Number(p.rating).toFixed(1)}` : "Puan yok";
+    const score = (p?.bikonomiScore && Number(p.bikonomiScore) > 0) ? `Skor ${Number(p.bikonomiScore)}` : "";
+    const ai = escapeHtml(p?.aiComment || "");
+
+    const b = badgeByIndex(i);
+    const isTop = i === 0;
+
     return `
-      <div class="card bg-white border border-slate-200 rounded-2xl p-4">
-        <img src="${p.image || "https://placehold.co/600x600"}"
-             class="w-full h-40 object-contain bg-slate-50 rounded-xl mb-3" />
-
-        <div class="font-bold text-sm line-2">${escapeHtml(p.title)}</div>
-
-        <div class="mt-2 text-lg font-extrabold">${p.price || "Fiyat yok"}</div>
-
-        <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
-          <span class="px-2 py-1 rounded-full border">${badge}</span>
-          <span class="px-2 py-1 rounded-full border">${rating}</span>
+      <div class="card bg-white border border-slate-200 rounded-2xl p-4 ${isTop ? "top-card" : ""}">
+        <div class="flex items-center justify-between gap-2">
+          <span class="badge ${b.cls}">
+            <i class="fa-solid ${b.icon}"></i> ${b.text}
+          </span>
+          <span class="chip">${platform}</span>
         </div>
 
-        ${p.aiComment ? `
-          <div class="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm line-4">
-            ${escapeHtml(p.aiComment)}
+        <div class="mt-3 flex gap-3">
+          <img src="${img}" alt="" class="w-16 h-16 rounded-xl border border-slate-200 bg-slate-50 object-contain"/>
+          <div class="flex-1 min-w-0">
+            <div class="font-extrabold text-sm leading-snug line-2">${title}</div>
+            <div class="mt-1 flex flex-wrap gap-2">
+              <span class="chip">${rating}</span>
+              ${score ? `<span class="chip">${score}</span>` : ``}
+            </div>
+            <div class="mt-2 text-lg font-extrabold">${price}</div>
+          </div>
+        </div>
+
+        ${ai ? `
+          <div class="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700">
+            <div class="line-4">${ai}</div>
+            <button class="mt-2 text-xs font-extrabold underline readMoreBtn">Devamını oku</button>
           </div>` : ``}
 
-        <div class="mt-4 flex gap-2">
-          <a href="${p.url}" target="_blank"
-             class="flex-1 text-center px-3 py-2 rounded-xl bg-slate-900 text-white font-semibold">
-            Ürüne Git
+        <div class="mt-4 grid grid-cols-2 gap-2">
+          <button class="btn btn-primary hover:opacity-90">${isTop ? "Caynana diyor ki" : "Caynana’nın Analizi"}</button>
+          <a href="${url || "#"}" target="_blank" rel="noopener"
+             class="btn btn-ghost text-center ${url ? "" : "opacity-40 pointer-events-none"}">
+            Satıcıya Git
           </a>
-          <button class="flex-1 px-3 py-2 rounded-xl border border-slate-300 font-semibold">
-            Caynana’nın Yorumu
-          </button>
         </div>
       </div>
     `;
   }
 
-  async function search(){
-    const q = qEl.value.trim();
-    if(!q) return;
-
+  function showSkeleton(n=6){
     grid.innerHTML = "";
+    for(let i=0;i<n;i++){
+      grid.appendChild(tplSkel.content.cloneNode(true));
+    }
+  }
+
+  async function apiSearch(query){
+    const url = API_BASE + "/api/search?q=" + encodeURIComponent(query);
+    const r = await fetch(url, { method:"GET" });
+    const j = await r.json();
+    return { status:r.status, data:j };
+  }
+
+  function setQuery(txt){
+    q.value = txt;
+    q2.value = txt;
+  }
+
+  async function runSearch(raw){
+    const query = (raw || q.value || q2.value || "").trim();
+    if(!query) return;
+
+    setQuery(query);
+
+    home.classList.add("hidden");
+    resultsWrap.classList.remove("hidden");
     empty.classList.add("hidden");
-    showStatus("Caynana bakıyor…");
+    metaEl.textContent = "";
+    showStatus(microLines[Math.floor(Math.random()*microLines.length)]);
+    showSkeleton(9);
 
     try{
-      const r = await fetch(API_BASE + "/api/search?q=" + encodeURIComponent(q));
-      const j = await r.json();
+      const { data } = await apiSearch(query);
 
-      hideStatus();
-
-      if(j.error){
-        showStatus(j.message || "Bir hata oluştu.");
+      if(data?.error){
+        grid.innerHTML = "";
+        showStatus(data.message || "Bir hata oluştu.");
         return;
       }
 
-      const products = j.products || [];
-      metaEl.textContent = `İncelenen: ${j.examined} • Dönen: ${j.returned}`;
+      hideStatus();
+
+      const products = data?.products || [];
+      metaEl.textContent = `İncelenen: ${data?.examined ?? 0} • Dönen: ${data?.returned ?? products.length}`;
 
       if(!products.length){
+        grid.innerHTML = "";
         empty.classList.remove("hidden");
         return;
       }
 
-      grid.innerHTML = products.map(card).join("");
+      grid.innerHTML = products.slice(0,5).map((p,i)=>card(p,i)).join("");
+
+      bindReadMore();
     }catch(e){
+      grid.innerHTML = "";
       showStatus("Bağlantı sorunu.");
     }
   }
 
-  btn.addEventListener("click", search);
-  qEl.addEventListener("keydown", e => { if(e.key === "Enter") search(); });
+  function bindReadMore(){
+    document.querySelectorAll(".readMoreBtn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const box = btn.closest("div");
+        const text = box.querySelector(".line-4");
+        const expanded = btn.getAttribute("data-x") === "1";
+        if(expanded){
+          text.classList.add("line-4");
+          btn.textContent = "Devamını oku";
+          btn.setAttribute("data-x","0");
+        }else{
+          text.classList.remove("line-4");
+          btn.textContent = "Kısalt";
+          btn.setAttribute("data-x","1");
+        }
+      });
+    });
+  }
+
+  btnSearch.addEventListener("click", ()=>runSearch());
+  btnSearch2.addEventListener("click", ()=>runSearch());
+  q.addEventListener("keydown", e=>{ if(e.key==="Enter") runSearch(); });
+  q2.addEventListener("keydown", e=>{ if(e.key==="Enter") runSearch(); });
+
+  document.querySelectorAll("[data-preset]").forEach(el=>{
+    el.addEventListener("click", ()=>runSearch(el.getAttribute("data-preset")));
+  });
+
+  const params = new URLSearchParams(location.search);
+  const qs = params.get("q");
+  if(qs){
+    runSearch(qs);
+  }
 </script>
 
 </body>
