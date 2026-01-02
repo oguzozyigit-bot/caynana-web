@@ -2,136 +2,548 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Caynana.ai</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Caynana - Search Results</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    .card { transition: box-shadow .15s ease, transform .15s ease; }
-    .card:hover { box-shadow: 0 10px 30px rgba(0,0,0,.06); transform: translateY(-1px); }
+    :root{
+      --bg:#fff;
+      --text:#111;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --chip:#f3f4f6;
+
+      --strong:#D4AF37;
+      --smart:#007AFF;
+      --value:#AF52DE;
+      --saver:#FF9500;
+      --caution:#FF3B30;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      padding-bottom:84px;
+    }
+
+    /* header */
+    .sticky-header{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      background:rgba(255,255,255,.98);
+      border-bottom:1px solid rgba(17,17,17,.06);
+      padding:10px 14px;
+    }
+    .header-row{
+      max-width:980px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:128px;
+    }
+    .logo{
+      width:34px;height:34px;border-radius:10px;
+      border:1px solid rgba(17,17,17,.10);
+      background:linear-gradient(180deg,#fff,#f7f7f7);
+      display:flex;align-items:center;justify-content:center;
+      font-weight:900;
+      letter-spacing:-.5px;
+    }
+    .brand-title{
+      font-weight:900;
+      letter-spacing:-.6px;
+      line-height:1.1;
+    }
+    .brand-sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+      font-weight:500;
+    }
+
+    .search-wrap{
+      flex:1;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .search-bar{
+      flex:1;
+      background:#f5f5f7;
+      border:1px solid rgba(17,17,17,.08);
+      border-radius:999px;
+      padding:10px 14px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      box-shadow:inset 0 1px 2px rgba(0,0,0,.04);
+    }
+    .search-bar i{color:#8e8e93}
+    .search-bar input{
+      width:100%;
+      border:none;
+      outline:none;
+      background:transparent;
+      font-size:14px;
+      color:var(--text);
+    }
+    .btn{
+      border:none;
+      border-radius:999px;
+      padding:10px 14px;
+      font-weight:700;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .btn-primary{
+      background:#111;
+      color:#fff;
+    }
+
+    /* page header */
+    .page{
+      max-width:980px;
+      margin:0 auto;
+      padding:18px 14px 0 14px;
+    }
+    .page-head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 0 6px 0;
+    }
+    .titles h1{
+      margin:0;
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:-.6px;
+    }
+    .titles p{
+      margin:6px 0 0 0;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:500;
+    }
+    .meta{
+      font-size:12px;
+      color:var(--muted);
+      padding:6px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      background:#fafafa;
+      white-space:nowrap;
+    }
+
+    /* cards */
+    .results{
+      padding:10px 0 0 0;
+    }
+    .product-card{
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:16px;
+      margin:14px 0;
+    }
+
+    .recommendation-label{
+      font-size:11px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:10px;
+      background:var(--chip);
+      margin-bottom:12px;
+    }
+
+    .type-strong .recommendation-label{background:rgba(212,175,55,.10); color:var(--strong)}
+    .type-smart  .recommendation-label{background:rgba(0,122,255,.10);  color:var(--smart)}
+    .type-value  .recommendation-label{background:rgba(175,82,222,.10); color:var(--value)}
+    .type-saver  .recommendation-label{background:rgba(255,149,0,.10);  color:var(--saver)}
+    .type-caution .recommendation-label{background:rgba(255,59,48,.10);  color:var(--caution)}
+
+    .card-content{
+      display:flex;
+      gap:14px;
+      align-items:flex-start;
+      margin-bottom:12px;
+    }
+    .prod-img{
+      width:78px;
+      height:78px;
+      border-radius:14px;
+      border:1px solid rgba(17,17,17,.08);
+      background:#fafafa;
+      object-fit:contain;
+    }
+    .prod-details{flex:1; min-width:0}
+    .prod-title{
+      margin:0 0 6px 0;
+      font-size:14px;
+      font-weight:700;
+      line-height:1.35;
+      letter-spacing:-.2px;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .prod-sub{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:600;
+    }
+    .chip{
+      padding:4px 8px;
+      border:1px solid rgba(17,17,17,.08);
+      border-radius:999px;
+      background:#fff;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:700;
+    }
+    .prod-price{
+      margin-top:10px;
+      font-size:16px;
+      font-weight:900;
+      letter-spacing:-.3px;
+      color:var(--text);
+    }
+
+    .ai-comment-box{
+      background:#fafafa;
+      border:1px solid rgba(17,17,17,.06);
+      border-radius:14px;
+      padding:12px 12px;
+      margin:10px 0 12px 0;
+      border-left:3px solid rgba(17,17,17,.14);
+    }
+    .type-strong .ai-comment-box{border-left-color:var(--strong)}
+    .type-smart  .ai-comment-box{border-left-color:var(--smart)}
+    .type-value  .ai-comment-box{border-left-color:var(--value)}
+    .type-saver  .ai-comment-box{border-left-color:var(--saver)}
+    .type-caution .ai-comment-box{border-left-color:var(--caution)}
+
+    .ai-text{
+      font-size:13px;
+      line-height:1.55;
+      color:#2b2b2b;
+      display:-webkit-box;
+      -webkit-line-clamp:4;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .read-more{
+      margin-top:6px;
+      display:inline-block;
+      font-size:12px;
+      font-weight:800;
+      color:#111;
+      text-decoration:underline;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .btn-group{
+      display:flex;
+      gap:10px;
+    }
+    .btn-wide{
+      flex:1;
+      border-radius:14px;
+      padding:12px 12px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
+      border:1px solid rgba(17,17,17,.10);
+      background:#fff;
+      color:#111;
+      text-align:center;
+    }
+    .btn-wide.primary{
+      border:none;
+      color:#fff;
+    }
+    .type-strong .btn-wide.primary{background:var(--strong)}
+    .type-smart  .btn-wide.primary{background:var(--smart)}
+    .type-value  .btn-wide.primary{background:var(--value)}
+    .type-saver  .btn-wide.primary{background:var(--saver)}
+    .type-caution .btn-wide.primary{background:var(--caution)}
+
+    /* trending */
+    .trending{
+      margin-top:26px;
+      padding-top:18px;
+      border-top:1px solid rgba(17,17,17,.06);
+    }
+    .trend-head{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .trend-title{
+      font-size:13px;
+      font-weight:900;
+      letter-spacing:.6px;
+      color:#111;
+      text-transform:uppercase;
+      margin:0;
+    }
+    .trend-sub{
+      margin:6px 0 0 0;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:600;
+    }
+    .trend-row{
+      display:flex;
+      gap:10px;
+      overflow:auto;
+      padding-bottom:6px;
+      scroll-snap-type:x mandatory;
+    }
+    .trend-item{
+      min-width:220px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:12px;
+      background:#fff;
+      scroll-snap-align:start;
+    }
+    .trend-item .t1{
+      font-weight:800;
+      font-size:13px;
+      margin:0 0 6px 0;
+      letter-spacing:-.2px;
+    }
+    .trend-item .t2{
+      font-size:12px;
+      color:var(--muted);
+      font-weight:600;
+      margin:0;
+    }
+
+    @media (max-width:520px){
+      .brand{min-width:0}
+      .brand-sub{display:none}
+      .meta{display:none}
+      .btn{padding:10px 12px}
+    }
   </style>
 </head>
+<body>
 
-<body class="bg-white text-slate-900">
-
-<!-- HEADER / GLOBAL SEARCH -->
-<header class="sticky top-0 z-40 bg-white border-b border-slate-200">
-  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
-    <div class="font-extrabold text-lg tracking-tight">
-      Caynana<span class="text-slate-400">.ai</span>
-    </div>
-
-    <div class="flex-1">
-      <input id="q" type="text"
-        class="w-full px-4 py-2.5 rounded-full border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
-        placeholder="Ürün adı veya link yaz..."
-      />
-    </div>
-
-    <button id="btnSearch"
-      class="px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:opacity-90">
-      Ara
-    </button>
-  </div>
-</header>
-
-<!-- MAIN -->
-<main class="max-w-6xl mx-auto px-4 py-8">
-
-  <!-- INFO LINE -->
-  <div class="text-center mb-8">
-    <h1 class="text-2xl font-extrabold tracking-tight">
-      Alışverişte <span class="underline decoration-emerald-500">son sözü</span> Caynana söyler
-    </h1>
-    <p class="mt-2 text-slate-500">
-      Fiyat, puan, yorum ve sağduyu. Gereksiz övgü yok.
-    </p>
-  </div>
-
-  <!-- RESULTS -->
-  <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-
-  <!-- EMPTY -->
-  <div id="empty" class="hidden text-center text-slate-400 mt-16">
-    Bir şey ara, Caynana konuşsun.
-  </div>
-
-</main>
-
-<script>
-  const API = "https://bikonomi-api-1.onrender.com";
-  const qEl = document.getElementById("q");
-  const grid = document.getElementById("grid");
-  const empty = document.getElementById("empty");
-
-  function escapeHtml(s) {
-    return String(s ?? "")
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;");
-  }
-
-  function card(p){
-    return `
-      <div class="card border border-slate-200 rounded-xl p-4">
-        <img src="${p.image || "https://placehold.co/600x600"}"
-             class="w-full h-40 object-cover rounded-lg bg-slate-100 mb-3"/>
-
-        <div class="font-bold text-sm leading-snug line-clamp-2">
-          ${escapeHtml(p.title)}
+  <header class="sticky-header">
+    <div class="header-row">
+      <div class="brand">
+        <div class="logo">C</div>
+        <div>
+          <div class="brand-title">Caynana</div>
+          <div class="brand-sub">Search & Judge</div>
         </div>
-
-        <div class="mt-2 text-lg font-extrabold">
-          ${p.price || "Fiyat yok"}
-        </div>
-
-        <div class="mt-2 flex items-center gap-2 text-xs text-slate-500">
-          <span>${p.platform?.label || "Diğer"}</span>
-          <span>•</span>
-          <span>★ ${p.rating || 0}</span>
-        </div>
-
-        <a href="${p.url}" target="_blank"
-           class="mt-4 block text-center px-4 py-2 rounded-lg bg-slate-900 text-white font-semibold">
-          Ürüne Git
-        </a>
       </div>
-    `;
-  }
 
-  async function search(){
-    const q = qEl.value.trim();
-    if(!q) return;
+      <div class="search-wrap">
+        <div class="search-bar">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="q" type="text" placeholder="Link yapıştır veya ürün ara..." value="Sony Headphones">
+        </div>
+        <button id="btnSearch" class="btn btn-primary">Ara</button>
+      </div>
+    </div>
+  </header>
 
-    grid.innerHTML = "";
-    empty.classList.add("hidden");
+  <main class="page">
+    <div class="page-head">
+      <div class="titles">
+        <h1>Caynana Önerileri</h1>
+        <p>Bu ürün için Caynana ne diyor?</p>
+      </div>
+      <div class="meta" id="metaLine">Hazır</div>
+    </div>
 
-    try{
-      const r = await fetch(API + "/api/search?q=" + encodeURIComponent(q));
-      const j = await r.json();
+    <section class="results" id="results">
 
-      const products = j.products || [];
-      if(!products.length){
-        empty.classList.remove("hidden");
-        return;
-      }
+      <article class="product-card type-strong">
+        <span class="recommendation-label"><i class="fa-solid fa-crown"></i> Strongly Recommends</span>
+        <div class="card-content">
+          <img src="https://via.placeholder.com/80" class="prod-img" alt="">
+          <div class="prod-details">
+            <h3 class="prod-title">Sony WH-1000XM5 Silver</h3>
+            <div class="prod-sub">
+              <span class="chip">Trendyol</span>
+              <span class="chip">★ 4.7</span>
+              <span class="chip">Skor 92</span>
+            </div>
+            <div class="prod-price">₺ 12.999,00</div>
+          </div>
+        </div>
+        <div class="ai-comment-box">
+          <div class="ai-text">
+            Bu seçenek “tamamdır” sınıfında. Fiyat/performans dengesi iyi; satıcı ve iade koşulu temizse uzatma. Ama aynı segmentte daha ucuz alternatifler çıkarsa marka için ekstra ödediğini bil.
+          </div>
+          <span class="read-more">Devamını oku</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn-wide primary">Caynana'nın Analizi</button>
+          <button class="btn-wide">Ürüne Git</button>
+        </div>
+      </article>
 
-      grid.innerHTML = products.map(card).join("");
-    }catch(e){
-      empty.textContent = "Bağlantı sorunu.";
-      empty.classList.remove("hidden");
-    }
-  }
+      <article class="product-card type-smart">
+        <span class="recommendation-label"><i class="fa-solid fa-lightbulb"></i> Smart Choice</span>
+        <div class="card-content">
+          <img src="https://via.placeholder.com/80" class="prod-img" alt="">
+          <div class="prod-details">
+            <h3 class="prod-title">Sennheiser Momentum 4</h3>
+            <div class="prod-sub">
+              <span class="chip">Hepsiburada</span>
+              <span class="chip">★ 4.6</span>
+              <span class="chip">Skor 88</span>
+            </div>
+            <div class="prod-price">₺ 10.499,00</div>
+          </div>
+        </div>
+        <div class="ai-comment-box">
+          <div class="ai-text">
+            Marka takıntın yoksa mantıklı tercih. Ses karakteri güçlü, pil tarafı da iyi. Tek çekince: bazı satıcılar aksesuar/garanti detayında muğlak davranıyor; almadan önce kontrol et.
+          </div>
+          <span class="read-more">Devamını oku</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn-wide primary">Caynana'nın Analizi</button>
+          <button class="btn-wide">Ürüne Git</button>
+        </div>
+      </article>
 
-  document.getElementById("btnSearch").onclick = search;
-  qEl.addEventListener("keydown", e => { if(e.key === "Enter") search(); });
-</script>
+      <article class="product-card type-saver">
+        <span class="recommendation-label"><i class="fa-solid fa-piggy-bank"></i> Budget Friendly</span>
+        <div class="card-content">
+          <img src="https://via.placeholder.com/80" class="prod-img" alt="">
+          <div class="prod-details">
+            <h3 class="prod-title">Anker Soundcore Q45</h3>
+            <div class="prod-sub">
+              <span class="chip">Trendyol</span>
+              <span class="chip">★ 4.4</span>
+              <span class="chip">Skor 80</span>
+            </div>
+            <div class="prod-price">₺ 4.999,00</div>
+          </div>
+        </div>
+        <div class="ai-comment-box">
+          <div class="ai-text">
+            Paranın çoğunu cebinde bırakır, performansın büyük kısmını alırsın. Ama “premium hissi” arıyorsan beklentini ayarla. Uygun fiyatlı diye sorun görmezden gelme: iade penceresine dikkat.
+          </div>
+          <span class="read-more">Devamını oku</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn-wide primary">Caynana'nın Analizi</button>
+          <button class="btn-wide">Ürüne Git</button>
+        </div>
+      </article>
+
+      <article class="product-card type-caution">
+        <span class="recommendation-label"><i class="fa-solid fa-triangle-exclamation"></i> Be Careful</span>
+        <div class="card-content">
+          <img src="https://via.placeholder.com/80" class="prod-img" alt="">
+          <div class="prod-details">
+            <h3 class="prod-title">Generic “Pro” Headphones</h3>
+            <div class="prod-sub">
+              <span class="chip">Diğer</span>
+              <span class="chip">★ 3.7</span>
+              <span class="chip">Skor 58</span>
+            </div>
+            <div class="prod-price">₺ 1.299,00</div>
+          </div>
+        </div>
+        <div class="ai-comment-box">
+          <div class="ai-text">
+            Fiyat ucuz diye cazip görünüyor ama yorumlar “dayanıklılık” tarafında alarm veriyor. Bu sınıfta en pahalı şey ucuz ürün olur. Risk iştahın yoksa uzak dur.
+          </div>
+          <span class="read-more">Devamını oku</span>
+        </div>
+        <div class="btn-group">
+          <button class="btn-wide primary">Caynana'nın Analizi</button>
+          <button class="btn-wide">Ürüne Git</button>
+        </div>
+      </article>
+
+    </section>
+
+    <section class="trending">
+      <div class="trend-head">
+        <div>
+          <h3 class="trend-title">Bugün Caynana'ya En Çok Sorulanlar</h3>
+          <p class="trend-sub">Kullanıcılar şu an ne arıyor?</p>
+        </div>
+      </div>
+
+      <div class="trend-row">
+        <div class="trend-item">
+          <p class="t1">“samsung a07”</p>
+          <p class="t2">Hızlı analiz</p>
+        </div>
+        <div class="trend-item">
+          <p class="t1">“airfryer 5.5 lt”</p>
+          <p class="t2">Fiyat/performans</p>
+        </div>
+        <div class="trend-item">
+          <p class="t1">“robot süpürge”</p>
+          <p class="t2">En güvenli seçim</p>
+        </div>
+        <div class="trend-item">
+          <p class="t1">“kulaklık anc”</p>
+          <p class="t2">Dikkat listesi</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    document.querySelectorAll(".read-more").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const box = btn.closest(".ai-comment-box");
+        const text = box.querySelector(".ai-text");
+        const expanded = text.getAttribute("data-expanded") === "1";
+        if (expanded) {
+          text.style.webkitLineClamp = "4";
+          text.style.overflow = "hidden";
+          text.setAttribute("data-expanded", "0");
+          btn.textContent = "Devamını oku";
+        } else {
+          text.style.webkitLineClamp = "unset";
+          text.style.overflow = "visible";
+          text.setAttribute("data-expanded", "1");
+          btn.textContent = "Kısalt";
+        }
+      });
+    });
+  </script>
 
 </body>
 </html>
