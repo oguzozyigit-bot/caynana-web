@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bikonomi - Akıllı Alışveriş Asistanı</title>
+  <title>Caynana.ai</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,281 +13,125 @@
 
   <style>
     body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    .card { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
-    .card:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(2, 6, 23, .08); }
-    .skeleton { background: linear-gradient(90deg, rgba(226,232,240,.7) 25%, rgba(241,245,249,.9) 37%, rgba(226,232,240,.7) 63%); background-size: 400% 100%; animation: sk 1.2s ease infinite; }
-    @keyframes sk { 0%{background-position:100% 0} 100%{background-position:0 0} }
-    .line-clamp-2 { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .card { transition: box-shadow .15s ease, transform .15s ease; }
+    .card:hover { box-shadow: 0 10px 30px rgba(0,0,0,.06); transform: translateY(-1px); }
   </style>
 </head>
 
-<body class="bg-slate-50 text-slate-900">
-  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-200">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-3">
-      <div class="flex items-center gap-2">
-        <div class="w-9 h-9 rounded-xl bg-emerald-600"></div>
-        <div>
-          <div class="font-extrabold tracking-tight leading-5">Bikonomi</div>
-          <div class="text-xs text-slate-500 -mt-0.5">Akıllı Alışveriş Asistanı</div>
-        </div>
-      </div>
+<body class="bg-white text-slate-900">
 
-      <div class="flex-1"></div>
-
-      <div class="hidden sm:flex items-center gap-2 text-xs text-slate-500">
-        <span class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200">Frontend</span>
-        <span class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200">Vercel</span>
-      </div>
+<!-- HEADER / GLOBAL SEARCH -->
+<header class="sticky top-0 z-40 bg-white border-b border-slate-200">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center gap-4">
+    <div class="font-extrabold text-lg tracking-tight">
+      Caynana<span class="text-slate-400">.ai</span>
     </div>
-  </header>
 
-  <main class="max-w-6xl mx-auto px-4 py-6">
-    <section class="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm">
-      <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
-        <div class="flex-1">
-          <label class="text-xs font-semibold text-slate-600">Link veya arama metni</label>
-          <div class="mt-2 flex items-center gap-2">
-            <input id="q" type="text"
-              class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400"
-              placeholder="Örn: samsung a07  |  Trendyol linki yapıştır..."
-              autocomplete="off"
-            />
-            <button id="btnSearch"
-              class="px-4 py-3 rounded-xl bg-slate-900 text-white font-semibold hover:opacity-90 active:opacity-80 whitespace-nowrap">
-              Ara
-            </button>
-            <button id="btnAnalyze"
-              class="px-4 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:opacity-90 active:opacity-80 whitespace-nowrap">
-              Analiz
-            </button>
-          </div>
-          <div class="mt-2 flex items-center gap-2 text-xs text-slate-500">
-            <span id="apiBadge" class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200">API: —</span>
-            <span id="status" class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200">Hazır</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="mt-6">
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-extrabold tracking-tight">Sonuçlar</h2>
-        <div class="text-xs text-slate-500" id="metaLine"></div>
-      </div>
-
-      <div id="grid" class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-    </section>
-  </main>
-
-  <template id="tplSkeleton">
-    <div class="card bg-white border border-slate-200 rounded-2xl p-4">
-      <div class="flex gap-3">
-        <div class="w-20 h-20 rounded-xl skeleton"></div>
-        <div class="flex-1">
-          <div class="h-4 rounded skeleton w-11/12"></div>
-          <div class="h-4 rounded skeleton w-9/12 mt-2"></div>
-          <div class="h-4 rounded skeleton w-6/12 mt-3"></div>
-        </div>
-      </div>
-      <div class="mt-4 h-10 rounded-xl skeleton"></div>
+    <div class="flex-1">
+      <input id="q" type="text"
+        class="w-full px-4 py-2.5 rounded-full border border-slate-300 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+        placeholder="Ürün adı veya link yaz..."
+      />
     </div>
-  </template>
 
-  <script>
-    const API_BASE = "https://bikonomi-api-1.onrender.com";
+    <button id="btnSearch"
+      class="px-5 py-2.5 rounded-full bg-slate-900 text-white font-semibold hover:opacity-90">
+      Ara
+    </button>
+  </div>
+</header>
 
-    const $ = (id) => document.getElementById(id);
-    const qEl = $("q");
-    const grid = $("grid");
-    const statusEl = $("status");
-    const metaLine = $("metaLine");
-    const apiBadge = $("apiBadge");
-    apiBadge.textContent = "API: " + API_BASE;
+<!-- MAIN -->
+<main class="max-w-6xl mx-auto px-4 py-8">
 
-    function setStatus(txt, tone = "slate") {
-      statusEl.textContent = txt;
-      const map = {
-        slate: "bg-slate-100 border-slate-200 text-slate-700",
-        ok: "bg-emerald-50 border-emerald-200 text-emerald-700",
-        warn: "bg-amber-50 border-amber-200 text-amber-700",
-        bad: "bg-rose-50 border-rose-200 text-rose-700",
-      };
-      statusEl.className = "px-2 py-1 rounded-full border text-xs " + (map[tone] || map.slate);
-    }
+  <!-- INFO LINE -->
+  <div class="text-center mb-8">
+    <h1 class="text-2xl font-extrabold tracking-tight">
+      Alışverişte <span class="underline decoration-emerald-500">son sözü</span> Caynana söyler
+    </h1>
+    <p class="mt-2 text-slate-500">
+      Fiyat, puan, yorum ve sağduyu. Gereksiz övgü yok.
+    </p>
+  </div>
 
-    function escapeHtml(s) {
-      return String(s ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+  <!-- RESULTS -->
+  <div id="grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
 
-    function showSkeleton(n = 6) {
-      grid.innerHTML = "";
-      const tpl = document.getElementById("tplSkeleton");
-      for (let i = 0; i < n; i++) grid.appendChild(tpl.content.cloneNode(true));
-    }
+  <!-- EMPTY -->
+  <div id="empty" class="hidden text-center text-slate-400 mt-16">
+    Bir şey ara, Caynana konuşsun.
+  </div>
 
-    function badge(platform) {
-      const label = platform?.label || "Diğer";
-      const color = platform?.color || "#6B7280";
-      return `
-        <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full border text-xs font-semibold"
-              style="border-color:${color}33;background:${color}12;color:${color}">
-          <span class="w-1.5 h-1.5 rounded-full" style="background:${color}"></span>
-          ${escapeHtml(label)}
-        </span>
-      `;
-    }
+</main>
 
-    function card(p) {
-      const title = escapeHtml(p?.title || "Ürün");
-      const img = escapeHtml(p?.image || "https://placehold.co/600x600/png?text=Bikonomi");
-      const price = escapeHtml(p?.price || "Fiyat Yok");
-      const url = escapeHtml(p?.url || "");
-      const score = Number(p?.bikonomiScore ?? 0);
-      const rating = Number(p?.rating ?? 0);
-      const review = Number(p?.reviewCount ?? 0);
+<script>
+  const API = "https://bikonomi-api-1.onrender.com";
+  const qEl = document.getElementById("q");
+  const grid = document.getElementById("grid");
+  const empty = document.getElementById("empty");
 
-      const scoreTag = score > 0
-        ? `<span class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold">Skor: ${score}</span>`
-        : "";
+  function escapeHtml(s) {
+    return String(s ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;");
+  }
 
-      const ratingTag = rating > 0
-        ? `<span class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs">★ ${rating.toFixed(1)} (${review})</span>`
-        : `<span class="px-2 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs">Puan yok</span>`;
+  function card(p){
+    return `
+      <div class="card border border-slate-200 rounded-xl p-4">
+        <img src="${p.image || "https://placehold.co/600x600"}"
+             class="w-full h-40 object-cover rounded-lg bg-slate-100 mb-3"/>
 
-      return `
-        <div class="card bg-white border border-slate-200 rounded-2xl p-4">
-          <div class="flex gap-3">
-            <img src="${img}" alt="" class="w-20 h-20 rounded-xl object-cover bg-slate-100 border border-slate-200" referrerpolicy="no-referrer"/>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-start justify-between gap-2">
-                <div class="text-sm font-extrabold leading-snug line-clamp-2">${title}</div>
-              </div>
-              <div class="mt-2 flex flex-wrap gap-2 items-center">
-                ${badge(p?.platform)}
-                ${ratingTag}
-                ${scoreTag}
-              </div>
-              <div class="mt-2 text-base font-extrabold">${price}</div>
-            </div>
-          </div>
-
-          <div class="mt-4 flex gap-2">
-            <a href="${url || "#"}" target="_blank" rel="noopener"
-               class="flex-1 text-center px-3 py-2.5 rounded-xl bg-slate-900 text-white font-semibold hover:opacity-90 ${url ? "" : "pointer-events-none opacity-40"}">
-              Ürüne Git
-            </a>
-            <button data-url="${url}" data-title="${escapeHtml(p?.title || "")}"
-              class="btnQuickAnalyze px-3 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold hover:opacity-90 ${url ? "" : "pointer-events-none opacity-40"}">
-              Analiz
-            </button>
-          </div>
-
-          ${p?.aiComment ? `<div class="mt-3 text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl p-3">${escapeHtml(p.aiComment)}</div>` : ""}
+        <div class="font-bold text-sm leading-snug line-clamp-2">
+          ${escapeHtml(p.title)}
         </div>
-      `;
-    }
 
-    async function apiSearch(query) {
-      const url = API_BASE + "/api/search?q=" + encodeURIComponent(query);
-      const r = await fetch(url, { method: "GET" });
+        <div class="mt-2 text-lg font-extrabold">
+          ${p.price || "Fiyat yok"}
+        </div>
+
+        <div class="mt-2 flex items-center gap-2 text-xs text-slate-500">
+          <span>${p.platform?.label || "Diğer"}</span>
+          <span>•</span>
+          <span>★ ${p.rating || 0}</span>
+        </div>
+
+        <a href="${p.url}" target="_blank"
+           class="mt-4 block text-center px-4 py-2 rounded-lg bg-slate-900 text-white font-semibold">
+          Ürüne Git
+        </a>
+      </div>
+    `;
+  }
+
+  async function search(){
+    const q = qEl.value.trim();
+    if(!q) return;
+
+    grid.innerHTML = "";
+    empty.classList.add("hidden");
+
+    try{
+      const r = await fetch(API + "/api/search?q=" + encodeURIComponent(q));
       const j = await r.json();
-      return { status: r.status, data: j };
-    }
 
-    async function apiAnalyze(target) {
-      const url = API_BASE + "/api/analyze";
-      const r = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: target }),
-      });
-      const j = await r.json();
-      return { status: r.status, data: j };
-    }
-
-    async function doSearch() {
-      const query = (qEl.value || "").trim();
-      if (!query) return;
-
-      metaLine.textContent = "";
-      setStatus("Aranıyor…", "slate");
-      showSkeleton(9);
-
-      try {
-        const { status, data } = await apiSearch(query);
-
-        if (data?.error) {
-          grid.innerHTML = `<div class="col-span-full bg-rose-50 border border-rose-200 rounded-2xl p-4 text-rose-700 font-semibold">
-            ${escapeHtml(data.message || "Hata")}
-          </div>`;
-          setStatus("Hata", "bad");
-          return;
-        }
-
-        const products = data?.products || [];
-        metaLine.textContent = `İncelenen: ${data?.examined ?? 0} • Dönen: ${data?.returned ?? products.length}`;
-
-        if (!products.length) {
-          grid.innerHTML = `<div class="col-span-full bg-amber-50 border border-amber-200 rounded-2xl p-4 text-amber-800 font-semibold">
-            Sonuç bulunamadı.
-          </div>`;
-          setStatus("Sonuç yok", "warn");
-          return;
-        }
-
-        grid.innerHTML = products.map(card).join("");
-        setStatus("Tamam", "ok");
-
-      } catch (e) {
-        grid.innerHTML = `<div class="col-span-full bg-rose-50 border border-rose-200 rounded-2xl p-4 text-rose-700 font-semibold">
-          Bağlantı hatası: ${escapeHtml(e?.message || e)}
-        </div>`;
-        setStatus("Bağlantı hatası", "bad");
+      const products = j.products || [];
+      if(!products.length){
+        empty.classList.remove("hidden");
+        return;
       }
+
+      grid.innerHTML = products.map(card).join("");
+    }catch(e){
+      empty.textContent = "Bağlantı sorunu.";
+      empty.classList.remove("hidden");
     }
+  }
 
-    async function doAnalyze(target) {
-      const t = (target || (qEl.value || "")).trim();
-      if (!t) return;
+  document.getElementById("btnSearch").onclick = search;
+  qEl.addEventListener("keydown", e => { if(e.key === "Enter") search(); });
+</script>
 
-      setStatus("Analiz…", "slate");
-
-      try {
-        const { status, data } = await apiAnalyze(t);
-
-        if (data?.error) {
-          setStatus("Hata", "bad");
-          alert(data.message || "Analiz hatası");
-          return;
-        }
-
-        setStatus("Tamam", "ok");
-        alert("Analiz gönderildi.");
-
-      } catch (e) {
-        setStatus("Bağlantı hatası", "bad");
-        alert(e?.message || String(e));
-      }
-    }
-
-    $("btnSearch").addEventListener("click", doSearch);
-    $("btnAnalyze").addEventListener("click", () => doAnalyze());
-
-    qEl.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") doSearch();
-    });
-
-    document.addEventListener("click", (e) => {
-      const btn = e.target.closest(".btnQuickAnalyze");
-      if (!btn) return;
-      const url = btn.getAttribute("data-url") || "";
-      if (url) doAnalyze(url);
-    });
-  </script>
 </body>
 </html>
