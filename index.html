@@ -34,16 +34,25 @@
     header {
       padding: 20px;
       display: flex;
-      justify-content: flex-start;
+      justify-content: flex-end;
       align-items: center;
+      gap: 15px;
     }
     
     .logo-container {
-      display: flex; align-items: center; gap: 8px; padding-left: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: auto; 
+      padding-left: 10px;
     }
     .logo-icon {
-      width: 24px; height: 24px; background: #10B981; color: white;
-      border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px;
+      width: 24px; height: 24px;
+      background: #10B981;
+      color: white;
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
     }
     .logo-text { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
 
@@ -53,70 +62,96 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center; /* Ortaya topladım */
-      padding: 0 20px;
-      gap: 25px;
+      justify-content: flex-start;
+      padding-top: 6vh; /* Biraz daha yukarı aldım */
+      padding-left: 20px; padding-right: 20px;
       width: 100%;
       max-width: 600px;
       margin: 0 auto;
     }
 
-    /* HERO TITLE (ÜST KISIM) */
+    /* HERO */
     .hero-title {
       text-align: center;
-      font-size: 32px; /* Biraz büyüttüm */
-      font-weight: 800;
-      line-height: 1.2;
+      font-size: 28px;
+      font-weight: 700;
+      line-height: 1.3;
       color: var(--text-main);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     .hero-title span { color: var(--primary); }
+    
+    /* ÜST AÇIKLAMA */
+    .hero-sub-top {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 500px;
+      line-height: 1.5;
+      margin-bottom: 25px; /* Arama kutusu ile mesafe */
+    }
+
+    /* ALT AÇIKLAMA (BANNER ALTI) */
+    .hero-sub-bottom {
+      text-align: center;
+      color: #9AA0A6; /* Daha silik */
+      font-size: 13px;
+      max-width: 480px;
+      line-height: 1.5;
+      margin-top: 15px;
+    }
 
     /* SEARCH BAR */
-    .search-wrapper { width: 100%; position: relative; }
+    .search-wrapper {
+      width: 100%;
+      max-width: 584px;
+      position: relative;
+    }
     .search-bar {
-      display: flex; align-items: center; background: #fff;
-      border: 1px solid var(--border); border-radius: 24px;
-      padding: 14px 18px; /* Biraz daha geniş ve rahat */
+      display: flex;
+      align-items: center;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 12px 16px;
       transition: box-shadow 0.2s;
     }
     .search-bar:hover, .search-bar:focus-within {
-      box-shadow: var(--shadow-hover); border-color: rgba(223,225,229,0);
+      box-shadow: var(--shadow-hover);
+      border-color: rgba(223,225,229,0);
     }
-    .search-icon-left { color: #9AA0A6; font-size: 18px; margin-right: 12px; }
+    
+    .search-icon-left { color: #9AA0A6; font-size: 16px; margin-right: 12px; }
+    
     #q {
       flex: 1; border: none; outline: none; font-size: 16px;
       color: var(--text-main); background: transparent; height: 30px;
     }
+
     .camera-btn {
-      color: var(--primary); font-size: 20px; cursor: pointer;
+      color: var(--primary); font-size: 18px; cursor: pointer;
       padding: 8px; border-radius: 50%; transition: background 0.2s;
     }
     .camera-btn:hover { background: #F1F3F4; }
 
     /* BANNER */
     .promo-banner {
-      width: 100%; height: 110px;
+      width: 100%; max-width: 584px; height: 120px;
       border-radius: 12px; overflow: hidden; position: relative;
-      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+      margin-top: 30px; /* İSTEDİĞİN AYIRMA BURADA */
       background: linear-gradient(105deg, #10B981 0%, #064e3b 100%);
       display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
     }
     .banner-content { color: white; z-index: 2; }
     .banner-tag { font-size: 10px; font-weight: 800; opacity: 0.8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
-    .banner-title { font-size: 18px; font-weight: 800; line-height: 1.1; margin-bottom: 8px; }
-    .banner-cta { font-size: 11px; font-weight: 600; background: white; color: #064e3b; padding: 5px 12px; border-radius: 20px; display: inline-block; }
-    .banner-decor { position: absolute; right: -20px; bottom: -20px; font-size: 90px; color: white; opacity: 0.1; transform: rotate(-15deg); }
-
-    /* HERO SUB (AÇIKLAMA - ARTIK BANNER ALTINDA) */
-    .hero-sub {
-      text-align: center; color: var(--text-muted); font-size: 14px;
-      max-width: 90%; line-height: 1.5; margin-top: 5px;
-    }
+    .banner-title { font-size: 20px; font-weight: 800; line-height: 1.1; margin-bottom: 8px; }
+    .banner-cta { font-size: 12px; font-weight: 600; background: white; color: #064e3b; padding: 6px 12px; border-radius: 20px; display: inline-block; }
+    .banner-decor { position: absolute; right: -20px; bottom: -20px; font-size: 100px; color: white; opacity: 0.1; transform: rotate(-15deg); }
 
     /* PREVIEW & ACTIONS */
     .img-preview-box {
-      width: 100%; margin-top: 10px; border: 1px solid var(--border); border-radius: 12px;
+      margin-top: 20px; border: 1px solid var(--border); border-radius: 12px;
       padding: 10px; display: none; text-align: center;
     }
     .img-preview-box img { max-height: 200px; border-radius: 8px; }
@@ -125,41 +160,49 @@
 
     /* FOOTER */
     footer {
-      background: #F8F9FA; /* Hafif gri zemin */
-      border-top: 1px solid #EAEAEA;
-      padding: 25px 30px 35px 30px; /* Alt boşluğu artırdım, finiş rahat görünsün */
-      display: flex; flex-direction: column; align-items: center; gap: 25px;
-      margin-top: auto; /* Sayfanın en altına iter */
+      background: #F8F9FA;
+      border-top: 1px solid #DADCE0;
+      padding: 20px 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      font-size: 12px;
+      color: #70757A;
+      margin-top: auto;
     }
-
-    /* 1. Kısım: Linkler (Üstte) */
     .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
-    .footer-links a { color: #70757A; text-decoration: none; font-size: 13px; font-weight: 500; }
-    .footer-links a:hover { color: #202124; }
+    .footer-links a { color: #70757A; text-decoration: none; }
+    .footer-links a:hover { color: #333; }
     
-    /* 2. Kısım: Şirket İmzası ve Bayrak (En Altta - Finiş) */
+    /* Şirket İmzası ve İtalyan Barı */
     .company-tag {
-      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-weight: 800;
+      color: #9CA3AF;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-size: 10px;
     }
-    .company-text {
-      font-weight: 900; color: #9CA3AF; letter-spacing: 0.08em;
-      text-transform: uppercase; font-size: 11px;
-    }
+    
     .italian-bar {
-      width: 100%; /* Yazının genişliğiyle aynı olur */
-      height: 4px; /* Belirgin bir finiş çizgisi */
+      width: 100%; /* Yazı genişliği kadar */
+      height: 4px; /* İnce bar */
       background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%);
       border-radius: 2px;
       border: 1px solid rgba(0,0,0,0.05);
     }
 
-    /* UTILS & RESULTS */
-    .scene { display: none; width: 100%; }
+    /* UTILS */
+    .scene { display: none; width: 100%; max-width: 600px; }
     .scene.active { display: block; }
     .spinner { width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 15px;}
     @keyframes spin { 100% { transform: rotate(360deg); } }
     .result-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .btn-main { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; display:block; text-align:center; text-decoration:none;}
+    .btn-main { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px;}
 
   </style>
 </head>
@@ -175,17 +218,21 @@
 
 <main>
 
-  <section id="scene-home" class="scene active" style="display:flex; flex-direction:column; align-items:center; width:100%;">
+  <section id="scene-home" class="scene active" style="display:flex; flex-direction:column; align-items:center;">
     
     <div class="hero-title">
       Almadan Önce <br><span>CAYNANA'ya Sor.</span>
+    </div>
+    
+    <div class="hero-sub-top">
+      Ürüne yazılan binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm.
     </div>
 
     <div class="search-wrapper">
       <div class="search-bar">
         <i class="fa-solid fa-magnifying-glass search-icon-left"></i>
         
-        <input id="q" type="text" placeholder="Ürün adı, marka veya link..." autocomplete="off">
+        <input id="q" type="text" placeholder="Ürün adı veya link yapıştır..." autocomplete="off">
         
         <i class="fa-solid fa-camera camera-btn" onclick="triggerFileSelect()" title="Fotoğraf ile ara"></i>
         
@@ -210,13 +257,13 @@
       <i class="fa-solid fa-bag-shopping banner-decor"></i>
     </div>
 
-    <div class="hero-sub">
-      Satış yapmam, taraf tutmam. Ürüne yazılan binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm.
+    <div class="hero-sub-bottom">
+      Satış yapmam. Bağımsız ve tarafsız ürün analizi yapar tavsiyede bulunurum.
     </div>
 
   </section>
 
-  <section id="scene-loading" class="scene" style="text-align:center; padding-top:20px;">
+  <section id="scene-loading" class="scene" style="text-align:center; padding-top:40px;">
     <div class="spinner"></div>
     <h3>Analiz Ediliyor...</h3>
     <p id="loadingStep" style="color:#666;">Veriler taranıyor</p>
@@ -232,11 +279,11 @@
         <h4 id="heroTitle"></h4>
       </div>
 
-      <a id="heroLink" href="#" target="_blank" class="btn-main">
+      <a id="heroLink" href="#" target="_blank" class="btn-main" style="display:block; text-align:center; text-decoration:none;">
         Fiyatı Gör & İncele
       </a>
     </div>
-    <button onclick="resetAll()" style="margin-top:20px; background:none; border:none; color:#666; cursor:pointer; width:100%;">
+    <button onclick="resetAll()" style="margin-top:20px; background:none; border:none; color:#666; cursor:pointer;">
       <i class="fa-solid fa-arrow-left"></i> Yeni Sorgu
     </button>
   </section>
@@ -244,31 +291,31 @@
   <section id="scene-static" class="scene" style="background:white; padding:20px; border-radius:12px; border:1px solid #eee;">
     <h2 id="staticTitle">Başlık</h2>
     <p id="staticText" style="line-height:1.6; color:#555;">İçerik...</p>
-    <button onclick="showScene('scene-home')" class="mini-btn" style="margin-top:10px;">Kapat</button>
+    <button onclick="showScene('scene-home')" class="mini-btn">Kapat</button>
   </section>
 
 </main>
 
 <footer>
   <div class="footer-links">
-    <a href="#" onclick="openStatic('Hakkımızda', 'Biz yapay zeka destekli alışveriş asistanıyız. Tarafsız analiz yaparız.')">Hakkımızda</a>
-    <a href="#" onclick="openStatic('SSS', 'Ücretli mi? Hayır.\nNasıl çalışır? Link atarsın, yorumları okurum.')">S.S.S</a>
-    <a href="#" onclick="openStatic('Gizlilik', 'Kişisel veri toplamıyoruz. Çerezler sadece tercihlerin için.')">Gizlilik</a>
-    <a href="#" onclick="openStatic('İletişim', 'Düzce Teknopark\nEmail: info@italky.com')">İletişim</a>
+    <a href="#" onclick="openStatic('Hakkımızda', 'Biz yapay zeka destekli alışveriş asistanıyız.')">Hakkımızda</a>
+    <a href="#" onclick="openStatic('Gizlilik', 'Verileriniz bizimle güvende.')">Gizlilik</a>
+    <a href="#" onclick="openStatic('İletişim', 'Düzce Teknopark. info@italky.com')">İletişim</a>
   </div>
 
   <div class="company-tag">
-    <span class="company-text">@CAYNANA.AI BY ITLAKY TEKNOLJI A.Ş</span>
+    <span>@CAYNANA.AI BY ITLAKY TEKNOLJI A.Ş</span>
     <div class="italian-bar"></div>
   </div>
 </footer>
 
 <script>
-  // --- TEMEL JS ---
+  // --- STATE ---
   let session = { q: "", img: "" };
   const qInput = document.getElementById("q");
   const fileInput = document.getElementById("fileInput");
 
+  // --- NAVIGATION ---
   function showScene(id) {
     document.querySelectorAll(".scene").forEach(el => el.classList.remove("active"));
     document.getElementById(id).classList.add("active");
@@ -280,7 +327,10 @@
     showScene("scene-home");
   }
 
-  function triggerFileSelect() { fileInput.click(); }
+  // --- FILE HANDLING ---
+  function triggerFileSelect() {
+    fileInput.click();
+  }
 
   function handleFile(file) {
     if (!file) return;
@@ -299,41 +349,34 @@
     document.getElementById("imgWrap").style.display = "none";
   }
 
+  // --- STATIC PAGES ---
   function openStatic(title, text) {
     document.getElementById("staticTitle").textContent = title;
-    document.getElementById("staticText").innerText = text; // innerText, \n karakterlerini algılar
+    document.getElementById("staticText").textContent = text;
     showScene("scene-static");
   }
 
-  // --- ANALİZ FONKSİYONU ---
-  async function start() {
+  // --- START ANALYSIS ---
+  function start() {
     const q = qInput.value.trim();
-    if (!q && !session.img) return alert("Başkanım, ürün adı yaz veya foto yükle.");
+    if (!q && !session.img) return alert("Bir şeyler yaz veya foto yükle başkanım.");
 
     showScene("scene-loading");
     
-    // BACKEND ENTEGRASYONU BURADA YAPILIR.
-    // Şimdilik test için Mock (Sahte) veri dönüyoruz.
-    try {
-        // const res = await fetch('/api/analyze', { ... }); // Gerçek sunucuya bağlanınca burayı aç.
-        
-        // Simülasyon:
-        setTimeout(() => {
-          document.getElementById("finalHeadline").textContent = "Caynana Kararı";
-          document.getElementById("finalText").textContent = "Başkanım, bu ürün fiyatına göre fena değil ama kullanıcılar 6. aydan sonra pil performansının düştüğünü söylüyor. Eğer uzun ömürlü olsun diyorsan riskli.";
-          document.getElementById("heroTitle").textContent = "Alternatif: TechPro X200";
-          document.getElementById("heroImg").src = "https://via.placeholder.com/300?text=Alternatif+Urun";
-          document.getElementById("heroLink").href = "#";
-          
-          showScene("scene-results");
-        }, 2000);
-
-    } catch (e) {
-        alert("Hata oluştu: " + e.message);
-        showScene("scene-home");
-    }
+    // Simulate API Call
+    setTimeout(() => {
+      // Mock Result
+      document.getElementById("finalHeadline").textContent = "Caynana Kararı";
+      document.getElementById("finalText").textContent = "Bu ürün fiyatına göre çok iyi. Ancak kronik pil sorunu var. Alternatif olarak aşağıdaki modele bakabilirsin.";
+      document.getElementById("heroTitle").textContent = "Alternatif: TechPro X200";
+      document.getElementById("heroImg").src = "https://via.placeholder.com/300?text=Urun+Gorseli";
+      document.getElementById("heroLink").href = "#";
+      
+      showScene("scene-results");
+    }, 2000);
   }
 
+  // Enter Key
   qInput.addEventListener("keyup", (e) => { if (e.key === "Enter") start(); });
 
 </script>
