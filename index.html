@@ -42,7 +42,10 @@
 
     /* HEADER */
     header { padding: 15px 20px; display: flex; justify-content: flex-end; align-items: center; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .logo-container { display: flex; align-items: center; gap: 8px; margin-right: auto; }
+    
+    /* LOGO GÜNCELLEMESİ: Tıklanabilir Yapı */
+    .logo-container { display: flex; align-items: center; gap: 8px; margin-right: auto; cursor: pointer; user-select: none; }
+    .logo-container:active { transform: scale(0.98); }
     .logo-icon { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
     .logo-text { font-weight: 800; font-size: 20px; letter-spacing: -0.5px; color: #111; }
 
@@ -128,16 +131,25 @@
     .spinner { width: 50px; height: 50px; border: 4px solid #E5E7EB; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 20px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    footer { margin-top: auto; padding: 20px; text-align: center; font-size: 11px; color: #9CA3AF; }
+    /* FOOTER (ESKİ TASARIM GERİ GELDİ) */
+    footer { background: #F8F9FA; border-top: 1px solid #DADCE0; padding: 20px 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 11px; color: #70757A; margin-top: auto; }
+    .footer-links { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+    .footer-links a { color: #70757A; text-decoration: none; font-weight: 500; }
+    .footer-links a:hover { color: var(--primary); }
+    .company-tag { display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 800; color: #9CA3AF; font-size: 9px; margin-top: 5px; }
+    
+    /* İTALYAN BAYRAĞI ÇİZGİSİ */
+    .italian-bar { width: 100%; height: 4px; background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%); border-radius: 2px; border: 1px solid rgba(0,0,0,0.05); width: 120px; }
+
   </style>
 </head>
 
 <body>
 
 <header>
-  <div class="logo-container">
+  <div class="logo-container" onclick="window.location.reload()">
     <div class="logo-icon">C</div>
-    <div class="logo-text">CAYNANA</div>
+    <div class="logo-text">CAYNANA.AI</div>
   </div>
   <button id="installBtn" onclick="installPWA()">Uygulamayı Yükle</button>
 </header>
@@ -204,14 +216,27 @@
     </button>
   </section>
 
+  <section id="scene-static" class="scene" style="background:white; padding:20px; border-radius:12px; border:1px solid #eee;">
+    <h2 id="staticTitle" style="margin-top:0;">Başlık</h2>
+    <p id="staticText" style="line-height:1.6; color:#555;">İçerik...</p>
+    <button onclick="showScene('scene-home')" style="margin-top:15px; padding:10px 20px; background:#f1f3f4; border:none; border-radius:8px; cursor:pointer;">Kapat</button>
+  </section>
+
 </main>
 
 <footer>
-  @CAYNANA.AI BY ITALKY TECHNOLOGY
+  <div class="footer-links">
+    <a href="#" onclick="openStatic('Hakkımızda', 'Biz yapay zeka destekli alışveriş asistanıyız. Ürünleri analiz eder, en doğru kararı vermenize yardımcı oluruz.')">Hakkımızda</a>
+    <a href="#" onclick="openStatic('Gizlilik', 'Verileriniz bizimle güvende. Kişisel bilgilerinizi asla üçüncü şahıslarla paylaşmıyoruz.')">Gizlilik</a>
+    <a href="#" onclick="openStatic('İletişim', 'Düzce Teknopark. info@italky.com adresinden bize ulaşabilirsiniz.')">İletişim</a>
+  </div>
+  <div class="company-tag">
+    <span>@CAYNANA.AI BY ITALKY TECHNOLOGY</span>
+    <div class="italian-bar"></div>
+  </div>
 </footer>
 
 <script>
-  // DOMContentLoaded: Sayfa tamamen yüklendiğinde çalışır (Garanti Yöntem)
   document.addEventListener('DOMContentLoaded', () => {
       
       const API_BASE = "https://bikonomi-api-1.onrender.com";
@@ -230,8 +255,8 @@
 
       // EVENT LISTENERS
       searchForm.addEventListener('submit', (e) => {
-          e.preventDefault(); // Sayfa yenilenmesini engelle
-          start(); // Aramayı başlat
+          e.preventDefault(); 
+          start(); 
       });
 
       // Yardımcı Fonksiyonlar
@@ -266,6 +291,13 @@
           document.getElementById("imgWrap").style.display = "none";
       };
 
+      // Statik Sayfa Açma
+      window.openStatic = function(title, text) {
+          document.getElementById("staticTitle").textContent = title;
+          document.getElementById("staticText").textContent = text;
+          showScene("scene-static");
+      };
+
       window.startVoice = function() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if(!SpeechRecognition) return alert("Sesli arama desteklenmiyor.");
@@ -287,7 +319,6 @@
             return;
         }
 
-        // ÖNCE SADECE SAHNEYİ DEĞİŞTİR (Inputu silme!)
         showScene("scene-loading");
 
         try {
@@ -300,7 +331,6 @@
             if (!res.ok) throw new Error("Sunucu hatası");
             const data = await res.json();
 
-            // BAŞARILIYSA ŞİMDİ SİL
             clearImage();
             qInput.value = "";
 
@@ -391,15 +421,12 @@
           }
       };
       
-      // Global erişim için start fonksiyonunu window'a atadık (voice search için)
       window.start = start;
   });
 
-  // Global fonksiyonlar (Script dışında çağrılırsa diye)
   function stopSpeech() { 
       const btn = document.getElementById("btnListen");
       if(btn) { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle'; btn.classList.remove("active"); }
-      // Audio değişkeni scope içinde olduğu için buradan durduramayız, showScene hallediyor
   }
 </script>
 
