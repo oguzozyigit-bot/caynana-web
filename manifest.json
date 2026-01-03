@@ -1,20 +1,13 @@
 {
-  "name": "Caynana",
-  "short_name": "Caynana",
-  "start_url": "/",
+  "name": "CAYNANA.AI",
+  "short_name": "CAYNANA",
+  "start_url": "/?focus=1",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#10B981",
   "icons": [
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/9386/9386895.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/9386/9386895.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
+    { "src": "https://cdn-icons-png.flaticon.com/512/9386/9386895.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "https://cdn-icons-png.flaticon.com/512/9386/9386895.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
