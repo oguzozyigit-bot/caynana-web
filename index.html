@@ -15,14 +15,14 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* --- GENEL --- */
+    /* --- GENEL AYARLAR --- */
     :root {
       --bg-body: #FFFFFF;
       --text-main: #202124;
       --text-muted: #5F6368;
       --primary: #10B981;
       --whatsapp: #25D366;
-      --trendyol-orange: #F27A1A; /* YENİ RENK: Trendyol Turuncusu */
+      --trendyol-orange: #F27A1A;
       --border: #DFE1E5;
     }
 
@@ -124,9 +124,9 @@
     .speech-btn { background: #f1f3f4; border: none; padding: 8px 12px; border-radius: 20px; color: #5F6368; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
     .speech-btn.speaking { background: #e6fffa; color: var(--primary); border: 1px solid var(--primary); }
     
-    /* YENİ BUTON: TRENDYOL TURUNCUSU */
+    /* TRENDYOL BUTONU */
     .btn-main { 
-      background: var(--trendyol-orange); /* Turuncu */
+      background: var(--trendyol-orange); 
       color: white; border: none; 
       padding: 12px; width: 100%; 
       border-radius: 8px; font-weight: 600; cursor: pointer; 
@@ -135,6 +135,7 @@
     }
     .btn-main:hover { background: #d36611; }
 
+    /* WHATSAPP BUTONU */
     .btn-whatsapp { 
       background: var(--whatsapp); color: white; 
       border: none; padding: 12px; width: 100%; 
@@ -249,6 +250,7 @@
             <img id="heroImg" src="" onerror="this.style.display='none'" style="display:none; max-width:100%; max-height:180px; object-fit:contain; margin-bottom:10px;">
             <h4 id="heroTitle" style="margin:5px 0 10px 0; color:#202124;"></h4>
         </div>
+        
         <a id="heroLink" href="#" target="_blank" class="btn-main">Öneriye Git</a>
         
         <a id="waShareBtn" href="#" target="_blank" class="btn-whatsapp">
@@ -296,8 +298,25 @@
   const qInput = document.getElementById("q");
   const fileInput = document.getElementById("fileInput");
 
+  // --- SİHİRLİ LİNK KONTROLÜ (AUTO-START) ---
+  // Sayfa yüklendiğinde URL'de ?q=URUN var mı diye bakar. Varsa analiz eder.
+  window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryParam = urlParams.get('q');
+    if (queryParam) {
+      qInput.value = queryParam;
+      start(); // Otomatik başlat
+    }
+  });
+
   function showScene(id) { stopSpeech(); document.querySelectorAll(".scene").forEach(el => el.classList.remove("active")); document.getElementById(id).classList.add("active"); }
-  function resetAll() { clearImage(); qInput.value = ""; showScene("scene-home"); }
+  function resetAll() { 
+      clearImage(); 
+      qInput.value = ""; 
+      // URL'yi temizle ki kullanıcı yenileyince tekrar analiz yapmasın
+      window.history.pushState({}, document.title, "/");
+      showScene("scene-home"); 
+  }
   function triggerFileSelect() { fileInput.click(); }
   function handleFile(file) { if (!file) return; const reader = new FileReader(); reader.onload = (e) => { session.img = e.target.result; document.getElementById("imgPreview").src = session.img; document.getElementById("imgWrap").style.display = "block"; }; reader.readAsDataURL(file); }
   function clearImage() { session.img = ""; fileInput.value = ""; document.getElementById("imgWrap").style.display = "none"; }
@@ -343,16 +362,23 @@
       const recBox = document.getElementById("recommendationBox");
       const heroImg = document.getElementById("heroImg");
       const waShareBtn = document.getElementById("waShareBtn");
+      
       if (data.product && data.product.title) {
          recBox.style.display = "block"; 
          document.getElementById("heroTitle").textContent = data.product.title;
          const productUrl = data.product.url || "#";
          document.getElementById("heroLink").href = productUrl;
-         const shareText = `Caynana bu ürün için dedi ki:\n\n*${data.headline}*\n\n${data.text}\n\n*Tavsiye Ürün:* ${productUrl}`;
+         
+         // SİHİRLİ LİNK OLUŞTURMA: caynana.ai/?q=URUN
+         const magicLink = `https://caynana.ai/?q=${encodeURIComponent(q)}`;
+         const shareText = `Caynana bu ürün için dedi ki:\n\n*${data.headline}*\n\n${data.text}\n\n*İncelemek için tıkla:* ${magicLink}`;
          waShareBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+
          if(data.product.img && data.product.img.length > 5) { heroImg.src = data.product.img; heroImg.style.display = "block"; } else { heroImg.style.display = "none"; }
       } else { recBox.style.display = "none"; }
-      qInput.value = ""; clearImage(); showScene("scene-results");
+      
+      // Analiz bitince inputu temizlemiyoruz ki kişi ne aradığını görsün. Reset'te temizliyoruz.
+      showScene("scene-results");
     } catch (e) { alert("Hata: " + e.message); showScene("scene-home"); }
   }
   qInput.addEventListener("keyup", (e) => { if (e.key === "Enter") start(); });
