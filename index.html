@@ -63,7 +63,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      padding-top: 6vh; /* Biraz daha yukarı aldım */
+      padding-top: 6vh; 
       padding-left: 20px; padding-right: 20px;
       width: 100%;
       max-width: 600px;
@@ -304,7 +304,7 @@
   </div>
 
   <div class="company-tag">
-    <span>@CAYNANA.AI BY ITLAKY TEKNOLJI A.Ş</span>
+    <span>@CAYNANA.AI BY ITALKY TECHNOLOGY</span>
     <div class="italian-bar"></div>
   </div>
 </footer>
@@ -356,24 +356,46 @@
     showScene("scene-static");
   }
 
-  // --- START ANALYSIS ---
-  function start() {
+  // --- GERÇEK START FONKSİYONU (RENDER API) ---
+  async function start() {
     const q = qInput.value.trim();
     if (!q && !session.img) return alert("Bir şeyler yaz veya foto yükle başkanım.");
 
     showScene("scene-loading");
     
-    // Simulate API Call
-    setTimeout(() => {
-      // Mock Result
-      document.getElementById("finalHeadline").textContent = "Caynana Kararı";
-      document.getElementById("finalText").textContent = "Bu ürün fiyatına göre çok iyi. Ancak kronik pil sorunu var. Alternatif olarak aşağıdaki modele bakabilirsin.";
-      document.getElementById("heroTitle").textContent = "Alternatif: TechPro X200";
-      document.getElementById("heroImg").src = "https://via.placeholder.com/300?text=Urun+Gorseli";
-      document.getElementById("heroLink").href = "#";
+    try {
+      // CANLI MOTORU ÇAĞIRIYORUZ
+      const res = await fetch('https://bikonomi-api-1.onrender.com/api/analyze', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ q: q, img: session.img })
+      });
+
+      if (!res.ok) throw new Error("Sunucuya ulaşılamadı. Beyni kontrol et.");
+
+      const data = await res.json();
+
+      // SONUÇLARI DOLDUR
+      document.getElementById("finalHeadline").textContent = data.headline || "Analiz Sonucu";
+      document.getElementById("finalText").textContent = data.text || "Detaylı bilgi alınamadı.";
+      
+      // Ürün Önerisi Varsa
+      if (data.product && data.product.title) {
+         document.getElementById("heroTitle").textContent = data.product.title;
+         document.getElementById("heroLink").href = data.product.url || "#";
+         document.getElementById("heroImg").src = data.product.img || "https://via.placeholder.com/300?text=Gorsel+Yok";
+      } else {
+         document.getElementById("heroTitle").textContent = "";
+         document.getElementById("heroLink").href = "#";
+         document.getElementById("heroImg").src = "";
+      }
       
       showScene("scene-results");
-    }, 2000);
+
+    } catch (e) {
+      alert("Hata oluştu başkanım: " + e.message);
+      showScene("scene-home");
+    }
   }
 
   // Enter Key
