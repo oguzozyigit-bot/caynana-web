@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>CAYNANA.AI – Almadan Önce Sor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  
+   
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#10B981">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -190,7 +190,6 @@
         .search-arrow-btn i { font-size: 14px; }
     }
     
-    /* YENİ EKLENEN: Uzun metinlerin paragraf görünmesi için */
     #finalText { white-space: pre-line; }
   </style>
 </head>
@@ -268,7 +267,7 @@
       <div id="recommendationList" class="recommendation-list"></div>
       
       <a id="waShareBtn" href="#" target="_blank" class="btn-whatsapp">
-         <i class="fa-brands fa-whatsapp"></i> WhatsApp ile Paylaş
+          <i class="fa-brands fa-whatsapp"></i> WhatsApp ile Paylaş
       </a>
     </div>
 
@@ -297,6 +296,10 @@
 </footer>
 
 <script>
+  // --- KONFİGÜRASYON ---
+  // Render'daki API adresini buraya sabitliyoruz:
+  const API_BASE = "https://bikonomi-api-1.onrender.com"; 
+
   let deferredPrompt;
   const installBtn = document.getElementById('installBtn');
   window.addEventListener('beforeinstallprompt', (e) => {
@@ -348,7 +351,8 @@
     let textToSpeak = audioText || document.getElementById("finalText").innerText;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ses Hazırlanıyor...'; btn.classList.add("speaking");
     try {
-        const res = await fetch('/api/speak', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ text: textToSpeak }) });
+        // GÜNCELLENDİ: Tam adres kullanılıyor
+        const res = await fetch(API_BASE + '/api/speak', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ text: textToSpeak }) });
         if (!res.ok) throw new Error("Ses üretilemedi.");
         const blob = await res.blob(); const url = window.URL.createObjectURL(blob);
         currentAudio = new Audio(url);
@@ -370,7 +374,8 @@
     
     showScene("scene-loading");
     try {
-      const res = await fetch('/api/analyze', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ q: q, img: session.img }) });
+      // GÜNCELLENDİ: Tam adres kullanılıyor (Vercel -> Render)
+      const res = await fetch(API_BASE + '/api/analyze', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ q: q, img: session.img }) });
       if (!res.ok) throw new Error("Sunucu hatası.");
       const data = await res.json();
       
@@ -395,7 +400,6 @@
            let cardClass = "";
            let iconClass = "fa-bag-shopping";
            
-           // Ödül İsmine Göre Renk Atama (Dinamik)
            const awardName = rec.award.toLowerCase();
            if (awardName.includes("platinyum")) cardClass = "card-platinum";
            else if (awardName.includes("altın")) cardClass = "card-gold";
@@ -406,9 +410,8 @@
            else if (awardName.includes("safir")) cardClass = "card-sapphire";
            else if (awardName.includes("yakut")) cardClass = "card-ruby";
            else if (awardName.includes("elmas")) cardClass = "card-diamond";
-           else if (awardName.includes("kristal")) cardClass = "card-crystal"; // Varsayılan
+           else if (awardName.includes("kristal")) cardClass = "card-crystal"; 
 
-           // İkon Seçimi
            if (rec.site.toLowerCase().includes("amazon")) iconClass = "fa-amazon";
            else if (rec.site.toLowerCase().includes("trendyol")) iconClass = "fa-bag-shopping";
            else iconClass = "fa-store";
