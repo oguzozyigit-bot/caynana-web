@@ -6,15 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <script src="https://cdn.tailwindcss.com"></script>
-
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
     body { font-family: 'Inter', sans-serif; background-color: #F3F4F6; }
-    .soft-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-    .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    .soft-shadow { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.10), 0 2px 4px -1px rgba(0,0,0,0.06); }
+    .card-shadow { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.10), 0 4px 6px -2px rgba(0,0,0,0.05); }
   </style>
 </head>
 
@@ -22,7 +20,7 @@
 
 <header class="bg-white sticky top-0 z-50 border-b border-slate-100">
   <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-    <a href="#" class="flex items-center gap-2">
+    <a href="#" onclick="location.reload()" class="flex items-center gap-2">
       <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600">
         <i class="fa-solid fa-bolt"></i>
       </div>
@@ -36,12 +34,12 @@
 
   <section class="text-center flex flex-col items-center">
     <div class="relative mb-4">
-        <div class="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden">
-             <img src="https://via.placeholder.com/150?text=Caynana" class="w-full h-full object-cover" alt="Caynana Avatar">
-        </div>
-        <div class="absolute bottom-0 right-0 bg-emerald-500 border-2 border-white w-7 h-7 rounded-full flex items-center justify-center text-white text-xs shadow-sm z-10">
-            <i class="fa-solid fa-check"></i>
-        </div>
+      <div class="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden">
+        <img src="https://via.placeholder.com/150?text=Caynana" class="w-full h-full object-cover" alt="Caynana Avatar">
+      </div>
+      <div class="absolute bottom-0 right-0 bg-emerald-500 border-2 border-white w-7 h-7 rounded-full flex items-center justify-center text-white text-xs shadow-sm z-10">
+        <i class="fa-solid fa-check"></i>
+      </div>
     </div>
 
     <h1 class="text-2xl font-extrabold text-slate-900 mb-2">
@@ -52,68 +50,70 @@
     </p>
 
     <div class="w-full bg-slate-50 rounded-full p-1.5 flex items-center border border-slate-200 focus-within:border-emerald-500 transition-all">
-        <input 
-            type="text" 
-            placeholder="Ürün yaz veya link yapıştır..." 
-            class="flex-1 bg-transparent border-none focus:ring-0 text-slate-800 placeholder-slate-400 px-3 py-2 text-sm outline-none"
-        >
-        <button class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6 py-2 font-bold transition shadow-sm text-sm">
-            Sor
-        </button>
+      <input
+        id="q"
+        type="text"
+        placeholder="Ürün yaz veya link yapıştır..."
+        class="flex-1 bg-transparent border-none focus:ring-0 text-slate-800 placeholder-slate-400 px-3 py-2 text-sm outline-none"
+      >
+      <button id="btnAsk" onclick="askCaynana()"
+        class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-6 py-2 font-bold transition shadow-sm text-sm">
+        Sor
+      </button>
     </div>
     <p class="text-xs text-slate-400 mt-3">Platform bağımsız analiz • Satın alma kararı sana ait.</p>
   </section>
 
-  <section class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex gap-3">
+  <!-- Loading -->
+  <section id="loading" class="hidden bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
+    <i class="fa-solid fa-spinner animate-spin mr-2"></i>
+    Caynana düşünüyor… (Merak etme, fiyat sormuyor 😄)
+  </section>
+
+  <!-- Karar özeti -->
+  <section id="verdictBox" class="hidden bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex gap-3">
     <div class="text-emerald-600 text-lg">
       <i class="fa-solid fa-quote-left"></i>
     </div>
     <div>
       <h3 class="font-bold text-emerald-800 text-sm mb-1">Karar Özeti</h3>
-      <p class="text-sm text-emerald-900 leading-snug">
-        Düzenli sarma yapan biriysen bu alet zaman kazandırır. Seyrek kullanımda tezgâhta yer kaplayan bir heves olabilir.
-      </p>
+      <p id="verdictText" class="text-sm text-emerald-900 leading-snug"></p>
     </div>
   </section>
 
-  <section class="bg-white rounded-2xl border border-slate-200 overflow-hidden card-shadow">
+  <!-- Hero card -->
+  <section id="heroCard" class="hidden bg-white rounded-2xl border border-slate-200 overflow-hidden card-shadow">
     <div class="bg-emerald-600 text-white text-center py-2 text-xs font-bold uppercase tracking-wider">
       <i class="fa-solid fa-crown mr-1"></i> CAYNANA ÖNERİYOR
     </div>
+
     <div class="p-4">
       <div class="flex gap-4">
         <div class="w-1/3 bg-white rounded-lg flex items-center justify-center p-2 border border-slate-100">
-          <img src="https://via.placeholder.com/150?text=Ürün" alt="Ürün Resmi" class="w-full h-auto object-contain">
+          <img id="heroImg" src="https://via.placeholder.com/150?text=Ürün" alt="Ürün Resmi" class="w-full h-auto object-contain">
         </div>
+
         <div class="w-2/3 flex flex-col justify-center">
-          <h2 class="text-lg font-bold text-slate-900 leading-tight mb-3">
-            Ev Tipi Otomatik Kollu Yaprak Sarma Makinesi
-          </h2>
-          <ul class="space-y-2">
-            <li class="flex items-start gap-2 text-sm text-slate-700">
-              <i class="fa-solid fa-check text-emerald-500 mt-1"></i>
-              <span>Ayda 1+ kullanımda zaman kazandırır.</span>
-            </li>
-            <li class="flex items-start gap-2 text-sm text-slate-700">
-              <i class="fa-solid fa-check text-emerald-500 mt-1"></i>
-              <span>Kolay kurulum ve temizlik sağlar.</span>
-            </li>
-            <li class="flex items-start gap-2 text-sm text-slate-700">
-              <i class="fa-solid fa-check text-emerald-500 mt-1"></i>
-              <span>Yanlış alım riski düşük.</span>
-            </li>
-          </ul>
+          <h2 id="heroTitle" class="text-lg font-bold text-slate-900 leading-tight mb-3"></h2>
+          <ul id="heroReasons" class="space-y-2"></ul>
         </div>
       </div>
 
       <div class="flex gap-3 mt-5">
-        <a href="#" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-center py-3 rounded-xl font-bold text-sm transition soft-shadow">
+        <a id="heroLink" href="#" target="_blank"
+          class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-center py-3 rounded-xl font-bold text-sm transition soft-shadow">
           Ürünü İncele
         </a>
-        <button class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-center py-3 rounded-xl font-bold text-sm transition border border-slate-200 flex items-center justify-center gap-2">
+
+        <button id="btnTTS" onclick="playTTS()"
+          class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-center py-3 rounded-xl font-bold text-sm transition border border-slate-200 flex items-center justify-center gap-2">
           <i class="fa-solid fa-volume-high"></i> Sesli Anlat
         </button>
       </div>
+
+      <p class="text-[11px] text-slate-400 mt-3">
+        Sesli anlatım yapay zekâ tarafından üretilir. Satın alma kararı sana ait.
+      </p>
     </div>
   </section>
 
@@ -127,6 +127,130 @@
   </section>
 
 </main>
+
+<script>
+  const API_ANALYZE = "/api/analyze";
+  const API_TTS = "/api/tts";
+  let lastNarration = "";
+  let lastVoice = "shimmer"; // coral / nova / shimmer
+
+  const el = (id) => document.getElementById(id);
+
+  function setLoading(on) {
+    el("loading").classList.toggle("hidden", !on);
+    el("btnAsk").disabled = on;
+    el("btnAsk").classList.toggle("opacity-60", on);
+  }
+
+  function showResults() {
+    el("verdictBox").classList.remove("hidden");
+    el("heroCard").classList.remove("hidden");
+  }
+
+  function clearResults() {
+    el("verdictBox").classList.add("hidden");
+    el("heroCard").classList.add("hidden");
+    el("verdictText").textContent = "";
+    el("heroTitle").textContent = "";
+    el("heroReasons").innerHTML = "";
+    el("heroLink").href = "#";
+    lastNarration = "";
+  }
+
+  async function askCaynana() {
+    const q = (el("q").value || "").trim();
+    if (!q) return alert("Bir ürün yaz veya link yapıştır 😊");
+
+    clearResults();
+    setLoading(true);
+
+    try {
+      const res = await fetch(API_ANALYZE, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ q })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+
+      el("verdictText").textContent = data.verdictText || "";
+      el("heroTitle").textContent = data.recommended?.title || "Önerilen Ürün";
+
+      // image
+      const img = data.recommended?.image || "";
+      if (img) el("heroImg").src = img;
+
+      // link
+      const url = data.recommended?.url || "#";
+      el("heroLink").href = url;
+      el("heroLink").classList.toggle("opacity-60", url === "#");
+
+      // reasons
+      const reasons = (data.recommended?.reasons || []).slice(0, 4);
+      el("heroReasons").innerHTML = reasons.map(r => `
+        <li class="flex items-start gap-2 text-sm text-slate-700">
+          <i class="fa-solid fa-check text-emerald-500 mt-1"></i>
+          <span>${escapeHtml(r)}</span>
+        </li>
+      `).join("");
+
+      lastNarration = data.narrationText || `${data.verdictText} Caynana öneriyor: ${data.recommended?.title || ""}.`;
+
+      showResults();
+    } catch (e) {
+      alert("Bir şey takıldı: " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function playTTS() {
+    if (!lastNarration) return alert("Önce bir şey sor da anlatayım 😄");
+
+    el("btnTTS").disabled = true;
+    el("btnTTS").classList.add("opacity-60");
+
+    try {
+      const res = await fetch(API_TTS, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ text: lastNarration, voice: lastVoice })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const data = await res.json();
+
+      if (!data.ok || !data.audioBase64) throw new Error("Audio payload missing");
+
+      const bytes = Uint8Array.from(atob(data.audioBase64), c => c.charCodeAt(0));
+      const blob = new Blob([bytes], { type: "audio/mpeg" });
+      const url = URL.createObjectURL(blob);
+
+      const audio = new Audio(url);
+      audio.play();
+      audio.onended = () => URL.revokeObjectURL(url);
+
+    } catch (e) {
+      alert("Sesli anlatım takıldı: " + e.message);
+    } finally {
+      el("btnTTS").disabled = false;
+      el("btnTTS").classList.remove("opacity-60");
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  // Enter ile sor
+  el("q").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") askCaynana();
+  });
+</script>
 
 </body>
 </html>
