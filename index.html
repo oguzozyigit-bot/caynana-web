@@ -2,505 +2,695 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>CAYNANA – Almadan Önce Sor</title>
+  <title>CAYNANA – Almadan önce sor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-          },
-          colors: {
-            brand: {
-              50: '#ecfdf5',
-              100: '#d1fae5',
-              500: '#10b981',
-              600: '#059669',
-              700: '#047857',
-              900: '#064e3b',
-            }
-          },
-          animation: {
-            'blob': 'blob 7s infinite',
-            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            'wiggle': 'wiggle 1s ease-in-out infinite',
-          },
-          keyframes: {
-            blob: {
-              '0%': { transform: 'translate(0px, 0px) scale(1)' },
-              '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-              '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-              '100%': { transform: 'translate(0px, 0px) scale(1)' },
-            },
-            wiggle: {
-              '0%, 100%': { transform: 'translateX(0)' },
-              '50%': { transform: 'translateX(10px)' }
-            }
-          }
-        }
-      }
-    }
-  </script>
-
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; }
+    :root{
+      --bg:#ffffff;
+      --text:#0f172a;      /* slate-900 */
+      --muted:#64748b;     /* slate-500 */
+      --line:#e2e8f0;      /* slate-200 */
+      --soft:#f8fafc;      /* slate-50 */
+      --ok:#16a34a;        /* green-600 */
+      --warn:#f59e0b;      /* amber-500 */
+      --bad:#dc2626;       /* red-600 */
+      --accent:#0f172a;    /* primary = black */
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      -webkit-tap-highlight-color:transparent;
+    }
+    .wrap{
+      max-width:520px;
+      margin:0 auto;
+      min-height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+    header{
+      position:sticky;
+      top:0;
+      background:rgba(255,255,255,.92);
+      backdrop-filter:saturate(180%) blur(10px);
+      border-bottom:1px solid var(--line);
+      z-index:20;
+    }
+    .bar{
+      height:64px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:0 18px;
+    }
+    .brand{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      text-decoration:none;
+      color:var(--text);
+    }
+    .dot{
+      width:10px;height:10px;border-radius:999px;background:var(--ok);
+    }
+    .brand b{
+      font-size:18px;
+      letter-spacing:-.02em;
+    }
+    .menuBtn{
+      width:40px;height:40px;border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      cursor:pointer;
+      display:grid;place-items:center;
+    }
+    .menuBtn:active{transform:scale(.98)}
+    .burger{
+      width:16px;height:12px;position:relative;
+    }
+    .burger span{
+      position:absolute;left:0;right:0;height:2px;border-radius:2px;background:var(--text);
+    }
+    .burger span:nth-child(1){top:0}
+    .burger span:nth-child(2){top:5px;opacity:.8}
+    .burger span:nth-child(3){top:10px;opacity:.6}
 
-    /* Özel Scrollbar Gizleme */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    main{flex:1; padding:22px 18px 28px}
+    .scene{display:none}
+    .scene.active{display:block}
 
-    /* Glassmorphism Efekti */
-    .glass {
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+    .h1{
+      font-size:34px;
+      line-height:1.05;
+      letter-spacing:-.04em;
+      margin:10px 0 10px;
+      font-weight:800;
+    }
+    .sub{
+      margin:0 0 18px;
+      color:var(--muted);
+      line-height:1.5;
+      font-size:14px;
+    }
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:#fff;
+      overflow:hidden;
+    }
+    .searchBox{
+      display:flex; gap:10px; align-items:center;
+      padding:12px;
+      border-radius:var(--radius);
+      border:1px solid var(--line);
+      background:var(--soft);
+    }
+    input{
+      flex:1;
+      border:0;
+      outline:0;
+      background:transparent;
+      font-size:16px;
+      color:var(--text);
+      padding:10px 8px;
+    }
+    input::placeholder{color:#94a3b8}
+    .go{
+      border:0;
+      background:var(--accent);
+      color:#fff;
+      font-weight:800;
+      padding:12px 14px;
+      border-radius:14px;
+      cursor:pointer;
+      display:flex;align-items:center;gap:8px;
+    }
+    .go:active{transform:scale(.98)}
+    .go svg{width:16px;height:16px}
+
+    .examples{
+      margin-top:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding:14px;
+      border-radius:var(--radius);
+      border:1px dashed var(--line);
+      background:#fff;
+    }
+    .examples .t{
+      font-size:12px;
+      letter-spacing:.08em;
+      color:#94a3b8;
+      font-weight:800;
+    }
+    .ex{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      cursor:pointer;
+      background:#fff;
+      color:var(--text);
+      font-weight:700;
+      font-size:14px;
+    }
+    .ex:active{transform:scale(.99)}
+    .ex small{color:var(--muted); font-weight:600}
+
+    /* MENU */
+    .overlay{
+      position:fixed; inset:0;
+      background:rgba(255,255,255,.98);
+      display:none;
+      z-index:50;
+    }
+    .overlay.open{display:block}
+    .overlay .top{
+      height:64px; display:flex; align-items:center; justify-content:flex-end;
+      padding:0 18px;
+      border-bottom:1px solid var(--line);
+    }
+    .closeBtn{
+      width:40px;height:40px;border-radius:999px;
+      border:1px solid var(--line);
+      background:#fff;
+      cursor:pointer;
+      display:grid;place-items:center;
+      font-weight:900;
+      font-size:16px;
+    }
+    .overlay nav{
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .navItem{
+      padding:14px 14px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      text-decoration:none;
+      color:var(--text);
+      font-weight:800;
+      display:flex;justify-content:space-between;align-items:center;
+      background:#fff;
+    }
+    .navItem:active{transform:scale(.99)}
+    .foot{
+      position:absolute;left:0;right:0;bottom:0;
+      padding:18px;
+      border-top:1px solid var(--line);
+      color:#94a3b8;
+      font-size:12px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      background:#fff;
+    }
+    .foot a{color:#64748b; text-decoration:none; font-weight:700}
+
+    /* LOADING */
+    .loadingBox{
+      padding:22px;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:#fff;
+    }
+    .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-size:12px;
+      color:#94a3b8;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      font-weight:800;
+    }
+    .bigLine{
+      font-size:20px;
+      font-weight:900;
+      letter-spacing:-.02em;
+      margin:10px 0 6px;
+    }
+    .step{
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+      min-height:40px;
+    }
+    .progress{
+      margin-top:14px;
+      height:6px;border-radius:999px;
+      background:#e2e8f0;
+      overflow:hidden;
+    }
+    .progress > div{
+      height:100%;
+      width:35%;
+      background:var(--text);
+      border-radius:999px;
+      animation:move 1.1s ease-in-out infinite;
+    }
+    @keyframes move{
+      0%{transform:translateX(-60%)}
+      50%{transform:translateX(80%)}
+      100%{transform:translateX(-60%)}
     }
 
-    /* Nefes Alan AI Efekti */
-    .ai-core {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 30%, #34d399, #059669);
-      box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
-      position: relative;
+    /* RESULTS */
+    .verdict{
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      background:#fff;
+      margin-bottom:14px;
     }
-    .ai-core::after {
-      content: '';
-      position: absolute;
-      top: -10px; left: -10px; right: -10px; bottom: -10px;
-      border-radius: 50%;
-      border: 2px solid rgba(16, 185, 129, 0.2);
-      animation: pulse 2s infinite;
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:var(--soft);
+    }
+    .badge .p{
+      width:8px;height:8px;border-radius:999px;background:var(--text);
+    }
+    .headline{
+      margin:12px 0 8px;
+      font-size:30px;
+      letter-spacing:-.05em;
+      font-weight:900;
+      line-height:1.05;
+    }
+    .talk{
+      margin:0;
+      color:var(--muted);
+      line-height:1.55;
+      font-size:14px;
+    }
+    .rec{
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      overflow:hidden;
+      background:#fff;
+    }
+    .recTop{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      background:#fff;
+    }
+    .recTop b{font-size:14px; font-weight:900}
+    .recBody{padding:16px}
+    .hero{
+      width:100%;
+      aspect-ratio:16/9;
+      background:var(--soft);
+      border:1px solid var(--line);
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      overflow:hidden;
+    }
+    .hero img{max-width:92%; max-height:92%; object-fit:contain}
+    .title{
+      margin:12px 0 10px;
+      font-weight:900;
+      letter-spacing:-.03em;
+      font-size:18px;
+      line-height:1.25;
+    }
+    .reasons{
+      margin:0; padding:0;
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .reasons li{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      color:#334155;
+      font-size:14px;
+      line-height:1.45;
+    }
+    .tick{
+      width:18px;height:18px;border-radius:6px;
+      border:1px solid var(--line);
+      display:grid;place-items:center;
+      flex:0 0 auto;
+      margin-top:1px;
+      background:#fff;
+      color:var(--ok);
+      font-weight:900;
+      font-size:12px;
+    }
+    .actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:14px;
+    }
+    .aBtn{
+      border-radius:16px;
+      padding:12px 12px;
+      border:1px solid var(--line);
+      font-weight:900;
+      cursor:pointer;
+      background:#fff;
+      display:flex;align-items:center;justify-content:center;
+      gap:10px;
+      text-decoration:none;
+      color:var(--text);
+    }
+    .aBtn.primary{
+      background:var(--text);
+      color:#fff;
+      border-color:var(--text);
+    }
+    .aBtn:active{transform:scale(.99)}
+    .ghost{
+      margin-top:14px;
+      display:flex;
+      justify-content:center;
+    }
+    .ghost button{
+      border:0;background:transparent;
+      color:var(--muted);
+      font-weight:800;
+      cursor:pointer;
+      padding:10px 8px;
+    }
+    .ghost button:hover{color:var(--text)}
+    .err{
+      display:none;
+      border:1px solid #fecaca;
+      background:#fef2f2;
+      border-radius:var(--radius);
+      padding:14px;
+      margin-bottom:14px;
+    }
+    .err strong{display:block; font-weight:900; margin-bottom:4px}
+    .err p{margin:0; color:#7f1d1d; font-size:14px; line-height:1.45}
+
+    /* PAGES */
+    .page{
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:18px;
+      background:#fff;
+    }
+    .page h2{
+      margin:0 0 10px;
+      font-size:20px;
+      letter-spacing:-.03em;
+      font-weight:900;
+    }
+    .page p{
+      margin:0 0 10px;
+      color:var(--muted);
+      line-height:1.6;
+      font-size:14px;
+    }
+    .back{
+      margin-top:14px;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      text-decoration:none;
+      color:var(--text);
+      font-weight:900;
     }
 
-    /* Tailwind'de olmayan animation-delay sınıfları */
-    .animation-delay-2000 { animation-delay: 2s; }
-    .animation-delay-4000 { animation-delay: 4s; }
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .progress > div{animation:none; width:55%}
+      .aBtn:active,.ex:active,.menuBtn:active,.closeBtn:active{transform:none}
+    }
   </style>
 </head>
+<body>
 
-<body class="text-slate-800 antialiased min-h-screen flex flex-col relative overflow-hidden">
+<div class="wrap">
+  <header>
+    <div class="bar">
+      <a class="brand" href="#" onclick="showScene('home'); return false;">
+        <span class="dot" aria-hidden="true"></span>
+        <b>CAYNANA</b>
+      </a>
 
-<div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-  <div class="absolute top-0 left-1/4 w-72 h-72 bg-emerald-100 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-  <div class="absolute top-0 right-1/4 w-72 h-72 bg-blue-50 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
-  <div class="absolute -bottom-32 left-1/3 w-72 h-72 bg-pink-50 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
-</div>
-
-<header class="fixed top-0 w-full z-50 glass border-b border-slate-100/50">
-  <div class="max-w-lg mx-auto px-5 h-16 flex items-center justify-between">
-    <a href="#" onclick="showScene('scene-home')" class="flex items-center gap-2 group">
-      <div class="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-emerald-500/20 transition-transform group-hover:scale-105">
-        <i class="fa-solid fa-bolt text-sm"></i>
-      </div>
-      <span class="text-xl font-extrabold tracking-tight text-slate-900">CAYNANA</span>
-    </a>
-
-    <button onclick="toggleMenu()" class="w-10 h-10 flex items-center justify-center text-slate-600 hover:text-emerald-600 transition" aria-label="Menü">
-      <i class="fa-solid fa-bars text-xl"></i>
-    </button>
-  </div>
-</header>
-
-<div id="menuOverlay" class="fixed inset-0 z-[60] bg-white/95 backdrop-blur-xl transform translate-x-full transition-transform duration-300 flex flex-col">
-  <div class="flex justify-end p-5">
-    <button onclick="toggleMenu()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center" aria-label="Menüyü kapat">
-      <i class="fa-solid fa-xmark text-xl"></i>
-    </button>
-  </div>
-  <nav class="flex-1 flex flex-col items-center justify-center gap-6 text-xl font-bold text-slate-800">
-    <a href="#" onclick="menuNav('scene-home')" class="hover:text-emerald-600 transition">Ana Sayfa</a>
-    <a href="#" onclick="menuNav('scene-about')" class="hover:text-emerald-600 transition">Biz Kimiz?</a>
-    <a href="#" onclick="menuNav('scene-how')" class="hover:text-emerald-600 transition">Nasıl Çalışır?</a>
-    <a href="#" onclick="menuNav('scene-faq')" class="hover:text-emerald-600 transition">S.S.S.</a>
-    <a href="#" onclick="menuNav('scene-contact')" class="hover:text-emerald-600 transition">İletişim</a>
-  </nav>
-  <div class="p-8 text-center text-xs text-slate-400 border-t border-slate-100">
-    <a href="#" onclick="menuNav('scene-privacy')" class="underline mr-4">Gizlilik Politikası</a>
-    <span>&copy; 2026 İtalky Teknoloji A.Ş.</span>
-  </div>
-</div>
-
-<main class="flex-1 w-full max-w-lg mx-auto pt-24 pb-12 px-5 flex flex-col relative z-10">
-
-  <section id="scene-home" class="flex flex-col items-center justify-center min-h-[60vh] fade-in">
-    <div class="mb-8 relative">
-      <div class="ai-core flex items-center justify-center text-white text-3xl">
-        <i class="fa-solid fa-eye"></i>
-      </div>
-      <div class="absolute -right-4 -top-2 bg-white px-2 py-1 rounded-full shadow-sm border border-slate-100">
-        <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Beta</span>
-      </div>
-    </div>
-
-    <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 text-center leading-tight mb-3">
-      Kararsız kalma,<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Caynana'ya danış.</span>
-    </h1>
-
-    <p class="text-slate-500 text-center mb-8 max-w-xs leading-relaxed">
-      Sadece fiyatı değil, performansı, kronik sorunları ve gerçek kullanıcı deneyimini analiz ederim.
-    </p>
-
-    <div class="w-full relative group">
-      <div class="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl blur opacity-30 group-focus-within:opacity-100 transition duration-500"></div>
-      <div class="relative bg-white rounded-2xl flex items-center p-2 shadow-sm">
-        <div class="pl-3 text-slate-400">
-          <i class="fa-solid fa-magnifying-glass"></i>
+      <button class="menuBtn" onclick="toggleMenu()" aria-label="Menü">
+        <div class="burger" aria-hidden="true">
+          <span></span><span></span><span></span>
         </div>
-        <input
-          id="q"
-          type="text"
-          placeholder="Ürün adı veya link yapıştır..."
-          class="flex-1 bg-transparent border-none focus:ring-0 text-slate-800 placeholder-slate-400 px-3 py-3 text-base outline-none w-full"
-          autocomplete="off"
-        >
-        <button id="btnAsk" onclick="startJourney()"
-          class="bg-slate-900 hover:bg-emerald-600 text-white rounded-xl px-5 py-3 font-bold transition-all shadow-md active:scale-95 flex items-center gap-2">
-          <span>Sor</span>
-          <i class="fa-solid fa-arrow-right"></i>
-        </button>
-      </div>
-    </div>
-
-    <div class="mt-6 flex flex-wrap justify-center gap-2">
-      <button onclick="fillQ('iPhone 15 alınır mı?')" class="text-xs bg-white border border-slate-200 px-3 py-1.5 rounded-full text-slate-600 hover:border-emerald-500 hover:text-emerald-600 transition">📱 iPhone 15</button>
-      <button onclick="fillQ('Dyson süpürge fiyatına değer mi?')" class="text-xs bg-white border border-slate-200 px-3 py-1.5 rounded-full text-slate-600 hover:border-emerald-500 hover:text-emerald-600 transition">🧹 Dyson V15</button>
-      <button onclick="fillQ('Hangi airfryer daha iyi?')" class="text-xs bg-white border border-slate-200 px-3 py-1.5 rounded-full text-slate-600 hover:border-emerald-500 hover:text-emerald-600 transition">🍟 Airfryer</button>
-    </div>
-  </section>
-
-  <section id="scene-loading" class="hidden flex flex-col items-center justify-center min-h-[50vh] text-center">
-    <div class="w-16 h-16 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin mb-6"></div>
-    <h3 class="text-lg font-bold text-slate-900 mb-2">Analiz Ediliyor...</h3>
-    <p id="loadingStep" class="text-sm text-slate-500 font-medium">Veriler taranıyor</p>
-
-    <div class="mt-8 w-full max-w-xs bg-slate-100 rounded-full h-1.5 overflow-hidden">
-      <div class="bg-emerald-500 h-full rounded-full animate-wiggle" style="width: 50%"></div>
-    </div>
-  </section>
-
-  <section id="scene-results" class="hidden pb-10">
-
-    <!-- ERROR CARD (prod) -->
-    <div id="errorCard" class="hidden bg-red-50 border border-red-200 rounded-2xl p-4 mb-6">
-      <div class="flex items-start gap-3">
-        <div class="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center text-red-600 flex-shrink-0">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
-        <div>
-          <div class="font-bold text-slate-900 mb-1">Bir sorun oldu</div>
-          <p id="errorText" class="text-sm text-slate-700 leading-relaxed"></p>
-          <button onclick="showScene('scene-home')" class="mt-3 text-sm font-bold text-red-700 hover:text-red-800">
-            ← Geri dön
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="bg-gradient-to-br from-emerald-50 to-white border border-emerald-100 rounded-2xl p-5 mb-6 relative overflow-hidden shadow-sm">
-      <div class="absolute top-0 right-0 p-3 opacity-10 text-emerald-900 text-6xl">
-        <i class="fa-solid fa-quote-right"></i>
-      </div>
-      <div class="flex items-start gap-4 relative z-10">
-        <div class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 flex-shrink-0">
-          <i class="fa-solid fa-brain"></i>
-        </div>
-        <div>
-          <h3 class="font-bold text-slate-900 mb-1">Caynana Kararı</h3>
-          <p id="verdictText" class="text-sm text-slate-700 leading-relaxed"></p>
-        </div>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 overflow-hidden mb-6">
-      <div class="bg-slate-900 text-white text-center py-2 text-[10px] font-bold uppercase tracking-[0.2em]">
-        <i class="fa-solid fa-star text-yellow-400 mr-1"></i> Tavsiye Edilen
-      </div>
-
-      <div class="p-5">
-        <div class="aspect-video bg-slate-50 rounded-xl flex items-center justify-center p-4 mb-4 border border-slate-100 relative">
-          <img id="heroImg" src="" alt="Ürün" class="max-h-full max-w-full object-contain mix-blend-multiply">
-        </div>
-
-        <h2 id="heroTitle" class="text-xl font-bold text-slate-900 leading-tight mb-4"></h2>
-
-        <div class="space-y-3 mb-6">
-          <ul id="heroReasons" class="space-y-2"></ul>
-        </div>
-
-        <div class="grid grid-cols-2 gap-3">
-          <a id="heroLink" href="#" target="_blank" rel="noopener noreferrer"
-             class="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center py-3.5 rounded-xl font-bold text-sm transition shadow-lg shadow-emerald-500/30">
-            İncele & Al
-          </a>
-
-          <button id="btnTTS" onclick="playTTS()"
-            class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 flex items-center justify-center py-3.5 rounded-xl font-bold text-sm transition">
-            <i class="fa-solid fa-volume-high mr-2 text-emerald-500"></i> Dinle
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="space-y-3">
-      <button onclick="resetApp()" class="w-full py-4 text-slate-500 font-medium text-sm hover:text-emerald-600 transition flex items-center justify-center gap-2">
-        <i class="fa-solid fa-rotate-left"></i>
-        Yeni bir şey sor
       </button>
     </div>
-  </section>
+  </header>
 
-  <section id="scene-about" class="hidden">
-    <h2 class="text-2xl font-extrabold text-slate-900 mb-6">Biz Kimiz?</h2>
-    <div class="prose prose-slate prose-sm text-slate-600 leading-relaxed">
-      <p class="mb-4">
-        <strong class="text-slate-900">Caynana</strong>, karmaşık alışveriş dünyasında sizin safınızda duran, yapay zeka destekli bir karar motorudur.
-      </p>
-      <p class="mb-4">
-        İnternet, sahte yorumlar, şişirilmiş fiyatlar ve kafa karıştıran teknik terimlerle dolu. Biz, bu gürültüyü filtreleyip size en net, en dürüst gerçeği sunmak için buradayız.
-      </p>
-      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm my-6">
-        <h3 class="font-bold text-slate-900 mb-2">Misyonumuz</h3>
-        <p>Tüketiciyi korumak, bütçesini savunmak ve "Keşke almasaydım" cümlesini tarihe gömmek.</p>
-      </div>
-      <p>
-        Arkada çalışan algoritmalarımız, binlerce veri noktasını tarar; sadece fiyatı değil, uzun dönem kullanım maliyetlerini ve kronik arızaları da hesaplar. Tıpkı detaycı bir "Kaynana" gibi.
-      </p>
+  <div id="menu" class="overlay" aria-hidden="true">
+    <div class="top">
+      <button class="closeBtn" onclick="toggleMenu()" aria-label="Kapat">×</button>
     </div>
-    <button onclick="showScene('scene-home')" class="mt-8 text-emerald-600 font-bold text-sm">← Ana Sayfaya Dön</button>
-  </section>
-
-  <section id="scene-how" class="hidden">
-    <h2 class="text-2xl font-extrabold text-slate-900 mb-6">Nasıl Çalışır?</h2>
-
-    <div class="space-y-6 relative">
-      <div class="absolute left-4 top-2 bottom-2 w-0.5 bg-slate-200 -z-10"></div>
-
-      <div class="flex gap-4">
-        <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0 ring-4 ring-white">1</div>
-        <div>
-          <h3 class="font-bold text-slate-900">Sorunu Sor</h3>
-          <p class="text-sm text-slate-600 mt-1">İlgilendiğin ürünün linkini yapıştır veya sadece ne aradığını yaz. (Örn: "Öğrenci için en iyi laptop")</p>
-        </div>
-      </div>
-
-      <div class="flex gap-4">
-        <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0 ring-4 ring-white">2</div>
-        <div>
-          <h3 class="font-bold text-slate-900">Analiz Başlar</h3>
-          <p class="text-sm text-slate-600 mt-1">Yapay zekamız teknik özellikleri, kullanıcı şikayetlerini ve fiyat geçmişini saniyeler içinde tarar.</p>
-        </div>
-      </div>
-
-      <div class="flex gap-4">
-        <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0 ring-4 ring-white">3</div>
-        <div>
-          <h3 class="font-bold text-slate-900">Karar Anı</h3>
-          <p class="text-sm text-slate-600 mt-1">Sana net bir özet, riskler ve eğer varsa daha iyi bir alternatif sunarız. Kararı sen verirsin.</p>
-        </div>
-      </div>
+    <nav>
+      <a class="navItem" href="#" onclick="navTo('home'); return false;">Ana Sayfa <span>→</span></a>
+      <a class="navItem" href="#" onclick="navTo('about'); return false;">Biz Kimiz? <span>→</span></a>
+      <a class="navItem" href="#" onclick="navTo('how'); return false;">Nasıl Çalışır? <span>→</span></a>
+      <a class="navItem" href="#" onclick="navTo('faq'); return false;">S.S.S. <span>→</span></a>
+      <a class="navItem" href="#" onclick="navTo('contact'); return false;">İletişim <span>→</span></a>
+      <a class="navItem" href="#" onclick="navTo('privacy'); return false;">Gizlilik <span>→</span></a>
+    </nav>
+    <div class="foot">
+      <span>© 2026 İtalky Teknoloji A.Ş.</span>
+      <a href="#" onclick="navTo('privacy'); return false;">Politika</a>
     </div>
-    <button onclick="showScene('scene-home')" class="mt-8 text-emerald-600 font-bold text-sm">← Ana Sayfaya Dön</button>
-  </section>
+  </div>
 
-  <section id="scene-faq" class="hidden">
-    <h2 class="text-2xl font-extrabold text-slate-900 mb-6">Sıkça Sorulanlar</h2>
-    <div class="space-y-4">
+  <main>
+    <!-- HOME -->
+    <section id="home" class="scene active">
+      <div class="mono">ALMADAN ÖNCE SOR</div>
+      <h1 class="h1">Caynana karar verir.</h1>
+      <p class="sub">Fiyatına değil, değerine bakarım. Kronik sorun, kullanıcı deneyimi, servis riski. Net konuşurum.</p>
 
-      <details class="group bg-white border border-slate-200 rounded-xl overflow-hidden transition-all duration-300">
-        <summary class="flex justify-between items-center font-medium cursor-pointer list-none p-4 text-slate-900 hover:bg-slate-50">
-          <span>Hizmet ücretli mi?</span>
-          <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-xs"></i></span>
-        </summary>
-        <div class="text-slate-600 text-sm p-4 pt-0 leading-relaxed">
-          Hayır, Caynana son kullanıcı için tamamen ücretsizdir.
-        </div>
-      </details>
-
-      <details class="group bg-white border border-slate-200 rounded-xl overflow-hidden transition-all duration-300">
-        <summary class="flex justify-between items-center font-medium cursor-pointer list-none p-4 text-slate-900 hover:bg-slate-50">
-          <span>Neden size güveneyim?</span>
-          <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-xs"></i></span>
-        </summary>
-        <div class="text-slate-600 text-sm p-4 pt-0 leading-relaxed">
-          Biz satıcı değiliz. Herhangi bir markanın bayisi değiliz. Önerdiğimiz ürünlerden komisyon alabiliriz ancak algoritmamız "kötü ürünü iyi göstermek" üzerine değil, "en iyi F/P ürününü bulmak" üzerine kuruludur.
-        </div>
-      </details>
-
-      <details class="group bg-white border border-slate-200 rounded-xl overflow-hidden transition-all duration-300">
-        <summary class="flex justify-between items-center font-medium cursor-pointer list-none p-4 text-slate-900 hover:bg-slate-50">
-          <span>Sesli yanıt özelliği nedir?</span>
-          <span class="transition group-open:rotate-180"><i class="fa-solid fa-chevron-down text-xs"></i></span>
-        </summary>
-        <div class="text-slate-600 text-sm p-4 pt-0 leading-relaxed">
-          Okumaya vaktiniz yoksa, analiz sonucunu size sesli olarak okuyabiliriz. Bu özellik şu an Beta aşamasındadır.
-        </div>
-      </details>
-
-    </div>
-    <button onclick="showScene('scene-home')" class="mt-8 text-emerald-600 font-bold text-sm">← Ana Sayfaya Dön</button>
-  </section>
-
-  <section id="scene-privacy" class="hidden">
-    <h2 class="text-2xl font-extrabold text-slate-900 mb-6">Gizlilik Politikası</h2>
-    <div class="bg-white p-5 rounded-xl border border-slate-200 text-xs text-slate-500 h-96 overflow-y-auto leading-relaxed">
-      <p class="mb-2 font-bold text-slate-900">1. Veri Toplama</p>
-      <p class="mb-4">Caynana (İtalky Teknoloji A.Ş.), hizmet kalitesini artırmak amacıyla anonimleştirilmiş arama verilerini saklayabilir. Kişisel kimlik bilgileriniz (Ad, Soyad, Adres) üyelik oluşturmadığınız sürece istenmez.</p>
-
-      <p class="mb-2 font-bold text-slate-900">2. Çerezler</p>
-      <p class="mb-4">Kullanıcı deneyimini iyileştirmek için standart tarayıcı çerezleri kullanıyoruz. Bunlar tercihlerinizi hatırlamak içindir.</p>
-
-      <p class="mb-2 font-bold text-slate-900">3. Üçüncü Taraflar</p>
-      <p class="mb-4">Önerilen ürün linkleri sizi üçüncü taraf pazar yerlerine (Trendyol, Hepsiburada, Amazon vb.) yönlendirir. O sitelerdeki gizlilik politikaları kendilerine aittir.</p>
-
-      <p class="italic">Son Güncelleme: Ocak 2026</p>
-    </div>
-    <button onclick="showScene('scene-home')" class="mt-8 text-emerald-600 font-bold text-sm">← Ana Sayfaya Dön</button>
-  </section>
-
-  <section id="scene-contact" class="hidden">
-    <h2 class="text-2xl font-extrabold text-slate-900 mb-2">İletişim</h2>
-    <p class="text-slate-500 mb-6 text-sm">Görüş, öneri veya iş birliği için bize ulaşın.</p>
-
-    <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-      <div class="flex items-center gap-4 mb-6">
-        <div class="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600">
-          <i class="fa-solid fa-envelope"></i>
-        </div>
-        <div>
-          <div class="text-xs text-slate-400 font-bold uppercase">E-Posta</div>
-          <a href="mailto:info@italky.com" class="text-slate-900 font-medium">info@italky.com</a>
-        </div>
-      </div>
-
-      <div class="flex items-center gap-4 mb-6">
-        <div class="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600">
-          <i class="fa-solid fa-location-dot"></i>
-        </div>
-        <div>
-          <div class="text-xs text-slate-400 font-bold uppercase">Konum</div>
-          <span class="text-slate-900 font-medium">Düzce Teknopark, Türkiye</span>
-        </div>
-      </div>
-
-      <div class="pt-6 border-t border-slate-100">
-        <button class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-slate-800 transition">
-          Bize Yazın
+      <div class="searchBox">
+        <input id="q" type="text" autocomplete="off" placeholder="Ürün adı veya link yaz..." />
+        <button class="go" id="btnAsk" onclick="startJourney()">
+          Sor
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </button>
       </div>
-    </div>
-    <button onclick="showScene('scene-home')" class="mt-8 text-emerald-600 font-bold text-sm">← Ana Sayfaya Dön</button>
-  </section>
 
-</main>
+      <div class="examples">
+        <div class="t">ÖRNEKLER</div>
+        <div class="ex" onclick="fillQ('iPhone 15 alınır mı?')">
+          <span>iPhone 15 alınır mı?</span><small>→</small>
+        </div>
+        <div class="ex" onclick="fillQ('Dyson V15 değer mi?')">
+          <span>Dyson V15 değer mi?</span><small>→</small>
+        </div>
+        <div class="ex" onclick="fillQ('En iyi airfryer hangisi?')">
+          <span>En iyi airfryer hangisi?</span><small>→</small>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOADING -->
+    <section id="loading" class="scene">
+      <div class="loadingBox">
+        <div class="mono">CAYNANA BAKIYOR…</div>
+        <div class="bigLine">Karar hazırlanıyor.</div>
+        <div id="loadingStep" class="step">yorumlara bakıyorum</div>
+        <div class="progress"><div></div></div>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="results" class="scene">
+      <div id="errorBox" class="err">
+        <strong>Bir sorun oldu</strong>
+        <p id="errorText"></p>
+      </div>
+
+      <div class="verdict">
+        <span class="badge"><span class="p"></span><span id="badgeText">KARAR</span></span>
+        <div class="headline" id="headline">—</div>
+        <p class="talk" id="verdictText"></p>
+      </div>
+
+      <div class="rec">
+        <div class="recTop">
+          <b>ÖNERİLEN ALTERNATİF</b>
+          <span class="mono" id="recMeta">BETA</span>
+        </div>
+        <div class="recBody">
+          <div class="hero">
+            <img id="heroImg" alt="Ürün görseli" src="" />
+          </div>
+
+          <div class="title" id="heroTitle">—</div>
+
+          <ul class="reasons" id="heroReasons"></ul>
+
+          <div class="actions">
+            <a id="heroLink" class="aBtn primary" href="#" target="_blank" rel="noopener noreferrer">Ürüne Git →</a>
+            <button id="btnTTS" class="aBtn" onclick="playTTS()">Dinle</button>
+          </div>
+
+          <div class="ghost">
+            <button onclick="resetApp()">Yeni bir şey sor</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="scene">
+      <div class="page">
+        <h2>Biz Kimiz?</h2>
+        <p><b>Caynana</b> alışverişte “gürültüyü” keser. Satıcı değiliz. Amaç: yanlış ürüne para gömmeyi engellemek.</p>
+        <p>Karar; fiyat, kronik sorun, kullanıcı şikayeti, servis riski ve alternatif değer kıyasından çıkar.</p>
+        <a class="back" href="#" onclick="showScene('home'); return false;">← Ana sayfa</a>
+      </div>
+    </section>
+
+    <!-- HOW -->
+    <section id="how" class="scene">
+      <div class="page">
+        <h2>Nasıl Çalışır?</h2>
+        <p><b>1)</b> Ürün adı ya da link gir.</p>
+        <p><b>2)</b> Caynana yorumları ve riskleri tarar.</p>
+        <p><b>3)</b> Net karar verir ve alternatif sunar.</p>
+        <a class="back" href="#" onclick="showScene('home'); return false;">← Ana sayfa</a>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="scene">
+      <div class="page">
+        <h2>S.S.S.</h2>
+        <p><b>Ücretli mi?</b> Şimdilik ücretsiz.</p>
+        <p><b>Neden güveneyim?</b> Satıcı değiliz. Öneri motoru “kötüyü parlatmak” için değil, “riski göstermek” için var.</p>
+        <p><b>Sesli okuma?</b> Beta. Kısa, net okur.</p>
+        <a class="back" href="#" onclick="showScene('home'); return false;">← Ana sayfa</a>
+      </div>
+    </section>
+
+    <!-- PRIVACY -->
+    <section id="privacy" class="scene">
+      <div class="page">
+        <h2>Gizlilik</h2>
+        <p>Hizmeti geliştirmek için anonim arama verileri tutulabilir. Üyelik yoksa kişisel bilgi istenmez.</p>
+        <p>Ürün linkleri sizi üçüncü taraf sitelere yönlendirir. Oradaki politikalar kendilerine aittir.</p>
+        <p><i>Son Güncelleme: Ocak 2026</i></p>
+        <a class="back" href="#" onclick="showScene('home'); return false;">← Ana sayfa</a>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="scene">
+      <div class="page">
+        <h2>İletişim</h2>
+        <p>E-posta: <b>info@italky.com</b></p>
+        <p>Konum: Düzce Teknopark, Türkiye</p>
+        <a class="back" href="#" onclick="showScene('home'); return false;">← Ana sayfa</a>
+      </div>
+    </section>
+  </main>
+</div>
 
 <script>
-  // --- STATE MANAGEMENT ---
+  // ENDPOINTS
   const API_ANALYZE = "/api/analyze";
   const API_TTS = "/api/tts";
 
-  // Backend yoksa test etmek için true yap.
+  // Backend yoksa demo için true
   const MOCK_MODE = false;
 
   let lastNarration = "";
   let currentAudio = null;
   let loadingTimer = null;
 
-  // --- HELPERS (prod) ---
-  function stopLoadingSteps() {
-    if (loadingTimer) {
-      clearInterval(loadingTimer);
-      loadingTimer = null;
-    }
+  // --- NAV ---
+  function showScene(id){
+    stopLoadingSteps();
+    document.querySelectorAll(".scene").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    window.scrollTo(0,0);
+    hideError();
+  }
+  function toggleMenu(){
+    const el = document.getElementById("menu");
+    el.classList.toggle("open");
+    el.setAttribute("aria-hidden", el.classList.contains("open") ? "false" : "true");
+  }
+  function navTo(id){
+    toggleMenu();
+    setTimeout(() => showScene(id), 160);
   }
 
-  function showError(msg) {
-    const card = document.getElementById("errorCard");
-    const text = document.getElementById("errorText");
-    text.textContent = msg || "Beklenmeyen bir hata oluştu.";
-    card.classList.remove("hidden");
+  // --- HELPERS ---
+  function fillQ(text){
+    document.getElementById("q").value = text;
   }
-
-  function hideError() {
-    document.getElementById("errorCard").classList.add("hidden");
-    document.getElementById("errorText").textContent = "";
-  }
-
-  function safeUrl(url) {
-    try {
-      const u = new URL(url, window.location.origin);
-      if (u.protocol !== "http:" && u.protocol !== "https:") return "#";
-      return u.href;
-    } catch {
-      return "#";
-    }
-  }
-
-  function stopAudio() {
-    if (currentAudio) {
+  function stopAudio(){
+    if (currentAudio){
       try { currentAudio.pause(); } catch {}
       currentAudio = null;
     }
   }
-
-  // --- NAVIGATION & SCENES ---
-  function showScene(sceneId) {
-    stopLoadingSteps();
-    document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
-    document.getElementById(sceneId).classList.remove('hidden');
-    window.scrollTo(0,0);
+  function safeUrl(url){
+    try{
+      const u = new URL(url, window.location.origin);
+      if (u.protocol !== "http:" && u.protocol !== "https:") return "#";
+      return u.href;
+    }catch{ return "#"; }
   }
-
-  function toggleMenu() {
-    const menu = document.getElementById('menuOverlay');
-    if (menu.classList.contains('translate-x-full')) {
-      menu.classList.remove('translate-x-full');
-    } else {
-      menu.classList.add('translate-x-full');
+  function stopLoadingSteps(){
+    if (loadingTimer){
+      clearInterval(loadingTimer);
+      loadingTimer = null;
     }
   }
-
-  function menuNav(sceneId) {
-    toggleMenu();
-    setTimeout(() => showScene(sceneId), 300);
+  function hideError(){
+    const box = document.getElementById("errorBox");
+    box.style.display = "none";
+    document.getElementById("errorText").textContent = "";
+  }
+  function showError(msg){
+    const box = document.getElementById("errorBox");
+    box.style.display = "block";
+    document.getElementById("errorText").textContent = msg || "Bir hata oluştu.";
   }
 
-  function resetApp() {
-    stopAudio();
-    hideError();
-    document.getElementById("q").value = "";
-    document.getElementById("heroImg").src = "";
-    document.getElementById("heroTitle").textContent = "";
-    document.getElementById("verdictText").textContent = "";
-    document.getElementById("heroReasons").innerHTML = "";
-    document.getElementById("heroLink").href = "#";
-    document.getElementById("heroLink").classList.add("pointer-events-none", "opacity-50");
-    document.getElementById("btnTTS").innerHTML = `<i class="fa-solid fa-volume-high mr-2 text-emerald-500"></i> Dinle`;
-    lastNarration = "";
-    showScene("scene-home");
-  }
-
-  function fillQ(text) {
-    document.getElementById("q").value = text;
-  }
-
-  function playLoadingSteps() {
+  function playLoadingSteps(){
     stopLoadingSteps();
     const steps = [
-      "Fiyat geçmişi kontrol ediliyor...",
-      "Kronik sorunlar taranıyor...",
-      "Gerçek kullanıcı yorumları okunuyor...",
-      "Rakip analizleri yapılıyor...",
-      "Son karar hazırlanıyor..."
+      "yorumlara bakıyorum",
+      "kronik sorunları tarıyorum",
+      "servis riskini kontrol ediyorum",
+      "fiyat/performans kıyaslıyorum",
+      "netleştiriyorum"
     ];
     let i = 0;
     const el = document.getElementById("loadingStep");
@@ -508,161 +698,199 @@
 
     loadingTimer = setInterval(() => {
       i++;
-      el.textContent = steps[i] || "Son rötuşlar...";
+      el.textContent = steps[i] || "karar hazır";
       if (i >= steps.length) stopLoadingSteps();
-    }, 800);
+    }, 650);
   }
 
-  // --- MAIN FLOW ---
-  async function startJourney() {
-    hideError();
+  // --- MAIN ---
+  async function startJourney(){
     const q = (document.getElementById("q").value || "").trim();
-    if (!q) { showScene("scene-results"); showError("Lütfen bir ürün adı veya link girin 😊"); return; }
+    if (!q){
+      showScene("results");
+      showError("Bir şey yaz. Ürün adı ya da link.");
+      return;
+    }
 
     stopAudio();
-    showScene("scene-loading");
+    showScene("loading");
     playLoadingSteps();
 
-    try {
+    try{
       let data;
 
-      if (MOCK_MODE) {
-        await new Promise(r => setTimeout(r, 1800));
+      if (MOCK_MODE){
+        await new Promise(r => setTimeout(r, 1200));
         data = {
-          verdictText: "Bu fiyata bu performans riskli. Malzeme kalitesiyle ilgili çok sayıda şikayet var. Rakipleri daha sağlam.",
-          recommended: {
-            title: "Alternatif: TechPro X500",
-            image: "https://via.placeholder.com/600x400?text=TechPro+X500",
-            url: "https://www.trendyol.com/",
-            reasons: ["Metal kasa yapısı daha dayanıklı", "Servis ağı çok daha yaygın", "Fiyatı %15 daha uygun"]
+          verdict: { label:"RİSKLİ", headline:"Bunu alma.", color:"bad",
+            text:"Bu fiyata malzeme kalitesi zayıf. Uzun vadede servis masrafı çıkarma ihtimali yüksek. Aynı paraya daha sağlam alternatif var."
           },
-          narrationText: "Başkanım bu ürüne bulaşma derim. Plastik kalitesi çok kötü. Onun yerine TechPro X500 al; hem metal kasa hem daha ucuz."
+          recommended: {
+            title:"Alternatif: TechPro X500",
+            image:"https://via.placeholder.com/900x500?text=TechPro+X500",
+            url:"https://www.trendyol.com/",
+            reasons:["Metal kasa daha dayanıklı","Servis ağı daha yaygın","Genelde daha uygun fiyat"]
+          },
+          narrationText:"Bunu alma. Bu fiyata riskli. Alternatif TechPro X500; daha dayanıklı, servisi iyi, fiyatı genelde daha uygun."
         };
       } else {
         const res = await fetch(API_ANALYZE, {
-          method: "POST",
-          headers: {"Content-Type":"application/json"},
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
           body: JSON.stringify({ q })
         });
-
-        if (!res.ok) {
-          const t = await res.text().catch(() => "");
+        if (!res.ok){
+          const t = await res.text().catch(()=> "");
           throw new Error(t || "Analiz servisi yanıt vermedi.");
         }
         data = await res.json();
       }
 
-      // Results ekranına geç
-      showScene("scene-results");
+      // --- Normalize (eski backend şemasıyla da çalışsın) ---
+      // Yeni şema beklenen:
+      // data.verdict: {label, headline, text, color}
+      // data.recommended: {title,image,url,reasons[]}
+      // Ama eski şema gelirse dönüştür:
+      let verdictLabel = "KARAR";
+      let verdictHeadline = "—";
+      let verdictText = "";
 
-      // Populate UI
-      document.getElementById("verdictText").textContent = String(data.verdictText || "Veri alınamadı.").slice(0, 900);
+      if (data.verdict && typeof data.verdict === "object"){
+        verdictLabel = String(data.verdict.label || "KARAR").slice(0, 20);
+        verdictHeadline = String(data.verdict.headline || "—").slice(0, 80);
+        verdictText = String(data.verdict.text || "").slice(0, 900);
+      } else {
+        // eski:
+        verdictText = String(data.verdictText || "Karar metni yok.").slice(0, 900);
+        verdictHeadline = "Kararsız kalma.";
+        verdictLabel = "ÖZET";
+      }
 
       const rec = data.recommended || {};
-      document.getElementById("heroTitle").textContent = String(rec.title || "Öneri Bulunamadı").slice(0, 180);
+      const recTitle = String(rec.title || "Öneri yok").slice(0, 180);
+      const recImg = rec.image ? String(rec.image) : "";
+      const recUrl = safeUrl(rec.url || "#");
+      const recReasons = Array.isArray(rec.reasons) ? rec.reasons : [];
 
-      const img = rec.image ? String(rec.image) : "";
-      document.getElementById("heroImg").src = img || "https://via.placeholder.com/300?text=G%C3%B6rsel+Yok";
+      // UI bas
+      document.getElementById("badgeText").textContent = verdictLabel;
+      document.getElementById("headline").textContent = verdictHeadline;
+      document.getElementById("verdictText").textContent = verdictText || "—";
 
-      // Safe link
-      const link = safeUrl(rec.url || "#");
-      const btnLink = document.getElementById("heroLink");
-      btnLink.href = link;
-      btnLink.setAttribute("rel", "noopener noreferrer");
+      document.getElementById("heroTitle").textContent = recTitle;
+      document.getElementById("heroImg").src = recImg || "https://via.placeholder.com/900x500?text=Gorsel+Yok";
 
-      if (link === "#") btnLink.classList.add("pointer-events-none", "opacity-50");
-      else btnLink.classList.remove("pointer-events-none", "opacity-50");
+      const linkEl = document.getElementById("heroLink");
+      linkEl.href = recUrl;
+      if (recUrl === "#"){
+        linkEl.style.opacity = ".5";
+        linkEl.style.pointerEvents = "none";
+      } else {
+        linkEl.style.opacity = "1";
+        linkEl.style.pointerEvents = "auto";
+      }
 
-      // Reasons (XSS-safe)
-      const reasonsList = document.getElementById("heroReasons");
-      reasonsList.innerHTML = "";
-      (rec.reasons || []).slice(0, 3).forEach(r => {
+      const ul = document.getElementById("heroReasons");
+      ul.innerHTML = "";
+      recReasons.slice(0,3).forEach(r => {
         const li = document.createElement("li");
-        li.className = "flex items-start gap-2 text-sm text-slate-700";
-
-        const icon = document.createElement("i");
-        icon.className = "fa-solid fa-check-circle text-emerald-500 mt-0.5";
+        const tick = document.createElement("span");
+        tick.className = "tick";
+        tick.textContent = "✓";
 
         const span = document.createElement("span");
         span.textContent = String(r || "").slice(0, 160);
 
-        li.appendChild(icon);
+        li.appendChild(tick);
         li.appendChild(span);
-        reasonsList.appendChild(li);
+        ul.appendChild(li);
       });
 
-      lastNarration = String(data.narrationText || data.verdictText || "").slice(0, 1400);
+      lastNarration = String(data.narrationText || verdictText || "").slice(0, 1400);
 
-    } catch (e) {
-      showScene("scene-results");
-      showError("Analiz alınamadı. " + (e && e.message ? e.message : "Servise ulaşılamadı."));
+      showScene("results");
+
+    } catch(e){
+      showScene("results");
+      showError("Analiz alınamadı. " + (e && e.message ? e.message : "Bilinmeyen hata"));
     }
   }
 
-  // --- TTS (Play/Stop) ---
-  async function playTTS() {
-    if (!lastNarration) { showError("Okunacak metin bulunamadı."); return; }
-
-    const btn = document.getElementById("btnTTS");
-
-    // Eğer çalıyorsa STOP
-    if (currentAudio && !currentAudio.paused) {
-      stopAudio();
-      btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-volume-high mr-2 text-emerald-500"></i> Dinle`;
+  async function playTTS(){
+    if (!lastNarration){
+      showError("Okunacak metin yok.");
       return;
     }
 
-    const originalContent = `<i class="fa-solid fa-volume-high mr-2 text-emerald-500"></i> Dinle`;
+    const btn = document.getElementById("btnTTS");
+
+    // çalıyorsa durdur
+    if (currentAudio && !currentAudio.paused){
+      stopAudio();
+      btn.textContent = "Dinle";
+      return;
+    }
+
     btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Yükleniyor`;
+    btn.textContent = "Yükleniyor…";
 
-    try {
+    try{
       const res = await fetch(API_TTS, {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ text: lastNarration, voice: "shimmer" })
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ text:lastNarration, voice:"shimmer" })
       });
-
-      if (!res.ok) throw new Error("Ses servisi yanıt vermedi");
+      if (!res.ok) throw new Error("Ses servisi yanıt vermedi.");
 
       const data = await res.json();
-      if (!data.audioBase64) throw new Error("Ses verisi boş");
+      if (!data.audioBase64) throw new Error("Ses verisi boş.");
 
       const bytes = Uint8Array.from(atob(data.audioBase64), c => c.charCodeAt(0));
-      const blob = new Blob([bytes], { type: "audio/mpeg" });
+      const blob = new Blob([bytes], { type:"audio/mpeg" });
       const url = URL.createObjectURL(blob);
 
       stopAudio();
       currentAudio = new Audio(url);
 
       btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-stop mr-2 text-emerald-500"></i> Durdur`;
-
+      btn.textContent = "Durdur";
       currentAudio.play();
 
       currentAudio.onended = () => {
-        try { URL.revokeObjectURL(url); } catch {}
+        try{ URL.revokeObjectURL(url); }catch{}
         stopAudio();
         btn.disabled = false;
-        btn.innerHTML = originalContent;
+        btn.textContent = "Dinle";
       };
 
-    } catch (e) {
+    } catch(e){
       btn.disabled = false;
-      btn.innerHTML = originalContent;
+      btn.textContent = "Dinle";
       showError("Ses çalınamadı: " + (e && e.message ? e.message : "Bilinmeyen hata"));
     }
   }
 
-  // Enter Key Support
+  function resetApp(){
+    stopAudio();
+    document.getElementById("q").value = "";
+    document.getElementById("heroImg").src = "";
+    document.getElementById("heroTitle").textContent = "—";
+    document.getElementById("headline").textContent = "—";
+    document.getElementById("verdictText").textContent = "";
+    document.getElementById("heroReasons").innerHTML = "";
+    document.getElementById("heroLink").href = "#";
+    document.getElementById("heroLink").style.opacity = ".5";
+    document.getElementById("heroLink").style.pointerEvents = "none";
+    document.getElementById("btnTTS").textContent = "Dinle";
+    lastNarration = "";
+    hideError();
+    showScene("home");
+  }
+
+  // Enter
   document.getElementById("q").addEventListener("keydown", (e) => {
     if (e.key === "Enter") startJourney();
   });
-
-  // İlk açılış
-  showScene("scene-home");
 </script>
-
 </body>
 </html>
