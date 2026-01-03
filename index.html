@@ -88,13 +88,13 @@
       font-size: 16px;
       max-width: 500px;
       line-height: 1.5;
-      margin-bottom: 25px; /* Arama kutusu ile mesafe */
+      margin-bottom: 25px; 
     }
 
     /* ALT AÇIKLAMA (BANNER ALTI) */
     .hero-sub-bottom {
       text-align: center;
-      color: #9AA0A6; /* Daha silik */
+      color: #9AA0A6; 
       font-size: 13px;
       max-width: 480px;
       line-height: 1.5;
@@ -139,7 +139,7 @@
       width: 100%; max-width: 584px; height: 120px;
       border-radius: 12px; overflow: hidden; position: relative;
       cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-      margin-top: 30px; /* İSTEDİĞİN AYIRMA BURADA */
+      margin-top: 30px; 
       background: linear-gradient(105deg, #10B981 0%, #064e3b 100%);
       display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
     }
@@ -158,6 +158,21 @@
     .img-actions { margin-top: 10px; display: flex; gap: 10px; justify-content: center; }
     .mini-btn { padding: 8px 16px; border-radius: 18px; border: 1px solid var(--border); background: white; font-size: 13px; cursor: pointer; }
 
+    /* RESULTS */
+    .result-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
+    
+    /* SES BUTONU STİLİ */
+    .speech-btn {
+      background: #f1f3f4; border: none; padding: 8px 12px; border-radius: 20px;
+      color: #5F6368; font-size: 13px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; margin-bottom: 10px;
+      transition: background 0.2s;
+    }
+    .speech-btn:hover { background: #e8eaed; color: #202124; }
+    .speech-btn.speaking { background: #e6fffa; color: #10B981; border: 1px solid #10B981; }
+
+    .btn-main { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px;}
+
     /* FOOTER */
     footer {
       background: #F8F9FA;
@@ -175,7 +190,6 @@
     .footer-links a { color: #70757A; text-decoration: none; }
     .footer-links a:hover { color: #333; }
     
-    /* Şirket İmzası ve İtalyan Barı */
     .company-tag {
       display: flex;
       flex-direction: column;
@@ -187,10 +201,9 @@
       text-transform: uppercase;
       font-size: 10px;
     }
-    
     .italian-bar {
-      width: 100%; /* Yazı genişliği kadar */
-      height: 4px; /* İnce bar */
+      width: 100%; 
+      height: 4px; 
       background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%);
       border-radius: 2px;
       border: 1px solid rgba(0,0,0,0.05);
@@ -201,8 +214,6 @@
     .scene.active { display: block; }
     .spinner { width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 15px;}
     @keyframes spin { 100% { transform: rotate(360deg); } }
-    .result-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .btn-main { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px;}
 
   </style>
 </head>
@@ -231,11 +242,8 @@
     <div class="search-wrapper">
       <div class="search-bar">
         <i class="fa-solid fa-magnifying-glass search-icon-left"></i>
-        
         <input id="q" type="text" placeholder="Ürün adı veya link yapıştır..." autocomplete="off">
-        
         <i class="fa-solid fa-camera camera-btn" onclick="triggerFileSelect()" title="Fotoğraf ile ara"></i>
-        
         <input id="fileInput" type="file" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
       </div>
     </div>
@@ -271,8 +279,15 @@
 
   <section id="scene-results" class="scene">
     <div class="result-card">
-      <h2 id="finalHeadline" style="margin-top:0;">Sonuç</h2>
-      <p id="finalText" style="line-height:1.6; color:#444;"></p>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 id="finalHeadline" style="margin:0;">Sonuç</h2>
+        <button id="btnListen" onclick="toggleSpeech()" class="speech-btn">
+          <i class="fa-solid fa-circle-play"></i> Caynana'yı Konuştur
+        </button>
+      </div>
+
+      <p id="finalText" style="line-height:1.6; color:#444; margin-top:15px;"></p>
       
       <div style="text-align:center; margin:15px 0;">
         <img id="heroImg" src="" onerror="this.style.display='none'" style="display:none; max-width:100%; max-height:200px; object-fit:contain;">
@@ -283,6 +298,7 @@
         Fiyatı Gör & İncele
       </a>
     </div>
+    
     <button onclick="resetAll()" style="margin-top:20px; background:none; border:none; color:#666; cursor:pointer;">
       <i class="fa-solid fa-arrow-left"></i> Yeni Sorgu
     </button>
@@ -312,11 +328,13 @@
 <script>
   // --- STATE ---
   let session = { q: "", img: "" };
+  let currentAudio = null; // PREMIUM SES İÇİN
   const qInput = document.getElementById("q");
   const fileInput = document.getElementById("fileInput");
 
   // --- NAVIGATION ---
   function showScene(id) {
+    stopSpeech(); // Sayfa değişince sesi kes
     document.querySelectorAll(".scene").forEach(el => el.classList.remove("active"));
     document.getElementById(id).classList.add("active");
   }
@@ -328,9 +346,7 @@
   }
 
   // --- FILE HANDLING ---
-  function triggerFileSelect() {
-    fileInput.click();
-  }
+  function triggerFileSelect() { fileInput.click(); }
 
   function handleFile(file) {
     if (!file) return;
@@ -349,6 +365,70 @@
     document.getElementById("imgWrap").style.display = "none";
   }
 
+  // --- PREMIUM SPEECH FUNCTIONS (BACKEND BAĞLANTILI) ---
+  async function toggleSpeech() {
+    let btn = document.getElementById("btnListen");
+    
+    // Eğer şu an çalıyorsa DURDUR
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+        btn.innerHTML = '<i class="fa-solid fa-circle-play"></i> Caynana\'yı Konuştur';
+        btn.classList.remove("speaking");
+        return;
+    }
+
+    // Metni Al
+    let text = document.getElementById("finalText").innerText;
+    if (!text) return;
+
+    // Yükleniyor ikonu yap
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ses Hazırlanıyor...';
+    btn.classList.add("speaking");
+
+    try {
+        // Backend'den sesi iste (Maliyeti burada oluşur)
+        const res = await fetch('https://bikonomi-api-1.onrender.com/api/speak', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ text: text })
+        });
+
+        if (!res.ok) throw new Error("Ses üretilemedi.");
+
+        // Gelen sesi (blob) oynat
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        currentAudio = new Audio(url);
+
+        currentAudio.onended = () => {
+            currentAudio = null;
+            btn.innerHTML = '<i class="fa-solid fa-circle-play"></i> Caynana\'yı Konuştur';
+            btn.classList.remove("speaking");
+        };
+
+        currentAudio.play();
+        btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
+
+    } catch (e) {
+        alert("Ses oluşturulurken hata oluştu: " + e.message);
+        btn.innerHTML = '<i class="fa-solid fa-circle-play"></i> Caynana\'yı Konuştur';
+        btn.classList.remove("speaking");
+    }
+  }
+
+  function stopSpeech() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+        let btn = document.getElementById("btnListen");
+        if(btn) {
+           btn.innerHTML = '<i class="fa-solid fa-circle-play"></i> Caynana\'yı Konuştur';
+           btn.classList.remove("speaking");
+        }
+    }
+  }
+
   // --- STATIC PAGES ---
   function openStatic(title, text) {
     document.getElementById("staticTitle").textContent = title;
@@ -356,7 +436,7 @@
     showScene("scene-static");
   }
 
-  // --- GERÇEK START FONKSİYONU (RENDER API) ---
+  // --- API CALL ---
   async function start() {
     const q = qInput.value.trim();
     if (!q && !session.img) return alert("Lütfen bir ürün adı yazın veya fotoğraf yükleyin.");
@@ -364,36 +444,30 @@
     showScene("scene-loading");
     
     try {
-      // CANLI MOTORU ÇAĞIRIYORUZ
       const res = await fetch('https://bikonomi-api-1.onrender.com/api/analyze', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ q: q, img: session.img })
       });
 
-      if (!res.ok) throw new Error("Sunucuya ulaşılamadı. Beyni kontrol et.");
+      if (!res.ok) throw new Error("Sunucuya ulaşılamadı.");
 
       const data = await res.json();
 
-      // SONUÇLARI DOLDUR
       document.getElementById("finalHeadline").textContent = data.headline || "Analiz Sonucu";
       document.getElementById("finalText").textContent = data.text || "Detaylı bilgi alınamadı.";
       
-      // Ürün Önerisi Varsa ve Resim Linki Doluysa
       const heroImg = document.getElementById("heroImg");
-      
       if (data.product && data.product.title) {
          document.getElementById("heroTitle").textContent = data.product.title;
          document.getElementById("heroLink").href = data.product.url || "#";
          
-         // Resim kontrolü: Link varsa göster, yoksa gizle
          if(data.product.img && data.product.img.length > 5) {
              heroImg.src = data.product.img;
              heroImg.style.display = "block";
          } else {
              heroImg.style.display = "none";
          }
-         
       } else {
          document.getElementById("heroTitle").textContent = "";
          document.getElementById("heroLink").href = "#";
@@ -403,13 +477,11 @@
       showScene("scene-results");
 
     } catch (e) {
-      // DÜZELTME: "Başkanım" hitabı kaldırıldı
-      alert("Bağlantı sırasında bir hata oluştu, lütfen tekrar deneyiniz: " + e.message);
+      alert("Bağlantı hatası: " + e.message);
       showScene("scene-home");
     }
   }
 
-  // Enter Key
   qInput.addEventListener("keyup", (e) => { if (e.key === "Enter") start(); });
 
 </script>
