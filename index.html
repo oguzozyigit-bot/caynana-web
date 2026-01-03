@@ -30,15 +30,17 @@
       --whatsapp: #25D366;
       --border: #DFE1E5;
       
-      /* ÖDÜL RENKLERİ */
+      /* --- ÖDÜL RENK PALETİ --- */
       --platinum: #E5E4E2;
-      --platinum-dark: #4A4A4A;
       --gold: #FFD700;
-      --gold-dark: #665200;
       --silver: #C0C0C0;
-      --silver-dark: #333333;
       --bronze: #CD7F32;
-      --bronze-dark: #4E2700;
+      --titanium: #878681; /* Titanyum */
+      --emerald: #50C878; /* Zümrüt Yeşili */
+      --sapphire: #0F52BA; /* Safir Mavisi */
+      --ruby: #E0115F; /* Yakut Kırmızısı */
+      --diamond: #B9F2FF; /* Elmas Mavimsi */
+      --crystal: #E0FFFF; /* Kristal */
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -114,20 +116,39 @@
     .award-reason { font-size: 11px; font-weight: 500; opacity: 0.9; }
     .award-arrow { margin-left: 10px; font-size: 14px; opacity: 0.7; }
 
-    /* ÖZEL RENKLER */
-    .card-platinum { background: linear-gradient(135deg, #F5F7FA 0%, #C3CFE2 100%); border: 1px solid #B0B8C6; color: var(--platinum-dark); }
+    /* RENK SINIFLARI */
+    .card-platinum { background: linear-gradient(135deg, #F5F7FA, #C3CFE2); border: 1px solid #B0B8C6; color: #4A4A4A; }
     .card-platinum .award-icon { color: #5A6E8C; }
     
-    .card-gold { background: linear-gradient(135deg, #FFF7D1 0%, #FFD700 100%); border: 1px solid #E6C200; color: var(--gold-dark); }
+    .card-gold { background: linear-gradient(135deg, #FFF7D1, #FFD700); border: 1px solid #E6C200; color: #665200; }
     .card-gold .award-icon { color: #947C00; }
     
-    .card-silver { background: linear-gradient(135deg, #F0F0F0 0%, #C0C0C0 100%); border: 1px solid #AFAFAF; color: var(--silver-dark); }
+    .card-silver { background: linear-gradient(135deg, #F0F0F0, #C0C0C0); border: 1px solid #AFAFAF; color: #333; }
     .card-silver .award-icon { color: #555; }
     
-    .card-bronze { background: linear-gradient(135deg, #FFE6D5 0%, #E6A57E 100%); border: 1px solid #CD7F32; color: var(--bronze-dark); }
+    .card-bronze { background: linear-gradient(135deg, #FFE6D5, #E6A57E); border: 1px solid #CD7F32; color: #4E2700; }
     .card-bronze .award-icon { color: #8C531B; }
 
-    /* Görsel Kutusu */
+    /* YENİ ÖDÜL RENKLERİ */
+    .card-titanium { background: linear-gradient(135deg, #E0E0E0, #878681); border: 1px solid #666; color: #222; }
+    .card-titanium .award-icon { color: #444; }
+
+    .card-emerald { background: linear-gradient(135deg, #E0FFF0, #50C878); border: 1px solid #2E8B57; color: #004d26; }
+    .card-emerald .award-icon { color: #006400; }
+
+    .card-sapphire { background: linear-gradient(135deg, #E6F0FF, #6495ED); border: 1px solid #4169E1; color: #002244; }
+    .card-sapphire .award-icon { color: #000080; }
+
+    .card-ruby { background: linear-gradient(135deg, #FFE6E6, #FA8072); border: 1px solid #DC143C; color: #500000; }
+    .card-ruby .award-icon { color: #8B0000; }
+
+    .card-diamond { background: linear-gradient(135deg, #F0FFFF, #B9F2FF); border: 1px solid #87CEEB; color: #004455; }
+    .card-diamond .award-icon { color: #008B8B; }
+
+    .card-crystal { background: linear-gradient(135deg, #FFFFFF, #E0FFFF); border: 1px solid #B0E0E6; color: #333; }
+    .card-crystal .award-icon { color: #5F9EA0; }
+
+
     .hero-img-box { text-align: center; margin-bottom: 15px; display: none; }
     .hero-img-box img { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 8px; }
 
@@ -223,7 +244,7 @@
   <section id="scene-loading" class="scene" style="text-align:center; padding-top:40px;">
     <div class="spinner"></div>
     <h3>Analiz Ediliyor...</h3>
-    <p id="loadingStep" style="color:#666;">Pazaryerleri taranıyor...</p>
+    <p id="loadingStep" style="color:#666;">En iyi mağazalar taranıyor...</p>
   </section>
 
   <section id="scene-results" class="scene">
@@ -348,7 +369,6 @@
       document.getElementById("finalText").textContent = data.text || "Bilgi yok.";
       audioText = data.speech_text || "";
       
-      // GÖRSEL (Eğer varsa)
       const heroImg = document.getElementById("heroImg");
       const heroBox = document.getElementById("heroImgBox");
       if (data.product_img && data.product_img.length > 5) {
@@ -358,24 +378,35 @@
           heroBox.style.display = "none";
       }
 
-      // ÖDÜL KARTLARINI OLUŞTURMA
       const listContainer = document.getElementById("recommendationList");
-      listContainer.innerHTML = ""; // Önce temizle
+      listContainer.innerHTML = ""; 
       
       if (data.recommendations && data.recommendations.length > 0) {
         data.recommendations.forEach(rec => {
            let cardClass = "";
            let iconClass = "fa-bag-shopping";
-           // Stil belirleme
-           if (rec.site === "Trendyol") { cardClass = "card-platinum"; }
-           else if (rec.site === "Hepsiburada") { cardClass = "card-gold"; }
-           else if (rec.site === "Amazon") { cardClass = "card-silver"; iconClass = "fa-amazon"; }
-           else if (rec.site === "N11") { cardClass = "card-bronze"; }
            
-           // HTML Oluşturma
+           // Ödül İsmine Göre Renk Atama (Dinamik)
+           const awardName = rec.award.toLowerCase();
+           if (awardName.includes("platinyum")) cardClass = "card-platinum";
+           else if (awardName.includes("altın")) cardClass = "card-gold";
+           else if (awardName.includes("gümüş")) cardClass = "card-silver";
+           else if (awardName.includes("bronz")) cardClass = "card-bronze";
+           else if (awardName.includes("titanyum")) cardClass = "card-titanium";
+           else if (awardName.includes("zümrüt")) cardClass = "card-emerald";
+           else if (awardName.includes("safir")) cardClass = "card-sapphire";
+           else if (awardName.includes("yakut")) cardClass = "card-ruby";
+           else if (awardName.includes("elmas")) cardClass = "card-diamond";
+           else cardClass = "card-crystal"; // Varsayılan
+
+           // İkon Seçimi
+           if (rec.site.toLowerCase().includes("amazon")) iconClass = "fa-amazon";
+           else if (rec.site.toLowerCase().includes("trendyol")) iconClass = "fa-bag-shopping";
+           else iconClass = "fa-store";
+
            const html = `
              <a href="${rec.url}" target="_blank" class="award-card ${cardClass}">
-                <div class="award-icon"><i class="fa-brands ${iconClass}"></i></div>
+                <div class="award-icon"><i class="fa-solid ${iconClass}"></i></div>
                 <div class="award-info">
                    <div class="award-tier">${rec.award}</div>
                    <div class="award-product">${rec.product_name}</div>
@@ -388,7 +419,6 @@
         });
       }
 
-      // WHATSAPP BUTONU
       const waShareBtn = document.getElementById("waShareBtn");
       const magicLink = `https://caynana.ai/?q=${encodeURIComponent(q)}`;
       const shareText = `Caynana bu ürün için dedi ki:\n\n*${data.headline}*\n\n${data.text}\n\n*İncelemek için tıkla:* ${magicLink}`;
