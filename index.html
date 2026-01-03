@@ -5,16 +5,23 @@
   <title>CAYNANA.AI – Almadan Önce Sor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#10B981">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/9386/9386895.png">
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    /* CSS AYNI, SADECE DÜZELTME YAPILDI */
+    /* --- GENEL AYARLAR --- */
     :root {
       --bg-body: #FFFFFF;
       --text-main: #202124;
       --text-muted: #5F6368;
       --primary: #10B981;
+      --whatsapp: #25D366; /* WhatsApp Yeşili */
       --border: #DFE1E5;
     }
 
@@ -31,9 +38,26 @@
     }
 
     header { padding: 15px 20px; display: flex; justify-content: flex-end; align-items: center; }
+    
     .logo-container { display: flex; align-items: center; gap: 8px; margin-right: auto; padding-left: 0; }
-    .logo-icon { width: 24px; height: 24px; background: var(--primary); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+    .logo-icon { 
+      width: 28px; height: 28px; 
+      background: var(--primary); color: white; 
+      border-radius: 8px; 
+      display: flex; align-items: center; justify-content: center; 
+      font-size: 18px; font-weight: 900; font-family: sans-serif;
+    }
     .logo-text { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
+
+    #installBtn {
+      display: none; 
+      background: #E6FFFA; color: var(--primary);
+      border: 1px solid var(--primary);
+      padding: 6px 12px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      align-items: center; gap: 5px;
+    }
+    #installBtn:hover { background: var(--primary); color: white; }
 
     main { 
       flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
@@ -99,6 +123,17 @@
     .speech-btn { background: #f1f3f4; border: none; padding: 8px 12px; border-radius: 20px; color: #5F6368; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
     .speech-btn.speaking { background: #e6fffa; color: var(--primary); border: 1px solid var(--primary); }
     .btn-main { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; text-decoration: none; display: block; text-align: center;}
+    
+    /* WHATSAPP BUTONU */
+    .btn-whatsapp { 
+      background: var(--whatsapp); color: white; 
+      border: none; padding: 12px; width: 100%; 
+      border-radius: 8px; font-weight: 600; cursor: pointer; 
+      margin-top: 10px; text-decoration: none; 
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-whatsapp:hover { background: #1ebc57; }
+
     .mini-btn { padding: 8px 16px; border-radius: 18px; border: 1px solid var(--border); background: white; font-size: 13px; cursor: pointer; }
     .img-preview-box { margin-top: 20px; border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: none; text-align: center; }
     .img-preview-box img { max-height: 200px; border-radius: 8px; }
@@ -126,7 +161,7 @@
         
         .search-bar { padding-left: 12px; }
         .icon-btn { font-size: 16px; padding: 8px; }
-        .search-arrow-btn { width: 38px; height: 38px; min-width: 38px; }
+        .search-arrow-btn { width: 38px; height: 38px; min-width: 38px; } 
         .search-arrow-btn i { font-size: 14px; }
     }
   </style>
@@ -135,10 +170,14 @@
 <body>
 <header>
   <div class="logo-container">
-    <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+    <div class="logo-icon">C</div>
     <div class="logo-text">CAYNANA</div>
   </div>
+  <button id="installBtn" onclick="installPWA()">
+    <i class="fa-solid fa-download"></i> Uygulamayı Yükle
+  </button>
 </header>
+
 <main>
   <section id="scene-home" class="scene active" style="display:flex; flex-direction:column; align-items:center;">
     <div class="hero-title">Almadan Önce <br><span>CAYNANA'ya Sor.</span></div>
@@ -204,6 +243,10 @@
             <h4 id="heroTitle" style="margin:5px 0 10px 0; color:#202124;"></h4>
         </div>
         <a id="heroLink" href="#" target="_blank" class="btn-main">Trendyol Fiyatını Gör & İncele</a>
+        
+        <a id="waShareBtn" href="#" target="_blank" class="btn-whatsapp">
+           <i class="fa-brands fa-whatsapp"></i> WhatsApp ile Paylaş
+        </a>
       </div>
     </div>
     <button onclick="resetAll()" style="margin-top:20px; background:none; border:none; color:#666; cursor:pointer;">
@@ -231,8 +274,27 @@
 </footer>
 
 <script>
+  let deferredPrompt;
+  const installBtn = document.getElementById('installBtn');
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'flex';
+  });
+
+  async function installPWA() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') { installBtn.style.display = 'none'; }
+      deferredPrompt = null;
+    }
+  }
+
   let session = { q: "", img: "" };
   let currentAudio = null;
+  let audioText = "";
   const qInput = document.getElementById("q");
   const fileInput = document.getElementById("fileInput");
 
@@ -248,11 +310,8 @@
     showScene("scene-home");
   }
 
-  // --- KAMERA TRIGGER ---
-  function triggerFileSelect() { 
-    fileInput.click(); 
-  }
-
+  function triggerFileSelect() { fileInput.click(); }
+  
   function handleFile(file) {
     if (!file) return;
     const reader = new FileReader();
@@ -270,7 +329,6 @@
     document.getElementById("imgWrap").style.display = "none";
   }
 
-  // --- MİKROFON İŞLEVİ ---
   function startVoiceSearch() {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
         alert("Tarayıcınız sesli aramayı desteklemiyor.");
@@ -291,18 +349,15 @@
         micBtn.classList.remove("listening");
         qInput.placeholder = "Ürün adı veya link...";
     };
-    
-    recognition.onerror = (event) => {
+    recognition.onerror = () => {
         micBtn.classList.remove("listening");
         qInput.placeholder = "Ürün adı veya link...";
-        alert("Ses algılanamadı veya izin verilmedi.");
+        alert("Ses algılanamadı.");
     };
-    
     recognition.onend = () => {
         micBtn.classList.remove("listening");
         qInput.placeholder = "Ürün adı veya link...";
     };
-
     recognition.start();
   }
 
@@ -315,15 +370,14 @@
         btn.classList.remove("speaking");
         return;
     }
-    let text = document.getElementById("finalText").innerText;
-    if (!text) return;
+    let textToSpeak = audioText || document.getElementById("finalText").innerText;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ses Hazırlanıyor...';
     btn.classList.add("speaking");
     try {
         const res = await fetch('https://bikonomi-api-1.onrender.com/api/speak', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ text: text })
+            body: JSON.stringify({ text: textToSpeak })
         });
         if (!res.ok) throw new Error("Ses üretilemedi.");
         const blob = await res.blob();
@@ -342,6 +396,7 @@
         btn.classList.remove("speaking");
     }
   }
+
   function stopSpeech() {
     if (currentAudio) {
         currentAudio.pause();
@@ -353,11 +408,13 @@
         }
     }
   }
+
   function openStatic(title, text) {
     document.getElementById("staticTitle").textContent = title;
     document.getElementById("staticText").textContent = text;
     showScene("scene-static");
   }
+
   async function start() {
     const q = qInput.value.trim();
     if (!q && !session.img) return alert("Lütfen bir ürün adı yazın veya fotoğraf yükleyin.");
@@ -369,15 +426,28 @@
         body: JSON.stringify({ q: q, img: session.img })
       });
       if (!res.ok) throw new Error("Sunucu hatası.");
+      
       const data = await res.json();
+      
       document.getElementById("finalHeadline").textContent = data.headline || "Analiz Sonucu";
       document.getElementById("finalText").textContent = data.text || "Bilgi yok.";
+      audioText = data.speech_text || "";
+
       const recBox = document.getElementById("recommendationBox");
       const heroImg = document.getElementById("heroImg");
+      const waShareBtn = document.getElementById("waShareBtn");
+
       if (data.product && data.product.title) {
          recBox.style.display = "block"; 
          document.getElementById("heroTitle").textContent = data.product.title;
-         document.getElementById("heroLink").href = data.product.url || "#";
+         
+         const productUrl = data.product.url || "#";
+         document.getElementById("heroLink").href = productUrl;
+         
+         // WHATSAPP LINK OLUŞTURMA
+         const shareText = `Caynana bu ürün için dedi ki:\n\n*${data.headline}*\n\n${data.text}\n\n*Tavsiye Ürün:* ${productUrl}`;
+         waShareBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+
          if(data.product.img && data.product.img.length > 5) {
              heroImg.src = data.product.img;
              heroImg.style.display = "block";
@@ -387,6 +457,10 @@
       } else {
          recBox.style.display = "none"; 
       }
+      
+      qInput.value = "";
+      clearImage();
+
       showScene("scene-results");
     } catch (e) {
       alert("Hata: " + e.message);
