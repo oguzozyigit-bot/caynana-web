@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
+    /* CSS AYNI, SADECE DÜZELTME YAPILDI */
     :root {
       --bg-body: #FFFFFF;
       --text-main: #202124;
@@ -29,26 +30,22 @@
       min-height: 100vh;
     }
 
-    /* HEADER */
     header { padding: 15px 20px; display: flex; justify-content: flex-end; align-items: center; }
     .logo-container { display: flex; align-items: center; gap: 8px; margin-right: auto; padding-left: 0; }
     .logo-icon { width: 24px; height: 24px; background: var(--primary); color: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; }
     .logo-text { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
 
-    /* MAIN */
     main { 
       flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
       padding-top: 2vh; padding-left: 20px; padding-right: 20px; 
       width: 100%; max-width: 600px; margin: 0 auto; 
     }
 
-    /* HERO */
     .hero-title { text-align: center; font-size: 28px; font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
     .hero-title span { color: var(--primary); }
     .hero-sub-top { text-align: center; color: var(--text-muted); font-size: 15px; max-width: 500px; line-height: 1.4; margin-bottom: 20px; }
     .hero-sub-bottom { text-align: center; color: #9AA0A6; font-size: 12px; max-width: 480px; margin-top: 10px; margin-bottom: 10px; }
 
-    /* SEARCH AREA */
     .search-wrapper { width: 100%; max-width: 584px; position: relative; }
     
     .search-bar { 
@@ -62,39 +59,31 @@
     
     #q { flex: 1; border: none; outline: none; font-size: 16px; color: var(--text-main); background: transparent; height: 100%; min-width: 50px; }
 
-    /* İKONLAR (MİKROFON & KAMERA) */
     .icon-btn {
-      color: var(--primary); font-size: 18px; cursor: pointer;
-      padding: 8px; /* Padding azaltıldı */
-      border-radius: 50%; transition: background 0.2s;
-      margin-left: 2px;
-      flex-shrink: 0; /* Sıkışmayı engelle */
+      color: var(--primary); font-size: 20px; cursor: pointer;
+      padding: 8px; border-radius: 50%; transition: background 0.2s;
+      margin-left: 2px; flex-shrink: 0;
     }
     .icon-btn:hover { background: #F1F3F4; }
     
-    /* MİKROFON ANİMASYONU */
     .listening { color: #ef4444 !important; animation: pulse 1s infinite; }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
 
-    /* OK BUTONU */
     .search-arrow-btn {
       width: 44px; height: 44px; min-width: 44px;
       background: var(--primary); color: white;
       border: none; border-radius: 50%;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s; margin-left: 4px;
-      flex-shrink: 0; /* Sıkışmayı engelle */
+      transition: transform 0.2s; margin-left: 4px; flex-shrink: 0;
     }
     .search-arrow-btn:hover { transform: scale(1.05); background: #059669; }
     .search-arrow-btn i { font-size: 16px; }
 
-    /* BANNER */
     .promo-banner { 
       width: 100%; max-width: 584px; height: 110px; 
       border-radius: 12px; overflow: hidden; position: relative; 
       cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-      margin-top: 15px; 
-      background: linear-gradient(105deg, #10B981 0%, #064e3b 100%); 
+      margin-top: 15px; background: linear-gradient(105deg, #10B981 0%, #064e3b 100%); 
       display: flex; align-items: center; justify-content: space-between; padding: 0 24px; 
     }
     .banner-content { color: white; z-index: 2; }
@@ -103,10 +92,10 @@
     .banner-cta { font-size: 11px; font-weight: 600; background: white; color: #064e3b; padding: 6px 12px; border-radius: 20px; display: inline-block; }
     .banner-decor { position: absolute; right: -20px; bottom: -20px; font-size: 90px; color: white; opacity: 0.1; transform: rotate(-15deg); }
 
-    /* RESULTS */
     .result-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: 100%; }
     .recommendation-box { margin-top: 25px; border: 2px solid var(--primary); border-radius: 12px; padding: 15px; position: relative; background: #fcfdfc; }
     .recommendation-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 12px; text-transform: uppercase; box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3); }
+
     .speech-btn { background: #f1f3f4; border: none; padding: 8px 12px; border-radius: 20px; color: #5F6368; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
     .speech-btn.speaking { background: #e6fffa; color: var(--primary); border: 1px solid var(--primary); }
     .btn-main { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; text-decoration: none; display: block; text-align: center;}
@@ -115,19 +104,17 @@
     .img-preview-box img { max-height: 200px; border-radius: 8px; }
     .img-actions { margin-top: 10px; display: flex; gap: 10px; justify-content: center; }
 
-    /* FOOTER */
     footer { background: #F8F9FA; border-top: 1px solid #DADCE0; padding: 15px 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 11px; color: #70757A; margin-top: auto; }
     .footer-links { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
     .footer-links a { color: #70757A; text-decoration: none; }
     .company-tag { display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 800; color: #9CA3AF; font-size: 9px; }
     .italian-bar { width: 100%; height: 3px; background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%); border-radius: 2px; border: 1px solid rgba(0,0,0,0.05); }
-    
+
     .scene { display: none; width: 100%; max-width: 600px; }
     .scene.active { display: block; }
     .spinner { width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 15px;}
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    /* --- MOBİL ÖZEL AYARLAR (SIĞDIRMA ÇÖZÜMÜ) --- */
     @media (max-width: 600px) {
         main { padding-top: 5px; } 
         .hero-title { font-size: 24px; margin-bottom: 5px; }
@@ -137,10 +124,9 @@
         .hero-sub-bottom { margin-top: 8px; font-size: 11px; } 
         header { padding: 10px 15px; } 
         
-        /* İKONLARI VE BUTONU MOBİLDE KÜÇÜLTÜYORUZ */
         .search-bar { padding-left: 12px; }
-        .icon-btn { font-size: 16px; padding: 6px; } /* İkon boşluğunu azalttım */
-        .search-arrow-btn { width: 38px; height: 38px; min-width: 38px; } /* Buton boyutunu 44'ten 38'e düşürdüm */
+        .icon-btn { font-size: 16px; padding: 8px; }
+        .search-arrow-btn { width: 38px; height: 38px; min-width: 38px; }
         .search-arrow-btn i { font-size: 14px; }
     }
   </style>
@@ -171,7 +157,7 @@
           <i class="fa-solid fa-arrow-right"></i>
         </button>
       </div>
-      <input id="fileInput" type="file" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
+      <input id="fileInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this.files[0])">
     </div>
 
     <div id="imgWrap" class="img-preview-box">
@@ -262,7 +248,11 @@
     showScene("scene-home");
   }
 
-  function triggerFileSelect() { fileInput.click(); }
+  // --- KAMERA TRIGGER ---
+  function triggerFileSelect() { 
+    fileInput.click(); 
+  }
+
   function handleFile(file) {
     if (!file) return;
     const reader = new FileReader();
@@ -273,6 +263,7 @@
     };
     reader.readAsDataURL(file);
   }
+
   function clearImage() {
     session.img = "";
     fileInput.value = "";
@@ -304,7 +295,7 @@
     recognition.onerror = (event) => {
         micBtn.classList.remove("listening");
         qInput.placeholder = "Ürün adı veya link...";
-        alert("Ses algılanamadı.");
+        alert("Ses algılanamadı veya izin verilmedi.");
     };
     
     recognition.onend = () => {
