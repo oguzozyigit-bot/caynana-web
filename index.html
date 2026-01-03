@@ -13,9 +13,8 @@
       --bg-body: #FFFFFF;
       --text-main: #202124;
       --text-muted: #5F6368;
-      --primary: #10B981; /* Caynana Yeşili */
+      --primary: #10B981;
       --border: #DFE1E5;
-      --accent: #FF5722; /* Öneri Etiketi Rengi */
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -37,7 +36,7 @@
     .logo-text { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
 
     /* MAIN */
-    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 6vh; padding-left: 20px; padding-right: 20px; width: 100%; max-width: 600px; margin: 0 auto; }
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 4vh; padding-left: 20px; padding-right: 20px; width: 100%; max-width: 600px; margin: 0 auto; }
 
     /* HERO */
     .hero-title { text-align: center; font-size: 28px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
@@ -45,14 +44,42 @@
     .hero-sub-top { text-align: center; color: var(--text-muted); font-size: 16px; max-width: 500px; line-height: 1.5; margin-bottom: 25px; }
     .hero-sub-bottom { text-align: center; color: #9AA0A6; font-size: 13px; max-width: 480px; margin-top: 15px; }
 
-    /* SEARCH BAR */
-    .search-wrapper { width: 100%; max-width: 584px; position: relative; }
-    .search-bar { display: flex; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 24px; padding: 12px 16px; transition: box-shadow 0.2s; }
+    /* SEARCH AREA */
+    .search-wrapper { width: 100%; max-width: 584px; display: flex; flex-direction: column; gap: 15px; }
+    
+    .search-bar { 
+      display: flex; align-items: center; background: #fff; 
+      border: 1px solid var(--border); border-radius: 24px; 
+      padding: 8px 8px 8px 16px; /* Sağ taraftan boşluğu azalttım buton için */
+      transition: box-shadow 0.2s; 
+    }
     .search-bar:hover, .search-bar:focus-within { box-shadow: 0 1px 6px rgba(32,33,36,.28); }
+    
     .search-icon-left { color: #9AA0A6; font-size: 16px; margin-right: 12px; }
+    
     #q { flex: 1; border: none; outline: none; font-size: 16px; color: var(--text-main); background: transparent; height: 30px; }
-    .camera-btn { color: var(--primary); font-size: 18px; cursor: pointer; padding: 8px; border-radius: 50%; }
-    .camera-btn:hover { background: #F1F3F4; }
+
+    /* YENİ OK BUTONU (ENTER YERİNE) */
+    .search-arrow-btn {
+      width: 36px; height: 36px;
+      background: var(--primary); color: white;
+      border: none; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      margin-left: 8px; transition: transform 0.2s;
+    }
+    .search-arrow-btn:hover { transform: scale(1.1); background: #059669; }
+    .search-arrow-btn i { font-size: 14px; }
+
+    /* FOTOĞRAF BUTONU */
+    .photo-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: #f1f3f4; color: #202124;
+      border: none; padding: 12px; border-radius: 12px;
+      font-weight: 600; cursor: pointer; transition: 0.2s;
+      width: 100%; font-size: 14px;
+    }
+    .photo-btn:hover { background: #e8eaed; }
+    .photo-btn i { color: var(--primary); font-size: 18px; }
 
     /* BANNER */
     .promo-banner { width: 100%; max-width: 584px; height: 120px; border-radius: 12px; overflow: hidden; position: relative; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 30px; background: linear-gradient(105deg, #10B981 0%, #064e3b 100%); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
@@ -65,34 +92,10 @@
     /* RESULTS CARD */
     .result-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: 100%; }
     
-    /* ÖNERİ KUTUSU TASARIMI (YENİ) */
-    .recommendation-box {
-      margin-top: 25px;
-      border: 2px solid var(--primary); /* Yeşil Çerçeve */
-      border-radius: 12px;
-      padding: 15px;
-      position: relative;
-      background: #fcfdfc;
-    }
-    
-    .recommendation-badge {
-      position: absolute;
-      top: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--primary);
-      color: white;
-      font-size: 12px;
-      font-weight: 800;
-      padding: 4px 12px;
-      border-radius: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
-    }
+    .recommendation-box { margin-top: 25px; border: 2px solid var(--primary); border-radius: 12px; padding: 15px; position: relative; background: #fcfdfc; }
+    .recommendation-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 12px; text-transform: uppercase; box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3); }
 
     .speech-btn { background: #f1f3f4; border: none; padding: 8px 12px; border-radius: 20px; color: #5F6368; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
-    .speech-btn:hover { background: #e8eaed; color: #202124; }
     .speech-btn.speaking { background: #e6fffa; color: var(--primary); border: 1px solid var(--primary); }
 
     .btn-main { background: var(--primary); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; text-decoration: none; display: block; text-align: center;}
@@ -125,7 +128,7 @@
 <header>
   <div class="logo-container">
     <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
-    <div class="logo-text">CAYNANA.AI</div>
+    <div class="logo-text">CAYNANA</div>
   </div>
 </header>
 
@@ -139,9 +142,17 @@
       <div class="search-bar">
         <i class="fa-solid fa-magnifying-glass search-icon-left"></i>
         <input id="q" type="text" placeholder="Ürün adı veya link yapıştır..." autocomplete="off">
-        <i class="fa-solid fa-camera camera-btn" onclick="triggerFileSelect()" title="Fotoğraf ile ara"></i>
-        <input id="fileInput" type="file" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
+        
+        <button class="search-arrow-btn" onclick="start()" title="Analiz Et">
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
       </div>
+
+      <button class="photo-btn" onclick="triggerFileSelect()">
+        <i class="fa-solid fa-camera"></i> Fotoğraf Çek veya Yükle
+      </button>
+
+      <input id="fileInput" type="file" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
     </div>
 
     <div id="imgWrap" class="img-preview-box">
@@ -166,7 +177,7 @@
   <section id="scene-loading" class="scene" style="text-align:center; padding-top:40px;">
     <div class="spinner"></div>
     <h3>Analiz Ediliyor...</h3>
-    <p id="loadingStep" style="color:#666;">Veriler taranıyor</p>
+    <p id="loadingStep" style="color:#666;">Veriler taranıyor...</p>
   </section>
 
   <section id="scene-results" class="scene">
@@ -313,7 +324,7 @@
 
   async function start() {
     const q = qInput.value.trim();
-    if (!q && !session.img) return alert("Bir ürün adı yazın.");
+    if (!q && !session.img) return alert("Lütfen bir ürün adı yazın veya fotoğraf yükleyin.");
 
     showScene("scene-loading");
     
@@ -335,7 +346,7 @@
       const heroImg = document.getElementById("heroImg");
 
       if (data.product && data.product.title) {
-         recBox.style.display = "block"; // Kutuyu göster
+         recBox.style.display = "block"; 
          document.getElementById("heroTitle").textContent = data.product.title;
          document.getElementById("heroLink").href = data.product.url || "#";
          
@@ -346,7 +357,7 @@
              heroImg.style.display = "none";
          }
       } else {
-         recBox.style.display = "none"; // Öneri yoksa kutuyu gizle
+         recBox.style.display = "none"; 
       }
       
       showScene("scene-results");
