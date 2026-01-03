@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>CAYNANA.AI – Almadan Önce Sor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#10B981">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -12,8 +13,10 @@
 
   <meta property="og:title" content="CAYNANA.AI – Almadan Önce Bana Sor!" />
   <meta property="og:description" content="Ürünlere yazılan binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm. Tarafsız alışveriş asistanın." />
-  <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/9386/9386895.png" /> <meta property="og:url" content="https://caynana.ai" />
+  <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/9386/9386895.png" />
+  <meta property="og:url" content="https://caynana.ai" />
   <meta property="og:type" content="website" />
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -25,8 +28,17 @@
       --text-muted: #5F6368;
       --primary: #10B981;
       --whatsapp: #25D366;
-      --trendyol-orange: #F27A1A;
       --border: #DFE1E5;
+      
+      /* ÖDÜL RENKLERİ */
+      --platinum: #E5E4E2;
+      --platinum-dark: #4A4A4A;
+      --gold: #FFD700;
+      --gold-dark: #665200;
+      --silver: #C0C0C0;
+      --silver-dark: #333333;
+      --bronze: #CD7F32;
+      --bronze-dark: #4E2700;
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -42,344 +54,33 @@
     }
 
     header { padding: 15px 20px; display: flex; justify-content: flex-end; align-items: center; }
-    
     .logo-container { display: flex; align-items: center; gap: 8px; margin-right: auto; padding-left: 0; }
-    .logo-icon { 
-      width: 28px; height: 28px; 
-      background: var(--primary); color: white; 
-      border-radius: 8px; 
-      display: flex; align-items: center; justify-content: center; 
-      font-size: 18px; font-weight: 900; font-family: sans-serif;
-    }
+    .logo-icon { width: 28px; height: 28px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; }
     .logo-text { font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
 
-    #installBtn {
-      display: none; 
-      background: #E6FFFA; color: var(--primary);
-      border: 1px solid var(--primary);
-      padding: 6px 12px; border-radius: 20px;
-      font-size: 11px; font-weight: 700; cursor: pointer;
-      align-items: center; gap: 5px;
-    }
+    #installBtn { display: none; background: #E6FFFA; color: var(--primary); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; align-items: center; gap: 5px; }
     #installBtn:hover { background: var(--primary); color: white; }
 
-    main { 
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
-      padding-top: 2vh; padding-left: 20px; padding-right: 20px; 
-      width: 100%; max-width: 600px; margin: 0 auto; 
-    }
+    main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 2vh; padding-left: 20px; padding-right: 20px; width: 100%; max-width: 600px; margin: 0 auto; }
 
     .hero-title { text-align: center; font-size: 28px; font-weight: 700; line-height: 1.2; margin-bottom: 8px; }
     .hero-title span { color: var(--primary); }
     .hero-sub-top { text-align: center; color: var(--text-muted); font-size: 15px; max-width: 500px; line-height: 1.4; margin-bottom: 20px; }
-    .hero-sub-bottom { text-align: center; color: #9AA0A6; font-size: 12px; max-width: 480px; margin-top: 10px; margin-bottom: 10px; }
-
+    
     .search-wrapper { width: 100%; max-width: 584px; position: relative; }
-    
-    .search-bar { 
-      display: flex; align-items: center; background: #fff; 
-      border: 1px solid var(--border); border-radius: 30px; 
-      padding: 4px 4px 4px 16px; 
-      transition: box-shadow 0.2s; 
-      height: 54px; 
-    }
+    .search-bar { display: flex; align-items: center; background: #fff; border: 1px solid var(--border); border-radius: 30px; padding: 4px 4px 4px 16px; transition: box-shadow 0.2s; height: 54px; }
     .search-bar:hover, .search-bar:focus-within { box-shadow: 0 1px 6px rgba(32,33,36,.28); }
-    
     #q { flex: 1; border: none; outline: none; font-size: 16px; color: var(--text-main); background: transparent; height: 100%; min-width: 50px; }
-
-    .icon-btn {
-      color: var(--primary); font-size: 20px; cursor: pointer;
-      padding: 8px; border-radius: 50%; transition: background 0.2s;
-      margin-left: 2px; flex-shrink: 0;
-    }
+    .icon-btn { color: var(--primary); font-size: 20px; cursor: pointer; padding: 8px; border-radius: 50%; transition: background 0.2s; margin-left: 2px; flex-shrink: 0; }
     .icon-btn:hover { background: #F1F3F4; }
-    
     .listening { color: #ef4444 !important; animation: pulse 1s infinite; }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
-
-    .search-arrow-btn {
-      width: 44px; height: 44px; min-width: 44px;
-      background: var(--primary); color: white;
-      border: none; border-radius: 50%;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s; margin-left: 4px; flex-shrink: 0;
-    }
+    .search-arrow-btn { width: 44px; height: 44px; min-width: 44px; background: var(--primary); color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; margin-left: 4px; flex-shrink: 0; }
     .search-arrow-btn:hover { transform: scale(1.05); background: #059669; }
-    .search-arrow-btn i { font-size: 16px; }
 
-    .promo-banner { 
-      width: 100%; max-width: 584px; height: 110px; 
-      border-radius: 12px; overflow: hidden; position: relative; 
-      cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-      margin-top: 15px; background: linear-gradient(105deg, #10B981 0%, #064e3b 100%); 
-      display: flex; align-items: center; justify-content: space-between; padding: 0 24px; 
-    }
+    .promo-banner { width: 100%; max-width: 584px; height: 110px; border-radius: 12px; overflow: hidden; position: relative; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 15px; background: linear-gradient(105deg, #10B981 0%, #064e3b 100%); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
     .banner-content { color: white; z-index: 2; }
     .banner-tag { font-size: 10px; font-weight: 800; opacity: 0.8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
     .banner-title { font-size: 18px; font-weight: 800; line-height: 1.1; margin-bottom: 8px; }
     .banner-cta { font-size: 11px; font-weight: 600; background: white; color: #064e3b; padding: 6px 12px; border-radius: 20px; display: inline-block; }
-    .banner-decor { position: absolute; right: -20px; bottom: -20px; font-size: 90px; color: white; opacity: 0.1; transform: rotate(-15deg); }
-
-    .result-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: 100%; }
-    .recommendation-box { margin-top: 25px; border: 2px solid var(--primary); border-radius: 12px; padding: 15px; position: relative; background: #fcfdfc; }
-    .recommendation-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 12px; text-transform: uppercase; box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3); }
-
-    .speech-btn { background: #f1f3f4; border: none; padding: 8px 12px; border-radius: 20px; color: #5F6368; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s; }
-    .speech-btn.speaking { background: #e6fffa; color: var(--primary); border: 1px solid var(--primary); }
-    
-    /* TRENDYOL BUTONU */
-    .btn-main { 
-      background: var(--trendyol-orange); 
-      color: white; border: none; 
-      padding: 12px; width: 100%; 
-      border-radius: 8px; font-weight: 600; cursor: pointer; 
-      margin-top: 10px; text-decoration: none; 
-      display: block; text-align: center;
-    }
-    .btn-main:hover { background: #d36611; }
-
-    /* WHATSAPP BUTONU */
-    .btn-whatsapp { 
-      background: var(--whatsapp); color: white; 
-      border: none; padding: 12px; width: 100%; 
-      border-radius: 8px; font-weight: 600; cursor: pointer; 
-      margin-top: 10px; text-decoration: none; 
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .btn-whatsapp:hover { background: #1ebc57; }
-
-    .mini-btn { padding: 8px 16px; border-radius: 18px; border: 1px solid var(--border); background: white; font-size: 13px; cursor: pointer; }
-    .img-preview-box { margin-top: 20px; border: 1px solid var(--border); border-radius: 12px; padding: 10px; display: none; text-align: center; }
-    .img-preview-box img { max-height: 200px; border-radius: 8px; }
-    .img-actions { margin-top: 10px; display: flex; gap: 10px; justify-content: center; }
-
-    footer { background: #F8F9FA; border-top: 1px solid #DADCE0; padding: 15px 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 11px; color: #70757A; margin-top: auto; }
-    .footer-links { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
-    .footer-links a { color: #70757A; text-decoration: none; }
-    .company-tag { display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 800; color: #9CA3AF; font-size: 9px; }
-    .italian-bar { width: 100%; height: 3px; background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%); border-radius: 2px; border: 1px solid rgba(0,0,0,0.05); }
-
-    .scene { display: none; width: 100%; max-width: 600px; }
-    .scene.active { display: block; }
-    .spinner { width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 15px;}
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-
-    @media (max-width: 600px) {
-        main { padding-top: 5px; } 
-        .hero-title { font-size: 24px; margin-bottom: 5px; }
-        .hero-sub-top { font-size: 13px; margin-bottom: 15px; }
-        .promo-banner { height: 90px; margin-top: 10px; } 
-        .banner-title { font-size: 16px; }
-        .hero-sub-bottom { margin-top: 8px; font-size: 11px; } 
-        header { padding: 10px 15px; } 
-        
-        .search-bar { padding-left: 12px; }
-        .icon-btn { font-size: 16px; padding: 8px; }
-        .search-arrow-btn { width: 38px; height: 38px; min-width: 38px; } 
-        .search-arrow-btn i { font-size: 14px; }
-    }
-  </style>
-</head>
-
-<body>
-<header>
-  <div class="logo-container">
-    <div class="logo-icon">C</div>
-    <div class="logo-text">CAYNANA</div>
-  </div>
-  <button id="installBtn" onclick="installPWA()">
-    <i class="fa-solid fa-download"></i> Uygulamayı Yükle
-  </button>
-</header>
-
-<main>
-  <section id="scene-home" class="scene active" style="display:flex; flex-direction:column; align-items:center;">
-    <div class="hero-title">Almadan Önce <br><span>CAYNANA'ya Sor.</span></div>
-    <div class="hero-sub-top">Ürüne yazılan binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm.</div>
-
-    <div class="search-wrapper">
-      <div class="search-bar">
-        <i class="fa-solid fa-magnifying-glass search-icon-left"></i>
-        <input id="q" type="text" placeholder="Ürün adı veya link..." autocomplete="off">
-        <i id="micBtn" class="fa-solid fa-microphone icon-btn" onclick="startVoiceSearch()" title="Sesle Ara"></i>
-        <i class="fa-solid fa-camera icon-btn" onclick="triggerFileSelect()" title="Fotoğraf Çek/Yükle"></i>
-        <button class="search-arrow-btn" onclick="start()" title="Analiz Et">
-          <i class="fa-solid fa-arrow-right"></i>
-        </button>
-      </div>
-      <input id="fileInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this.files[0])">
-    </div>
-
-    <div id="imgWrap" class="img-preview-box">
-      <img id="imgPreview" src="" alt="Seçilen">
-      <div class="img-actions">
-         <button class="mini-btn" onclick="clearImage()" style="color:red;">İptal</button>
-         <button class="mini-btn" onclick="start()" style="background:#10B981; color:white; border:none;">Analiz Et</button>
-      </div>
-    </div>
-
-    <div class="promo-banner">
-      <div class="banner-content">
-        <div class="banner-tag">SPONSORLU</div>
-        <div class="banner-title">Yeni Keşifler <br>Seni Bekliyor!</div>
-        <div class="banner-cta">Fırsatları Gör</div>
-      </div>
-      <i class="fa-solid fa-bag-shopping banner-decor"></i>
-    </div>
-    
-    <div class="hero-sub-bottom">Satış yapmam. Bağımsız ve tarafsız ürün analizi yapar tavsiyede bulunurum.</div>
-  </section>
-
-  <section id="scene-loading" class="scene" style="text-align:center; padding-top:40px;">
-    <div class="spinner"></div>
-    <h3>Analiz Ediliyor...</h3>
-    <p id="loadingStep" style="color:#666;">Veriler taranıyor...</p>
-  </section>
-
-  <section id="scene-results" class="scene">
-    <div class="result-card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 id="finalHeadline" style="margin:0;">Sonuç</h2>
-        <button id="btnListen" onclick="toggleSpeech()" class="speech-btn">
-          <i class="fa-solid fa-circle-play"></i> Caynana'yı Konuştur
-        </button>
-      </div>
-
-      <p id="finalText" style="line-height:1.6; color:#444; margin-top:15px;"></p>
-      
-      <div id="recommendationBox" class="recommendation-box" style="display:none;">
-        <div class="recommendation-badge"><i class="fa-solid fa-check"></i> CAYNANA ÖNERİYOR</div>
-        <div style="text-align:center; margin-top:10px;">
-            <img id="heroImg" src="" onerror="this.style.display='none'" style="display:none; max-width:100%; max-height:180px; object-fit:contain; margin-bottom:10px;">
-            <h4 id="heroTitle" style="margin:5px 0 10px 0; color:#202124;"></h4>
-        </div>
-        
-        <a id="heroLink" href="#" target="_blank" class="btn-main">Öneriye Git</a>
-        
-        <a id="waShareBtn" href="#" target="_blank" class="btn-whatsapp">
-           <i class="fa-brands fa-whatsapp"></i> WhatsApp ile Paylaş
-        </a>
-      </div>
-    </div>
-    <button onclick="resetAll()" style="margin-top:20px; background:none; border:none; color:#666; cursor:pointer;">
-      <i class="fa-solid fa-arrow-left"></i> Yeni Sorgu
-    </button>
-  </section>
-
-  <section id="scene-static" class="scene" style="background:white; padding:20px; border-radius:12px; border:1px solid #eee;">
-    <h2 id="staticTitle">Başlık</h2>
-    <p id="staticText" style="line-height:1.6; color:#555;">İçerik...</p>
-    <button onclick="showScene('scene-home')" class="mini-btn">Kapat</button>
-  </section>
-</main>
-
-<footer>
-  <div class="footer-links">
-    <a href="#" onclick="openStatic('Hakkımızda', 'Biz yapay zeka destekli alışveriş asistanıyız.')">Hakkımızda</a>
-    <a href="#" onclick="openStatic('Gizlilik', 'Verileriniz bizimle güvende.')">Gizlilik</a>
-    <a href="#" onclick="openStatic('İletişim', 'Düzce Teknopark. info@italky.com')">İletişim</a>
-  </div>
-  <div class="company-tag">
-    <span>@CAYNANA.AI BY ITALKY TECHNOLOGY</span>
-    <div class="italian-bar"></div>
-  </div>
-</footer>
-
-<script>
-  let deferredPrompt;
-  const installBtn = document.getElementById('installBtn');
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'flex';
-  });
-  async function installPWA() {
-    if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') { installBtn.style.display = 'none'; } deferredPrompt = null; }
-  }
-
-  let session = { q: "", img: "" };
-  let currentAudio = null;
-  let audioText = "";
-  const qInput = document.getElementById("q");
-  const fileInput = document.getElementById("fileInput");
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const queryParam = urlParams.get('q');
-    if (queryParam) {
-      qInput.value = queryParam;
-      start(); 
-    }
-  });
-
-  function showScene(id) { stopSpeech(); document.querySelectorAll(".scene").forEach(el => el.classList.remove("active")); document.getElementById(id).classList.add("active"); }
-  function resetAll() { 
-      clearImage(); 
-      qInput.value = ""; 
-      window.history.pushState({}, document.title, "/");
-      showScene("scene-home"); 
-  }
-  function triggerFileSelect() { fileInput.click(); }
-  function handleFile(file) { if (!file) return; const reader = new FileReader(); reader.onload = (e) => { session.img = e.target.result; document.getElementById("imgPreview").src = session.img; document.getElementById("imgWrap").style.display = "block"; }; reader.readAsDataURL(file); }
-  function clearImage() { session.img = ""; fileInput.value = ""; document.getElementById("imgWrap").style.display = "none"; }
-  
-  function startVoiceSearch() {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) { alert("Tarayıcınız sesli aramayı desteklemiyor."); return; }
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; const recognition = new SpeechRecognition(); recognition.lang = 'tr-TR'; recognition.interimResults = false;
-    const micBtn = document.getElementById("micBtn"); micBtn.classList.add("listening"); qInput.placeholder = "Dinliyorum...";
-    recognition.onresult = (event) => { const transcript = event.results[0][0].transcript; qInput.value = transcript; micBtn.classList.remove("listening"); qInput.placeholder = "Ürün adı veya link..."; };
-    recognition.onerror = () => { micBtn.classList.remove("listening"); qInput.placeholder = "Ürün adı veya link..."; alert("Ses algılanamadı."); };
-    recognition.onend = () => { micBtn.classList.remove("listening"); qInput.placeholder = "Ürün adı veya link..."; };
-    recognition.start();
-  }
-
-  async function toggleSpeech() {
-    let btn = document.getElementById("btnListen");
-    if (currentAudio) { currentAudio.pause(); currentAudio = null; btn.innerHTML = '<i class="fa-solid fa-circle-play"></i> Caynana\'yı Konuştur'; btn.classList.remove("speaking"); return; }
-    let textToSpeak = audioText || document.getElementById("finalText").innerText;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Ses Hazırlanıyor...'; btn.classList.add("speaking");
-    try {
-        const res = await fetch('https://bikonomi-api-1.onrender.com/api/speak', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ text: textToSpeak }) });
-        if (!res.ok) throw new Error("Ses üretilemedi.");
-        const blob = await res.blob(); const url = window.URL.createObjectURL(blob);
-        currentAudio = new Audio(url);
-        currentAudio.onended = () => { currentAudio = null; btn.innerHTML = '<i class="fa-solid fa-circle-play"></i> Caynana\'yı Konuştur'; btn.classList.remove("speaking"); };
-        currentAudio.play(); btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
-    } catch (e) { alert("Ses hatası: " + e.message); btn.innerHTML = '<i class="fa-solid fa-circle-play"></i> Caynana\'yı Konuştur'; btn.classList.remove("speaking"); }
-  }
-  function stopSpeech() { if (currentAudio) { currentAudio.pause(); currentAudio = null; let btn = document.getElementById("btnListen"); if(btn) { btn.innerHTML = '<i class="fa-solid fa-circle-play"></i> Caynana\'yı Konuştur'; btn.classList.remove("speaking"); } } }
-  function openStatic(title, text) { document.getElementById("staticTitle").textContent = title; document.getElementById("staticText").textContent = text; showScene("scene-static"); }
-  
-  async function start() {
-    const q = qInput.value.trim();
-    if (!q && !session.img) return alert("Lütfen bir ürün adı yazın veya fotoğraf yükleyin.");
-    showScene("scene-loading");
-    try {
-      const res = await fetch('https://bikonomi-api-1.onrender.com/api/analyze', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ q: q, img: session.img }) });
-      if (!res.ok) throw new Error("Sunucu hatası.");
-      const data = await res.json();
-      document.getElementById("finalHeadline").textContent = data.headline || "Analiz Sonucu";
-      document.getElementById("finalText").textContent = data.text || "Bilgi yok.";
-      audioText = data.speech_text || "";
-      const recBox = document.getElementById("recommendationBox");
-      const heroImg = document.getElementById("heroImg");
-      const waShareBtn = document.getElementById("waShareBtn");
-      
-      if (data.product && data.product.title) {
-         recBox.style.display = "block"; 
-         document.getElementById("heroTitle").textContent = data.product.title;
-         const productUrl = data.product.url || "#";
-         document.getElementById("heroLink").href = productUrl;
-         
-         const magicLink = `https://caynana.ai/?q=${encodeURIComponent(q)}`;
-         const shareText = `Caynana bu ürün için dedi ki:\n\n*${data.headline}*\n\n${data.text}\n\n*İncelemek için tıkla:* ${magicLink}`;
-         waShareBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
-
-         if(data.product.img && data.product.img.length > 5) { heroImg.src = data.product.img; heroImg.style.display = "block"; } else { heroImg.style.display = "none"; }
-      } else { recBox.style.display = "none"; }
-      
-      showScene("scene-results");
-    } catch (e) { alert("Hata: " + e.message); showScene("scene-home"); }
-  }
-  qInput.addEventListener("keyup", (e) => { if (e.key === "Enter") start(); });
-</script>
-</body>
-</html>
+    .banner-decor { position: absolute; right: -20px; bottom: -20px; font-size: 90px; color: white; opacity: 0.1; transform
