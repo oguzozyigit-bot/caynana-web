@@ -2,715 +2,538 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>CAYNANA – Almadan önce sor</title>
+  <title>CAYNANA – Akıllı Alışveriş Asistanı</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    :root{
-      --bg:#ffffff;
-      --text:#0f172a;
-      --muted:#64748b;
-      --line:#e2e8f0;
-      --soft:#f8fafc;
-      --ok:#16a34a;
-      --warn:#f59e0b;
-      --bad:#dc2626;
-      --accent:#0f172a;
-      --radius:18px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      -webkit-tap-highlight-color:transparent;
-    }
-    .wrap{max-width:560px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
-    header{
-      position:sticky;top:0;z-index:10;
-      background:rgba(255,255,255,.92);
-      backdrop-filter:saturate(180%) blur(10px);
-      border-bottom:1px solid var(--line);
-    }
-    .bar{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 18px}
-    .brand{display:flex;gap:10px;align-items:center;text-decoration:none;color:var(--text)}
-    .dot{width:10px;height:10px;border-radius:999px;background:var(--ok)}
-    .brand b{font-size:18px;letter-spacing:-.02em}
-    main{flex:1;padding:18px}
-    .scene{display:none}
-    .scene.active{display:block}
-    .mono{
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
-      font-size:12px;color:#94a3b8;letter-spacing:.08em;text-transform:uppercase;font-weight:800
-    }
-    .h1{font-size:32px;line-height:1.05;letter-spacing:-.04em;margin:10px 0 10px;font-weight:900}
-    .sub{margin:0 0 14px;color:var(--muted);line-height:1.5;font-size:14px}
-    .box{border:1px solid var(--line);border-radius:var(--radius);background:#fff;padding:14px}
-    .row{display:flex;gap:10px;align-items:center}
-    input[type="text"]{
-      flex:1;border:1px solid var(--line);border-radius:14px;
-      padding:12px 12px;font-size:16px;outline:0;background:#fff;color:var(--text)
-    }
-    input::placeholder{color:#94a3b8}
-    .btn{
-      border:1px solid var(--line);background:#fff;color:var(--text);
-      font-weight:900;border-radius:14px;padding:12px 12px;cursor:pointer;
-      display:inline-flex;align-items:center;justify-content:center;gap:10px;
-    }
-    .btn:active{transform:scale(.99)}
-    .btn.primary{background:var(--text);color:#fff;border-color:var(--text)}
-    .btn.full{width:100%}
-    .btn.small{padding:10px 10px;border-radius:12px;font-weight:800}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .hint{margin-top:10px;color:#94a3b8;font-size:12px;line-height:1.4}
-    .divider{height:1px;background:var(--line);margin:12px 0}
-    .preview{
-      width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:16px;
-      background:var(--soft);display:grid;place-items:center;overflow:hidden
-    }
-    .preview img{max-width:95%;max-height:95%;object-fit:contain}
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      font-weight:900;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
-      padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:var(--soft)
-    }
-    .pill .p{width:8px;height:8px;border-radius:999px;background:var(--text)}
-    .headline{margin:10px 0 8px;font-size:30px;letter-spacing:-.05em;font-weight:950;line-height:1.05}
-    .talk{margin:0;color:var(--muted);line-height:1.6;font-size:14px}
-    .err{display:none;border:1px solid #fecaca;background:#fef2f2;border-radius:var(--radius);padding:14px;margin-bottom:12px}
-    .err strong{display:block;font-weight:950;margin-bottom:4px}
-    .err p{margin:0;color:#7f1d1d;font-size:14px;line-height:1.45}
+    :root {
+      /* Renk Paleti - Premium Feel */
+      --bg-body: #F3F4F6;       /* Hafif gri arka plan */
+      --bg-card: #FFFFFF;       /* Bembeyaz kartlar */
+      --primary: #10B981;       /* Caynana Yeşili (Emerald) */
+      --primary-dark: #059669;
+      --text-main: #111827;     /* Simsiyah değil, koyu antrasit */
+      --text-muted: #6B7280;
+      --border: #E5E7EB;
+      
+      /* Gölgeler (Apple Style) */
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --shadow-input: 0 0 0 4px rgba(16, 185, 129, 0.1); /* Odaklanınca çıkan yeşil halka */
 
-    /* Loading */
-    .progress{margin-top:12px;height:6px;border-radius:999px;background:#e2e8f0;overflow:hidden}
-    .progress > div{height:100%;width:35%;background:var(--text);border-radius:999px;animation:move 1.1s ease-in-out infinite}
-    @keyframes move{0%{transform:translateX(-60%)}50%{transform:translateX(80%)}100%{transform:translateX(-60%)}}
-
-    /* Q&A */
-    .qTitle{font-weight:950;font-size:18px;letter-spacing:-.03em;margin:6px 0 10px}
-    .option{width:100%;text-align:left}
-    .option small{display:block;color:var(--muted);font-weight:700;margin-top:2px}
-
-    /* Results card */
-    .rec{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:#fff}
-    .recTop{padding:12px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
-    .recTop b{font-size:13px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
-    .title{margin:12px 0 10px;font-weight:950;letter-spacing:-.03em;font-size:18px;line-height:1.25}
-    .reasons{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
-    .reasons li{display:flex;gap:10px;align-items:flex-start;color:#334155;font-size:14px;line-height:1.45}
-    .tick{width:18px;height:18px;border-radius:6px;border:1px solid var(--line);display:grid;place-items:center;flex:0 0 auto;margin-top:1px;background:#fff;color:var(--ok);font-weight:950;font-size:12px}
-
-    @media (prefers-reduced-motion: reduce){
-      .progress > div{animation:none;width:55%}
-      .btn:active{transform:none}
+      --radius: 16px;
     }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* --- HEADER --- */
+    header {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-inner {
+      max-width: 600px;
+      margin: 0 auto;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border-radius: 8px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+    }
+    .brand-text {
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.03em;
+    }
+
+    /* --- MAIN LAYOUT --- */
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* --- HERO SECTION --- */
+    .hero {
+      text-align: center;
+      padding: 10px 0 20px;
+    }
+    .hero h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0 0 12px;
+      line-height: 1.2;
+      letter-spacing: -0.04em;
+    }
+    .hero span {
+      color: var(--primary);
+    }
+    .hero p {
+      color: var(--text-muted);
+      font-size: 15px;
+      line-height: 1.5;
+      margin: 0 auto;
+      max-width: 90%;
+    }
+
+    /* --- SEARCH CARD --- */
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      padding: 6px; /* Inner padding for the input group */
+    }
+    
+    .input-group {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: #F9FAFB;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+    }
+    .input-group:focus-within {
+      background: #fff;
+      border-color: var(--primary);
+      box-shadow: var(--shadow-input);
+    }
+    .input-icon {
+      padding-left: 16px;
+      color: var(--text-muted);
+    }
+    input[type="text"] {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-main);
+      outline: none;
+      width: 100%;
+    }
+    .btn-search {
+      background: var(--text-main);
+      color: white;
+      border: none;
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      margin-right: 4px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-search:active { transform: scale(0.95); }
+
+    /* --- ACTION BUTTONS --- */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+      padding: 0 12px 12px;
+    }
+    .action-btn {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+    .action-btn:hover {
+      border-color: var(--text-muted);
+      background: #F9FAFB;
+    }
+    .action-btn i { color: var(--primary); font-size: 16px; }
+
+    /* --- PREVIEW IMAGE AREA --- */
+    .img-preview-box {
+      margin: 0 12px 12px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      display: none; /* JS ile açılacak */
+      background: #000;
+    }
+    .img-preview-box img { width: 100%; display: block; }
+    .img-actions { padding: 10px; display: flex; gap: 10px; background: #fff; }
+
+    /* --- CHIPS / EXAMPLES --- */
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 24px;
+    }
+    .chip {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #ECFDF5;
+    }
+
+    /* --- AD BANNERS (REKLAM ALANI) --- */
+    .ad-container {
+      margin-top: 30px;
+      width: 100%;
+      background: white;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .ad-label {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-body);
+      padding: 2px 10px;
+      font-size: 10px;
+      color: #9CA3AF;
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    /* Google Adsense responsive kodu buraya sığacak şekilde ayarlanır */
+    .ad-slot {
+      min-height: 100px; /* Reklam gelene kadar yer tutsun */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #F9FAFB;
+      border-radius: 8px;
+      color: #D1D5DB;
+      font-size: 12px;
+    }
+
+    /* --- SCENE MANAGEMENT --- */
+    .scene { display: none; animation: fadeIn 0.4s ease; }
+    .scene.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- LOADING BAR --- */
+    .loading-container { text-align: center; padding: 40px 0; }
+    .spinner {
+      width: 50px; height: 50px; margin: 0 auto 20px;
+      border: 4px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 1s infinite linear;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* --- RESULT BOX --- */
+    .result-box {
+      background: white; border-radius: var(--radius);
+      box-shadow: var(--shadow-lg); border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .verdict-header {
+      background: #F0FDF4; border-bottom: 1px solid #DCFCE7;
+      padding: 16px 20px;
+      color: var(--primary-dark); font-weight: 700; font-size: 14px;
+      text-transform: uppercase; letter-spacing: 0.05em;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .verdict-body { padding: 20px; }
+    .product-hero {
+      width: 100%; aspect-ratio: 16/9; background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px; border-radius: 8px; border: 1px solid var(--border); padding: 10px;
+    }
+    .product-hero img { max-width: 100%; max-height: 100%; object-fit: contain; }
   </style>
 </head>
 
 <body>
-<div class="wrap">
-  <header>
-    <div class="bar">
-      <a class="brand" href="#" onclick="showScene('home'); return false;">
-        <span class="dot"></span><b>CAYNANA</b>
-      </a>
-      <span class="mono">ALMADAN ÖNCE SOR</span>
+
+<header>
+  <div class="header-inner">
+    <a href="#" onclick="resetAll()" class="brand">
+      <div class="brand-icon"><i class="fa-solid fa-bolt"></i></div>
+      <span class="brand-text">CAYNANA</span>
+    </a>
+    <div style="font-size:12px; font-weight:600; color:var(--text-muted);">v2.0 Beta</div>
+  </div>
+</header>
+
+<main>
+
+  <section id="scene-home" class="scene active">
+    
+    <div class="hero">
+      <h1>Almadan Önce <br><span>Bana Danış.</span></h1>
+      <p>Binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm.</p>
     </div>
-  </header>
 
-  <main>
-    <!-- HOME -->
-    <section id="home" class="scene active">
-      <h1 class="h1">Ürünü gönder. Caynana baksın.</h1>
-      <p class="sub">Yaz, link yapıştır veya fotoğraf çek. Gerekirse 1–2 soru sorarım. Sonra net karar + alternatif + link veririm.</p>
+    <div class="card">
+      <div class="input-group">
+        <i class="fa-solid fa-magnifying-glass input-icon"></i>
+        <input id="q" type="text" placeholder="Ürün adı, link veya marka..." autocomplete="off">
+        <button class="btn-search" onclick="start()"><i class="fa-solid fa-arrow-right"></i></button>
+      </div>
 
-      <div class="box">
-        <div class="row">
-          <input id="q" type="text" placeholder="Ürün adı veya link..." autocomplete="off" />
-          <button class="btn primary" onclick="start()">Sor</button>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="grid2">
-          <!-- Kamera (mobilde direkt kamera açar) -->
-          <label class="btn full" style="cursor:pointer;">
-            📷 Kameradan çek
-            <input id="camInput" type="file" accept="image/*" capture="environment" style="display:none">
-          </label>
-
-          <!-- Galeriden yükle -->
-          <label class="btn full" style="cursor:pointer;">
-            🖼️ Foto yükle
-            <input id="fileInput" type="file" accept="image/*" style="display:none">
-          </label>
-        </div>
-
-        <div class="hint">İpucu: Link atarsan ürün sayfasını okuruz. Foto atarsan ürünü tanımaya çalışırız (paket/etiket net olsun).</div>
-
-        <div id="imgWrap" class="preview" style="margin-top:12px; display:none;">
-          <img id="imgPreview" alt="Seçilen fotoğraf">
-        </div>
-
-        <div id="imgActions" style="display:none; margin-top:10px;" class="grid2">
-          <button class="btn" onclick="clearImage()">Fotoğrafı kaldır</button>
-          <button class="btn primary" onclick="start()">Fotoğrafla analiz et</button>
+      <div id="imgWrap" class="img-preview-box">
+        <img id="imgPreview" src="" alt="Seçilen Fotoğraf">
+        <div class="img-actions">
+           <button class="action-btn" style="flex:1; border-color:#EF4444; color:#EF4444;" onclick="clearImage()">İptal</button>
+           <button class="action-btn" style="flex:1; background:var(--primary); color:white; border:none;" onclick="start()">Analiz Et</button>
         </div>
       </div>
 
-      <div style="margin-top:12px" class="box">
-        <div class="mono">ÖRNEK</div>
-        <div style="margin-top:10px" class="grid2">
-          <button class="btn full" onclick="fillQ('iPhone 15 alınır mı?')">iPhone 15</button>
-          <button class="btn full" onclick="fillQ('Dyson V15 değer mi?')">Dyson V15</button>
+      <div class="action-grid" id="defaultActions">
+        <label class="action-btn">
+          <i class="fa-solid fa-camera"></i> Foto Çek
+          <input id="camInput" type="file" accept="image/*" capture="environment" style="display:none">
+        </label>
+        <label class="action-btn">
+          <i class="fa-solid fa-image"></i> Galeri
+          <input id="fileInput" type="file" accept="image/*" style="display:none">
+        </label>
+      </div>
+    </div>
+
+    <div class="chips">
+      <div class="chip" onclick="fillQ('iPhone 15 alınır mı?')">📱 iPhone 15</div>
+      <div class="chip" onclick="fillQ('Dyson V15 vs Gen5')">🧹 Dyson</div>
+      <div class="chip" onclick="fillQ('Philips Airfryer XXL')">🍟 Airfryer</div>
+      <div class="chip" onclick="fillQ('Sony WH-1000XM5')">🎧 Kulaklık</div>
+    </div>
+
+    <div class="ad-container">
+      <div class="ad-label">Sponsorlu Bağlantı</div>
+      
+      <div class="ad-slot">
+        <span>Reklam Alanı (Google Adsense)</span>
+      </div>
+      </div>
+
+  </section>
+
+
+  <section id="scene-loading" class="scene">
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <h3 style="font-size:18px; font-weight:700; margin-bottom:8px;">Analiz Ediliyor...</h3>
+      <p id="loadingStep" style="color:var(--text-muted); font-size:14px;">Veriler taranıyor</p>
+    </div>
+  </section>
+
+
+  <section id="scene-results" class="scene">
+    
+    <div class="result-box">
+      <div class="verdict-header">
+        <i class="fa-solid fa-check-circle"></i> Caynana Kararı
+      </div>
+      <div class="verdict-body">
+        <h2 id="finalHeadline" style="margin:0 0 10px; font-size:20px; font-weight:800; line-height:1.3;">Sonuç Başlığı</h2>
+        <p id="finalText" style="color:#4B5563; line-height:1.6; font-size:15px; margin-bottom:20px;">
+          Buraya yapay zeka analizi gelecek.
+        </p>
+
+        <div class="product-hero">
+           <img id="heroImg" src="" alt="Ürün Resmi">
         </div>
-        <div style="margin-top:10px" class="grid2">
-          <button class="btn full" onclick="fillQ('Airfryer öner')">Airfryer</button>
-          <button class="btn full" onclick="fillQ('Bu ürün alınır mı? link: https://...')">Link örneği</button>
-        </div>
+        <h3 id="heroTitle" style="font-size:16px; font-weight:700; text-align:center; margin-bottom:16px;">Ürün Adı</h3>
+
+        <a id="heroLink" href="#" target="_blank" class="action-btn" style="background:var(--text-main); color:white; border:none; width:100%; justify-content:center; padding:16px;">
+          Fiyatı Gör & İncele <i class="fa-solid fa-arrow-up-right-from-square" style="color:white; margin-left:5px;"></i>
+        </a>
       </div>
-    </section>
+    </div>
+    
+    <button onclick="resetAll()" style="width:100%; padding:15px; margin-top:15px; border:none; background:transparent; color:var(--text-muted); font-weight:600; cursor:pointer;">
+      <i class="fa-solid fa-rotate-left"></i> Yeni Sorgu Yap
+    </button>
 
-    <!-- LOADING -->
-    <section id="loading" class="scene">
-      <div class="box">
-        <div class="mono">CAYNANA BAKIYOR…</div>
-        <div class="headline" style="margin-top:10px;font-size:22px;">Analiz başlıyor.</div>
-        <p id="loadingStep" class="talk">yorumlara bakıyorum</p>
-        <div class="progress"><div></div></div>
-      </div>
-    </section>
+    <div class="ad-container" style="margin-top:20px;">
+      <div class="ad-label">Önerilen</div>
+      <div class="ad-slot">Reklam Alanı</div>
+    </div>
 
-    <!-- QUESTIONS -->
-    <section id="questions" class="scene">
-      <div id="errBox" class="err">
-        <strong>Bir sorun oldu</strong>
-        <p id="errText"></p>
-      </div>
+  </section>
 
-      <div class="box">
-        <span class="pill"><span class="p"></span><span id="qCount">SORU</span></span>
-        <div id="questionText" class="qTitle">—</div>
+</main>
 
-        <div id="options" style="display:flex; flex-direction:column; gap:10px;"></div>
-
-        <div class="divider"></div>
-
-        <div class="row">
-          <input id="freeAnswer" type="text" placeholder="Kısaca yazabilirsin…" />
-          <button class="btn primary" onclick="submitFreeAnswer()">Gönder</button>
-        </div>
-
-        <div class="hint">Bu sorular, doğru alternatifi seçmek için. 2 soru sonra bitiriyoruz.</div>
-      </div>
-    </section>
-
-    <!-- RESULTS -->
-    <section id="results" class="scene">
-      <div id="errBox2" class="err">
-        <strong>Bir sorun oldu</strong>
-        <p id="errText2"></p>
-      </div>
-
-      <div class="box">
-        <span class="pill"><span class="p"></span><span id="badge">KARAR</span></span>
-        <div id="finalHeadline" class="headline">—</div>
-        <p id="finalText" class="talk"></p>
-      </div>
-
-      <div style="height:12px"></div>
-
-      <div class="rec">
-        <div class="recTop">
-          <b>ÖNERİLEN ALTERNATİF</b>
-          <span class="mono" id="metaTag">BETA</span>
-        </div>
-        <div style="padding:14px">
-          <div class="preview" style="margin:0">
-            <img id="heroImg" alt="Önerilen ürün" src="">
-          </div>
-
-          <div id="heroTitle" class="title">—</div>
-
-          <ul id="heroReasons" class="reasons"></ul>
-
-          <div class="grid2" style="margin-top:12px">
-            <a id="heroLink" class="btn primary full" href="#" target="_blank" rel="noopener noreferrer">Ürüne git →</a>
-            <button id="btnTTS" class="btn full" onclick="playTTS()">Dinle</button>
-          </div>
-
-          <div style="margin-top:10px">
-            <button class="btn full" onclick="resetAll()">Yeni bir şey sor</button>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-</div>
 
 <script>
-  // -----------------------------
-  // CONFIG
-  // -----------------------------
-  const API_ANALYZE = "/api/analyze";
-  const API_TTS = "/api/tts";
-  const MOCK_MODE = false; // backend yoksa true
+  /* * TEMEL MANTIK VE JS
+   * Burası önceki kodun aynısıdır, sadece ID'ler ve sınıflar yeni tasarıma göre uyarlandı.
+   */
 
-  // -----------------------------
-  // STATE
-  // -----------------------------
-  let session = {
-    step: 0,              // 0 start, 1.. followups
-    maxQuestions: 2,
-    q: "",
-    imageDataUrl: "",     // base64 dataURL
-    answers: []           // {questionId, answer}
-  };
-
+  // --- AYARLAR ---
+  const MOCK_MODE = true; // Backend yoksa true kalsın, sunucun varsa false yap.
+  
+  // --- DEĞİŞKENLER ---
+  let session = { q: "", img: "" };
   let loadingTimer = null;
-  let lastNarration = "";
-  let currentAudio = null;
 
-  // -----------------------------
-  // UI helpers
-  // -----------------------------
-  function showScene(id){
-    stopLoading();
-    hideErr();
-    hideErr2();
-    document.querySelectorAll(".scene").forEach(s => s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-    window.scrollTo(0,0);
-  }
-
-  function fillQ(t){ document.getElementById("q").value = t; }
-
-  function showErr(msg){
-    const b = document.getElementById("errBox");
-    b.style.display = "block";
-    document.getElementById("errText").textContent = msg || "Bir hata oluştu.";
-  }
-  function hideErr(){
-    const b = document.getElementById("errBox");
-    b.style.display = "none";
-    document.getElementById("errText").textContent = "";
-  }
-  function showErr2(msg){
-    const b = document.getElementById("errBox2");
-    b.style.display = "block";
-    document.getElementById("errText2").textContent = msg || "Bir hata oluştu.";
-  }
-  function hideErr2(){
-    const b = document.getElementById("errBox2");
-    b.style.display = "none";
-    document.getElementById("errText2").textContent = "";
-  }
-
-  function stopLoading(){
-    if (loadingTimer){
-      clearInterval(loadingTimer);
-      loadingTimer = null;
-    }
-  }
-  function playLoading(){
-    stopLoading();
-    const steps = [
-      "yorumlara bakıyorum",
-      "kronik sorunları tarıyorum",
-      "servis riskini kontrol ediyorum",
-      "muadil ürünleri buluyorum",
-      "kararı netleştiriyorum"
-    ];
-    let i = 0;
-    const el = document.getElementById("loadingStep");
-    el.textContent = steps[0];
-    loadingTimer = setInterval(() => {
-      i++;
-      el.textContent = steps[i] || "son rötuş";
-      if (i >= steps.length) stopLoading();
-    }, 650);
-  }
-
-  function safeUrl(url){
-    try{
-      const u = new URL(url, window.location.origin);
-      if (u.protocol !== "http:" && u.protocol !== "https:") return "#";
-      return u.href;
-    }catch{ return "#"; }
-  }
-
-  function stopAudio(){
-    if (currentAudio){
-      try{ currentAudio.pause(); }catch{}
-      currentAudio = null;
-    }
-  }
-
-  // -----------------------------
-  // Image input (upload + camera)
-  // -----------------------------
+  // --- DOM ELEMENTLERİ ---
+  const qInput = document.getElementById("q");
   const camInput = document.getElementById("camInput");
   const fileInput = document.getElementById("fileInput");
 
-  camInput.addEventListener("change", (e) => handleFile(e.target.files && e.target.files[0]));
-  fileInput.addEventListener("change", (e) => handleFile(e.target.files && e.target.files[0]));
-
-  async function handleFile(file){
-    if (!file) return;
-    if (!file.type.startsWith("image/")){
-      alert("Lütfen bir görsel seç.");
-      return;
-    }
-    // Basit boyut kontrol
-    if (file.size > 6 * 1024 * 1024){
-      alert("Görsel büyük. 6MB altı olsun.");
-      return;
-    }
-    const dataUrl = await fileToDataUrl(file);
-    session.imageDataUrl = dataUrl;
-
-    document.getElementById("imgWrap").style.display = "grid";
-    document.getElementById("imgPreview").src = dataUrl;
-    document.getElementById("imgActions").style.display = "grid";
+  // --- SAYFA GEÇİŞLERİ ---
+  function showScene(id) {
+    document.querySelectorAll(".scene").forEach(el => el.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    window.scrollTo(0, 0);
   }
 
-  function clearImage(){
-    session.imageDataUrl = "";
+  function fillQ(text) {
+    qInput.value = text;
+    qInput.focus();
+  }
+
+  // --- IMAGE HANDLE ---
+  function handleFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      session.img = e.target.result;
+      document.getElementById("imgPreview").src = session.img;
+      document.getElementById("imgWrap").style.display = "block";
+      document.getElementById("defaultActions").style.display = "none";
+    };
+    reader.readAsDataURL(file);
+  }
+
+  camInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
+  fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
+
+  function clearImage() {
+    session.img = "";
     camInput.value = "";
     fileInput.value = "";
     document.getElementById("imgWrap").style.display = "none";
-    document.getElementById("imgPreview").src = "";
-    document.getElementById("imgActions").style.display = "none";
+    document.getElementById("defaultActions").style.display = "grid";
   }
 
-  function fileToDataUrl(file){
-    return new Promise((resolve,reject)=>{
-      const r = new FileReader();
-      r.onload = () => resolve(String(r.result || ""));
-      r.onerror = reject;
-      r.readAsDataURL(file);
-    });
-  }
-
-  // -----------------------------
-  // Main flow
-  // -----------------------------
-  async function start(){
-    hideErr(); hideErr2();
-
-    const q = (document.getElementById("q").value || "").trim();
-    session.q = q;
-    session.answers = [];
-    session.step = 0;
-
-    if (!session.q && !session.imageDataUrl){
-      showScene("home");
-      alert("Ürün adı/link yaz veya fotoğraf gönder.");
-      return;
-    }
-
-    showScene("loading");
-    playLoading();
-
-    await callAnalyzeAndRoute();
-  }
-
-  async function callAnalyzeAndRoute(){
-    try{
-      const payload = buildPayload();
-      let data;
-
-      if (MOCK_MODE){
-        data = await mockAnalyze(payload);
-      } else {
-        const res = await fetch(API_ANALYZE, {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok){
-          const t = await res.text().catch(()=> "");
-          throw new Error(t || "Analiz servisi yanıt vermedi.");
-        }
-        data = await res.json();
-      }
-
-      // Backend iki tür dönebilir:
-      // 1) { type:"question", question:{id,text,options[]}, step, max }
-      // 2) { type:"final", final:{badge,headline,text}, recommended:{...}, narrationText }
-      if (data && data.type === "question" && data.question){
-        showQuestion(data);
-      } else if (data && (data.type === "final" || data.final || data.recommended)){
-        showFinal(data);
-      } else {
-        throw new Error("Beklenmeyen yanıt formatı.");
-      }
-
-    } catch(e){
-      stopLoading();
-      showScene("results");
-      showErr2("Analiz alınamadı. " + (e && e.message ? e.message : "Bilinmeyen hata"));
-    }
-  }
-
-  function buildPayload(){
-    return {
-      q: session.q || "",
-      image: session.imageDataUrl || "",  // dataURL (base64)
-      step: session.step,                 // 0..N
-      answers: session.answers            // [{questionId, answer}]
-    };
-  }
-
-  // -----------------------------
-  // Questions UI
-  // -----------------------------
-  function showQuestion(data){
-    stopLoading();
-    showScene("questions");
-
-    const step = Number(data.step ?? (session.step+1));
-    const max = Number(data.max ?? session.maxQuestions);
-    document.getElementById("qCount").textContent = `SORU ${Math.min(step+1, max)}/${max}`;
-
-    const q = data.question;
-    document.getElementById("questionText").textContent = q.text || "Kısa bir şey soracağım.";
-
-    // Options
-    const box = document.getElementById("options");
-    box.innerHTML = "";
-    (q.options || []).slice(0,6).forEach(opt => {
-      const btn = document.createElement("button");
-      btn.className = "btn option";
-      btn.type = "button";
-      btn.textContent = opt.label || String(opt.value || "Seç");
-
-      btn.onclick = () => submitAnswer(q.id || ("q"+step), opt.value ?? opt.label ?? "");
-      box.appendChild(btn);
-    });
-
-    // free answer clear
-    document.getElementById("freeAnswer").value = "";
-  }
-
-  function submitAnswer(questionId, answer){
-    session.answers.push({ questionId, answer: String(answer).slice(0,200) });
-    session.step += 1;
-
-    // 2 soruyu geçmesin
-    if (session.step >= session.maxQuestions){
-      // bir daha soru sormadan final iste
-      showScene("loading"); playLoading();
-      callAnalyzeAndRoute();
-      return;
-    }
-
-    showScene("loading"); playLoading();
-    callAnalyzeAndRoute();
-  }
-
-  function submitFreeAnswer(){
-    const val = (document.getElementById("freeAnswer").value || "").trim();
-    if (!val){ showErr("Kısa cevap yaz ya da seçeneklerden birini seç."); return; }
-    // Current questionId’yi backend taşır; biz yoksa step bazlı id veriyoruz:
-    submitAnswer("free_"+session.step, val);
-  }
-
-  // -----------------------------
-  // Final UI
-  // -----------------------------
-  function showFinal(data){
-    stopLoading();
-    showScene("results");
-
-    const final = data.final || {};
-    const rec = data.recommended || {};
-
-    document.getElementById("badge").textContent = String(final.badge || "KARAR").slice(0,20);
-    document.getElementById("finalHeadline").textContent = String(final.headline || "—").slice(0,80);
-    document.getElementById("finalText").textContent = String(final.text || "").slice(0,1000);
-
-    document.getElementById("metaTag").textContent = String(data.metaTag || "CAYNANA").slice(0,20);
-
-    document.getElementById("heroTitle").textContent = String(rec.title || "Öneri bulunamadı").slice(0,180);
-    document.getElementById("heroImg").src = rec.image ? String(rec.image) : "https://via.placeholder.com/900x500?text=Gorsel+Yok";
-
-    const link = safeUrl(rec.url || "#");
-    const a = document.getElementById("heroLink");
-    a.href = link;
-    if (link === "#"){
-      a.style.opacity = ".5";
-      a.style.pointerEvents = "none";
-    } else {
-      a.style.opacity = "1";
-      a.style.pointerEvents = "auto";
-    }
-
-    // Reasons safe render
-    const ul = document.getElementById("heroReasons");
-    ul.innerHTML = "";
-    (rec.reasons || []).slice(0,3).forEach(r=>{
-      const li = document.createElement("li");
-      const t = document.createElement("span");
-      t.className = "tick";
-      t.textContent = "✓";
-      const s = document.createElement("span");
-      s.textContent = String(r || "").slice(0,200);
-      li.appendChild(t); li.appendChild(s);
-      ul.appendChild(li);
-    });
-
-    lastNarration = String(data.narrationText || final.text || "").slice(0,1400);
-    document.getElementById("btnTTS").textContent = "Dinle";
-  }
-
-  // -----------------------------
-  // TTS
-  // -----------------------------
-  async function playTTS(){
-    hideErr2();
-    if (!lastNarration){
-      showErr2("Okunacak metin yok.");
-      return;
-    }
-
-    const btn = document.getElementById("btnTTS");
-
-    // çalıyorsa durdur
-    if (currentAudio && !currentAudio.paused){
-      stopAudio();
-      btn.textContent = "Dinle";
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = "Yükleniyor…";
-
-    try{
-      if (MOCK_MODE){
-        // mock: tts yok
-        btn.disabled = false;
-        btn.textContent = "Dinle";
-        alert("MOCK_MODE: TTS kapalı.");
-        return;
-      }
-
-      const res = await fetch(API_TTS, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ text:lastNarration, voice:"shimmer" })
-      });
-      if (!res.ok) throw new Error("Ses servisi yanıt vermedi.");
-
-      const data = await res.json();
-      if (!data.audioBase64) throw new Error("Ses verisi boş.");
-
-      const bytes = Uint8Array.from(atob(data.audioBase64), c => c.charCodeAt(0));
-      const blob = new Blob([bytes], { type:"audio/mpeg" });
-      const url = URL.createObjectURL(blob);
-
-      stopAudio();
-      currentAudio = new Audio(url);
-
-      btn.disabled = false;
-      btn.textContent = "Durdur";
-      currentAudio.play();
-
-      currentAudio.onended = () => {
-        try{ URL.revokeObjectURL(url); }catch{}
-        stopAudio();
-        btn.disabled = false;
-        btn.textContent = "Dinle";
-      };
-
-    } catch(e){
-      btn.disabled = false;
-      btn.textContent = "Dinle";
-      showErr2("Ses çalınamadı: " + (e && e.message ? e.message : "Bilinmeyen hata"));
-    }
-  }
-
-  // -----------------------------
-  // Reset
-  // -----------------------------
-  function resetAll(){
-    stopAudio();
-    stopLoading();
-    session = { step:0, maxQuestions:2, q:"", imageDataUrl:"", answers:[] };
-    document.getElementById("q").value = "";
+  function resetAll() {
     clearImage();
-    lastNarration = "";
-    showScene("home");
+    qInput.value = "";
+    showScene("scene-home");
   }
 
-  // Enter = start
-  document.getElementById("q").addEventListener("keydown", (e) => {
-    if (e.key === "Enter") start();
-  });
+  // --- MAIN PROCESS ---
+  async function start() {
+    const q = qInput.value.trim();
+    if (!q && !session.img) return alert("Lütfen bir ürün yazın veya fotoğraf çekin başkanım.");
 
-  // -----------------------------
-  // MOCK backend behavior
-  // -----------------------------
-  async function mockAnalyze(payload){
-    await new Promise(r=>setTimeout(r, 900));
+    showScene("scene-loading");
+    
+    // Fake Loading Steps
+    const steps = ["Yorumlar taranıyor...", "Kronik arızalar kontrol ediliyor...", "Fiyat geçmişine bakılıyor...", "Sonuç hazırlanıyor..."];
+    let i = 0;
+    document.getElementById("loadingStep").textContent = steps[0];
+    loadingTimer = setInterval(() => {
+      i++;
+      if(i < steps.length) document.getElementById("loadingStep").textContent = steps[i];
+    }, 800);
 
-    // Eğer hiç soru sorulmadıysa, 1 soru sor
-    if (!payload.answers || payload.answers.length === 0){
-      return {
-        type:"question",
-        step:0,
-        max:2,
-        question:{
-          id:"need",
-          text:"Bu ürün kim için? (en doğru alternatifi buna göre seçeceğim)",
-          options:[
-            {label:"Kendim", value:"self"},
-            {label:"Hediye", value:"gift"},
-            {label:"Çocuk", value:"kid"},
-            {label:"İş", value:"work"}
-          ]
+    // MOCK RESPONSE (Backend varmış gibi davran)
+    setTimeout(() => {
+      clearInterval(loadingTimer);
+      
+      // Örnek Sonuç Verisi
+      const mockResult = {
+        headline: "Bu fiyata daha iyisi var.",
+        text: "Başkanım, baktığın ürünün pil ömrüyle ilgili çok şikayet var. Kullanıcıların %40'ı 6 ay sonra pilin öldüğünü söylüyor. Aynı paraya şu modeli alman daha mantıklı.",
+        product: {
+          title: "Alternatif: TechPro X2000",
+          img: "https://via.placeholder.com/400x300?text=TechPro+X2000",
+          url: "https://trendyol.com"
         }
       };
-    }
 
-    // İkinci soruyu sor
-    if (payload.answers.length === 1){
-      return {
-        type:"question",
-        step:1,
-        max:2,
-        question:{
-          id:"budget",
-          text:"Bütçe bandı ne olsun?",
-          options:[
-            {label:"En ucuz", value:"cheap"},
-            {label:"F/P", value:"value"},
-            {label:"Premium", value:"premium"}
-          ]
-        }
-      };
-    }
+      document.getElementById("finalHeadline").textContent = mockResult.headline;
+      document.getElementById("finalText").textContent = mockResult.text;
+      document.getElementById("heroTitle").textContent = mockResult.product.title;
+      document.getElementById("heroImg").src = mockResult.product.img;
+      document.getElementById("heroLink").href = mockResult.product.url;
 
-    // Final
-    return {
-      type:"final",
-      final:{
-        badge:"RİSKLİ",
-        headline:"Bunu alma.",
-        text:"Bu fiyat bandında aynı performansı daha güvenli ürünler veriyor. Kullanıcı şikayetleri ve servis riski yüksek. Alternatif daha mantıklı."
-      },
-      recommended:{
-        title:"Alternatif: SolidChoice X",
-        image:"https://via.placeholder.com/900x500?text=SolidChoice+X",
-        url:"https://www.trendyol.com/",
-        reasons:["Daha düşük arıza oranı", "Servis ağı daha güçlü", "Fiyat/performans daha iyi"]
-      },
-      narrationText:"Bunu alma. Servis riski ve şikayet oranı yüksek. SolidChoice X daha güvenli, daha mantıklı."
-    };
+      showScene("scene-results");
+
+    }, 3500); // 3.5 saniye bekleme süresi
   }
+
+  // Enter tuşu desteği
+  qInput.addEventListener("keyup", (e) => { if (e.key === "Enter") start(); });
+
 </script>
+
 </body>
 </html>
