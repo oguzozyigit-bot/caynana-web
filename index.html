@@ -41,8 +41,8 @@
       display: flex; 
       flex-direction: column; 
       align-items: center; 
-      justify-content: flex-start; /* Üste yasla */
-      padding-top: 2vh; /* Masaüstünde biraz boşluk */
+      justify-content: flex-start; 
+      padding-top: 2vh; 
       padding-left: 20px; padding-right: 20px; 
       width: 100%; 
       max-width: 600px; 
@@ -54,12 +54,10 @@
     .hero-title span { color: var(--primary); }
     .hero-sub-top { text-align: center; color: var(--text-muted); font-size: 15px; max-width: 500px; line-height: 1.4; margin-bottom: 20px; }
     
-    /* ALT UYARI YAZISI */
     .hero-sub-bottom { 
       text-align: center; color: #9AA0A6; 
       font-size: 12px; max-width: 480px; 
-      margin-top: 15px; 
-      margin-bottom: 10px; /* Alttan da biraz boşluk */
+      margin-top: 10px; margin-bottom: 10px; 
     }
 
     /* SEARCH AREA */
@@ -67,10 +65,10 @@
     
     .search-bar { 
       display: flex; align-items: center; background: #fff; 
-      border: 1px solid var(--border); border-radius: 30px; /* Daha yuvarlak */
-      padding: 6px 6px 6px 16px; /* İç boşluğu ayarladım */
+      border: 1px solid var(--border); border-radius: 30px; 
+      padding: 4px 4px 4px 16px; /* İç boşluğu optimize ettim */
       transition: box-shadow 0.2s; 
-      height: 54px; /* Yükseklik sabitledim */
+      height: 54px; 
     }
     .search-bar:hover, .search-bar:focus-within { box-shadow: 0 1px 6px rgba(32,33,36,.28); }
     
@@ -84,10 +82,10 @@
     }
     .camera-btn:hover { background: #F1F3F4; }
 
-    /* OK BUTONU (Düzeltildi) */
+    /* OK BUTONU (DÜZELTİLDİ: SIKIŞMAYACAK) */
     .search-arrow-btn {
-      width: 42px; height: 42px; /* Biraz büyüttüm */
-      min-width: 42px; /* Küçülmesini engelle */
+      width: 44px; height: 44px; 
+      min-width: 44px; /* BU SATIR ÇOK ÖNEMLİ: Preslenmeyi engeller */
       background: var(--primary); color: white;
       border: none; border-radius: 50%;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -101,7 +99,7 @@
       width: 100%; max-width: 584px; height: 110px; 
       border-radius: 12px; overflow: hidden; position: relative; 
       cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-      margin-top: 20px; /* Banner üstü boşluk azaldı */
+      margin-top: 15px; /* Banner boşluğu azaldı */
       background: linear-gradient(105deg, #10B981 0%, #064e3b 100%); 
       display: flex; align-items: center; justify-content: space-between; 
       padding: 0 24px; 
@@ -112,7 +110,7 @@
     .banner-cta { font-size: 11px; font-weight: 600; background: white; color: #064e3b; padding: 6px 12px; border-radius: 20px; display: inline-block; }
     .banner-decor { position: absolute; right: -20px; bottom: -20px; font-size: 90px; color: white; opacity: 0.1; transform: rotate(-15deg); }
 
-    /* RESULTS CARD */
+    /* RESULTS */
     .result-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: 100%; }
     .recommendation-box { margin-top: 25px; border: 2px solid var(--primary); border-radius: 12px; padding: 15px; position: relative; background: #fcfdfc; }
     .recommendation-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: white; font-size: 12px; font-weight: 800; padding: 4px 12px; border-radius: 12px; text-transform: uppercase; box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3); }
@@ -126,11 +124,11 @@
     .img-actions { margin-top: 10px; display: flex; gap: 10px; justify-content: center; }
 
     /* FOOTER */
-    footer { background: #F8F9FA; border-top: 1px solid #DADCE0; padding: 20px 30px; display: flex; flex-direction: column; align-items: center; gap: 20px; font-size: 12px; color: #70757A; margin-top: auto; }
-    .footer-links { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+    footer { background: #F8F9FA; border-top: 1px solid #DADCE0; padding: 15px 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 11px; color: #70757A; margin-top: auto; }
+    .footer-links { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
     .footer-links a { color: #70757A; text-decoration: none; }
-    .company-tag { display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 800; color: #9CA3AF; font-size: 10px; }
-    .italian-bar { width: 100%; height: 4px; background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%); border-radius: 2px; border: 1px solid rgba(0,0,0,0.05); }
+    .company-tag { display: flex; flex-direction: column; align-items: center; gap: 6px; font-weight: 800; color: #9CA3AF; font-size: 9px; }
+    .italian-bar { width: 100%; height: 3px; background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%); border-radius: 2px; border: 1px solid rgba(0,0,0,0.05); }
 
     /* UTILS & SPINNER */
     .scene { display: none; width: 100%; max-width: 600px; }
@@ -138,15 +136,15 @@
     .spinner { width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 15px;}
     @keyframes spin { 100% { transform: rotate(360deg); } }
 
-    /* --- MOBİL ÖZEL AYARLAR (Screen < 600px) --- */
+    /* --- MOBİL ÖZEL AYARLAR (EKRAN SIĞDIRMA) --- */
     @media (max-width: 600px) {
-        main { padding-top: 10px; } /* Mobilde üst boşluğu iyice kıstım */
-        .hero-title { font-size: 24px; margin-bottom: 5px; } /* Başlık biraz küçüldü */
-        .hero-sub-top { font-size: 14px; margin-bottom: 15px; } /* Alt yazı yaklaştı */
-        .promo-banner { height: 90px; margin-top: 15px; } /* Banner inceldi */
+        main { padding-top: 5px; } /* Üst boşluk minimuma indi */
+        .hero-title { font-size: 24px; margin-bottom: 5px; }
+        .hero-sub-top { font-size: 13px; margin-bottom: 15px; }
+        .promo-banner { height: 90px; margin-top: 10px; } /* Banner inceltildi */
         .banner-title { font-size: 16px; }
-        .hero-sub-bottom { margin-top: 10px; font-size: 11px; } /* En alttaki yazı sıkılaştı */
-        header { padding: 10px 20px; } /* Header inceldi */
+        .hero-sub-bottom { margin-top: 8px; font-size: 11px; } 
+        header { padding: 10px 15px; } 
     }
 
   </style>
@@ -170,7 +168,7 @@
     <div class="search-wrapper">
       <div class="search-bar">
         <i class="fa-solid fa-magnifying-glass search-icon-left"></i>
-        <input id="q" type="text" placeholder="Ürün adı veya link yapıştır..." autocomplete="off">
+        <input id="q" type="text" placeholder="Ürün adı veya link..." autocomplete="off">
         
         <i class="fa-solid fa-camera camera-btn" onclick="triggerFileSelect()" title="Fotoğraf Çek/Yükle"></i>
 
