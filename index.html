@@ -310,6 +310,7 @@
 </footer>
 
 <script>
+  // --- İÇERİK YÖNETİM SİSTEMİ (CMS) ---
   const CONTENTS = {
     "hakkimizda": `<h3>1. CAYNANA nedir?</h3><p>CAYNANA, yapay zekâ destekli bir alışveriş analiz asistanıdır. Ürünleri satmaz, yorumları ve riskleri analiz eder.</p><h3>2. CAYNANA bir alışveriş sitesi mi?</h3><p>Hayır. CAYNANA ürün satmaz, sepet oluşturmaz, ödeme almaz.</p><h3>3. CAYNANA kararımı benim yerime mi veriyor?</h3><p>Hayır. CAYNANA veriyi analiz eder, kararı sana bırakır.</p><p><strong>Tasarımcı Notu:</strong> "Bu arayüzün amacı kullanıcıyı ikna etmek değil, korumaktır. Daha az seçenek, daha çok gerekçe."</p>`,
     "puan": `<h3>CAYNANA PUANI NASIL HESAPLANIR?</h3><p>Puan 4 ana bileşenden oluşur:</p><p><strong>1. Yorum Güveni (0–30):</strong> Gerçek kullanıcı ayırt edilir. Tekrarlayan, sahte şüphesi olan yorumlar elenir.</p><p><strong>2. Kronik Sorun Riski (0–30):</strong> "3 ay sonra bozuldu", "koku yapıyor" gibi tekrarlayan arızalar taranır.</p><p><strong>3. Fiyat / Performans (0–25):</strong> Verilen paraya değip değmediği analiz edilir.</p><p><strong>4. Satıcı & Garanti (0–15):</strong> İade zorlukları ve servis şikayetleri kontrol edilir.</p><hr><h3>PUAN SEVİYELERİ</h3><p><span style="color:#10B981; font-weight:800;">85–100:</span> Güvenle Al</p><p><span style="color:#3B82F6; font-weight:800;">70–84:</span> Mantıklı</p><p><span style="color:#F59E0B; font-weight:800;">50–69:</span> Dikkat</p><p><span style="color:#EF4444; font-weight:800;">0–49:</span> Uzak Dur</p><p><em>Not: Sponsorlu içerikler puanı ASLA etkilemez.</em></p>`,
@@ -323,7 +324,9 @@
 
   document.addEventListener('DOMContentLoaded', () => {
       
+      // API ADRESİNİN DOĞRU OLDUĞUNDAN EMİN OL
       const API_BASE = "https://bikonomi-api-1.onrender.com";
+      
       const qInput = document.getElementById("q");
       const searchForm = document.getElementById("searchForm");
       let session = { q: "", img: "" };
@@ -331,22 +334,32 @@
       let audioText = "";
       let loadingInterval;
 
+      // PWA
       if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/sw.js").catch(()=>{}); }
       let deferredPrompt;
       const installBtn = document.getElementById('installBtn');
       window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'flex'; });
       window.installPWA = async function() { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') installBtn.style.display = 'none'; deferredPrompt = null; } };
 
+      // Helper: Sesi Durdur
       window.stopSpeech = function() {
           const btn = document.getElementById("btnListen");
-          if(currentAudio) { currentAudio.pause(); currentAudio = null; }
-          if(btn) { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle'; btn.classList.remove("active"); }
+          if(currentAudio) { 
+              currentAudio.pause(); 
+              currentAudio.currentTime = 0; 
+              currentAudio = null; 
+          }
+          if(btn) { 
+              btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle'; 
+              btn.classList.remove("active"); 
+          }
       };
 
       window.fillSearch = function(txt) { qInput.value = txt; start(); };
 
       searchForm.addEventListener('submit', (e) => { e.preventDefault(); start(); });
 
+      // Scope Fix: stopSpeech artık window altında
       window.showScene = function(id) { 
           window.stopSpeech();
           document.querySelectorAll(".scene").forEach(el => el.classList.remove("active")); 
@@ -356,7 +369,7 @@
       
       window.resetAll = function() {
           window.stopSpeech();
-          window.clearImage(); // FIXED: Scope fix
+          window.clearImage(); // Scope Fix
           qInput.value = "";
           clearInterval(loadingInterval);
           showScene("scene-home");
@@ -383,18 +396,18 @@
           qInput.placeholder = "Ürün adı, linki veya sor...";
       };
 
+      // Title Mapping (Kullanıcı Talebi)
       window.openContent = function(key) {
-          const content = CONTENTS[key] || "<p>İçerik bulunamadı.</p>";
+          const content = CONTENTS[key] || "<p>İçerik hazırlanıyor...</p>";
           let title = "Bilgi";
-          if(key === "hakkimizda") title = "Hakkımızda";
-          if(key === "sss") title = "Sıkça Sorulan Sorular";
-          if(key === "gizlilik") title = "Gizlilik Politikası";
-          if(key === "iletisim") title = "İletişim";
-          if(key === "puan") title = "Puan Sistemi";
-          // FIXED: Missing titles added
-          if(key === "sartlar") title = "Kullanım Şartları";
-          if(key === "sorumluluk") title = "Yasal Uyarı";
-          if(key === "sponsor") title = "Sponsor Açıklaması";
+          if(key==="hakkimizda") title="Hakkımızda";
+          if(key==="sss") title="Sıkça Sorulan Sorular";
+          if(key==="gizlilik") title="Gizlilik Politikası";
+          if(key==="iletisim") title="İletişim";
+          if(key==="puan") title="Puan Sistemi";
+          if(key==="sartlar") title="Kullanım Şartları";
+          if(key==="sorumluluk") title="Yasal Uyarı";
+          if(key==="sponsor") title="Sponsor Açıklaması";
           
           document.getElementById("staticTitle").textContent = title;
           document.getElementById("staticText").innerHTML = content;
@@ -403,7 +416,7 @@
 
       window.startVoice = function() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if(!SpeechRecognition) return alert("Tarayıcınız sesli aramayı desteklemiyor.");
+        if(!SpeechRecognition) return alert("Cihazınız sesli aramayı desteklemiyor.");
         const rec = new SpeechRecognition();
         rec.lang = 'tr-TR';
         rec.start();
@@ -413,7 +426,7 @@
       };
 
       function startLoadingAnim() {
-        const texts = ["Link çözümleniyor...", "Yorumlar taranıyor...", "Kronik sorunlar aranıyor...", "Puan hesaplanıyor..."];
+        const texts = ["Link çözümleniyor...", "Yorumlar okunuyor...", "Kronik sorunlar aranıyor...", "Puan hesaplanıyor..."];
         let i = 0;
         const sub = document.getElementById("loadingSub");
         sub.innerText = texts[0];
@@ -454,7 +467,7 @@
         const q = qInput.value.trim();
         const imgToSend = session.img;
 
-        if (!q && !imgToSend) { alert("Lütfen bir şey yazın veya fotoğraf yükleyin."); return; }
+        if (!q && !imgToSend) { alert("Lütfen bir ürün adı yazın veya görsel yükleyin."); return; }
 
         showScene("scene-loading");
         startLoadingAnim();
@@ -468,7 +481,7 @@
 
             clearInterval(loadingInterval);
 
-            if (!res.ok) throw new Error("Sunucu hatası");
+            if (!res.ok) throw new Error("Sunucu hatası.");
             const data = await res.json();
 
             window.clearImage();
@@ -487,19 +500,18 @@
                 heroBox.style.display = "none";
             }
 
+            // Indicators
             const indRow = document.getElementById("indicatorRow");
-            const iTrust = document.getElementById("indTrust");
-            const iChronic = document.getElementById("indChronic");
-            const iReturn = document.getElementById("indReturn");
             if (data.indicators) {
                 indRow.style.display = "flex";
-                iTrust.innerHTML = `<strong>Yorum Güveni:</strong> %${data.indicators.comment_trust ?? "-"}`;
-                iChronic.innerHTML = `<strong>Kronik Sorun:</strong> ${data.indicators.chronic_issue ? "Var" : "Yok"}`;
-                iReturn.innerHTML = `<strong>İade Riski:</strong> ${(data.indicators.return_risk || "-")}`;
+                document.getElementById("indTrust").innerHTML = `<strong>Yorum Güveni:</strong> %${data.indicators.comment_trust ?? "-"}`;
+                document.getElementById("indChronic").innerHTML = `<strong>Kronik Sorun:</strong> ${data.indicators.chronic_issue ? "Var" : "Yok"}`;
+                document.getElementById("indReturn").innerHTML = `<strong>İade Riski:</strong> ${(data.indicators.return_risk || "-")}`;
             } else {
                 indRow.style.display = "none";
             }
 
+            // Pros / Cons
             const pcWrap = document.getElementById("prosConsWrap");
             if ((data.pros && data.pros.length) || (data.cons && data.cons.length)) {
                 pcWrap.style.display = "flex";
@@ -509,6 +521,7 @@
                 pcWrap.style.display = "none";
             }
 
+            // Chronic issues
             const chWrap = document.getElementById("chronicWrap");
             if (data.chronic_issues && data.chronic_issues.length) {
                 chWrap.style.display = "block";
@@ -517,6 +530,7 @@
                 chWrap.style.display = "none";
             }
 
+            // Risk flags
             const rWrap = document.getElementById("riskWrap");
             if (data.risk_flags && data.risk_flags.length) {
                 rWrap.style.display = "block";
@@ -525,6 +539,7 @@
                 rWrap.style.display = "none";
             }
 
+            // Evidence
             const eWrap = document.getElementById("evidenceWrap");
             if (data.evidence_quotes && data.evidence_quotes.length) {
                 eWrap.style.display = "block";
@@ -533,38 +548,45 @@
                 eWrap.style.display = "none";
             }
 
-            // FIXED: Safe Score Check (No Random)
-            if (data.score && data.score.value !== undefined && data.score.value !== null) {
+            // --- PUAN GÖSTERİMİ (HATA DÜZELTİLDİ) ---
+            if (data.score) {
                 const scoreEl = document.getElementById("scoreArea");
                 const gauge = document.getElementById("scoreGauge");
-                const val = document.getElementById("scoreVal");
-                const verdict = document.getElementById("scoreVerdict");
+                const valEl = document.getElementById("scoreVal");
+                const verdictEl = document.getElementById("scoreVerdict");
 
-                const score = parseInt(data.score.value);
-                scoreEl.style.display = "flex";
-                val.innerText = score;
-                
-                let color = data.score.color || "#10B981"; 
-                let text = data.score.label || "Güvenle Al";
-                
-                if(!data.score.color) {
-                    if(score < 50) { color = "#EF4444"; text = "Uzak Dur"; }
-                    else if(score < 70) { color = "#F59E0B"; text = "Dikkat Et"; }
-                    else if(score < 85) { color = "#3B82F6"; text = "Mantıklı"; }
+                let scoreValue = 0;
+                let scoreLabel = "Analiz Edildi";
+                let scoreColor = "#10B981";
+
+                // Backend'den nesne mi yoksa sayı mı geldi kontrol et
+                if (typeof data.score === 'object') {
+                    scoreValue = parseInt(data.score.value) || 0;
+                    scoreLabel = data.score.label || "Analiz Edildi";
+                    scoreColor = data.score.color || "#10B981";
+                } else if (typeof data.score === 'number') {
+                    scoreValue = parseInt(data.score);
+                    // Manuel renk ataması
+                    if(scoreValue < 50) { scoreColor = "#EF4444"; scoreLabel = "Uzak Dur"; }
+                    else if(scoreValue < 70) { scoreColor = "#F59E0B"; scoreLabel = "Dikkat Et"; }
+                    else if(scoreValue < 85) { scoreColor = "#3B82F6"; scoreLabel = "Mantıklı"; }
                 }
 
-                gauge.style.setProperty('--score-color', color);
-                gauge.style.setProperty('--score-pct', score + '%');
-                verdict.style.color = color;
-                verdict.innerText = text;
+                scoreEl.style.display = "flex";
+                valEl.innerText = scoreValue;
+                verdictEl.innerText = scoreLabel;
+                verdictEl.style.color = scoreColor;
+                gauge.style.background = `conic-gradient(${scoreColor} ${scoreValue}%, #E5E7EB 0)`;
+                
             } else {
                 document.getElementById("scoreArea").style.display = "none";
             }
 
+            // Recommendations
             const list = document.getElementById("recommendationList");
             list.innerHTML = "";
-
             const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
+            
             if (recs.length > 0) {
                 recs.forEach(rec => {
                     let theme = "theme-default";
@@ -574,7 +596,6 @@
                     else if (award.includes("bronz")) theme = "theme-bronze";
                     else if (award.includes("platin")) theme = "theme-platinum";
 
-                    // FIXED: Platform check logic
                     let iconClass = "fa-solid fa-bag-shopping";
                     const platform = String(rec.site || rec.platform || "").toLowerCase();
                     if (platform.includes("trendyol")) iconClass = "fa-solid fa-cart-shopping"; 
@@ -594,7 +615,7 @@
                     list.innerHTML += html;
                 });
             } else {
-                list.innerHTML = "<div style='text-align:center; color:#999; font-size:13px;'>Şu an için alternatif öneri bulunamadı.</div>";
+                list.innerHTML = "<div style='text-align:center; color:#999; font-size:13px;'>Alternatif bulunamadı.</div>";
             }
 
             showScene("scene-results");
@@ -606,13 +627,13 @@
         }
       }
 
-  window.toggleSpeech = async function() {
+      // --- SES ÇALMA (HATA AYIKLAYICI VERSİYON) ---
+      window.toggleSpeech = async function() {
           const btn = document.getElementById("btnListen");
           
-          // Eğer zaten çalıyorsa durdur
-          if(currentAudio) {
-              window.stopSpeech();
-              return;
+          if(currentAudio) { 
+              window.stopSpeech(); 
+              return; 
           }
           
           if (!audioText || audioText.length < 2) {
@@ -631,13 +652,11 @@
                   body: JSON.stringify({ text: audioText })
               });
 
-              // Backend hata döndü mü?
               if(!res.ok) {
                   const errText = await res.text();
                   throw new Error("Sunucu Hatası: " + errText);
               }
 
-              // Gelen verinin tipi ses mi?
               const contentType = res.headers.get("content-type");
               if (contentType && contentType.includes("application/json")) {
                   const errJson = await res.json();
@@ -645,8 +664,6 @@
               }
 
               const blob = await res.blob();
-              console.log("Ses dosyası indi. Boyut:", blob.size);
-
               if (blob.size < 100) {
                   throw new Error("Ses dosyası boş veya hatalı geldi.");
               }
@@ -654,23 +671,20 @@
               const url = URL.createObjectURL(blob);
               currentAudio = new Audio(url);
               
-              // Ses bitince butonu düzelt
               currentAudio.onended = () => { 
                   console.log("Ses bitti.");
                   window.stopSpeech(); 
               };
               
-              // Hata olursa yakala
               currentAudio.onerror = (e) => {
-                  console.error("Audio player hatası:", e);
-                  alert("Tarayıcı bu ses formatını çalamadı.");
+                  console.error("Audio hatası:", e);
+                  alert("Tarayıcı bu sesi çalamadı.");
                   window.stopSpeech();
               };
 
-              // Çalmayı dene (Promise ile)
               await currentAudio.play().catch(e => {
                   console.error("Oynatma engellendi:", e);
-                  alert("Ses oynatılamadı. Lütfen telefonun 'Sessiz Mod'da olmadığından emin olun veya ekrana bir kez dokunun.");
+                  alert("Ses oynatılamadı. Lütfen telefonun sesini açın veya ekrana dokunun.");
                   window.stopSpeech();
               });
 
@@ -682,11 +696,7 @@
               window.stopSpeech();
           }
       };
+      
       window.start = start;
   });
 </script>
-
-</body>
-</html>
-
-
