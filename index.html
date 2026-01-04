@@ -1,375 +1,160 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>CAYNANA.AI</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://bikonomi-api-1.onrender.com; connect-src 'self' https://bikonomi-api-1.onrender.com; img-src 'self' data: https: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CAYNANA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root { --primary: #10B981; --bg: #e5e5e5; }
+  body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); height: 100vh; display: flex; flex-direction: column; }
   
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#10B981">
+  /* HEADER */
+  .header { background: white; padding: 15px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; }
+  .logo { font-weight: 900; font-size: 20px; color: #333; display: flex; align-items: center; gap: 8px; }
+  .logo span { color: var(--primary); }
+  .status { font-size: 12px; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 5px; }
+  .status::before { content:''; width: 8px; height: 8px; background: var(--primary); border-radius: 50%; display: inline-block; }
+
+  /* CHAT AREA */
+  #chat-box { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; background-image: radial-gradient(#ddd 1px, transparent 1px); background-size: 20px 20px; }
   
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  .msg { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4; position: relative; animation: slideUp 0.3s ease; }
+  .msg.user { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+  .msg.ai { align-self: flex-start; background: white; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
   
-  <style>
-    :root { --primary: #10B981; --primary-dark: #059669; --bg: #F3F4F6; --bubble-user: #10B981; --bubble-ai: #FFFFFF; }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+  .typing { font-size: 12px; color: #666; margin-left: 10px; display: none; font-style: italic; }
 
-    /* --- HEADER --- */
-    .header { padding: 12px 15px; background: white; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e5e7eb; z-index: 10; }
-    .logo { font-weight: 900; font-size: 18px; color: #111; letter-spacing: -0.5px; display: flex; align-items: center; gap: 5px; cursor: pointer; }
-    .logo span { color: var(--primary); }
-    .header-right { display: flex; align-items: center; gap: 10px; }
-    .mode-badge { font-size: 10px; font-weight: 800; background: #ECFDF5; color: var(--primary); padding: 4px 8px; border-radius: 12px; text-transform: uppercase; border: 1px solid #D1FAE5; }
-    .profile-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: #64748B; }
+  @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
-    /* --- CHAT AREA --- */
-    #chat-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
-    
-    .message { max-width: 85%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; position: relative; animation: popIn 0.3s ease; word-wrap: break-word; }
-    .message.user { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; box-shadow: 0 2px 5px rgba(16, 185, 129, 0.2); }
-    .message.ai { align-self: flex-start; background: white; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    
-    /* Image inside message */
-    .msg-img { max-width: 100%; border-radius: 8px; margin-bottom: 8px; display: block; border: 1px solid rgba(0,0,0,0.1); }
+  /* CARDS */
+  .cards-wrap { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0 10px 0; width: 100%; margin-top: 5px; }
+  .cards-wrap::-webkit-scrollbar { display: none; }
+  .card { min-width: 200px; background: white; border-radius: 12px; padding: 10px; border: 1px solid #eee; text-decoration: none; color: inherit; display: block; }
+  .card img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 5px; }
+  .card-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .card-desc { font-size: 11px; color: #666; }
 
-    @keyframes popIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  /* INPUT AREA */
+  .input-area { background: white; padding: 10px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #ddd; }
+  .inp { flex: 1; padding: 12px; border: 1px solid #eee; border-radius: 24px; font-size: 16px; outline: none; background: #f9f9f9; }
+  .inp:focus { border-color: var(--primary); background: white; }
+  .btn { width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+  .btn:active { transform: scale(0.9); }
 
-    /* --- CARDS (Yatay Kaydırma) --- */
-    .cards-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 5px 2px 15px 2px; margin-top: 10px; width: 100%; scrollbar-width: none; -ms-overflow-style: none; }
-    .cards-scroll::-webkit-scrollbar { display: none; }
-    
-    .card { min-width: 220px; max-width: 220px; background: white; border-radius: 12px; padding: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); text-decoration: none; color: inherit; display: flex; flex-direction: column; border: 1px solid #f0f0f0; transition: transform 0.2s; }
-    .card:active { transform: scale(0.98); }
-    .card img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; background: #f9f9f9; }
-    .card-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: #111; height: 34px; }
-    .card-sub { font-size: 11px; color: #64748B; margin-top: auto; display: flex; justify-content: space-between; font-weight: 500; }
-    .card-badge { background: #F3F4F6; padding: 2px 6px; border-radius: 4px; font-size: 10px; color: #444; }
-
-    /* COACH CARD */
-    .coach-card { background: #F0FDF9; border: 1px solid #10B981; border-radius: 16px; padding: 16px; width: 100%; margin-top: 10px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.1); }
-    .coach-head { font-weight: 800; color: #065F46; font-size: 11px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; }
-    .coach-text { font-size: 14px; color: #064E3B; margin-bottom: 15px; line-height: 1.5; }
-    .coach-boost { background: white; padding: 12px; border-radius: 10px; text-align: center; font-weight: 700; color: var(--primary-dark); border: 2px dashed #A7F3D0; font-size: 13px; }
-
-    /* --- INPUT AREA --- */
-    .footer-area { background: white; border-top: 1px solid #e5e7eb; padding-bottom: env(safe-area-inset-bottom); }
-    
-    .chips-area { padding: 10px 15px 0 15px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
-    .chips-area::-webkit-scrollbar { display: none; }
-    .chip { background: white; border: 1px solid #E2E8F0; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #475569; white-space: nowrap; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 5px; }
-    .chip:active { background: #F1F5F9; transform: scale(0.95); }
-    .chip i { color: var(--primary); }
-
-    .input-wrapper { padding: 10px 15px; display: flex; gap: 8px; align-items: center; }
-    .input-box { flex: 1; background: #F3F4F6; border: 1px solid #E5E7EB; padding: 12px 15px; border-radius: 24px; font-size: 15px; outline: none; transition: 0.3s; }
-    .input-box:focus { border-color: var(--primary); background: white; }
-    .action-btn { width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: 0.2s; }
-    .send-btn { background: var(--primary); color: white; }
-    .send-btn:active { background: var(--primary-dark); }
-    .cam-btn { background: #E5E7EB; color: #475569; }
-    .cam-btn:active { background: #CBD5E1; }
-    .cam-btn.active { background: #FEE2E2; color: #EF4444; animation: pulse 1s infinite; }
-
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
-
-    /* --- MODAL (ONBOARDING) --- */
-    #modal { position: fixed; inset:0; background: rgba(0,0,0,0.85); z-index: 999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-    .modal-box { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 24px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    .modal-title { font-size: 20px; font-weight: 800; color: #111; margin-bottom: 5px; }
-    .modal-sub { font-size: 13px; color: #666; margin-bottom: 20px; }
-    
-    .gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-    .btn-opt { padding: 12px; border: 2px solid #E2E8F0; border-radius: 12px; background: white; font-weight: 600; cursor: pointer; color: #475569; font-size: 14px; transition: 0.2s; }
-    .btn-opt.sel { border-color: var(--primary); background: #ECFDF5; color: var(--primary); }
-    
-    .form-input { width: 100%; padding: 12px; border: 2px solid #E2E8F0; border-radius: 12px; font-size: 15px; outline: none; margin-bottom: 10px; background: #F8FAFC; }
-    .form-input:focus { border-color: var(--primary); background: white; }
-    
-    .save-btn { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; }
-    .save-btn:active { transform: scale(0.98); }
-
-    /* LOADING DOTS */
-    .typing { display: flex; gap: 4px; padding: 5px 0; }
-    .dot { width: 6px; height: 6px; background: #ccc; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
-    .dot:nth-child(1) { animation-delay: -0.32s; }
-    .dot:nth-child(2) { animation-delay: -0.16s; }
-    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-  </style>
+  /* CHIPS */
+  .chips { padding: 10px 15px 0; background: white; display: flex; gap: 8px; overflow-x: auto; }
+  .chip { background: #f0fdf4; color: var(--primary); border: 1px solid #bbf7d0; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+</style>
 </head>
 <body>
 
-<div id="modal" style="display:none;">
-  <div class="modal-box">
-    <div class="modal-title">Tanışalım Evladım</div>
-    <div class="modal-sub">Sana doğru hitap edebilmem ve burcunu bilmem için gerekli.</div>
-    
-    <div class="gender-grid">
-        <button class="btn-opt" onclick="setGender('female', this)">👩 Kızım</button>
-        <button class="btn-opt" onclick="setGender('male', this)">👨 Oğlum</button>
-    </div>
-    
-    <input type="text" id="cityIn" class="form-input" placeholder="Hangi Şehir? (Örn: İstanbul)">
-    
-    <select id="zodiacIn" class="form-input" style="appearance: none;">
-        <option value="">Burcun Nedir?</option>
-        <option value="koç">Koç (Aries)</option>
-        <option value="boğa">Boğa (Taurus)</option>
-        <option value="ikizler">İkizler (Gemini)</option>
-        <option value="yengeç">Yengeç (Cancer)</option>
-        <option value="aslan">Aslan (Leo)</option>
-        <option value="başak">Başak (Virgo)</option>
-        <option value="terazi">Terazi (Libra)</option>
-        <option value="akrep">Akrep (Scorpio)</option>
-        <option value="yay">Yay (Sagittarius)</option>
-        <option value="oğlak">Oğlak (Capricorn)</option>
-        <option value="kova">Kova (Aquarius)</option>
-        <option value="balık">Balık (Pisces)</option>
-    </select>
-
-    <button class="save-btn" onclick="saveProfile()">Kaydet ve Başla</button>
-  </div>
+<div class="header">
+  <div class="logo"><i class="fa-solid fa-comment-dots"></i> CAYNANA<span>.AI</span></div>
+  <div class="status">Çevrimiçi</div>
 </div>
 
-<header class="header">
-  <div class="logo" onclick="location.reload()">CAYNANA<span>.AI</span></div>
-  <div style="display:flex; align-items:center; gap:10px;">
-      <div class="mode-badge" id="modeBadge">AUTO</div>
-      <button class="profile-btn" onclick="openProfile()"><i class="fa-solid fa-user-gear"></i></button>
+<div id="chat-box">
+  <div class="msg ai">
+    Hoş geldin evladım. Ben Kaynanan. Alışveriş, dert, yemek, fal... Ne varsa dökül, çözeriz.
   </div>
-</header>
+</div>
+<div class="typing" id="typingIndicator">Kaynanan yazıyor...</div>
 
-<div id="chat-container">
-  </div>
+<div class="chips">
+  <div class="chip" onclick="fill('Fal bak')">🔮 Fal Bak</div>
+  <div class="chip" onclick="fill('Bugün ne giysem?')">👗 Ne Giysem?</div>
+  <div class="chip" onclick="fill('Nöbetçi eczane nerede?')">💊 Eczane</div>
+</div>
 
-<div class="footer-area">
-    <div class="chips-area">
-        <div class="chip" onclick="sendChip('Günlük burç yorumum')"><i class="fa-solid fa-star"></i> Günlük Burç</div>
-        <div class="chip" onclick="sendChip('3 kart tarot aç')"><i class="fa-solid fa-layer-group"></i> Tarot Falı</div>
-        <div class="chip" onclick="triggerFile()"><i class="fa-solid fa-mug-hot"></i> Kahve Falı</div>
-        <div class="chip" onclick="sendChip('Bugün ne giysem?')"><i class="fa-solid fa-shirt"></i> Ne Giysem?</div>
-        <div class="chip" onclick="sendChip('Nöbetçi eczane nerede?')"><i class="fa-solid fa-pills"></i> Eczane</div>
-    </div>
-
-    <div class="input-wrapper">
-        <button class="cam-btn" id="camBtn" onclick="triggerFile()"><i class="fa-solid fa-camera"></i></button>
-        <input type="text" id="msgInput" class="input-box" placeholder="Bir şeyler yaz..." autocomplete="off">
-        <button class="send-btn" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
-        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
-    </div>
+<div class="input-area">
+  <input type="text" id="msgIn" class="inp" placeholder="Mesajın..." onkeypress="if(event.key==='Enter') send()">
+  <button class="btn" onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
 </div>
 
 <script>
-  let user = { gender: 'neutral', city: 'İstanbul', zodiac: '' };
-  let currentImg = null;
-  const API_URL = "https://bikonomi-api-1.onrender.com/api/chat";
+const API_URL = "https://bikonomi-api-1.onrender.com/api/chat";
+const chatBox = document.getElementById('chat-box');
+const typing = document.getElementById('typingIndicator');
 
-  // --- INIT ---
-  function init() {
-      const stored = localStorage.getItem('caynana_user');
-      if (stored) {
-          user = JSON.parse(stored);
-          document.getElementById('modal').style.display = 'none';
-          addBubble(`Hoş geldin ${user.gender==='female'?'kızım':'evladım'}. Bugün nasılsın?`, 'ai');
-      } else {
-          document.getElementById('modal').style.display = 'flex';
-      }
-  }
+function fill(txt) {
+  document.getElementById('msgIn').value = txt;
+  send();
+}
 
-  // --- PROFILE LOGIC ---
-  function setGender(g, btn) {
-    user.gender = g;
-    document.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('sel'));
-    btn.classList.add('sel');
-  }
+async function send() {
+  const inp = document.getElementById('msgIn');
+  const txt = inp.value.trim();
+  if(!txt) return;
 
-  function saveProfile() {
-    const c = document.getElementById('cityIn').value.trim();
-    const z = document.getElementById('zodiacIn').value;
-    if(c) user.city = c;
-    if(z) user.zodiac = z;
-    
-    localStorage.setItem('caynana_user', JSON.stringify(user));
-    document.getElementById('modal').style.display = 'none';
-    addBubble("Tamamdır evladım, kaydettim. Şimdi dökül bakalım.", 'ai');
-  }
-
-  function openProfile() { document.getElementById('modal').style.display = 'flex'; }
-
-  // --- CHAT LOGIC ---
-  function sendChip(txt) {
-      document.getElementById('msgInput').value = txt;
-      sendMsg();
-  }
-
-  function triggerFile() { document.getElementById('fileInput').click(); }
+  // 1. Kullanıcı Mesajını Ekle
+  addMsg(txt, 'user');
+  inp.value = '';
   
-  function handleFile(file) {
-      if(!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-          currentImg = e.target.result; // Base64
-          document.getElementById('camBtn').classList.add('active'); // Görsel seçildiğini belli et
-          // Otomatik gönderme yapmıyoruz, kullanıcı mesaj da yazabilir.
-          document.getElementById('msgInput').placeholder = "Fincan fotoğrafı eklendi. Gönder...";
-          document.getElementById('msgInput').focus();
-      };
-      reader.readAsDataURL(file);
-  }
+  // 2. Typing Göster
+  typing.style.display = 'block';
+  chatBox.scrollTop = chatBox.scrollHeight;
 
-  // Enter tuşu ile gönder
-  document.getElementById("msgInput").addEventListener("keypress", function(event) {
-      if (event.key === "Enter") sendMsg();
-  });
-
-  async function sendMsg() {
-    const inp = document.getElementById('msgInput');
-    const txt = inp.value.trim();
-    
-    if(!txt && !currentImg) return;
-
-    // 1. User Bubble (Text ve Resim varsa)
-    addBubble(txt, 'user', false, currentImg);
-    
-    inp.value = '';
-    inp.placeholder = "Bir şeyler yaz...";
-    document.getElementById('camBtn').classList.remove('active');
-
-    // 2. Loading
-    const loadId = addBubble('<div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>', 'ai', true);
-
-    try {
-      const payload = { 
-          message: txt || "Fotoğraf yorumla", 
-          image_dataurl: currentImg,
-          user: user, 
-          mode_lock: 'auto' 
-      };
-
-      // Reset Image buffer AFTER sending payload
-      currentImg = null;
-      document.getElementById('fileInput').value = "";
-
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-      });
-      
-      const data = await res.json();
-      
-      // Remove loading
-      const loadEl = document.getElementById(loadId);
-      if(loadEl) loadEl.remove();
-
-      // 3. AI Bubble
-      const aiDiv = addBubble(data.assistant_text || "Bir şeyler ters gitti evladım.", 'ai');
-      
-      // Badge Update
-      const badges = {
-          'shopping': '🛍️ ALIŞVERİŞ',
-          'food': '🍽️ YEMEK',
-          'travel': '✈️ GEZİ',
-          'fortune': '🔮 FAL',
-          'life': '🧘 YAŞAM',
-          'pharmacy': '💊 ECZANE',
-          'cinema': '🎬 SİNEMA'
-      };
-      document.getElementById('modeBadge').innerText = badges[data.intent] || 'AUTO';
-
-      // 4. Render Content (Cards or Coach)
-      if(data.intent === 'life' && data.coach_plan) {
-        renderCoachCard(aiDiv, data.coach_plan);
-      } else if(data.cards && data.cards.length > 0) {
-        renderDataCards(aiDiv, data.cards);
-      }
-
-    } catch(e) {
-      const loadEl = document.getElementById(loadId);
-      if(loadEl) loadEl.innerText = "Bağlantı koptu evladım, tekrar dene.";
-    }
-  }
-
-  function addBubble(text, type, isTemp=false, imgData=null) {
-    const div = document.createElement('div');
-    div.className = `message ${type}`;
-    div.id = isTemp ? 'temp-' + Date.now() : '';
-    
-    let content = "";
-    if(imgData) content += `<img src="${imgData}" class="msg-img">`;
-    content += text;
-    
-    div.innerHTML = content;
-    
-    const container = document.getElementById('chat-container');
-    container.appendChild(div);
-    
-    // Auto Scroll to bottom
-    setTimeout(() => {
-        container.scrollTop = container.scrollHeight;
-    }, 100);
-    
-    return div.id || div;
-  }
-
-  function renderDataCards(parent, cards) {
-    // Mesajın hemen altına ekle
-    const scroll = document.createElement('div');
-    scroll.className = 'cards-scroll';
-    
-    cards.forEach(c => {
-      const a = document.createElement('a');
-      a.className = 'card';
-      a.href = c.url || '#';
-      a.target = '_blank';
-      
-      const imgHtml = c.image ? `<img src="${c.image}">` : '';
-      // Fallback icon for places
-      const iconHtml = !c.image ? '<div style="height:40px; display:flex; align-items:center; font-size:24px;">📍</div>' : '';
-
-      a.innerHTML = `
-        ${imgHtml}
-        ${iconHtml}
-        <div class="card-title">${c.title}</div>
-        <div class="card-sub">
-            <span>${c.subtitle||''}</span>
-            <span class="card-badge">${c.type === 'product' ? 'Ürün' : 'Mekan'}</span>
-        </div>
-      `;
-      scroll.appendChild(a);
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ message: txt, user: { city: 'İstanbul', gender: 'neutral' } })
     });
     
-    // Kartları chat akışına (bubble'ın dışına değil, altına) eklemek için
-    // Bubble'ın parent'ı olan container'a ekliyoruz
-    document.getElementById('chat-container').appendChild(scroll);
-    
-    // Scroll to bottom again
-    const container = document.getElementById('chat-container');
-    container.scrollTop = container.scrollHeight;
-  }
+    const data = await res.json();
+    typing.style.display = 'none';
 
-  function renderCoachCard(parent, plan) {
-    const div = document.createElement('div');
-    div.className = 'coach-card';
-    div.innerHTML = `
-      <div class="coach-head">DURUM ANALİZİ</div>
-      <div class="coach-text">${plan.summary||''}</div>
-      
-      <div class="coach-head">GÜNÜN GÖREVİ</div>
-      <div class="coach-text">👉 <strong>${plan.today_step||''}</strong></div>
-      
-      <div class="coach-boost">"${plan.confidence_boost||''}"</div>
+    // 3. Cevabı Ekle
+    const aiMsg = addMsg(data.reply, 'ai');
+
+    // 4. Kart Varsa Ekle
+    if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+        addCards(aiMsg, data.data);
+    } else if (data.data && data.data.cards) {
+        // Tarot gibi özel kartlar
+        addMsg("Kartların: " + data.data.cards.join(", "), 'ai');
+    }
+
+  } catch(e) {
+    typing.style.display = 'none';
+    addMsg("Bağlantı koptu evladım, tekrar dene.", 'ai');
+  }
+}
+
+function addMsg(txt, type) {
+  const div = document.createElement('div');
+  div.className = `msg ${type}`;
+  div.innerText = txt;
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return div; // Kart eklemek için referans
+}
+
+function addCards(parentMsg, items) {
+  const wrap = document.createElement('div');
+  wrap.className = 'cards-wrap';
+  
+  items.forEach(item => {
+    const a = document.createElement('a');
+    a.className = 'card';
+    a.href = item.url || '#';
+    a.target = '_blank';
+    
+    let imgHTML = item.image ? `<img src="${item.image}">` : '';
+    a.innerHTML = `
+      ${imgHTML}
+      <div class="card-title">${item.title || 'Başlık Yok'}</div>
+      <div class="card-desc">${item.price || item.desc || ''}</div>
     `;
-    document.getElementById('chat-container').appendChild(div);
-    
-    const container = document.getElementById('chat-container');
-    container.scrollTop = container.scrollHeight;
-  }
-
-  // Start
-  init();
+    wrap.appendChild(a);
+  });
+  
+  // Mesajın altına kartları ekle
+  chatBox.appendChild(wrap);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
 </script>
 
 </body>
