@@ -196,12 +196,12 @@
        <button class="img-cancel" onclick="clearImage()"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
-    <form id="searchForm" class="search-container">
+    <form id="searchForm" class="search-container" onsubmit="event.preventDefault(); start();">
       <div class="search-bar">
         <button type="button" class="action-btn" onclick="startVoice()"><i class="fa-solid fa-microphone"></i></button>
         <input id="q" type="text" placeholder="Ürün, mekan veya tavsiye iste..." autocomplete="off">
         <button type="button" class="action-btn" onclick="triggerFile()"><i class="fa-solid fa-camera"></i></button>
-        <button type="submit" class="action-btn search-btn"><i class="fa-solid fa-arrow-right"></i></button>
+        <button type="button" class="action-btn search-btn" onclick="start()"><i class="fa-solid fa-arrow-right"></i></button>
       </div>
       <input id="fileInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this.files[0])">
     </form>
@@ -277,7 +277,7 @@
         </div>
 
         <div id="chronicWrap" style="display:none; margin-top:12px; padding:12px; border-radius:12px; border:1px solid rgba(245,158,11,0.35); background:rgba(245,158,11,0.08);">
-            <div style="font-weight:900; font-size:12px; margin-bottom:6px; color:var(--warn);">⚠️ Dikkat Edilecekler</div>
+            <div style="font-weight:900; font-size:12px; margin-bottom:6px; color:var(--warn);">⚠️ Kronik Sorunlar</div>
             <ul id="chronicList" style="margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:1.6;"></ul>
         </div>
 
@@ -374,7 +374,8 @@
 
       window.fillSearch = function(txt) { qInput.value = txt; start(); };
 
-      searchForm.addEventListener('submit', (e) => { e.preventDefault(); start(); });
+      // FIXED: Form submit engellendi (Reload Fix)
+      // searchForm.addEventListener('submit'...) siliyoruz çünkü HTML içinde onsubmit var.
 
       window.showScene = function(id) { 
           window.stopSpeech();
@@ -609,7 +610,7 @@
                     const award = String(rec.award || "").toLowerCase();
                     if (award.includes("altın") || award.includes("gold")) theme = "theme-gold";
                     else if (award.includes("gümüş") || award.includes("silver")) theme = "theme-silver";
-                    else if (award.includes("bronz") theme = "theme-bronze";
+                    else if (award.includes("bronz")) theme = "theme-bronze";
                     else if (award.includes("platin")) theme = "theme-platinum";
 
                     let iconClass = "fa-solid fa-bag-shopping";
