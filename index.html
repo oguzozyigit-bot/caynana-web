@@ -13,13 +13,13 @@
     --primary-light: #ECFDF5;
     --text-main: #111827;
     --text-sub: #6B7280;
-    --bg-app: #F9FAFB;
+    --bg-app: #F3F4F6; /* Masaüstü arka planı gri olsun */
     --bg-white: #FFFFFF;
     --border: #E5E7EB;
     
-    /* Yükseklikler JS ile dinamik yönetilecek ama varsayılanlar: */
     --header-height: 60px;
-    --dock-height: 70px;
+    --dock-height: 72px;
+    --app-max-width: 768px; /* Desktop genişlik sınırı */
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -28,11 +28,23 @@
     margin: 0;
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-app);
-    height: 100vh; /* Fallback */
-    height: 100dvh; /* Dinamik viewport */
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    justify-content: center; /* Desktopta ortala */
+    overflow: hidden;
+  }
+
+  /* --- APP CONTAINER (Desktop Sınırlayıcı) --- */
+  #app-root {
+    width: 100%;
+    max-width: var(--app-max-width);
+    background: var(--bg-white);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    height: 100%;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0,0,0,0.05); /* Desktopta hafif gölge */
   }
 
   /* --- A) ÜST BAR --- */
@@ -44,8 +56,8 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 16px;
-    padding-top: env(safe-area-inset-top); /* Çentik payı */
-    position: fixed;
+    padding-top: env(safe-area-inset-top);
+    position: absolute; /* App root içinde absolute */
     top: 0; left: 0; right: 0;
     z-index: 60;
   }
@@ -67,21 +79,21 @@
   /* --- B) ORTA ANA PENCERE --- */
   .main-panel {
     flex: 1;
-    /* Marginler JS ile hesaplanacak */
-    margin-top: var(--header-height); 
+    margin-top: var(--header-height);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
     scroll-behavior: smooth;
     position: relative;
     padding-bottom: 20px;
+    background: var(--bg-white);
   }
 
   /* Panel Başlığı */
   .panel-header {
     text-align: center;
-    padding: 20px 10px 10px;
-    background: var(--bg-app);
+    padding: 24px 16px 16px;
+    background: var(--bg-white);
     position: sticky; top: 0; z-index: 10;
   }
   .ph-title { font-size: 18px; font-weight: 800; color: var(--text-main); margin-bottom: 4px; }
@@ -89,11 +101,12 @@
 
   /* Sohbet Akışı */
   .results-stream {
-    padding: 15px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    min-height: 200px; /* Boşken çökmesin */
+    gap: 16px;
+    /* Klavye açılınca içerik yukarı kaysın diye min-height */
+    min-height: 300px;
   }
 
   /* Mesaj Balonları */
@@ -103,7 +116,7 @@
 
   .bubble {
     padding: 12px 16px;
-    border-radius: 16px;
+    border-radius: 18px;
     font-size: 15px;
     line-height: 1.5;
     max-width: 85%;
@@ -112,7 +125,12 @@
     word-wrap: break-word;
   }
   .msg-row.user .bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
-  .msg-row.ai .bubble { background: white; color: var(--text-main); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .msg-row.ai .bubble { background: #F3F4F6; color: var(--text-main); border-bottom-left-radius: 4px; }
+
+  /* Gelecek Modu Uyarısı */
+  .disclaimer {
+    font-size: 10px; color: #9CA3AF; margin-top: 4px; font-style: italic; display: block;
+  }
 
   /* Kartlar */
   .cards-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 10px 2px; width: 100%; scrollbar-width: none; }
@@ -122,40 +140,41 @@
     min-width: 200px; max-width: 200px; background: white; border: 1px solid var(--border);
     border-radius: 12px; padding: 10px; display: flex; flex-direction: column;
     text-decoration: none; color: inherit; box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    transition: transform 0.2s;
   }
+  .card:hover { transform: translateY(-3px); }
   .card img { width: 100%; height: 110px; object-fit: contain; margin-bottom: 8px; }
-  .card-title { font-size: 13px; font-weight: 700; height: 32px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 4px;}
+  .card-title { font-size: 13px; font-weight: 700; height: 34px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 4px;}
   .card-price { font-weight: 800; color: var(--primary); font-size: 14px; margin-top: auto; }
 
-  /* Loader (Artık results-stream içinde olacak) */
+  /* Loader Bubble */
   .loader-bubble {
     align-self: flex-start;
     background: white; border: 1px solid var(--border);
     padding: 10px 16px; border-radius: 16px; border-bottom-left-radius: 4px;
     color: var(--text-sub); font-size: 13px; font-style: italic;
-    display: none; /* JS ile açılacak */
-    margin-bottom: 10px;
+    display: none; margin-bottom: 10px;
     animation: pulse 1.5s infinite;
   }
 
   @keyframes slideUp { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
   @keyframes pulse { 0% {opacity:0.6} 50% {opacity:1} 100% {opacity:0.6} }
 
-  /* --- C) SABİT ALT ALAN (INPUT + DOCK) --- */
+  /* --- C) SABİT ALT ALAN --- */
   .fixed-bottom-area {
-    position: fixed;
+    position: absolute; /* App root içinde absolute */
     bottom: 0; left: 0; right: 0;
     z-index: 50;
     background: var(--bg-white);
     display: flex;
     flex-direction: column;
     border-top: 1px solid var(--border);
-    padding-bottom: env(safe-area-inset-bottom); /* iPhone home bar payı */
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   /* 1. Input Section */
   .input-section {
-    padding: 8px 10px;
+    padding: 8px 12px;
     background: var(--bg-white);
     display: flex;
     flex-direction: column;
@@ -163,49 +182,54 @@
     border-bottom: 1px solid #F3F4F6;
   }
 
-  /* Chips */
+  /* Chips Row (Yatay Kaydırmalı) */
   .chips-row {
-    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; height: 34px;
+    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 4px; height: 36px;
+    align-items: center;
   }
   .chips-row::-webkit-scrollbar { display: none; }
+  
+  /* Chip (Buton Görünümlü, Mesaj Değil!) */
   .chip {
     background: var(--bg-app); border: 1px solid var(--border);
-    padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600;
     color: var(--text-sub); white-space: nowrap; cursor: pointer; flex-shrink: 0;
-    display: flex; align-items: center;
+    transition: 0.2s;
   }
-  .chip:active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+  .chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+  .chip:active { transform: scale(0.95); }
 
   /* Input Wrapper */
   .input-wrapper {
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 10px;
     background: var(--bg-app); border: 1px solid var(--border);
-    border-radius: 24px; padding: 6px 6px 6px 12px; /* Sağ padding azaldı buton için */
+    border-radius: 24px; padding: 8px 8px 8px 14px;
   }
-  .input-wrapper:focus-within { border-color: var(--primary); background: white; }
+  .input-wrapper:focus-within { border-color: var(--primary); background: white; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1); }
 
   .tool-btn {
     width: 32px; height: 32px; border-radius: 50%; border: none;
     background: transparent; color: var(--text-sub); font-size: 18px;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+    flex-shrink: 0; transition: 0.2s;
   }
+  .tool-btn:hover { color: var(--primary); background: rgba(0,0,0,0.05); }
   .tool-btn.active { color: #EF4444; animation: recording 1s infinite; background: #FEE2E2; }
   @keyframes recording { 0% {transform: scale(1);} 50% {transform: scale(1.1);} 100% {transform: scale(1);} }
 
   .main-input {
     flex: 1; border: none; background: transparent; font-size: 15px; outline: none; padding: 0 5px;
-    min-width: 0; /* Flex içinde taşmayı önler */
+    min-width: 0;
   }
 
   .send-btn {
-    width: 36px; height: 36px; border-radius: 50%; border: none;
+    width: 38px; height: 38px; border-radius: 50%; border: none;
     background: var(--primary); color: white; font-size: 16px;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
     flex-shrink: 0; transition: 0.2s;
   }
-  .send-btn i { transform: rotate(0deg); /* Oku düzeltmek için gerekirse burayla oyna */ } 
-  .send-btn:active { transform: scale(0.9); background: #059669; }
+  .send-btn:hover { background: #059669; }
+  .send-btn:active { transform: scale(0.9); }
 
   /* 2. Mode Dock */
   .mode-dock {
@@ -213,45 +237,47 @@
     background: var(--bg-white);
     display: flex;
     align-items: center;
-    padding: 0 5px;
+    padding: 0 8px;
     overflow-x: auto;
     scrollbar-width: none;
   }
   .mode-dock::-webkit-scrollbar { display: none; }
 
   .dock-item {
-    min-width: 65px; flex: 1;
+    flex: 1; min-width: 65px;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     gap: 4px; color: var(--text-sub); cursor: pointer;
-    padding: 5px; border-radius: 8px;
+    padding: 6px; border-radius: 8px; transition: 0.2s;
   }
+  .dock-item:hover { background: #F9FAFB; }
   .dock-item i { font-size: 20px; margin-bottom: 2px; }
   .dock-item span { font-size: 10px; font-weight: 500; text-align: center; line-height: 1.1; }
   
   .dock-item.active { color: var(--primary); }
   .dock-item.active i { transform: translateY(-2px); }
 
-  /* Audio Btn */
+  /* Audio Play Btn */
   .audio-play {
-    margin-top: 5px; background: none; border: 1px solid var(--border);
+    margin-top: 6px; background: white; border: 1px solid var(--border);
     border-radius: 12px; padding: 4px 10px; font-size: 11px;
-    color: var(--text-sub); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    color: var(--text-sub); cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+    transition: 0.2s;
   }
-  .audio-play:hover { color: var(--primary); border-color: var(--primary); }
+  .audio-play:hover { border-color: var(--primary); color: var(--primary); }
 
-  /* Alt Linkler (Overlay Menü) */
+  /* Modal */
   #infoModal {
     display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
-    align-items: center; justify-content: center; backdrop-filter: blur(3px);
+    align-items: center; justify-content: center; backdrop-filter: blur(2px);
   }
   .info-content {
-    background: white; width: 85%; max-width: 350px; padding: 20px; border-radius: 20px;
-    text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    background: white; width: 90%; max-width: 320px; padding: 24px; border-radius: 20px;
+    text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
   }
-  .info-links { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; }
-  .info-link { font-size: 14px; color: var(--text-main); text-decoration: none; font-weight: 500; border-bottom: 1px solid #eee; padding-bottom: 10px;}
-  .close-modal { margin-top: 10px; background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
+  .info-links a { display: block; padding: 12px; border-bottom: 1px solid #eee; color: #333; text-decoration: none; font-size: 14px; font-weight: 500; }
+  .info-links a:last-child { border-bottom: none; }
+  .close-modal { margin-top: 15px; width: 100%; padding: 12px; background: var(--bg-app); border: none; border-radius: 12px; font-weight: 600; cursor: pointer; }
 
   #fileInput { display: none; }
 
@@ -259,50 +285,54 @@
 </head>
 <body>
 
-<div class="top-bar" id="topBar">
-  <div class="logo" onclick="location.reload()"><i class="fa-solid fa-shapes"></i> CAYNANA<span>.AI</span></div>
-  <button class="top-menu-btn" onclick="openInfo()"><i class="fa-solid fa-bars"></i></button>
-</div>
+<div id="app-root">
 
-<div class="main-panel" id="mainPanel">
-  
-  <div class="panel-header">
-    <div class="ph-title" id="panelTitle">Yaşam Koçunuz CAYNANA</div>
-    <div class="ph-desc" id="panelDesc">Bir konu seç, hemen başlayalım.</div>
+  <div class="top-bar" id="topBar">
+    <div class="logo" onclick="location.reload()"><i class="fa-solid fa-shapes"></i> CAYNANA<span>.AI</span></div>
+    <button class="top-menu-btn" onclick="openInfo()"><i class="fa-solid fa-bars"></i></button>
   </div>
 
-  <div class="results-stream" id="resultsStream">
-    <div class="loader-bubble" id="loader">
-      <i class="fa-solid fa-circle-notch fa-spin"></i> Kaynanan düşünüyor...
+  <div class="main-panel" id="mainPanel">
+    
+    <div class="panel-header">
+      <div class="ph-title" id="panelTitle">Yaşam Koçunuz CAYNANA</div>
+      <div class="ph-desc" id="panelDesc">Seni dinliyorum, anlat bakalım.</div>
     </div>
-  </div>
 
-</div>
-
-<div class="fixed-bottom-area" id="fixedBottom">
-  
-  <div class="input-section">
-    <div class="chips-row" id="chipsRow"></div>
-
-    <div class="input-wrapper">
-      <button class="tool-btn" onclick="triggerCam()"><i class="fa-solid fa-camera"></i></button>
-      <button class="tool-btn" onclick="triggerMic()" id="micBtn"><i class="fa-solid fa-microphone"></i></button>
-      <input type="text" id="mainInput" class="main-input" placeholder="Bir şeyler yaz..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMessage()">
-      <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-arrow-right"></i></button>
+    <div class="results-stream" id="resultsStream">
+      <div class="loader-bubble" id="loader">
+        <i class="fa-solid fa-circle-notch fa-spin"></i> Kaynanan düşünüyor...
+      </div>
     </div>
+
   </div>
 
-  <div class="mode-dock" id="modeDock"></div>
+  <div class="fixed-bottom-area" id="fixedBottom">
+    
+    <div class="input-section">
+      <div class="chips-row" id="chipsRow"></div>
+
+      <div class="input-wrapper">
+        <button class="tool-btn" onclick="triggerCam()"><i class="fa-solid fa-camera"></i></button>
+        <button class="tool-btn" onclick="triggerMic()" id="micBtn"><i class="fa-solid fa-microphone"></i></button>
+        <input type="text" id="mainInput" class="main-input" placeholder="Bir şeyler yaz..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMessage()">
+        <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <div class="mode-dock" id="modeDock"></div>
+  </div>
+
 </div>
 
 <div id="infoModal">
   <div class="info-content">
     <h3>Bilgilendirme</h3>
     <div class="info-links">
-      <a href="#" class="info-link">Hakkımızda</a>
-      <a href="#" class="info-link">Sıkça Sorulan Sorular (SSS)</a>
-      <a href="#" class="info-link">Gizlilik Politikası</a>
-      <a href="#" class="info-link">İletişim</a>
+      <a href="#">Hakkımızda</a>
+      <a href="#">Sıkça Sorulan Sorular</a>
+      <a href="#">Gizlilik Politikası</a>
+      <a href="#">İletişim</a>
     </div>
     <button class="close-modal" onclick="closeInfo()">Kapat</button>
   </div>
@@ -345,28 +375,24 @@
   const fixedBottom = document.getElementById('fixedBottom');
   const topBar = document.getElementById('topBar');
 
-  // --- RESIZE LOGIC (MOBİL UYUMLULUK İÇİN KRİTİK) ---
+  // --- DİNAMİK YERLEŞİM (DESKTOP & MOBİL UYUMU) ---
   function adjustLayout() {
     const bottomHeight = fixedBottom.offsetHeight;
     const topHeight = topBar.offsetHeight;
     
+    // Panel boşluklarını ayarla ki içerik input altında kalmasın
     mainPanel.style.marginTop = topHeight + 'px';
     mainPanel.style.marginBottom = bottomHeight + 'px';
-    
-    // Klavye açılınca scroll'u aşağı it
-    setTimeout(scrollToBottom, 100);
   }
 
-  // Pencere boyutu değişince (Klavye açılınca vs.)
   window.addEventListener('resize', adjustLayout);
-  // Yüklenince
   window.addEventListener('load', adjustLayout);
 
   function init() {
     renderDock();
-    switchMode('life'); 
+    switchMode('life', true); // İlk açılış
     addMsg("Hoş geldin evladım. Bir konu seç, dertleşelim.", 'ai');
-    adjustLayout(); // İlk hesaplama
+    adjustLayout();
   }
 
   function renderDock() {
@@ -382,51 +408,37 @@
     });
   }
 
-  function switchMode(key) {
-    // SOHBET SIFIRLAMA MANTIĞI
-    if (key !== currentMode) {
-        // Mevcut mesajları (ilk karşılama ve loader hariç) temizle
-        // Ama "Hoşgeldin" mesajı kalsın isteniyorsa farklı mantık kurulabilir.
-        // Burada basitçe, loader'ı saklayıp içeriği temizleyip yeni karşılama basacağız.
-        
-        // 1. Loader'ı al (kaybetmemek için)
-        const loaderEl = document.getElementById('loader');
-        loaderEl.style.display = 'none';
-        
-        // 2. İçeriği temizle
-        resultsStream.innerHTML = '';
-        
-        // 3. Loader'ı geri koy
-        resultsStream.appendChild(loaderEl);
-        
+  function switchMode(key, isInit = false) {
+    if (key !== currentMode || isInit) {
         currentMode = key;
         const m = MODES[key];
         
-        // Header güncelle
+        // Header
         document.getElementById('panelTitle').innerText = m.title;
         document.getElementById('panelDesc').innerText = m.desc;
         
-        // Input güncelle
+        // Input
         mainInput.placeholder = m.placeholder;
         mainInput.value = '';
         
-        // Chips güncelle
+        // Chips (Sadece buraya render edilir, CHAT'e DEĞİL!)
         const chipsRow = document.getElementById('chipsRow');
         chipsRow.innerHTML = '';
         m.chips.forEach(t => {
             const c = document.createElement('div');
             c.className = 'chip';
             c.innerText = t;
+            // Tıklayınca inputa yaz ve gönder
             c.onclick = () => { mainInput.value = t; sendMessage(); };
             chipsRow.appendChild(c);
         });
 
+        // Dock Aktiflik
+        document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
         renderDock();
         
-        // Yeni moda özel karşılama
-        addMsg(`${m.title} moduna geçtim evladım. Seni dinliyorum.`, 'ai');
-        
-        // Layout güncelle (Chips satırı değiştiği için yükseklik değişebilir)
+        // Mod değişince chat geçmişini SİLMİYORUZ ama spam de yapmıyoruz.
+        // İstersen sadece "Mod değişti" diye küçük bir sistem notu ekleyebiliriz ama temiz kalsın.
         setTimeout(adjustLayout, 50);
     }
   }
@@ -441,11 +453,10 @@
     currentImg = null;
     document.getElementById('fileInput').value = '';
 
-    // Loader Göster (DOM içinde yer değiştirmeden display aç)
+    // Loader Göster (DOM içinde display:block)
     loader.style.display = 'block';
-    // Loader'ı en sona taşı (append) ki en altta görünsün
+    // Loader'ı en sona taşı (append)
     resultsStream.appendChild(loader); 
-    
     scrollToBottom();
 
     const payload = {
@@ -496,9 +507,18 @@
       bubble.appendChild(img);
     }
     
+    // Metin
     const span = document.createElement('span');
     span.innerHTML = text.replace(/\n/g, '<br>');
     bubble.appendChild(span);
+
+    // Fal Modu Uyarısı
+    if(type === 'ai' && currentMode === 'future') {
+        const disc = document.createElement('span');
+        disc.className = 'disclaimer';
+        disc.innerText = "(Eğlence amaçlıdır, kesinlik içermez)";
+        bubble.appendChild(disc);
+    }
 
     if(type === 'ai') {
         const btn = document.createElement('button');
@@ -510,9 +530,8 @@
     }
 
     row.appendChild(bubble);
-    // Loader'dan hemen önce ekle ki loader hep en altta kalsın
+    // Loader'dan önceye ekle
     resultsStream.insertBefore(row, loader);
-    
     scrollToBottom();
     return row;
   }
@@ -542,13 +561,12 @@
   }
 
   function scrollToBottom() {
-    // Biraz gecikmeli scroll (klavye animasyonu için)
     setTimeout(() => {
         mainPanel.scrollTop = mainPanel.scrollHeight;
-    }, 150);
+    }, 100);
   }
 
-  // --- MEDYA ÖZELLİKLERİ ---
+  // --- MEDYA ---
   function triggerCam() { document.getElementById('fileInput').click(); }
   
   function handleFile(file) {
@@ -571,20 +589,16 @@
     
     rec.onstart = () => { btn.classList.add('active'); mainInput.placeholder = "Dinliyorum..."; };
     
-    // Otomatik gönderim için onend yerine onresult kullanıyoruz
-    // Ancak mobilde bazen onend önce tetiklenebilir, bayrak kullanalım.
     let hasResult = false;
-
     rec.onend = () => { 
         btn.classList.remove('active'); 
-        if(!hasResult) mainInput.placeholder = "Yaz..."; 
+        if(!hasResult) mainInput.placeholder = MODES[currentMode].placeholder; 
     };
     
     rec.onresult = (e) => {
         hasResult = true;
         const transcript = e.results[0][0].transcript;
         mainInput.value = transcript;
-        // Otomatik Gönderim
         sendMessage();
     };
     rec.start();
@@ -592,7 +606,6 @@
 
   async function playVoice(btn, text) {
     if(currentAudio) { currentAudio.pause(); currentAudio=null; btn.innerHTML='<i class="fa-solid fa-volume-high"></i>'; return; }
-    
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
     try {
         const res = await fetch(SPEAK_URL, {
@@ -611,7 +624,6 @@
     }
   }
 
-  // --- MODAL (Hakkımızda vs.) ---
   function openInfo() { document.getElementById('infoModal').style.display = 'flex'; }
   function closeInfo() { document.getElementById('infoModal').style.display = 'none'; }
 
