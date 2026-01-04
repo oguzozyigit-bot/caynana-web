@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>CAYNANA.AI – Almadan Önce Sor</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  
+
   <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *;">
 
   <link rel="manifest" href="/manifest.json">
@@ -15,7 +15,7 @@
 
   <meta property="og:title" content="CAYNANA.AI" />
   <meta property="og:description" content="Yapay Zeka Alışveriş Asistanın" />
-  
+
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -27,9 +27,7 @@
       --primary: #10B981;
       --border: #E2E8F0;
     }
-
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
@@ -39,70 +37,59 @@
       flex-direction: column;
       min-height: 100vh;
     }
-
-    /* HEADER */
     header { padding: 15px 20px; display: flex; justify-content: flex-end; align-items: center; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    
-    /* LOGO GÜNCELLEMESİ: Tıklanabilir Yapı */
     .logo-container { display: flex; align-items: center; gap: 8px; margin-right: auto; cursor: pointer; user-select: none; }
     .logo-container:active { transform: scale(0.98); }
     .logo-icon { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
     .logo-text { font-weight: 800; font-size: 20px; letter-spacing: -0.5px; color: #111; }
-
     #installBtn { display: none; background: #E6FFFA; color: var(--primary); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; align-items: center; gap: 5px; }
-
     main { flex: 1; padding: 20px; width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; }
 
-    /* ARAMA EKRANI */
     .hero-title { text-align: center; font-size: 32px; font-weight: 800; line-height: 1.1; margin-bottom: 10px; color: #111; margin-top: 20px;}
     .hero-title span { color: var(--primary); }
     .hero-sub { text-align: center; color: var(--text-muted); font-size: 15px; margin-bottom: 30px; line-height: 1.5; }
-    
-    /* FORM YAPISI */
+
     .search-container { position: relative; width: 100%; margin-bottom: 20px; }
     .search-bar { display: flex; align-items: center; background: white; border: 2px solid var(--border); border-radius: 16px; padding: 5px 5px 5px 15px; height: 60px; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
     .search-bar:focus-within { border-color: var(--primary); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15); transform: translateY(-1px); }
     #q { flex: 1; border: none; outline: none; font-size: 16px; height: 100%; background: transparent; }
-    
+
     .action-btn { width: 44px; height: 44px; border-radius: 12px; border: none; background: transparent; color: var(--text-muted); font-size: 18px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
     .action-btn:hover { background: #f0f0f0; color: #333; }
     .search-btn { background: var(--primary); color: white; margin-left: 5px; }
     .search-btn:hover { background: #059669; color: white; }
 
-    /* SONUÇ EKRANI */
     .result-box { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px; animation: slideUp 0.5s ease; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     .result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
     .result-title { font-size: 20px; font-weight: 800; color: #111; line-height: 1.3; }
-    
+
     .speech-toggle { background: #F3F4F6; padding: 8px 15px; border-radius: 20px; border: none; color: #4B5563; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; white-space: nowrap; }
     .speech-toggle.active { background: #DCFCE7; color: #166534; }
 
     .result-text { font-size: 15px; line-height: 1.7; color: #374151; white-space: pre-line; }
 
-    /* ÖNERİ KARTLARI */
     .recommendations-title { font-size: 14px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1px; margin: 30px 0 15px 0; text-align: center; }
-    
-    .rec-card { 
-        display: flex; align-items: center; background: white; border-radius: 16px; 
-        padding: 15px; margin-bottom: 15px; text-decoration: none; color: inherit; 
-        position: relative; overflow: hidden; border: 1px solid white;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s;
+
+    .rec-card {
+      display: flex; align-items: center; background: white; border-radius: 16px;
+      padding: 15px; margin-bottom: 15px; text-decoration: none; color: inherit;
+      position: relative; overflow: hidden; border: 1px solid white;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s;
     }
     .rec-card:active { transform: scale(0.98); }
     .rec-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
 
-    /* Renk Temaları */
     .theme-gold::before { background: #FFD700; }
     .theme-gold .award-badge { background: #FFF9C4; color: #856404; }
-    
+
     .theme-silver::before { background: #A0AEC0; }
     .theme-silver .award-badge { background: #EDF2F7; color: #4A5568; }
-    
+
     .theme-bronze::before { background: #CD7F32; }
     .theme-bronze .award-badge { background: #FFEAD9; color: #733912; }
-    
+
     .theme-platinum::before { background: #718096; }
     .theme-platinum .award-badge { background: #E2E8F0; color: #2D3748; }
 
@@ -111,14 +98,14 @@
 
     .rec-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #555; background: #F9FAFB; margin-left: 10px; margin-right: 15px; flex-shrink: 0; }
     .theme-gold .rec-icon { color: #D69E2E; background: #FFFAF0; }
-    
+
     .rec-content { flex: 1; }
     .award-badge { display: inline-block; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; margin-bottom: 6px; letter-spacing: 0.5px; }
     .rec-name { font-weight: 700; font-size: 15px; line-height: 1.3; margin-bottom: 4px; color: #111; }
     .rec-reason { font-size: 12px; color: #6B7280; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    
+
     .rec-arrow { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #9CA3AF; background: #F3F4F6; border-radius: 50%; margin-left: 10px; }
-    
+
     #imgWrap { display: none; margin-bottom: 20px; position: relative; border-radius: 16px; overflow: hidden; }
     #imgPreview { width: 100%; display: block; }
     .img-cancel { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -126,26 +113,20 @@
     .scene { display: none; }
     .scene.active { display: block; }
 
-    /* Yükleniyor */
     .loader-box { text-align: center; padding: 50px 0; }
     .spinner { width: 50px; height: 50px; border: 4px solid #E5E7EB; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 20px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* FOOTER (ESKİ TASARIM GERİ GELDİ) */
     footer { background: #F8F9FA; border-top: 1px solid #DADCE0; padding: 20px 30px; display: flex; flex-direction: column; align-items: center; gap: 15px; font-size: 11px; color: #70757A; margin-top: auto; }
     .footer-links { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
     .footer-links a { color: #70757A; text-decoration: none; font-weight: 500; }
     .footer-links a:hover { color: var(--primary); }
     .company-tag { display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 800; color: #9CA3AF; font-size: 9px; margin-top: 5px; }
-    
-    /* İTALYAN BAYRAĞI ÇİZGİSİ */
-    .italian-bar { width: 100%; height: 4px; background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%); border-radius: 2px; border: 1px solid rgba(0,0,0,0.05); width: 120px; }
-
+    .italian-bar { height: 4px; background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%); border-radius: 2px; border: 1px solid rgba(0,0,0,0.05); width: 120px; }
   </style>
 </head>
 
 <body>
-
 <header>
   <div class="logo-container" onclick="window.location.reload()">
     <div class="logo-icon">C</div>
@@ -155,14 +136,13 @@
 </header>
 
 <main>
-  
   <section id="scene-home" class="scene active">
     <div class="hero-title">Almadan Önce<br><span>CAYNANA'ya Sor.</span></div>
     <div class="hero-sub">Binlerce yorumu okur, kronik sorunları bulur, sana en net cevabı veririm.</div>
 
     <div id="imgWrap">
-       <img id="imgPreview" src="">
-       <button class="img-cancel" onclick="clearImage()"><i class="fa-solid fa-xmark"></i></button>
+      <img id="imgPreview" src="">
+      <button class="img-cancel" onclick="clearImage()"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
     <form id="searchForm" class="search-container">
@@ -174,13 +154,13 @@
       </div>
       <input id="fileInput" type="file" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
     </form>
-    
+
     <div style="background: linear-gradient(135deg, #10B981 0%, #047857 100%); border-radius: 16px; padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; cursor: pointer; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);">
-        <div>
-            <div style="font-size: 10px; font-weight: 800; opacity: 0.8; letter-spacing: 1px; margin-bottom: 5px;">SPONSORLU</div>
-            <div style="font-size: 18px; font-weight: 800; line-height: 1.2;">Yeni Fırsatlar<br>Seni Bekliyor!</div>
-        </div>
-        <div style="font-size: 30px; opacity: 0.9;"><i class="fa-solid fa-bag-shopping"></i></div>
+      <div>
+        <div style="font-size: 10px; font-weight: 800; opacity: 0.8; letter-spacing: 1px; margin-bottom: 5px;">SPONSORLU</div>
+        <div style="font-size: 18px; font-weight: 800; line-height: 1.2;">Yeni Fırsatlar<br>Seni Bekliyor!</div>
+      </div>
+      <div style="font-size: 30px; opacity: 0.9;"><i class="fa-solid fa-bag-shopping"></i></div>
     </div>
   </section>
 
@@ -194,25 +174,25 @@
 
   <section id="scene-results" class="scene">
     <div class="result-box">
-        <div class="result-header">
-            <div class="result-title" id="finalHeadline">Sonuç</div>
-            <button id="btnListen" class="speech-toggle" onclick="toggleSpeech()">
-                <i class="fa-solid fa-volume-high"></i> Dinle
-            </button>
-        </div>
-        
-        <div id="heroImgBox" style="text-align:center; margin-bottom:15px; display:none;">
-            <img id="heroImg" src="" style="max-height:150px; border-radius:10px;">
-        </div>
+      <div class="result-header">
+        <div class="result-title" id="finalHeadline">Sonuç</div>
+        <button id="btnListen" class="speech-toggle" onclick="toggleSpeech()">
+          <i class="fa-solid fa-volume-high"></i> Dinle
+        </button>
+      </div>
 
-        <div id="finalText" class="result-text"></div>
+      <div id="heroImgBox" style="text-align:center; margin-bottom:15px; display:none;">
+        <img id="heroImg" src="" style="max-height:150px; border-radius:10px;">
+      </div>
+
+      <div id="finalText" class="result-text"></div>
     </div>
 
     <div class="recommendations-title">CAYNANA ÖNERİYOR</div>
     <div id="recommendationList"></div>
 
     <button onclick="resetAll()" style="width:100%; padding:15px; background:white; border:1px solid #E5E7EB; border-radius:12px; color:#6B7280; font-weight:600; cursor:pointer; margin-top:20px;">
-        <i class="fa-solid fa-arrow-left"></i> Yeni Sorgu Yap
+      <i class="fa-solid fa-arrow-left"></i> Yeni Sorgu Yap
     </button>
   </section>
 
@@ -221,7 +201,6 @@
     <p id="staticText" style="line-height:1.6; color:#555;">İçerik...</p>
     <button onclick="showScene('scene-home')" style="margin-top:15px; padding:10px 20px; background:#f1f3f4; border:none; border-radius:8px; cursor:pointer;">Kapat</button>
   </section>
-
 </main>
 
 <footer>
@@ -237,197 +216,231 @@
 </footer>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
-      
-      const API_BASE = "https://bikonomi-api-1.onrender.com";
-      const qInput = document.getElementById("q");
-      const searchForm = document.getElementById("searchForm");
-      let session = { q: "", img: "" };
-      let currentAudio = null;
-      let audioText = "";
+document.addEventListener('DOMContentLoaded', () => {
 
-      // PWA
-      if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/sw.js").catch(()=>{}); }
-      let deferredPrompt;
-      const installBtn = document.getElementById('installBtn');
-      window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'flex'; });
-      window.installPWA = async function() { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') installBtn.style.display = 'none'; deferredPrompt = null; } };
+  // ✅ DOĞRU BACKEND
+  const API_BASE = "https://caynana-api.onrender.com";
 
-      // EVENT LISTENERS
-      searchForm.addEventListener('submit', (e) => {
-          e.preventDefault(); 
-          start(); 
-      });
+  const qInput = document.getElementById("q");
+  const searchForm = document.getElementById("searchForm");
 
-      // Yardımcı Fonksiyonlar
-      window.showScene = function(id) { 
-          stopSpeech();
-          document.querySelectorAll(".scene").forEach(el => el.classList.remove("active")); 
-          document.getElementById(id).classList.add("active"); 
-      };
-      
-      window.resetAll = function() {
-          clearImage();
-          qInput.value = "";
-          showScene("scene-home");
-      };
+  let session = { q: "", img: "" };
+  let currentAudio = null;
+  let audioText = "";
 
-      window.triggerFile = function() { document.getElementById("fileInput").click(); };
-      
-      window.handleFile = function(file) {
-          if(!file) return;
-          const reader = new FileReader();
-          reader.onload = (e) => {
-              session.img = e.target.result;
-              document.getElementById("imgPreview").src = session.img;
-              document.getElementById("imgWrap").style.display = "block";
-          };
-          reader.readAsDataURL(file);
-      };
-      
-      window.clearImage = function() {
-          session.img = "";
-          document.getElementById("fileInput").value = "";
-          document.getElementById("imgWrap").style.display = "none";
-      };
+  // PWA
+  if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/sw.js").catch(()=>{}); }
+  let deferredPrompt;
+  const installBtn = document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'flex'; });
+  window.installPWA = async function() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') installBtn.style.display = 'none';
+      deferredPrompt = null;
+    }
+  };
 
-      // Statik Sayfa Açma
-      window.openStatic = function(title, text) {
-          document.getElementById("staticTitle").textContent = title;
-          document.getElementById("staticText").textContent = text;
-          showScene("scene-static");
-      };
+  // ✅ ses gerçekten dursun
+  function stopSpeech() {
+    const btn = document.getElementById("btnListen");
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      currentAudio = null;
+    }
+    if (btn) {
+      btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
+      btn.classList.remove("active");
+    }
+  }
+  window.stopSpeech = stopSpeech;
 
-      window.startVoice = function() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if(!SpeechRecognition) return alert("Sesli arama desteklenmiyor.");
-        const rec = new SpeechRecognition();
-        rec.lang = 'tr-TR';
-        rec.start();
-        qInput.placeholder = "Dinliyorum...";
-        rec.onresult = (e) => { qInput.value = e.results[0][0].transcript; start(); };
-        rec.onend = () => { qInput.placeholder = "Ürün adı, linki veya sor..."; };
-      };
-
-      // ANA FONKSİYON
-      async function start() {
-        const q = qInput.value.trim();
-        const imgToSend = session.img;
-
-        if (!q && !imgToSend) {
-            alert("Lütfen bir şey yazın veya fotoğraf yükleyin.");
-            return;
-        }
-
-        showScene("scene-loading");
-
-        try {
-            const res = await fetch(API_BASE + "/api/analyze", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ q, img: imgToSend })
-            });
-
-            if (!res.ok) throw new Error("Sunucu hatası");
-            const data = await res.json();
-
-            clearImage();
-            qInput.value = "";
-
-            document.getElementById("finalHeadline").textContent = data.headline || "Sonuç";
-            document.getElementById("finalText").innerText = data.text || "Bilgi bulunamadı.";
-            audioText = data.speech_text || "";
-
-            const heroBox = document.getElementById("heroImgBox");
-            if (data.product_img && data.product_img.length > 5) {
-                document.getElementById("heroImg").src = data.product_img;
-                heroBox.style.display = "block";
-            } else {
-                heroBox.style.display = "none";
-            }
-
-            const list = document.getElementById("recommendationList");
-            list.innerHTML = "";
-
-            const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
-            if (recs.length > 0) {
-                recs.forEach(rec => {
-                    let theme = "theme-default";
-                    const award = String(rec.award || "").toLowerCase();
-                    if (award.includes("altın")) theme = "theme-gold";
-                    else if (award.includes("gümüş")) theme = "theme-silver";
-                    else if (award.includes("bronz")) theme = "theme-bronze";
-                    else if (award.includes("platin")) theme = "theme-platinum";
-
-                    let iconClass = "fa-solid fa-bag-shopping";
-                    if (String(rec.site || "").toLowerCase().includes("amazon")) iconClass = "fa-brands fa-amazon";
-
-                    const url = rec.url || "#";
-                    const html = `
-                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="rec-card ${theme}">
-                        <div class="rec-icon"><i class="${iconClass}"></i></div>
-                        <div class="rec-content">
-                            <div class="award-badge">${rec.award || "ÖNERİLEN"}</div>
-                            <div class="rec-name">${rec.product_name || "Ürün"}</div>
-                            <div class="rec-reason">${rec.reason || ""}</div>
-                        </div>
-                        <div class="rec-arrow"><i class="fa-solid fa-chevron-right"></i></div>
-                    </a>`;
-                    list.innerHTML += html;
-                });
-            } else {
-                list.innerHTML = "<div style='text-align:center; color:#999;'>Özel öneri bulunamadı.</div>";
-            }
-
-            showScene("scene-results");
-
-        } catch (e) {
-            alert("Hata: " + (e.message || "Bilinmeyen hata"));
-            showScene("scene-home");
-            qInput.focus();
-        }
-      }
-
-      window.toggleSpeech = async function() {
-          const btn = document.getElementById("btnListen");
-          if(currentAudio) {
-              currentAudio.pause(); currentAudio = null;
-              btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
-              btn.classList.remove("active");
-              return;
-          }
-          
-          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor';
-          try {
-              const res = await fetch(API_BASE + '/api/speak', {
-                  method: 'POST',
-                  headers: {'Content-Type': 'application/json'},
-                  body: JSON.stringify({ text: audioText })
-              });
-              const blob = await res.blob();
-              const url = URL.createObjectURL(blob);
-              currentAudio = new Audio(url);
-              currentAudio.onended = () => {
-                  currentAudio = null; 
-                  btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
-                  btn.classList.remove("active");
-              };
-              currentAudio.play();
-              btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
-              btn.classList.add("active");
-          } catch(e) {
-              alert("Ses hatası");
-              btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
-          }
-      };
-      
-      window.start = start;
+  // EVENT
+  searchForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    start();
   });
 
-  function stopSpeech() { 
-      const btn = document.getElementById("btnListen");
-      if(btn) { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle'; btn.classList.remove("active"); }
+  window.showScene = function(id) {
+    stopSpeech();
+    document.querySelectorAll(".scene").forEach(el => el.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  };
+
+  window.resetAll = function() {
+    stopSpeech();
+    clearImage();
+    qInput.value = "";
+    showScene("scene-home");
+  };
+
+  window.triggerFile = function() { document.getElementById("fileInput").click(); };
+
+  window.handleFile = function(file) {
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      session.img = e.target.result;
+      document.getElementById("imgPreview").src = session.img;
+      document.getElementById("imgWrap").style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.clearImage = function() {
+    session.img = "";
+    document.getElementById("fileInput").value = "";
+    document.getElementById("imgWrap").style.display = "none";
+  };
+
+  window.openStatic = function(title, text) {
+    stopSpeech();
+    document.getElementById("staticTitle").textContent = title;
+    document.getElementById("staticText").textContent = text;
+    showScene("scene-static");
+  };
+
+  window.startVoice = function() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SpeechRecognition) return alert("Sesli arama desteklenmiyor.");
+    const rec = new SpeechRecognition();
+    rec.lang = 'tr-TR';
+    rec.start();
+    qInput.placeholder = "Dinliyorum...";
+    rec.onresult = (e) => { qInput.value = e.results[0][0].transcript; start(); };
+    rec.onend = () => { qInput.placeholder = "Ürün adı, linki veya sor..."; };
+  };
+
+  async function start() {
+    stopSpeech();
+    const q = qInput.value.trim();
+    const imgToSend = session.img;
+
+    if (!q && !imgToSend) {
+      alert("Lütfen bir şey yazın veya fotoğraf yükleyin.");
+      return;
+    }
+
+    showScene("scene-loading");
+
+    try {
+      const res = await fetch(API_BASE + "/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ q, img: imgToSend })
+      });
+
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(t || "Sunucu hatası");
+      }
+
+      const data = await res.json();
+
+      clearImage();
+      qInput.value = "";
+
+      document.getElementById("finalHeadline").textContent = data.headline || "Sonuç";
+      document.getElementById("finalText").innerText = data.text || "Bilgi bulunamadı.";
+      audioText = data.speech_text || "";
+
+      const heroBox = document.getElementById("heroImgBox");
+      if (data.product_img && data.product_img.length > 5) {
+        document.getElementById("heroImg").src = data.product_img;
+        heroBox.style.display = "block";
+      } else {
+        heroBox.style.display = "none";
+      }
+
+      const list = document.getElementById("recommendationList");
+      list.innerHTML = "";
+
+      const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
+      if (recs.length > 0) {
+        recs.forEach(rec => {
+          let theme = "theme-default";
+          const award = String(rec.award || "").toLowerCase();
+          if (award.includes("altın")) theme = "theme-gold";
+          else if (award.includes("gümüş")) theme = "theme-silver";
+          else if (award.includes("bronz")) theme = "theme-bronze";
+          else if (award.includes("platin")) theme = "theme-platinum";
+
+          let iconClass = "fa-solid fa-bag-shopping";
+          if (String(rec.site || "").toLowerCase().includes("amazon")) iconClass = "fa-brands fa-amazon";
+
+          const url = rec.url || "#";
+          const html = `
+            <a href="${url}" target="_blank" rel="noopener noreferrer" class="rec-card ${theme}">
+              <div class="rec-icon"><i class="${iconClass}"></i></div>
+              <div class="rec-content">
+                <div class="award-badge">${rec.award || "ÖNERİLEN"}</div>
+                <div class="rec-name">${rec.product_name || "Ürün"}</div>
+                <div class="rec-reason">${rec.reason || ""}</div>
+              </div>
+              <div class="rec-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+            </a>`;
+          list.innerHTML += html;
+        });
+      } else {
+        list.innerHTML = "<div style='text-align:center; color:#999;'>Özel öneri bulunamadı.</div>";
+      }
+
+      showScene("scene-results");
+
+    } catch (e) {
+      alert("Hata: " + (e.message || "Bilinmeyen hata"));
+      showScene("scene-home");
+      qInput.focus();
+    }
   }
+
+  window.toggleSpeech = async function() {
+    const btn = document.getElementById("btnListen");
+
+    if (currentAudio) {
+      stopSpeech();
+      return;
+    }
+
+    if (!audioText || audioText.trim().length < 2) {
+      alert("Ses metni boş. Önce analiz yap.");
+      return;
+    }
+
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor';
+    btn.classList.add("active");
+
+    try {
+      const res = await fetch(API_BASE + "/api/speak", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: audioText })
+      });
+
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error(t || "Speak hatası");
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      currentAudio = new Audio(url);
+
+      currentAudio.onended = () => stopSpeech();
+
+      await currentAudio.play();
+      btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
+
+    } catch (e) {
+      stopSpeech();
+      alert("Ses hatası: " + (e.message || "Bilinmeyen hata"));
+    }
+  };
+
+  window.start = start;
+});
 </script>
 
 </body>
