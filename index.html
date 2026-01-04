@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CAYNANA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+<title>CAYNANA - Yaşam Asistanı</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
   :root {
     --primary: #10B981;
-    --primary-light: #D1FAE5;
-    --bg: #FFFFFF;
-    --text: #1F2937;
-    --gray: #6B7280;
-    /* İtalyan Renkleri */
-    --it-green: #009246;
-    --it-white: #F1F2F1;
-    --it-red: #CE2B37;
+    --primary-light: #ECFDF5;
+    --text-main: #111827;
+    --text-sub: #6B7280;
+    --bg-app: #F9FAFB;
+    --bg-white: #FFFFFF;
+    --border: #E5E7EB;
+    --dock-height: 80px;
+    --header-height: 60px;
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -25,362 +25,423 @@
   body {
     margin: 0;
     font-family: 'Inter', sans-serif;
-    background-color: var(--bg);
-    color: var(--text);
+    background-color: var(--bg-app);
     height: 100vh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
   }
 
-  /* --- SCROLLABLE MAIN CONTAINER --- */
-  /* Bu yapı sayesinde arama kutusu ve sonuçlar aynı akışta durur */
-  #app-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
+  /* --- A) ÜST BAR (STICKY HEADER) --- */
+  .top-bar {
+    height: var(--header-height);
+    background: var(--bg-white);
+    border-bottom: 1px solid var(--border);
     display: flex;
-    flex-direction: column;
     align-items: center;
-    scroll-behavior: smooth;
-    padding-bottom: 80px; /* Footer payı */
+    justify-content: space-between;
+    padding: 0 16px;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 50;
   }
 
-  /* --- LOGO ALANI --- */
-  .logo-area {
-    margin-top: 15vh; /* Başlangıçta ortada dursun */
-    margin-bottom: 30px;
-    text-align: center;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
   .logo {
-    font-size: 50px;
     font-weight: 900;
-    color: #333;
-    letter-spacing: -2px;
-    display: inline-block;
+    font-size: 18px;
+    color: var(--text-main);
+    display: flex; align-items: center; gap: 6px;
+    letter-spacing: -0.5px;
   }
   .logo span { color: var(--primary); }
-  
-  .slogan {
-    font-size: 14px;
-    color: var(--gray);
-    margin-top: 5px;
-    font-weight: 500;
-    opacity: 1;
-    transition: opacity 0.3s;
-  }
 
-  /* --- ARAMA KUTUSU (KALP) --- */
-  .search-wrapper {
-    width: 100%;
-    max-width: 650px;
-    position: relative;
-    z-index: 10;
-    transition: all 0.5s ease;
+  .top-icons {
+    display: flex; gap: 15px; color: var(--text-sub); font-size: 18px;
   }
+  .top-icon-btn { cursor: pointer; transition: 0.2s; }
+  .top-icon-btn:hover { color: var(--primary); }
 
-  .search-box {
-    width: 100%;
-    height: 60px;
-    border: 2px solid #E5E7EB;
-    border-radius: 30px;
-    padding: 0 120px 0 25px; /* İkonlar için sağ boşluk */
-    font-size: 17px;
-    outline: none;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-    background: white;
-  }
-  
-  .search-box:focus {
-    border-color: var(--primary);
-    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.15);
-  }
-
-  /* İKON GRUBU */
-  .input-tools {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .tool-btn {
-    width: 42px; height: 42px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    color: var(--gray);
-    font-size: 19px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: 0.2s;
-  }
-  .tool-btn:hover { background: #F3F4F6; color: var(--primary); }
-  
-  /* Gönder Butonu (Yeşil) */
-  .send-btn {
-    background: var(--primary);
-    color: white;
-  }
-  .send-btn:hover { background: #059669; color: white; transform: scale(1.05); }
-
-  /* Mikrofon Aktif Animasyonu */
-  .tool-btn.mic-active { color: #EF4444; background: #FEE2E2; animation: pulse 1.5s infinite; }
-  @keyframes pulse { 0% {box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);} 70% {box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);} 100% {box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);} }
-
-  /* --- HIZLI BUTONLAR (CHIPS) --- */
-  .shortcuts {
-    display: flex;
-    gap: 12px;
-    margin-top: 25px;
-    flex-wrap: wrap;
-    justify-content: center;
-    transition: opacity 0.3s;
-  }
-  .chip {
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
-    padding: 10px 18px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #4B5563;
-    cursor: pointer;
-    display: flex; align-items: center; gap: 8px;
-    transition: 0.2s;
-  }
-  .chip:hover { border-color: var(--primary); background: var(--primary-light); color: #065F46; }
-  .chip i { font-size: 15px; color: var(--primary); }
-
-  /* --- SONUÇ ALANI (AŞAĞI AKAN) --- */
-  #results-stream {
-    width: 100%;
-    max-width: 800px;
-    margin-top: 30px;
+  /* --- B) ORTA ANA PENCERE (MAIN PANEL) --- */
+  .main-panel {
+    flex: 1;
+    margin-top: var(--header-height);
+    margin-bottom: var(--dock-height);
     display: flex;
     flex-direction: column;
-    gap: 25px;
-    opacity: 0; /* Başlangıçta gizli */
-    transition: opacity 0.5s;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Panel Başlığı */
+  .panel-header {
+    text-align: center;
+    padding: 20px 10px 10px;
+    background: var(--bg-app);
+    flex-shrink: 0;
+  }
+  .ph-title {
+    font-size: 18px; font-weight: 800; color: var(--text-main);
+    margin-bottom: 4px;
+  }
+  .ph-desc {
+    font-size: 13px; color: var(--text-sub);
+  }
+
+  /* Sohbet Akışı (Results Stream) */
+  .results-stream {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    scroll-behavior: smooth;
   }
 
   /* Mesaj Balonları */
-  .msg-block { display: flex; flex-direction: column; width: 100%; animation: slideUp 0.4s ease; }
-  .msg-block.user { align-items: flex-end; }
-  .msg-block.ai { align-items: flex-start; }
+  .msg-row { display: flex; flex-direction: column; width: 100%; animation: slideUp 0.3s ease; }
+  .msg-row.user { align-items: flex-end; }
+  .msg-row.ai { align-items: flex-start; }
 
-  .user-bubble {
-    background: #F3F4F6;
-    color: #111;
-    padding: 12px 20px;
-    border-radius: 20px;
-    border-bottom-right-radius: 4px;
-    font-weight: 600;
-    font-size: 16px;
-    max-width: 80%;
+  .bubble {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 15px;
+    line-height: 1.5;
+    max-width: 85%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    position: relative;
   }
+  .msg-row.user .bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+  .msg-row.ai .bubble { background: white; color: var(--text-main); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
 
-  .ai-bubble {
-    background: white;
-    border: 1px solid #E5E7EB;
-    padding: 20px;
-    border-radius: 20px;
-    border-bottom-left-radius: 4px;
-    color: #374151;
-    font-size: 16px;
-    line-height: 1.6;
-    width: 100%;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-  }
-
-  /* Görsel Önizleme */
-  .preview-img { max-width: 150px; border-radius: 12px; margin-bottom: 10px; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-
-  /* Ürün Kartları (Yatay) */
-  .cards-container {
-    display: flex; gap: 15px; overflow-x: auto; padding: 10px 5px 20px 5px; width: 100%; scrollbar-width: none;
-  }
-  .cards-container::-webkit-scrollbar { display: none; }
-
-  .product-card {
-    min-width: 220px; max-width: 220px;
-    background: white; border: 1px solid #E5E7EB; border-radius: 16px;
-    padding: 12px; text-decoration: none; color: inherit;
-    display: flex; flex-direction: column; transition: transform 0.2s;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-  }
-  .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.05); }
+  /* Kartlar (Yatay) */
+  .cards-scroll { display: flex; gap: 12px; overflow-x: auto; padding: 10px 0; width: 100%; scrollbar-width: none; }
+  .cards-scroll::-webkit-scrollbar { display: none; }
   
-  .p-img { width: 100%; height: 140px; object-fit: contain; margin-bottom: 10px; }
-  .p-title { font-size: 14px; font-weight: 700; margin-bottom: 5px; height: 40px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-  .p-price { color: var(--primary); font-weight: 800; font-size: 16px; margin-top: auto; }
-  .p-store { font-size: 11px; color: #9CA3AF; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
-
-  /* Ses Butonu */
-  .voice-btn {
-    margin-top: 10px; background: #F9FAFB; border: 1px solid #E5E7EB;
-    border-radius: 20px; padding: 6px 14px; font-size: 12px; font-weight: 600;
-    color: #4B5563; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
-    transition: 0.2s;
+  .card {
+    min-width: 200px; max-width: 200px; background: white; border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px; display: flex; flex-direction: column;
+    text-decoration: none; color: inherit;
   }
-  .voice-btn:hover { background: #F3F4F6; color: var(--primary); }
+  .card img { width: 100%; height: 110px; object-fit: contain; margin-bottom: 8px; }
+  .card-title { font-size: 13px; font-weight: 700; height: 32px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .card-price { font-weight: 800; color: var(--primary); font-size: 14px; margin-top: auto; }
 
-  /* --- ARAMA MODU (Animasyon) --- */
-  body.search-active .logo-area {
-    margin-top: 20px; /* Yukarı kayar */
-    transform: scale(0.8); /* Biraz küçülür */
-    margin-bottom: 20px;
+  @keyframes slideUp { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+
+  /* Orta Bar (Input Area) - Panelin İçinde, En Altta */
+  .input-section {
+    background: var(--bg-white);
+    border-top: 1px solid var(--border);
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
   }
-  body.search-active .slogan { display: none; }
-  body.search-active .shortcuts { display: none; } /* Hızlı butonlar gider */
-  body.search-active #results-stream { opacity: 1; }
 
-  @keyframes slideUp { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
+  /* Chips */
+  .chips-row {
+    display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+  }
+  .chip {
+    background: var(--bg-app); border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    color: var(--text-sub); white-space: nowrap; cursor: pointer;
+  }
+  .chip:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
 
-  /* --- FOOTER & İTALYAN BARI --- */
-  .footer-fixed {
+  /* Input Wrapper */
+  .input-wrapper {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg-app); border: 1px solid var(--border);
+    border-radius: 24px; padding: 8px 12px;
+  }
+  .input-wrapper:focus-within { border-color: var(--primary); background: white; }
+
+  .tool-btn {
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    background: transparent; color: var(--text-sub); font-size: 18px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .tool-btn:hover { color: var(--primary); }
+  .tool-btn.active { color: #EF4444; animation: pulse 1s infinite; }
+
+  .main-input {
+    flex: 1; border: none; background: transparent; font-size: 15px; outline: none; padding: 0 5px;
+  }
+
+  .send-btn {
+    width: 36px; height: 36px; border-radius: 50%; border: none;
+    background: var(--primary); color: white; font-size: 16px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+
+  /* --- C) ALT MOD İKONLARI (MODE DOCK) --- */
+  .mode-dock {
     position: fixed; bottom: 0; left: 0; right: 0;
-    background: #F9FAFB; border-top: 1px solid #E5E7EB; z-index: 20;
+    height: var(--dock-height);
+    background: var(--bg-white);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    z-index: 50;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
   }
-  .footer-links {
-    padding: 12px; text-align: center; font-size: 12px; color: #6B7280;
-    display: flex; justify-content: center; gap: 20px;
+  .mode-dock::-webkit-scrollbar { display: none; }
+
+  .dock-item {
+    min-width: 70px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--text-sub);
+    cursor: pointer;
+    padding: 5px;
+    transition: 0.2s;
+    border-radius: 8px;
   }
-  .footer-links span { cursor: pointer; font-weight: 500; transition: 0.2s; }
-  .footer-links span:hover { color: var(--primary); }
+  .dock-item i { font-size: 20px; margin-bottom: 2px; }
+  .dock-item span { font-size: 10px; font-weight: 600; text-align: center; line-height: 1.2; }
   
-  .italy-stripe {
-    height: 6px; width: 100%;
-    background: linear-gradient(90deg, var(--it-green) 33.3%, var(--it-white) 33.3%, var(--it-white) 66.6%, var(--it-red) 66.6%);
-  }
+  /* Aktif Mod */
+  .dock-item.active { color: var(--primary); transform: translateY(-2px); }
+  .dock-item.active i { font-size: 22px; }
 
   /* Yükleniyor */
-  .loader { display: none; width: 100%; text-align: center; padding: 30px; color: var(--gray); font-style: italic; }
+  .loader { display: none; width: 100%; text-align: center; padding: 10px; color: var(--text-sub); font-size: 12px; font-style: italic; }
+  
+  /* Ses Butonu Mesaj İçi */
+  .audio-play {
+    margin-top: 5px; background: none; border: 1px solid var(--border);
+    border-radius: 12px; padding: 4px 10px; font-size: 11px;
+    color: var(--text-sub); cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .audio-play:hover { color: var(--primary); border-color: var(--primary); }
+
+  @keyframes pulse { 0% {opacity:1} 50% {opacity:0.5} 100% {opacity:1} }
+  #fileInput { display: none; }
 
 </style>
 </head>
 <body>
 
-<div id="app-container">
+<div class="top-bar">
+  <div class="logo"><i class="fa-solid fa-shapes"></i> CAYNANA<span>.AI</span></div>
+  <div class="top-icons">
+    <div class="top-icon-btn"><i class="fa-regular fa-bell"></i></div>
+    <div class="top-icon-btn"><i class="fa-regular fa-circle-user"></i></div>
+  </div>
+</div>
+
+<div class="main-panel">
   
-  <div class="logo-area">
-    <div class="logo">CAYNANA<span>.AI</span></div>
-    <div class="slogan">Alışveriş, Fal, Yaşam Koçluğu ve Fazlası</div>
+  <div class="panel-header">
+    <div class="ph-title" id="panelTitle">Yaşam Koçunuz CAYNANA</div>
+    <div class="ph-desc" id="panelDesc">Bir konu seç, sorunu yaz, çözelim.</div>
   </div>
 
-  <div class="search-wrapper">
-    <input type="text" id="mainInput" class="search-box" placeholder="Ne danışmak istersin evladım?" autocomplete="off" onkeypress="if(event.key==='Enter') startProcess()">
-    
-    <div class="input-tools">
-      <button class="tool-btn" onclick="triggerCam()" title="Fotoğraf Çek"><i class="fa-solid fa-camera"></i></button>
-      <button class="tool-btn" onclick="triggerMic()" id="micBtn" title="Konuş"><i class="fa-solid fa-microphone"></i></button>
-      <button class="tool-btn send-btn" onclick="startProcess()"><i class="fa-solid fa-arrow-right"></i></button>
+  <div class="results-stream" id="resultsStream">
+    </div>
+  <div class="loader" id="loader">Kaynanan inceliyor...</div>
+
+  <div class="input-section">
+    <div class="chips-row" id="chipsRow"></div>
+
+    <div class="input-wrapper">
+      <button class="tool-btn" onclick="triggerCam()"><i class="fa-solid fa-camera"></i></button>
+      <button class="tool-btn" onclick="triggerMic()" id="micBtn"><i class="fa-solid fa-microphone"></i></button>
+      <input type="text" id="mainInput" class="main-input" placeholder="Bir şeyler yaz..." autocomplete="off" onkeypress="if(event.key==='Enter') sendMessage()">
+      <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-arrow-up"></i></button>
     </div>
   </div>
-
-  <div class="shortcuts" id="shortcuts">
-    <div class="chip" onclick="fill('Kahve falı bak (Fotoğraf)')"><i class="fa-solid fa-mug-hot"></i> Kahve Falı</div>
-    <div class="chip" onclick="fill('Haftalık burç yorumu')"><i class="fa-solid fa-star"></i> Burç</div>
-    <div class="chip" onclick="fill('Airfryer önerisi')"><i class="fa-solid fa-cart-shopping"></i> Alışveriş</div>
-    <div class="chip" onclick="fill('Canım sıkkın, dertleş')"><i class="fa-solid fa-heart"></i> Yaşam Koçu</div>
-  </div>
-
-  <div id="results-stream">
-    <div class="loader" id="loader">
-      <i class="fa-solid fa-circle-notch fa-spin"></i> Kaynanan inceliyor...
-    </div>
-  </div>
-
 </div>
 
-<div class="footer-fixed">
-  <div class="footer-links">
-    <span>Hakkımızda</span>
-    <span>Gizlilik</span>
-    <span>SSS</span>
-    <span>İletişim</span>
+<div class="mode-dock" id="modeDock">
   </div>
-  <div class="italy-stripe"></div>
-</div>
 
 <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
 
 <script>
+  // --- KONFİGÜRASYON ---
   const API_URL = "https://bikonomi-api-1.onrender.com/api/chat";
   const SPEAK_URL = "https://bikonomi-api-1.onrender.com/api/speak";
   
-  const mainInput = document.getElementById('mainInput');
-  const resultsStream = document.getElementById('results-stream');
-  const loader = document.getElementById('loader');
-  
+  // Session ID oluştur (Tarayıcı yenilense de kalsın diye local storage)
+  let sessionId = localStorage.getItem('caynana_sid');
+  if (!sessionId) {
+      sessionId = 'sess_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('caynana_sid', sessionId);
+  }
+
+  const MODES = {
+    shopping: {
+      title: "Alışveriş Uzmanınız CAYNANA",
+      desc: "En iyi fiyatı ve kaliteyi bulurum.",
+      icon: "fa-bag-shopping",
+      label: "Alışveriş",
+      placeholder: "Ürün adı veya linki yapıştır...",
+      chips: ["Airfryer önerisi", "iPhone 15 fiyatı", "Robot süpürge"]
+    },
+    health: {
+      title: "Sağlık Danışmanınız CAYNANA",
+      desc: "Şikayetini yaz (Acilse 112'yi ara).",
+      icon: "fa-user-doctor",
+      label: "Sağlık",
+      placeholder: "Şikayetini kısaca yaz...",
+      chips: ["Başım çok ağrıyor", "Grip oldum", "Vitamin önerisi"]
+    },
+    diet: {
+      title: "Diyet Uzmanınız CAYNANA",
+      desc: "Sağlıklı yaşam ve beslenme planı.",
+      icon: "fa-apple-whole",
+      label: "Diyet",
+      placeholder: "Hedefini yaz: Kilo ver/al...",
+      chips: ["Kilo vermek istiyorum", "Göbek eriten diyet", "Kalori hesabı"]
+    },
+    food: {
+      title: "Yemek Uzmanınız CAYNANA",
+      desc: "Ne pişirsem ya da nerede yesem?",
+      icon: "fa-utensils",
+      label: "Yemek",
+      placeholder: "Malzemeleri yaz, tarif vereyim...",
+      chips: ["Akşama ne pişirsem?", "Kolay tatlı tarifi", "En yakın pizzacı"]
+    },
+    translator: {
+      title: "Çevirmeniniz CAYNANA",
+      desc: "Her dili anlarım, sana tercüme ederim.",
+      icon: "fa-language",
+      label: "Çeviri",
+      placeholder: "Metni yapıştır veya yaz...",
+      chips: ["İngilizceye çevir", "Almanca nasılsın de", "Fransızca seni seviyorum"]
+    },
+    teacher: {
+      title: "Öğretmeniniz CAYNANA",
+      desc: "Bilmeyen kalmasın, her şeyi anlatırım.",
+      icon: "fa-chalkboard-user",
+      label: "Eğitim",
+      placeholder: "Hangi konuyu öğrenmek istersin?",
+      chips: ["Matematik sorusu", "Tarih anlat", "İngilizce gramer"]
+    },
+    economist: {
+      title: "Ekonomist CAYNANA",
+      desc: "Paranı yönet, yatırımını planla.",
+      icon: "fa-chart-line",
+      label: "Ekonomi",
+      placeholder: "Sorunu yaz: Yatırım, bütçe...",
+      chips: ["Dolar ne olur?", "Altın alınır mı?", "Bütçe planlama"]
+    },
+    lawyer: {
+      title: "Hukuk Danışmanı CAYNANA",
+      desc: "Haklarını öğren (Bilgi amaçlıdır).",
+      icon: "fa-scale-balanced",
+      label: "Avukat",
+      placeholder: "Olayı kısaca özetle...",
+      chips: ["Kiracı hakları", "İşe iade davası", "Tüketici hakem heyeti"]
+    },
+    future: {
+      title: "Gelecek Yorumcusu CAYNANA",
+      desc: "Fal, Tarot, Burç yorumları.",
+      icon: "fa-wand-magic-sparkles",
+      label: "Gelecek",
+      placeholder: "Niyetini yaz veya fotoğraf yükle...",
+      chips: ["Kahve falı (Fincan çek)", "3 Kart Tarot", "Günlük Burç"]
+    }
+  };
+
+  let currentMode = "shopping"; // Varsayılan mod (veya 'life' yapabilirsin)
   let currentImg = null;
   let currentAudio = null;
 
-  function fill(txt) {
-    mainInput.value = txt;
-    startProcess();
+  // --- UI ELEMENTLERİ ---
+  const panelTitle = document.getElementById('panelTitle');
+  const panelDesc = document.getElementById('panelDesc');
+  const resultsStream = document.getElementById('resultsStream');
+  const chipsRow = document.getElementById('chipsRow');
+  const mainInput = document.getElementById('mainInput');
+  const modeDock = document.getElementById('modeDock');
+  const loader = document.getElementById('loader');
+
+  // --- BAŞLATMA ---
+  function init() {
+    renderDock();
+    switchMode('shopping'); // Başlangıç modu
+    addMsg("Hoş geldin evladım. Bir uzman seç, hemen başlayalım.", 'ai');
   }
 
-  function triggerCam() { document.getElementById('fileInput').click(); }
-  
-  function handleFile(file) {
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      currentImg = e.target.result;
-      mainInput.value = "Fotoğraf eklendi. Yorumla...";
-      mainInput.focus();
-    };
-    reader.readAsDataURL(file);
+  // --- MOD DEĞİŞTİRME ---
+  function renderDock() {
+    modeDock.innerHTML = '';
+    Object.keys(MODES).forEach(key => {
+      const mode = MODES[key];
+      const btn = document.createElement('div');
+      btn.className = `dock-item ${key === currentMode ? 'active' : ''}`;
+      btn.onclick = () => switchMode(key);
+      btn.innerHTML = `<i class="fa-solid ${mode.icon}"></i><span>${mode.label}</span>`;
+      modeDock.appendChild(btn);
+    });
   }
 
-  function triggerMic() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SpeechRecognition) return alert("Tarayıcın mikrofon desteklemiyor evladım.");
-    const rec = new SpeechRecognition();
-    rec.lang = 'tr-TR';
-    const btn = document.getElementById('micBtn');
+  function switchMode(key) {
+    currentMode = key;
+    const conf = MODES[key];
     
-    rec.onstart = () => { btn.classList.add('mic-active'); mainInput.placeholder = "Dinliyorum..."; };
-    rec.onend = () => { btn.classList.remove('mic-active'); mainInput.placeholder = "Ne danışmak istersin?"; };
-    rec.onresult = (e) => {
-      mainInput.value = e.results[0][0].transcript;
-      startProcess();
-    };
-    rec.start();
-  }
-
-  async function startProcess() {
-    const txt = mainInput.value.trim();
-    if(!txt && !currentImg) return;
-
-    // 1. Tasarım Modunu Değiştir (Logo yukarı kayar, Chips gider)
-    document.body.classList.add('search-active');
+    // Header güncelle
+    panelTitle.innerText = conf.title;
+    panelDesc.innerText = conf.desc;
     
-    // 2. Kullanıcı Mesajını Bas
-    addUserMsg(txt, currentImg);
-    
-    // 3. Yükleniyor...
-    resultsStream.appendChild(loader);
-    loader.style.display = 'block';
-    scrollToBottom();
-
-    const payload = {
-        message: txt,
-        image: currentImg,
-        user: { city: 'İstanbul', gender: 'neutral' }
-    };
-
-    // Temizle
+    // Input güncelle
+    mainInput.placeholder = conf.placeholder;
     mainInput.value = '';
-    currentImg = null;
+    
+    // Chips güncelle
+    chipsRow.innerHTML = '';
+    conf.chips.forEach(txt => {
+      const c = document.createElement('div');
+      c.className = 'chip';
+      c.innerText = txt;
+      c.onclick = () => { mainInput.value = txt; sendMessage(); };
+      chipsRow.appendChild(c);
+    });
+
+    // Dock aktif durumu güncelle
+    document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
+    // Basit index bulma yerine text kontrolü veya id ile yapılabilir ama
+    // yeniden render daha temiz:
+    renderDock();
+  }
+
+  // --- MESAJLAŞMA ---
+  async function sendMessage() {
+    const txt = mainInput.value.trim();
+    if (!txt && !currentImg) return;
+
+    // Kullanıcı mesajı
+    addMsg(txt, 'user', currentImg);
+    
+    mainInput.value = '';
+    const imgData = currentImg; // cache
+    currentImg = null; // reset
     document.getElementById('fileInput').value = '';
+
+    // Yükleniyor
+    loader.style.display = 'block';
+    resultsStream.scrollTop = resultsStream.scrollHeight;
+
+    // API Payload (Zorunlu alanlar eklendi)
+    const payload = {
+      message: txt || "Dosya gönderildi",
+      image: imgData,
+      mode: currentMode, // KRİTİK: Modu gönderiyoruz
+      session_id: sessionId, // KRİTİK: Session
+      user: { city: 'İstanbul', gender: 'neutral' }
+    };
 
     try {
       const res = await fetch(API_URL, {
@@ -391,90 +452,116 @@
       const data = await res.json();
       
       loader.style.display = 'none';
-      addAIResponse(data);
+      
+      const aiText = data.reply || data.assistant_text || "Bir şeyler ters gitti.";
+      addMsg(aiText, 'ai');
 
-    } catch(e) {
+      // Kartlar varsa (Sadece Shopping/Food gibi modlarda)
+      if (data.data && Array.isArray(data.data)) {
+        renderCards(data.data);
+      }
+
+    } catch (e) {
       loader.style.display = 'none';
-      addAIMsg("Bağlantı koptu evladım. İnternetini kontrol et.");
+      addMsg("Bağlantı hatası oluştu evladım.", 'ai');
     }
   }
 
-  function addUserMsg(text, img) {
-    const div = document.createElement('div');
-    div.className = 'msg-block user';
+  function addMsg(text, type, imgBase64) {
+    const row = document.createElement('div');
+    row.className = `msg-row ${type}`;
     
-    let content = `<div class="user-bubble">`;
-    if(img) content += `<img src="${img}" class="preview-img"><br>`;
-    content += `${text}</div>`;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
     
-    div.innerHTML = content;
-    resultsStream.insertBefore(div, loader);
-  }
-
-  function addAIMsg(text) {
-    const div = document.createElement('div');
-    div.className = 'msg-block ai';
-    div.innerHTML = `<div class="ai-bubble">${text}</div>`;
-    resultsStream.insertBefore(div, loader);
-    scrollToBottom();
-  }
-
-  function addAIResponse(data) {
-    const container = document.createElement('div');
-    container.className = 'msg-block ai';
-
-    // Metin
-    const textDiv = document.createElement('div');
-    textDiv.className = 'ai-bubble';
-    const cleanText = (data.reply || data.assistant_text || "").replace(/\n/g, '<br>');
-    textDiv.innerHTML = cleanText;
+    if (imgBase64) {
+      const img = document.createElement('img');
+      img.src = imgBase64;
+      img.style.maxWidth = '100%';
+      img.style.borderRadius = '10px';
+      img.style.marginBottom = '8px';
+      img.style.display = 'block';
+      bubble.appendChild(img);
+    }
     
-    // Ses Butonu
-    const audioBtn = document.createElement('button');
-    audioBtn.className = 'voice-btn';
-    audioBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Seslendir';
-    const safeTxt = cleanText.replace(/<[^>]*>?/gm, '').replace(/"/g, '');
-    audioBtn.onclick = () => playVoice(audioBtn, safeTxt);
+    const span = document.createElement('span');
+    span.innerHTML = text.replace(/\n/g, '<br>');
+    bubble.appendChild(span);
     
-    textDiv.appendChild(audioBtn);
-    container.appendChild(textDiv);
-
-    // Kartlar
-    if(data.data && Array.isArray(data.data)) {
-        const row = document.createElement('div');
-        row.className = 'cards-container';
-        data.data.forEach(c => {
-            const card = document.createElement('a');
-            card.className = 'product-card';
-            card.href = c.url || '#';
-            card.target = '_blank';
-            
-            const img = c.image ? `<img src="${c.image}" class="p-img">` : '<div style="height:120px; background:#f9fafb; display:flex; align-items:center; justify-content:center; margin-bottom:10px;"><i class="fa-solid fa-image" style="color:#ccc; font-size:30px;"></i></div>';
-            
-            card.innerHTML = `
-                ${img}
-                <div class="p-title">${c.title || 'Ürün'}</div>
-                <div class="p-price">${c.price || c.desc || ''}</div>
-                <div class="p-store"><i class="fa-solid fa-shop"></i> ${c.footer || 'Satıcı'}</div>
-            `;
-            row.appendChild(card);
-        });
-        container.appendChild(row);
+    // AI ise ses butonu
+    if (type === 'ai') {
+        const btn = document.createElement('button');
+        btn.className = 'audio-play';
+        btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+        const safeTxt = text.replace(/<[^>]*>?/gm, '').replace(/"/g, '');
+        btn.onclick = () => playVoice(btn, safeTxt);
+        bubble.appendChild(btn); // Balonun içine koydum daha derli toplu olsun
     }
 
-    resultsStream.insertBefore(container, loader);
-    scrollToBottom();
+    row.appendChild(bubble);
+    resultsStream.appendChild(row);
+    resultsStream.scrollTop = resultsStream.scrollHeight;
   }
 
-  function scrollToBottom() {
-    const container = document.getElementById('app-container');
-    container.scrollTop = container.scrollHeight;
+  function renderCards(cards) {
+    const scroll = document.createElement('div');
+    scroll.className = 'cards-scroll';
+    
+    cards.forEach(c => {
+      const a = document.createElement('a');
+      a.className = 'card';
+      a.href = c.url || '#';
+      a.target = '_blank';
+      
+      const img = c.image ? `<img src="${c.image}">` : '<div style="height:110px; background:#f9fafb; display:flex; align-items:center; justify-content:center; color:#ccc; margin-bottom:8px;"><i class="fa-solid fa-image" style="font-size:30px;"></i></div>';
+      
+      a.innerHTML = `
+        ${img}
+        <div class="card-title">${c.title || 'Ürün'}</div>
+        <div class="card-price">${c.price || c.desc || ''}</div>
+      `;
+      scroll.appendChild(a);
+    });
+    
+    resultsStream.appendChild(scroll);
+    resultsStream.scrollTop = resultsStream.scrollHeight;
+  }
+
+  // --- SES, KAMERA, MİKROFON ---
+  function triggerCam() { document.getElementById('fileInput').click(); }
+  
+  function handleFile(file) {
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      currentImg = e.target.result;
+      // Otomatik gönderim yerine kullanıcı görsün
+      mainInput.value = "Fotoğraf eklendi. (Göndermek için bas)";
+      mainInput.focus();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function triggerMic() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SpeechRecognition) return alert("Mikrofon yok.");
+    const rec = new SpeechRecognition();
+    rec.lang = 'tr-TR';
+    const btn = document.getElementById('micBtn');
+    
+    rec.onstart = () => { btn.classList.add('active'); mainInput.placeholder = "Dinliyorum..."; };
+    rec.onend = () => { btn.classList.remove('active'); mainInput.placeholder = "Yaz..."; };
+    rec.onresult = (e) => {
+      mainInput.value = e.results[0][0].transcript;
+      sendMessage();
+    };
+    rec.start();
   }
 
   async function playVoice(btn, text) {
-    if(currentAudio) { currentAudio.pause(); currentAudio=null; btn.innerHTML='<i class="fa-solid fa-volume-high"></i> Seslendir'; return; }
+    if(currentAudio) { currentAudio.pause(); currentAudio=null; btn.innerHTML='<i class="fa-solid fa-volume-high"></i>'; return; }
     
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
     try {
       const res = await fetch(SPEAK_URL, {
         method: 'POST',
@@ -484,13 +571,17 @@
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       currentAudio = new Audio(url);
-      currentAudio.onended = () => { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Seslendir'; };
+      currentAudio.onended = () => { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>'; };
       await currentAudio.play();
-      btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
+      btn.innerHTML = '<i class="fa-solid fa-stop"></i>';
     } catch(e) {
-      btn.innerHTML = 'Hata';
+      btn.innerHTML = '!';
     }
   }
+
+  // Start
+  init();
+
 </script>
 
 </body>
