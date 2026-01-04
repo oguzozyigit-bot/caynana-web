@@ -1,503 +1,236 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <title>CAYNANA.AI – Karar Danışmanım</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://bikonomi-api-1.onrender.com; connect-src 'self' https://bikonomi-api-1.onrender.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; script-src 'self' 'unsafe-inline';">
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#10B981">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>CAYNANA.AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self' https://bikonomi-api-1.onrender.com; connect-src 'self' https://bikonomi-api-1.onrender.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline';">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
-    :root { --bg-body: #F7F9FC; --text-main: #1A1A1A; --primary: #10B981; --border: #E2E8F0; }
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
-    
-    /* MODAL */
-    #onboardingModal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-    .modal-content { background: white; width: 90%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
-    .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 20px; }
-    .gender-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-    .gender-btn { padding: 12px; border: 2px solid var(--border); border-radius: 12px; background: white; cursor: pointer; }
-    .gender-btn.selected { border-color: var(--primary); background: #ECFDF5; color: var(--primary); font-weight: bold; }
-    .form-input { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 12px; margin-bottom: 15px; font-size: 16px; }
-    .save-btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+    :root { --primary:#10B981; --bg:#F3F4F6; --bubble-user:#10B981; --bubble-ai:#FFFFFF; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:'Inter',sans-serif; background:var(--bg); display:flex; flex-direction:column; height:100vh; overflow:hidden; }
 
-    /* HEADER */
-    header { padding: 15px 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 10; }
-    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .logo-text { font-weight: 800; font-size: 20px; }
-    .header-btn { background: #ECFDF5; border: none; width: 36px; height: 36px; border-radius: 50%; color: var(--primary); cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 5px; }
-    .profile-bar { background: #F8FAFC; padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; color: #475569; display: flex; justify-content: space-between; margin-bottom: 10px; }
-    
-    /* MODES */
-    .mode-selector-wrap { overflow-x: auto; scrollbar-width: none; }
-    .mode-selector { display: flex; gap: 6px; padding-bottom: 2px; min-width: max-content; }
-    .mode-btn { border: 1px solid var(--border); background: white; padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; color: #64748B; cursor: pointer; white-space: nowrap; transition: 0.2s; }
-    .mode-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .header { padding:15px; background:white; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e5e7eb; }
+    .logo { font-weight:900; font-size:20px; color:#111; letter-spacing:-1px; display:flex; align-items:center; gap:8px;}
+    .logo .dot { width:10px; height:10px; background:var(--primary); border-radius:50%; display:inline-block;}
+    .mode-badge { font-size:10px; font-weight:800; background:#ECFDF5; color:var(--primary); padding:4px 8px; border-radius:12px; text-transform:uppercase; }
 
-    /* MAIN */
-    main { flex: 1; padding: 20px; width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; }
-    .search-container { position: relative; margin-bottom: 15px; margin-top: 20px; }
-    .search-bar { display: flex; align-items: center; background: white; border: 2px solid var(--border); border-radius: 16px; padding: 5px; height: 56px; }
-    #q { flex: 1; border: none; outline: none; font-size: 16px; padding-left: 10px; }
-    .action-btn { width: 44px; height: 44px; border-radius: 12px; border: none; background: transparent; color: #666; cursor: pointer; font-size: 18px; }
-    .search-btn { background: var(--primary); color: white; }
-    .chips-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 20px; scrollbar-width: none; }
-    .chip { background: white; border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    #chat-container { flex:1; overflow-y:auto; padding:15px; display:flex; flex-direction:column; gap:15px; }
+    .message { max-width:85%; padding:12px 16px; border-radius:16px; font-size:14px; line-height:1.5; position:relative; animation:popIn .25s ease; white-space:pre-line;}
+    .message.user { align-self:flex-end; background:var(--primary); color:white; border-bottom-right-radius:4px; }
+    .message.ai { align-self:flex-start; background:white; color:#333; border-bottom-left-radius:4px; box-shadow:0 2px 5px rgba(0,0,0,.05); }
+    @keyframes popIn { from {opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
 
-    /* RESULT */
-    .result-box { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    .result-header { display: flex; justify-content: space-between; margin-bottom: 15px; }
-    .result-title { font-size: 18px; font-weight: 800; }
-    .result-text { font-size: 15px; line-height: 1.6; color: #333; margin-bottom: 15px; }
+    .cards-scroll { display:flex; gap:10px; overflow-x:auto; padding:10px 0 5px 0; margin-top:10px; width:100%; scrollbar-width:none; }
+    .cards-scroll::-webkit-scrollbar { display:none; }
 
-    /* SCORE */
-    .score-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
-    .score-gauge { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; background: #eee; }
-    .score-verdict { font-weight: 800; font-size: 16px; }
+    .card { min-width:220px; max-width:220px; background:white; border-radius:12px; padding:10px; box-shadow:0 4px 10px rgba(0,0,0,.05);
+            text-decoration:none; color:inherit; display:block; border:1px solid #f0f0f0; }
+    .badge { font-size:10px; font-weight:900; letter-spacing:.6px; text-transform:uppercase; margin-bottom:6px; display:inline-block; }
+    .badge.fallback { color:#b45309; background:#fff7ed; border:1px solid #fed7aa; padding:2px 6px; border-radius:999px;}
+    .badge.place { color:#1d4ed8; background:#eff6ff; border:1px solid #bfdbfe; padding:2px 6px; border-radius:999px;}
+    .badge.pharmacy { color:#991b1b; background:#fee2e2; border:1px solid #fecaca; padding:2px 6px; border-radius:999px;}
+    .badge.product { color:#065f46; background:#ecfdf5; border:1px solid #a7f3d0; padding:2px 6px; border-radius:999px;}
 
-    /* LISTS */
-    .list-item { font-size: 13px; margin-bottom: 6px; padding-left: 15px; position: relative; }
-    .list-item::before { content: '•'; position: absolute; left: 0; color: var(--primary); font-weight: bold; }
+    .card img { width:100%; height:120px; object-fit:cover; border-radius:8px; margin-bottom:8px; background:#f9f9f9; }
+    .card-title { font-weight:700; font-size:13px; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .card-sub { font-size:11px; color:#666; }
+    .card-sub.muted { color:#999; }
 
-    /* RECS */
-    .rec-card { display: flex; align-items: center; background: white; border: 1px solid #eee; border-radius: 12px; padding: 12px; margin-bottom: 10px; text-decoration: none; color: inherit; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-    .rec-content { flex: 1; margin-left: 10px; }
-    .rec-name { font-weight: 700; font-size: 14px; }
-    .rec-reason { font-size: 11px; color: #666; }
-    .award-badge { font-size: 10px; font-weight: 800; background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
-    .theme-gold { border-left: 4px solid #FFD700; }
-    .theme-default { border-left: 4px solid #10B981; }
+    .coach-card { background:#F0FDF9; border:1px solid #10B981; border-radius:12px; padding:15px; width:100%; margin-top:10px; }
+    .coach-head { font-weight:900; color:#065F46; font-size:12px; margin:10px 0 6px; text-transform:uppercase; letter-spacing:.6px;}
+    .coach-text { font-size:14px; color:#064E3B; margin:0 0 8px; }
+    .coach-q { font-size:13px; color:#064E3B; margin:6px 0; padding-left:14px; position:relative; }
+    .coach-q:before { content:"•"; position:absolute; left:0; color:#10B981; font-weight:900; }
+    .coach-boost { font-weight:800; color:#059669; }
 
-    /* COACH PLAN CARD */
-    .coach-card { background: #F0FDF9; border: 1px solid #CCFBF1; border-radius: 16px; padding: 20px; margin-bottom: 20px; }
-    .coach-section { margin-bottom: 15px; }
-    .coach-title { font-size: 12px; font-weight: 800; color: #059669; text-transform: uppercase; margin-bottom: 5px; }
-    .coach-text { font-size: 14px; line-height: 1.5; color: #064E3B; }
-    .boost-box { background: white; border-radius: 12px; padding: 15px; text-align: center; font-weight: 700; color: #059669; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+    .input-area { background:white; padding:10px 15px; border-top:1px solid #e5e7eb; display:flex; gap:10px; align-items:center; }
+    .input-box { flex:1; background:#F3F4F6; border:none; padding:12px; border-radius:24px; font-size:15px; outline:none; }
+    .send-btn { background:var(--primary); color:white; border:none; width:40px; height:40px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 
-    /* LOADING */
-    #scene-loading { text-align: center; padding-top: 50px; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #E5E7EB; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 20px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .scene { display: none; }
-    .scene.active { display: block; }
-    #installBtn { display: none; }
-    #imgWrap { display:none; text-align:center; margin-bottom:15px; } #imgPreview { max-height:150px; border-radius:10px; }
-    footer { text-align: center; padding: 30px; font-size: 12px; color: #888; background: #F1F5F9; margin-top: auto; }
-    .whatsapp-btn { position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; background: #25D366; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+    #modal { position:fixed; inset:0; background:rgba(0,0,0,.9); z-index:99; display:flex; align-items:center; justify-content:center; }
+    .modal-box { background:white; width:90%; max-width:400px; padding:25px; border-radius:20px; text-align:center; }
+    .btn-opt { display:block; width:100%; padding:12px; margin-top:10px; border:2px solid #eee; border-radius:10px; background:white; font-weight:700; cursor:pointer; }
+    .btn-opt.sel { border-color:var(--primary); background:#ECFDF5; }
   </style>
 </head>
-<body>
 
-<div id="onboardingModal" style="display:none;">
-    <div class="modal-content">
-        <div class="modal-title">Hoş Geldin Evladım!</div>
-        <div class="gender-grid">
-            <div class="gender-btn" id="btn-female" onclick="selectGender('female')">👩 Kızım</div>
-            <div class="gender-btn" id="btn-male" onclick="selectGender('male')">👨 Oğlum</div>
-        </div>
-        <input type="text" id="cityInput" class="form-input" placeholder="Hangi Şehir? (Örn: İstanbul)">
-        <button class="save-btn" onclick="saveProfile()">Kaydet ve Başla</button>
-    </div>
+<body>
+<div id="modal">
+  <div class="modal-box">
+    <h2>Tanışalım Evladım</h2>
+    <p style="color:#666; font-size:14px;">Sana nasıl hitap edeyim?</p>
+    <button class="btn-opt" onclick="setGender('female', this)">👩 Kızım</button>
+    <button class="btn-opt" onclick="setGender('male', this)">👨 Oğlum</button>
+
+    <input type="text" id="cityIn" placeholder="Hangi Şehir?"
+           style="width:100%; padding:12px; margin-top:15px; border:1px solid #ddd; border-radius:10px;">
+
+    <button class="btn-opt" style="background:var(--primary); color:white; border:none; margin-top:20px;" onclick="saveProfile()">Başla</button>
+  </div>
 </div>
 
-<header>
-    <div class="header-top">
-        <div class="logo-text" onclick="location.reload()">CAYNANA</div>
-        <div class="header-actions">
-            <button class="header-btn" onclick="resetAll()"><i class="fa-solid fa-magnifying-glass"></i></button>
-            <button class="header-btn" onclick="openProfile()"><i class="fa-solid fa-user"></i></button>
-            <button id="installBtn" class="header-btn" onclick="installPWA()"><i class="fa-solid fa-download"></i></button>
-        </div>
-    </div>
-    <div class="profile-bar" id="profileBar" style="display:none;">
-        <span id="profileText">-</span>
-        <span class="profile-edit" onclick="openProfile()">Düzenle</span>
-    </div>
-    <div class="mode-selector-wrap">
-        <div class="mode-selector">
-            <button class="mode-btn active" id="mode-shopping" onclick="setMode('shopping')">Alışveriş</button>
-            <button class="mode-btn" id="mode-food" onclick="setMode('food')">Yemek</button>
-            <button class="mode-btn" id="mode-pharmacy" onclick="setMode('pharmacy')">Eczane</button>
-            <button class="mode-btn" id="mode-travel" onclick="setMode('travel')">Tatil</button>
-            <button class="mode-btn" id="mode-cinema" onclick="setMode('cinema')">Sinema</button>
-            <button class="mode-btn" id="mode-life" onclick="setMode('life')">Yaşam</button>
-        </div>
-    </div>
+<header class="header">
+  <div class="logo"><span class="dot"></span> CAYNANA</div>
+  <div class="mode-badge" id="modeBadge">AUTO</div>
 </header>
 
-<main>
-    <section id="scene-home" class="scene active">
-        <div class="search-container">
-            <div class="hero-title">Karar <span>Danışmanım</span></div>
-            <div class="hero-sub">Alışveriş, mekan, eczane... Kaynanana sor.</div>
-            
-            <div id="imgWrap">
-                <img id="imgPreview" src="">
-                <button class="action-btn" onclick="clearImage()">✕</button>
-            </div>
+<div id="chat-container">
+  <div class="message ai">
+    Hoş geldin evladım. Ben Kaynanan.
+    Alışveriş mi, yemek mi, gezi mi, dert mi… yaz gitsin.
+  </div>
+</div>
 
-            <form id="searchForm" onsubmit="event.preventDefault(); start();">
-                <div class="search-bar">
-                    <button type="button" class="action-btn" onclick="startVoice()"><i class="fa-solid fa-microphone"></i></button>
-                    <input id="q" type="text" placeholder="Ne arıyorsun evladım?" autocomplete="off">
-                    <button type="button" class="action-btn" id="camBtn" onclick="triggerFile()"><i class="fa-solid fa-camera"></i></button>
-                    <button type="button" class="action-btn search-btn" onclick="start()"><i class="fa-solid fa-arrow-right"></i></button>
-                </div>
-                <input id="fileInput" type="file" accept="image/*" style="display:none" onchange="handleFile(this.files[0])">
-            </form>
-            <div class="chips-container" id="chipContainer"></div>
-        </div>
-    </section>
-
-    <section id="scene-loading" class="scene">
-        <div class="loader-box">
-            <div class="spinner"></div>
-            <h3>Araştırıyorum...</h3>
-            <p id="loadingSub">Bekle evladım...</p>
-            <button onclick="resetAll()" style="margin-top:20px; border:1px solid #ccc; background:white; padding:5px 10px; border-radius:10px;">İptal</button>
-        </div>
-    </section>
-
-    <section id="scene-results" class="scene">
-        <div class="result-box">
-            <div class="result-header">
-                <div class="result-title" id="finalHeadline">Sonuç</div>
-                <button id="btnListen" class="speech-toggle" onclick="toggleSpeech()">Dinle</button>
-            </div>
-            
-            <div id="scoreArea" class="score-container" style="display:none;">
-                <div class="score-gauge" id="scoreGauge"><span id="scoreVal"></span></div>
-                <div class="score-text-area"><div class="score-verdict" id="scoreVerdict"></div></div>
-            </div>
-
-            <div id="finalText" class="result-text"></div>
-            
-            <div id="listsWrap"></div>
-
-            <div id="coachWrap" class="coach-card" style="display:none;">
-                <div class="coach-section">
-                    <div class="coach-title">DURUM ÖZETİ</div>
-                    <div class="coach-text" id="coachSummary"></div>
-                </div>
-                <div class="coach-section">
-                    <div class="coach-title">KENDİNE SORMAN GEREKENLER</div>
-                    <div id="coachQuestions"></div>
-                </div>
-                <div class="coach-section">
-                    <div class="coach-title">BUGÜNKÜ ADIMIN</div>
-                    <div class="coach-text" id="coachToday"></div>
-                </div>
-                <div class="boost-box" id="coachBoost"></div>
-            </div>
-
-            <div id="warnWrap" class="warn-box" style="display:none;"></div>
-        </div>
-
-        <h4 id="recTitle" style="margin:20px 0 10px; text-align:center; font-size:12px; color:#666;">ÖNERİLER</h4>
-        <div id="recommendationList"></div>
-
-        <button onclick="resetAll()" style="width:100%; padding:15px; background:white; border:1px solid #ddd; border-radius:12px; margin-top:20px;">Yeni Sorgu</button>
-    </section>
-
-    <section id="scene-static" class="scene">
-        <div class="result-box">
-            <div class="result-header">
-                <div class="result-title" id="staticTitle">Bilgi</div>
-                <button onclick="showScene('scene-home')" style="border:none; background:#eee; width:30px; height:30px; border-radius:50%;">✕</button>
-            </div>
-            <div id="staticText" class="result-text"></div>
-        </div>
-    </section>
-</main>
-
-<footer>
-    <div style="margin-top:10px;">© 2026 CAYNANA.AI</div>
-</footer>
-
-<a href="https://wa.me/" id="waShareBtn" target="_blank" class="whatsapp-btn"><i class="fa-brands fa-whatsapp"></i></a>
+<div class="input-area">
+  <input type="text" id="msgInput" class="input-box" placeholder="Bir şeyler yaz..."
+         onkeypress="if(event.key==='Enter') sendMsg()">
+  <button class="send-btn" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+</div>
 
 <script>
-    const API_BASE = "https://bikonomi-api-1.onrender.com";
-    let session = { q: "", img: "", mode: "shopping", gender: "neutral", city: "" };
-    let currentAudio = null;
-    let audioText = "";
-    let deferredPrompt = null;
-    let loadingInterval = null;
+  let user = { gender: 'neutral', city: 'İstanbul' };
+  const API_URL = "https://bikonomi-api-1.onrender.com/api/chat";
 
-    const CONTENTS = { "hakkimizda": "<h3>Hakkımızda</h3><p>Caynana, yapay zeka destekli bir karar danışmanıdır.</p>" };
+  function setGender(g, btn) {
+    user.gender = g;
+    document.querySelectorAll('.btn-opt').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+  }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        init();
-        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtn').style.display = 'flex'; });
+  function saveProfile() {
+    const c = document.getElementById('cityIn').value.trim();
+    if (c) user.city = c;
+    document.getElementById('modal').style.display = 'none';
+  }
+
+  async function sendMsg() {
+    const inp = document.getElementById('msgInput');
+    const txt = inp.value.trim();
+    if (!txt) return;
+
+    addBubble(txt, 'user');
+    inp.value = '';
+
+    const loadEl = addBubble('Kaynanan düşünüyor...', 'ai', true);
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ message: txt, user: user, mode_lock: 'auto' })
+      });
+
+      const data = await res.json();
+      loadEl.remove();
+
+      const aiEl = addBubble(data.assistant_text || '...', 'ai');
+
+      document.getElementById('modeBadge').innerText = (data.intent || 'AUTO').toUpperCase();
+
+      if (data.intent === 'life' && data.coach_plan) {
+        renderCoachCard(aiEl, data.coach_plan);
+      } else if (Array.isArray(data.cards) && data.cards.length > 0) {
+        renderDataCards(aiEl, data.cards);
+      }
+
+    } catch(e) {
+      loadEl.innerText = "Hata oldu evladım, tekrar dene.";
+    }
+  }
+
+  function addBubble(text, type, temp=false) {
+    const div = document.createElement('div');
+    div.className = `message ${type}`;
+    div.innerText = text;
+    document.getElementById('chat-container').appendChild(div);
+    div.scrollIntoView({behavior:'smooth'});
+    return div;
+  }
+
+  function safeUrl(u) {
+    const s = String(u || '').trim();
+    if (!s) return '';
+    if (s.startsWith('http://') || s.startsWith('https://')) return s;
+    return '';
+  }
+
+  function badgeForCard(c) {
+    const t = (c.type || '').toLowerCase();
+    if (t === 'product') return `<span class="badge product">ÜRÜN</span>`;
+    if (t === 'pharmacy') return `<span class="badge pharmacy">ECZANE</span>`;
+    if (t === 'place') return `<span class="badge place">MEKAN</span>`;
+    if (t === 'fallback') return `<span class="badge fallback">FALLBACK</span>`;
+    return '';
+  }
+
+  function renderDataCards(parent, cards) {
+    const scroll = document.createElement('div');
+    scroll.className = 'cards-scroll';
+
+    cards.forEach(c => {
+      const a = document.createElement('a');
+      a.className = 'card';
+
+      const url = safeUrl(c.url);
+      if (url) {
+        a.href = url;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      } else {
+        a.href = 'javascript:void(0)';
+        a.style.opacity = '0.6';
+        a.style.pointerEvents = 'none';
+      }
+
+      const imgHtml = c.image ? `<img src="${c.image}" alt="">` : '';
+      a.innerHTML = `
+        ${badgeForCard(c)}
+        ${imgHtml}
+        <div class="card-title">${c.title || ''}</div>
+        <div class="card-sub">${c.subtitle || ''}</div>
+        <div class="card-sub muted">${c.footer || ''}</div>
+      `;
+      scroll.appendChild(a);
     });
 
-    function init() {
-        const g = localStorage.getItem("caynana_gender");
-        const c = localStorage.getItem("caynana_city");
-        if(!g || !c) document.getElementById("onboardingModal").style.display = "flex";
-        else { session.gender = g; session.city = c; updateProfileBar(); }
-        setMode("shopping");
-    }
+    parent.appendChild(scroll);
+    scroll.scrollIntoView({behavior:'smooth'});
+  }
 
-    let tempGender = "neutral";
-    window.selectGender = function(g) {
-        tempGender = g;
-        document.querySelectorAll(".gender-btn").forEach(b => b.classList.remove("selected"));
-        document.getElementById("btn-"+g).classList.add("selected");
-    }
+  function renderCoachCard(parent, plan) {
+    const div = document.createElement('div');
+    div.className = 'coach-card';
 
-    window.saveProfile = function() {
-        const city = document.getElementById("cityInput").value.trim();
-        if(!city) return alert("Şehir yaz evladım.");
-        localStorage.setItem("caynana_gender", tempGender);
-        localStorage.setItem("caynana_city", city);
-        session.gender = tempGender;
-        session.city = city;
-        document.getElementById("onboardingModal").style.display = "none";
-        updateProfileBar();
-    }
+    const qs = Array.isArray(plan.clarifying_questions) ? plan.clarifying_questions : [];
+    const wp = Array.isArray(plan.week_plan) ? plan.week_plan : [];
 
-    function updateProfileBar() {
-        const icon = session.gender === "female" ? "👩" : (session.gender === "male" ? "👨" : "🙂");
-        document.getElementById("profileText").innerText = `${icon} | ${session.city}`;
-        document.getElementById("profileBar").style.display = "flex";
-    }
+    div.innerHTML = `
+      <div class="coach-head">DURUM</div>
+      <div class="coach-text">${plan.summary || ''}</div>
 
-    window.openProfile = () => document.getElementById("onboardingModal").style.display = "flex";
+      <div class="coach-head">3 SORU</div>
+      ${qs.slice(0,3).map(q => `<div class="coach-q">${q}</div>`).join('')}
 
-    window.setMode = function(mode) {
-        session.mode = mode;
-        document.querySelectorAll(".mode-btn").forEach(b => b.classList.remove("active"));
-        document.getElementById("mode-"+mode).classList.add("active");
-        
-        const q = document.getElementById("q");
-        const c = document.getElementById("chipContainer");
-        const cam = document.getElementById("camBtn");
-        c.innerHTML = "";
+      <div class="coach-head">BUGÜN</div>
+      <div class="coach-text">👉 ${plan.today_step || ''}</div>
 
-        if(mode === "shopping") {
-            cam.style.display = "block";
-            q.placeholder = "Ürün adı veya linki...";
-            addChip("Airfryer önerisi", "fire");
-        } else {
-            cam.style.display = "none";
-            if(mode === "life") {
-                q.placeholder = "Derdin ne yavrum?";
-                addChip("Bugün motivasyona ihtiyacım var", "heart");
-            } else {
-                q.placeholder = "Ne arıyorsun?";
-            }
-        }
-    }
+      <div class="coach-head">5 GÜN</div>
+      ${wp.slice(0,5).map(x => `<div class="coach-q">${x}</div>`).join('')}
 
-    function addChip(txt, icon) {
-        const d = document.createElement("div");
-        d.className = "chip";
-        d.innerHTML = `<i class="fa-solid fa-${icon}"></i> ${txt}`;
-        d.onclick = () => { document.getElementById("q").value = txt; start(); };
-        document.getElementById("chipContainer").appendChild(d);
-    }
+      <div class="coach-head">TATLI SERT</div>
+      <div class="coach-boost">"${plan.confidence_boost || ''}"</div>
+    `;
 
-    window.resetAll = function() {
-        window.stopSpeech();
-        window.clearImage();
-        document.getElementById("q").value = "";
-        clearInterval(loadingInterval);
-        showScene("scene-home");
-    }
-
-    window.triggerFile = () => document.getElementById("fileInput").click();
-    window.handleFile = (file) => {
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            session.img = e.target.result;
-            document.getElementById("imgPreview").src = session.img;
-            document.getElementById("imgWrap").style.display = "block";
-        };
-        reader.readAsDataURL(file);
-    }
-    window.clearImage = () => {
-        session.img = "";
-        document.getElementById("fileInput").value = "";
-        document.getElementById("imgWrap").style.display = "none";
-    }
-
-    window.startVoice = () => {
-        const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if(!SR) return alert("Tarayıcı desteklemiyor.");
-        const rec = new SR();
-        rec.lang = 'tr-TR';
-        rec.start();
-        document.getElementById("q").placeholder = "Dinliyorum...";
-        rec.onresult = (e) => { document.getElementById("q").value = e.results[0][0].transcript; start(); }
-    }
-
-    window.openContent = (key) => {
-        document.getElementById("staticTitle").textContent = key.toUpperCase();
-        document.getElementById("staticText").innerHTML = CONTENTS[key] || "İçerik yok.";
-        showScene("scene-static");
-    }
-
-    window.showScene = (id) => {
-        document.querySelectorAll(".scene").forEach(s => s.classList.remove("active"));
-        document.getElementById(id).classList.add("active");
-        window.scrollTo(0,0);
-    }
-
-    window.installPWA = async () => {
-        if(!deferredPrompt) return;
-        deferredPrompt.prompt();
-        deferredPrompt = null;
-        document.getElementById("installBtn").style.display = "none";
-    }
-
-    window.start = async function() {
-        const q = document.getElementById("q").value.trim();
-        if(!q && !session.img) return alert("Soru sor evladım.");
-        
-        showScene("scene-loading");
-        const sub = document.getElementById("loadingSub");
-        let i=0; const txts=["Arıyorum...","İnceliyorum...","Yazıyorum..."];
-        loadingInterval = setInterval(()=>{ sub.innerText=txts[i++%3]; }, 800);
-
-        try {
-            const res = await fetch(API_BASE + "/api/analyze", {
-                method: "POST",
-                headers: {"Content-Type":"application/json"},
-                body: JSON.stringify({...session, q, user: {gender: session.gender, city: session.city}})
-            });
-            clearInterval(loadingInterval);
-            if(!res.ok) throw new Error("Hata oluştu");
-            const data = await res.json();
-            renderResult(data);
-        } catch(e) {
-            clearInterval(loadingInterval);
-            alert("Bağlantı hatası!");
-            showScene("scene-home");
-        }
-    }
-
-    function renderResult(data) {
-        audioText = data.speech_text;
-        document.getElementById("finalHeadline").innerText = data.headline;
-        document.getElementById("finalText").innerText = data.text;
-        
-        // Reset Views
-        document.getElementById("scoreArea").style.display = "none";
-        document.getElementById("listsWrap").innerHTML = "";
-        document.getElementById("coachWrap").style.display = "none";
-        document.getElementById("recommendationList").innerHTML = "";
-        document.getElementById("recTitle").style.display = "none";
-
-        // Logic Switch
-        if(session.mode === "life" && data.coach_plan) {
-            // LIFE MODE
-            document.getElementById("coachWrap").style.display = "block";
-            document.getElementById("coachSummary").innerText = data.coach_plan.summary || "";
-            document.getElementById("coachToday").innerText = data.coach_plan.today_step || "";
-            document.getElementById("coachBoost").innerText = data.coach_plan.confidence_boost || "";
-            
-            const qDiv = document.getElementById("coachQuestions");
-            qDiv.innerHTML = "";
-            (data.coach_plan.clarifying_questions || []).forEach(q => {
-                qDiv.innerHTML += `<div class="list-item">${q}</div>`;
-            });
-
-        } else if(session.mode === "shopping") {
-            // SHOPPING MODE
-            if(data.score && data.score.value > 0) {
-                const sArea = document.getElementById("scoreArea");
-                sArea.style.display = "flex";
-                document.getElementById("scoreVal").innerText = data.score.value;
-                document.getElementById("scoreVerdict").innerText = data.score.label;
-                document.getElementById("scoreVerdict").style.color = data.score.color;
-                document.getElementById("scoreGauge").style.background = `conic-gradient(${data.score.color} ${data.score.value}%, #eee 0)`;
-            }
-            // Pros/Cons
-            const listWrap = document.getElementById("listsWrap");
-            if(data.pros) createList(listWrap, "Artılar", data.pros, "check", "green");
-            if(data.cons) createList(listWrap, "Eksiler", data.cons, "xmark", "red");
-            
-            // Recs
-            renderRecs(data.recommendations);
-
-        } else {
-            // OTHER MODES (Food, Travel, etc.)
-            renderRecs(data.recommendations);
-        }
-
-        // Warnings
-        const wBox = document.getElementById("warnWrap");
-        if(data.chronic_issues && data.chronic_issues.length) {
-            wBox.style.display = "block";
-            wBox.innerHTML = "⚠️ " + data.chronic_issues.join("<br>");
-        } else { wBox.style.display = "none"; }
-
-        const wa = document.getElementById("waShareBtn");
-        wa.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(data.headline + " - Caynana")}`;
-        
-        showScene("scene-results");
-    }
-
-    function renderRecs(recs) {
-        if(!recs || recs.length === 0) return;
-        document.getElementById("recTitle").style.display = "block";
-        const list = document.getElementById("recommendationList");
-        recs.forEach(r => {
-            const a = document.createElement("a");
-            a.className = "rec-card theme-default";
-            a.href = r.url || "#";
-            a.target = "_blank";
-            a.innerHTML = `
-                <div class="rec-content">
-                    <div class="award-badge">${r.award}</div>
-                    <div class="rec-name">${r.product_name}</div>
-                    <div class="rec-reason">${r.reason}</div>
-                </div>
-                <div class="rec-arrow"><i class="fa-solid fa-chevron-right"></i></div>
-            `;
-            list.appendChild(a);
-        });
-    }
-
-    function createList(parent, title, arr, icon, color) {
-        if(!arr || arr.length===0) return;
-        const d = document.createElement("div");
-        d.innerHTML = `<div style="font-weight:700; color:${color}; margin:10px 0 5px;"><i class="fa-solid fa-${icon}"></i> ${title}</div>`;
-        arr.forEach(i => { d.innerHTML += `<div class="list-item">${i}</div>`; });
-        parent.appendChild(d);
-    }
-
-    window.stopSpeech = () => {
-        if(currentAudio) { currentAudio.pause(); currentAudio=null; }
-        document.getElementById("btnListen").classList.remove("active");
-    }
-
-    window.toggleSpeech = async () => {
-        const btn = document.getElementById("btnListen");
-        if(currentAudio) return window.stopSpeech();
-        if(!audioText) return;
-        
-        btn.classList.add("active");
-        try {
-            const res = await fetch(API_BASE + "/api/speak", {
-                method: "POST",
-                headers: {"Content-Type":"application/json"},
-                body: JSON.stringify({text: audioText})
-            });
-            const blob = await res.blob();
-            currentAudio = new Audio(URL.createObjectURL(blob));
-            currentAudio.onended = window.stopSpeech;
-            currentAudio.play();
-        } catch(e) { window.stopSpeech(); }
-    }
+    parent.appendChild(div);
+    div.scrollIntoView({behavior:'smooth'});
+  }
 </script>
 </body>
 </html>
