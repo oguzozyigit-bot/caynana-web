@@ -9,7 +9,7 @@
 
 <style>
   :root {
-    --primary: #10B981; /* Yeşil */
+    --primary: #10B981;
     --primary-dark: #059669;
     --bg: #FFFFFF;
     --chat-bg: #F9FAFB;
@@ -29,7 +29,7 @@
     overflow: hidden;
   }
 
-  /* --- HERO SECTION (GOOGLE TARZI) --- */
+  /* --- HERO SECTION --- */
   #hero-section {
     flex: 1;
     display: flex;
@@ -38,7 +38,10 @@
     justify-content: center;
     transition: all 0.4s ease;
     padding: 20px;
+    z-index: 5;
   }
+  
+  /* Chat başlayınca Hero küçülür */
   #hero-section.minimized {
     flex: 0;
     padding: 10px 20px;
@@ -46,6 +49,7 @@
     flex-direction: row;
     justify-content: space-between;
     height: 60px;
+    background: rgba(255,255,255,0.95);
   }
 
   .logo {
@@ -55,6 +59,7 @@
     letter-spacing: -1px;
     margin-bottom: 30px;
     transition: all 0.4s ease;
+    cursor: pointer;
   }
   .logo span { color: var(--primary); }
   
@@ -68,15 +73,15 @@
     flex: 1;
     overflow-y: auto;
     padding: 20px;
-    display: none; /* Başlangıçta gizli */
+    display: none;
     flex-direction: column;
     gap: 15px;
     background: var(--chat-bg);
+    scroll-behavior: smooth;
   }
   #chat-container.active { display: flex; }
 
-  /* Mesajlar */
-  .msg-row { display: flex; flex-direction: column; width: 100%; max-width: 800px; margin: 0 auto; }
+  .msg-row { display: flex; flex-direction: column; width: 100%; max-width: 800px; margin: 0 auto; animation: popIn 0.3s ease; }
   .msg-row.user { align-items: flex-end; }
   .msg-row.ai { align-items: flex-start; }
 
@@ -87,18 +92,29 @@
     line-height: 1.5;
     max-width: 85%;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    position: relative;
   }
   .msg-row.user .bubble { background: var(--user-msg); color: white; border-bottom-right-radius: 4px; }
-  .msg-row.ai .bubble { background: var(--ai-msg); color: #1F2937; border-bottom-left-radius: 4px; }
+  .msg-row.ai .bubble { background: var(--ai-msg); color: #1F2937; border-bottom-left-radius: 4px; border: 1px solid #E5E7EB; }
 
-  /* --- INPUT AREA --- */
+  /* Audio Btn */
+  .audio-btn {
+    margin-top: 5px; background: none; border: none; cursor: pointer;
+    color: #6B7280; font-size: 12px; display: flex; align-items: center; gap: 5px;
+  }
+  .audio-btn:hover { color: var(--primary); }
+
+  @keyframes popIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+
+  /* --- INPUT WRAPPER --- */
   .input-wrapper {
     width: 100%;
     max-width: 600px;
     position: relative;
     transition: all 0.4s ease;
   }
-  #hero-section.minimized + .footer .input-wrapper { max-width: 100%; }
+  /* Chat başlayınca input aşağı footer'a iner */
+  #chat-footer .input-wrapper { max-width: 100%; }
 
   .search-box {
     width: 100%;
@@ -113,50 +129,53 @@
   }
   .search-box:focus { border-color: var(--primary); box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.1); }
 
-  .search-btn {
+  .action-btn {
     position: absolute;
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    background: var(--primary);
-    color: white;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
+    right: 10px; top: 50%; transform: translateY(-50%);
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--primary); color: white;
+    border: none; font-size: 18px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
+    transition: 0.2s;
   }
+  .action-btn:active { transform: translateY(-50%) scale(0.9); }
 
-  /* CHIPS (ÖNERİLER) */
+  /* --- CHIPS --- */
   .chips {
     display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; justify-content: center;
   }
-  #hero-section.minimized .chips { display: none; } /* Chat açılınca gizle */
+  #hero-section.minimized .chips { display: none; }
 
   .chip {
-    background: #F3F4F6;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #4B5563;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: 0.2s;
+    background: #F3F4F6; padding: 8px 16px; border-radius: 20px;
+    font-size: 13px; font-weight: 600; color: #4B5563;
+    cursor: pointer; border: 1px solid transparent; transition: 0.2s;
+    display: flex; align-items: center; gap: 6px;
   }
   .chip:hover { border-color: var(--primary); color: var(--primary); background: #ECFDF5; }
+  .chip i { color: var(--primary); }
 
-  /* FOOTER (Chat modunda input aşağı iner) */
-  .footer {
+  /* --- BOTTOM LINKS (FOOTER) --- */
+  .bottom-links {
+    margin-top: 40px;
+    display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;
+    font-size: 12px; color: #9CA3AF;
+  }
+  .bottom-links a { text-decoration: none; color: inherit; font-weight: 500; transition:0.2s; }
+  .bottom-links a:hover { color: var(--primary); }
+  
+  /* Chat başlayınca alttaki linkler kaybolur */
+  #hero-section.minimized .bottom-links { display: none; }
+
+  /* --- CHAT FOOTER (Input Area) --- */
+  #chat-footer {
     padding: 15px 20px;
     background: white;
     border-top: 1px solid #E5E7EB;
-    display: none;
+    display: none; /* Başlangıçta gizli */
   }
-  .footer.active { display: block; }
+  #chat-footer.active { display: block; }
 
-  /* Yükleniyor */
   .typing { display: none; font-size: 12px; color: #9CA3AF; padding: 10px; text-align: center; font-style: italic; }
 
 </style>
@@ -164,36 +183,48 @@
 <body>
 
 <div id="hero-section">
-  <div class="logo">CAYNANA<span>.AI</span></div>
+  <div class="logo" onclick="location.reload()">CAYNANA<span>.AI</span></div>
   
   <div class="input-wrapper" id="mainInputWrap">
-    <input type="text" id="mainInput" class="search-box" placeholder="Ne arıyorsun evladım?" onkeypress="if(event.key==='Enter') startChat()">
-    <button class="search-btn" onclick="startChat()"><i class="fa-solid fa-paper-plane"></i></button>
+    <input type="text" id="mainInput" class="search-box" placeholder="Ne danışmak istersin evladım?" autocomplete="off" onkeypress="if(event.key==='Enter') startChat()">
+    <button class="action-btn" onclick="startChat()"><i class="fa-solid fa-paper-plane"></i></button>
   </div>
 
   <div class="chips">
-    <div class="chip" onclick="fill('Fal bak (Fincan)')">☕ Kahve Falı</div>
-    <div class="chip" onclick="fill('Bugün ne giysem?')">👗 Ne Giysem?</div>
-    <div class="chip" onclick="fill('Nöbetçi eczane')">💊 Eczane</div>
-    <div class="chip" onclick="fill('Airfryer önerisi')">🍟 Alışveriş</div>
+    <div class="chip" onclick="fill('Fal bak (Fincan)')"><i class="fa-solid fa-mug-hot"></i> Kahve Falı</div>
+    <div class="chip" onclick="fill('İngilizceye çevir: Seni seviyorum')"><i class="fa-solid fa-language"></i> Çevirmen</div>
+    <div class="chip" onclick="fill('Bugün ne giysem?')"><i class="fa-solid fa-shirt"></i> Yaşam Koçu</div>
+    <div class="chip" onclick="fill('Nöbetçi eczane')"><i class="fa-solid fa-pills"></i> Eczane</div>
+  </div>
+
+  <div class="bottom-links">
+    <a href="#">Hakkımızda</a>
+    <a href="#">Nasıl Çalışır?</a>
+    <a href="#">SSS</a>
+    <a href="#">Gizlilik</a>
+    <a href="#">İletişim</a>
+    <span>© 2026 Caynana.AI</span>
   </div>
 </div>
 
 <div id="chat-container"></div>
 <div class="typing" id="typingIndicator">Kaynanan yazıyor...</div>
 
-<div class="footer" id="footer"></div>
+<div id="chat-footer"></div>
 
 <script>
   const API_URL = "https://bikonomi-api-1.onrender.com/api/chat";
+  const SPEAK_URL = "https://bikonomi-api-1.onrender.com/api/speak";
+  
   const hero = document.getElementById('hero-section');
   const chatContainer = document.getElementById('chat-container');
-  const footer = document.getElementById('footer');
+  const chatFooter = document.getElementById('chat-footer');
   const inputWrap = document.getElementById('mainInputWrap');
   const mainInput = document.getElementById('mainInput');
   const typing = document.getElementById('typingIndicator');
-
+  
   let isChatActive = false;
+  let currentAudio = null;
 
   function fill(txt) {
     mainInput.value = txt;
@@ -209,8 +240,8 @@
         isChatActive = true;
         hero.classList.add('minimized');
         chatContainer.classList.add('active');
-        footer.classList.add('active');
-        footer.appendChild(inputWrap); // Inputu aşağı taşı
+        chatFooter.classList.add('active');
+        chatFooter.appendChild(inputWrap); // Inputu aşağı taşı
         mainInput.focus();
     }
 
@@ -221,20 +252,28 @@
     typing.style.display = 'block';
     chatContainer.scrollTop = chatContainer.scrollHeight;
 
+    const payload = {
+        message: txt,
+        user: { city: 'İstanbul', gender: 'neutral' }
+    };
+
     fetch(API_URL, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ message: txt, user: { city: 'İstanbul', gender: 'neutral' } })
+        body: JSON.stringify(payload)
     })
     .then(res => res.json())
     .then(data => {
         typing.style.display = 'none';
-        addMsg(data.reply || data.assistant_text, 'ai');
+        const aiText = data.reply || data.assistant_text || "Bir şeyler ters gitti.";
+        addMsg(aiText, 'ai');
+        
+        // Otomatik Seslendirme Opsiyonel:
+        // playVoice(null, aiText); 
         
         // Kartlar varsa
         if(data.data && Array.isArray(data.data)) {
-            // Basit kart listesi (text olarak)
-            let cardsText = data.data.map(c => `• ${c.title} (${c.price || c.desc})`).join('\n');
+            let cardsText = data.data.map(c => `• ${c.title} (${c.price || c.desc})`).join('<br>');
             if(cardsText) addMsg(cardsText, 'ai');
         }
     })
@@ -247,9 +286,60 @@
   function addMsg(txt, type) {
     const row = document.createElement('div');
     row.className = `msg-row ${type}`;
-    row.innerHTML = `<div class="bubble">${txt.replace(/\n/g, '<br>')}</div>`;
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = txt.replace(/\n/g, '<br>');
+    row.appendChild(bubble);
+
+    if(type === 'ai') {
+        const btn = document.createElement('button');
+        btn.className = 'audio-btn';
+        btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
+        // Tırnakları temizle
+        const safeTxt = txt.replace(/<[^>]*>?/gm, '').replace(/"/g, ''); 
+        btn.onclick = function() { playVoice(this, safeTxt); };
+        row.appendChild(btn);
+    }
+
     chatContainer.appendChild(row);
     chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  async function playVoice(btn, text) {
+    if(currentAudio) { currentAudio.pause(); currentAudio=null; }
+    
+    let originalHTML = '';
+    if(btn) {
+        originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    }
+    
+    try {
+      const res = await fetch(SPEAK_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({text: text})
+      });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      currentAudio = new Audio(url);
+      
+      currentAudio.onended = () => { if(btn) btn.innerHTML = originalHTML; };
+      await currentAudio.play();
+      
+      if(btn) {
+          btn.innerHTML = '<i class="fa-solid fa-stop"></i>';
+          btn.onclick = function() { 
+              currentAudio.pause(); 
+              btn.innerHTML = originalHTML; 
+              btn.onclick = function() { playVoice(this, text); }; // Fonksiyonu geri yükle
+          };
+      }
+    } catch(e) {
+      if(btn) btn.innerHTML = originalHTML;
+      alert("Ses çalınamadı.");
+    }
   }
 </script>
 
