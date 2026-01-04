@@ -1,314 +1,717 @@
-import os
-import json
-import base64
-import traceback
-import io
-import time
-import re
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>CAYNANA.AI – Karar Danışmanım</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  
+  <meta http-equiv="Content-Security-Policy" content="default-src * data: blob: 'unsafe-inline' 'unsafe-eval'; script-src * data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src * data: blob:; img-src * data: blob:; media-src * data: blob:; frame-src * data: blob:;">
 
-from flask import Flask, request, jsonify, send_file
-from flask_cors import CORS
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#10B981">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/9386/9386895.png">
 
-import google.generativeai as genai
-from openai import OpenAI
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-app = Flask(__name__)
-# Production'da buraya domain kısıtlaması ekleyebilirsin
-CORS(app)
+  <style>
+    :root {
+      --bg-body: #F7F9FC;
+      --text-main: #1A1A1A;
+      --text-muted: #666666;
+      --primary: #10B981;
+      --primary-dark: #059669;
+      --border: #E2E8F0;
+      
+      --good: #10B981;
+      --warn: #F59E0B;
+      --bad: #EF4444;
+    }
 
-# --- KEYLER ---
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "").strip()
-
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-
-client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
-
-# --- GLOBAL CACHE ---
-MODELS_CACHE = {"ts": 0, "data": []}
-MODELS_CACHE_TTL = 600 
-
-# --- YARDIMCILAR ---
-def _dataurl_to_bytes(data_url: str):
-    if not data_url or "," not in data_url: return None, None
-    try:
-        header, b64 = data_url.split(",", 1)
-        mime = "image/jpeg"
-        if header.startswith("data:") and ";base64" in header:
-            mime = header[5:].split(";")[0].strip() or mime
-        return mime, base64.b64decode(b64)
-    except Exception as e:
-        print(f"Resim hatası: {e}")
-        return None, None
-
-def get_available_models():
-    now = time.time()
-    if MODELS_CACHE["data"] and (now - MODELS_CACHE["ts"] < MODELS_CACHE_TTL):
-        return MODELS_CACHE["data"]
-    if not GEMINI_API_KEY: return []
-    try:
-        models_iter = genai.list_models()
-        valid_models = []
-        for m in models_iter:
-            methods = getattr(m, "supported_generation_methods", []) or []
-            if "generateContent" in methods:
-                name = getattr(m, "name", "")
-                if name: valid_models.append(name)
-        real_list = sorted(list(set(valid_models)))
-        MODELS_CACHE["ts"] = time.time()
-        MODELS_CACHE["data"] = real_list
-        return real_list
-    except:
-        return MODELS_CACHE["data"] if MODELS_CACHE["data"] else ["models/gemini-pro"]
-
-def try_parse_json(txt: str):
-    txt = (txt or "").strip().replace("```json", "").replace("```", "").strip()
-    try: return json.loads(txt)
-    except:
-        # Regex ile JSON bloğunu bulmaya çalış
-        m = re.search(r"\{[\s\S]*?\}", txt)
-        if m:
-            try: return json.loads(m.group(0))
-            except: pass
-        raise ValueError("Valid JSON not found")
-
-def enforce_contract(out: dict) -> dict:
-    if not isinstance(out, dict): out = {}
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     
-    if "headline" not in out: out["headline"] = "Analiz Tamamlandı"
-    if "text" not in out: out["text"] = "Detaylı bilgi alınamadı."
-    if "speech_text" not in out: out["speech_text"] = "Evladım, analiz bitti. Kaynanan sözü dinle, pişman olma..."
-    if "product_img" not in out: out["product_img"] = ""
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
 
-    # Score Clamp
-    if "score" not in out or not isinstance(out["score"], dict):
-        out["score"] = {"value": 50, "label": "Bilinmiyor", "color": "#F59E0B"}
-    else:
-        try: val = int(out["score"].get("value", 50))
-        except: val = 50
-        val = max(0, min(100, val))
-        out["score"]["value"] = val
-        
-        # Renk mantığı
-        if val >= 85: out["score"].update({"label":"Güvenle Yap", "color":"#10B981"})
-        elif val >= 70: out["score"].update({"label":"Mantıklı", "color":"#3B82F6"})
-        elif val >= 50: out["score"].update({"label":"Dikkat Et", "color":"#F59E0B"})
-        else: out["score"].update({"label":"Uzak Dur", "color":"#EF4444"})
-
-    # Indicators
-    if "indicators" not in out: out["indicators"] = {}
-    ind = out["indicators"]
-    ind.setdefault("comment_trust", 50)
-    ind.setdefault("chronic_issue", False)
-    ind.setdefault("return_risk", "orta")
-
-    # Lists
-    for k in ["pros", "cons", "chronic_issues", "risk_flags", "evidence_quotes"]:
-        if k not in out or not isinstance(out[k], list): out[k] = []
-        out[k] = [str(x).strip() for x in out[k] if x]
-
-    # Recommendations
-    if "recommendations" not in out: out["recommendations"] = []
-    safe_recs = []
-    for r in out["recommendations"]:
-        if not isinstance(r, dict): continue
-        p_name = str(r.get("product_name") or "Öneri").strip()
-        url = str(r.get("url") or "").strip()
-        
-        # Eğer link yoksa Google aramaya yönlendir (Mekanlar için)
-        if not url:
-            q_safe = p_name.replace(" ", "+")
-            url = f"https://www.google.com/search?q={q_safe}"
-        
-        safe_recs.append({
-            "product_name": p_name,
-            "platform": str(r.get("platform") or "Genel").strip(),
-            "site": str(r.get("site") or "Genel").strip(),
-            "url": url,
-            "award": str(r.get("award") or "Tavsiye").strip(),
-            "reason": str(r.get("reason") or "").strip()
-        })
-    out["recommendations"] = safe_recs[:5]
-    return out
-
-# --- CAYNANA MANIFESTOSU (KENDİNİ TANIT İÇİN) ---
-CAYNANA_INTRO = {
-    "headline": "Ben Kimim Evladım?",
-    "text": "Ben Kaynanan. Sadece alışverişte değil, hayatın her alanında yanındayım. Nereye gidilir, ne yenir, ne giyilir benden sorulur. Seni hatalı kararlardan, kazıkçı mekanlardan, üşütecek kıyafetlerden korumak için buradayım. Yapay zeka olabilirim ama tecrübem gerçektir!",
-    "speech_text": "Evladım, ben Kaynanan... Sadece 'bu telefon alınır mı' diye sorma. 'Fethiye'de nerede yemek yenir?', 'Düzce'de nereye gidilir?', 'Bugün ne giysem?' diye de sor. Ben senin iyiliğin için varım. Seni gaza getirmem, gerçekleri söylerim. Kazık yeme, hasta olma, pişman olma diye buradayım. Kaynanan sözü dinle, pişman olma...",
-    "score": {"value": 100, "label": "Hayat Koçun", "color": "#10B981"},
-    "indicators": {"comment_trust": 100, "chronic_issue": False, "return_risk": "yok"},
-    "pros": ["Her Şeyi Bilir", "Seni Korur", "Dobra"],
-    "cons": ["Biraz Çok Konuşur", "Gerçekler Acıtır"],
-    "chronic_issues": [],
-    "risk_flags": [],
-    "evidence_quotes": [],
-    "recommendations": []
-}
-
-# --- SYSTEM PROMPT (GENİŞLETİLMİŞ DANIŞMAN MODU) ---
-SYSTEM_INSTRUCTION = """
-Sen Caynana'sın (Kullanıcıya kendini 'Kaynanan' olarak tanıt).
-GÖREV: Kullanıcı ne sorarsa sorsun (Ürün, Mekan, Yemek, Kıyafet, Tavsiye), korumacı, iğneleyici ve uzman bir Türk Kaynanası gibi cevap ver.
-
-SENARYOLAR VE DAVRANIŞLAR:
-1. ÜRÜN SORARSA: Teknik analiz yap, kronik sorunları söyle, paranı çöpe atma de.
-2. MEKAN/GEZİ SORARSA (Örn: Fethiye kahvaltı, Düzce gezilecek yer):
-   - Turist tuzaklarına karşı uyar.
-   - "Kazıkçı mekanlara gitme", "Reçeli marketten alan yere oturma" gibi uyarılarda bulun.
-   - Doğa gezisi sorarsa "Yanına hırka al, üşütürsün", "Suya girme hasta olursun" gibi sağlık uyarıları ekle.
-3. KIYAFET/MODA SORARSA (Örn: Bugün ne giyeyim?):
-   - Havaya ve sağlığa odaklan. "O etekle donarsın", "Belini açık bırakma", "Ayağına yün çorap giy" gibi konuş. Modadan çok sağlığı düşün.
-
-KURALLAR:
-- SES TONU: Kadınsı, sevecen ama sert, otoriter, kinayeli.
-- GÜVENLİK: "asdf", küfür, +18 sorulursa fırça at, analiz yapma.
-- İMZA: speech_text MUTLAKA şu cümleyle bitmeli: "Kaynanan sözü dinle, pişman olma..."
-- FORMAT: Sadece saf JSON.
-
-JSON ALANLARI NASIL KULLANILACAK?
-- product_name: Ürün adı VEYA Mekan adı VEYA Konu (örn: "Fethiye Kahvaltı")
-- score: Alınabilirlik VEYA Gidilebilirlik VEYA Mantık Puanı
-- chronic_issues: Ürün hatası VEYA Mekanın kötü yanı (örn: "Servis yavaş", "Porsiyon küçük", "Çok rüzgarlı")
-- recommendations: Alternatif ürünler VEYA Alternatif mekanlar/aktiviteler.
-
-İSTENEN JSON FORMATI:
-{
-  "headline": "Çarpıcı Başlık (Örn: Oraya Gidilir Ama...)",
-  "text": "Detaylı analiz metni...",
-  "product_img": "",
-  "score": { "value": 0-100, "label": "Rozet", "color": "renk" },
-  "indicators": { "comment_trust": 0-100, "chronic_issue": false, "return_risk": "düşük/orta/yüksek" },
-  "pros": ["Artı 1", "Artı 2", "Artı 3"],
-  "cons": ["Eksi 1", "Eksi 2", "Eksi 3"],
-  "chronic_issues": ["Kronik sorun / Mekan sorunu"],
-  "risk_flags": ["Fiyat / Hijyen / Hava Durumu"],
-  "evidence_quotes": ["İlgili yorum/tavsiye"],
-  "speech_text": "Evladım... (içerik)... Kaynanan sözü dinle, pişman olma...",
-  "recommendations": [ { "product_name": "", "platform": "Google/Trendyol", "site": "Yer/Site", "url": "", "award": "", "reason": "" } ]
-}
-"""
-
-@app.get("/")
-def health(): return "Caynana API (Super App Mode)"
-
-@app.get("/api/models")
-def models():
-    if not GEMINI_API_KEY:
-        return jsonify({"ok": True, "llm_models": ["openai"], "default_llm": "openai", "tts": {"enabled": bool(client)}})
+    /* HEADER */
+    header { padding: 15px 20px; display: flex; flex-direction: column; gap: 10px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); z-index: 10; position: sticky; top: 0; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
     
-    available = get_available_models()
-    clean = [m.replace("models/", "") for m in available] if available else ["gemini-pro"]
+    .logo-container { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+    .logo-icon { width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; }
+    .logo-text { font-weight: 800; font-size: 20px; letter-spacing: -0.5px; color: #111; }
     
-    # Varsayılan model seçimi
-    default_m = "gemini-1.5-flash"
-    for m in clean:
-        if "gemini-2.0" in m: default_m = m; break
-        if "gemini-1.5-pro" in m: default_m = m; break
+    .header-btn { background: #ECFDF5; border: 1px solid var(--primary); color: var(--primary); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; margin-left: 5px; transition: 0.2s; }
+    .header-btn:active { transform: scale(0.9); background: var(--primary); color: white; }
 
-    return jsonify({"ok": True, "llm_models": clean, "default_llm": default_m, "tts": {"enabled": bool(client)}})
+    /* MODE SELECTOR */
+    .mode-selector { display: flex; background: #F1F5F9; padding: 4px; border-radius: 12px; gap: 4px; }
+    .mode-btn { flex: 1; border: none; background: transparent; padding: 8px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #64748B; cursor: pointer; transition: 0.2s; text-align: center; }
+    .mode-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
-@app.post("/api/analyze")
-def analyze():
-    try:
-        data = request.get_json(silent=True) or {}
-        query = (data.get("q") or "").strip()
-        img_dataurl = data.get("img") or ""
+    #installBtn { display: none; background: #E6FFFA; color: var(--primary); border: 1px solid var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; align-items: center; gap: 5px; }
 
-        # --- ÖZEL SENARYO: KENDİNİ TANIT ---
-        # Eğer kullanıcı "caynana kendini tanıt" butonuna bastıysa direkt hazır cevabı dön.
-        if "caynana kendini tanıt" in query.lower() or "ben kimim" in query.lower():
-            return jsonify(CAYNANA_INTRO)
+    main { flex: 1; padding: 20px; width: 100%; max-width: 600px; margin: 0 auto; display: flex; flex-direction: column; }
 
-        if not query and not img_dataurl:
-            return jsonify({"error": True, "message": "Evladım boş boş bakma, bir şey sor."}), 400
+    /* HERO & SEARCH */
+    .hero-title { text-align: center; font-size: 32px; font-weight: 800; line-height: 1.1; margin-bottom: 10px; color: #111; margin-top: 10px;}
+    .hero-title span { color: var(--primary); }
+    .hero-sub { text-align: center; color: var(--text-muted); font-size: 15px; margin-bottom: 20px; line-height: 1.5; }
 
-        # LLM MODEL SEÇİMİ
-        available = set(get_available_models())
-        req_model = (data.get("model") or "").strip()
-        models_to_try = []
+    .search-container { position: relative; width: 100%; margin-bottom: 15px; }
+    .search-bar { display: flex; align-items: center; background: white; border: 2px solid var(--border); border-radius: 16px; padding: 5px 5px 5px 15px; height: 60px; transition: all 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+    .search-bar:focus-within { border-color: var(--primary); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15); transform: translateY(-1px); }
+    #q { flex: 1; border: none; outline: none; font-size: 16px; height: 100%; background: transparent; }
+    
+    .action-btn { width: 44px; height: 44px; border-radius: 12px; border: none; background: transparent; color: var(--text-muted); font-size: 18px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+    .action-btn:hover { background: #f0f0f0; color: #333; }
+    .search-btn { background: var(--primary); color: white; margin-left: 5px; }
+    .search-btn:hover { background: var(--primary-dark); color: white; }
+
+    /* CHIPS */
+    .chips-container { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 25px; -ms-overflow-style: none; scrollbar-width: none; }
+    .chips-container::-webkit-scrollbar { display: none; }
+    .chip { background: white; border: 1px solid var(--border); padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; color: var(--text-muted); white-space: nowrap; cursor: pointer; transition: 0.2s; }
+    .chip:hover { border-color: var(--primary); color: var(--primary); background: #F0FDF9; }
+
+    /* SPONSOR */
+    .sponsor-card {
+      background: linear-gradient(135deg, #10B981 0%, #047857 100%);
+      border-radius: 16px; padding: 20px; color: white;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+      position: relative; overflow: hidden;
+    }
+    .sponsor-card:active { transform: scale(0.98); }
+
+    /* LOADING */
+    .loader-box { text-align: center; padding: 50px 0; }
+    .spinner { width: 50px; height: 50px; border: 4px solid #E5E7EB; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s infinite linear; margin: 0 auto 20px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-step { font-size: 14px; color: var(--text-muted); font-weight: 500; min-height: 20px; transition: 0.3s; }
+
+    /* RESULT */
+    .result-box { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px; animation: slideUp 0.5s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* GAUGE & SCORE */
+    .score-container { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
+    .score-gauge { position: relative; width: 64px; height: 64px; border-radius: 50%; background: conic-gradient(var(--score-color) var(--score-pct), #E5E7EB 0); display: flex; align-items: center; justify-content: center; }
+    .score-inner { width: 52px; height: 52px; background: white; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; font-size: 18px; color: #111; }
+    .score-label { font-size: 8px; color: #666; font-weight: 600; text-transform: uppercase; }
+    
+    .score-text-area { flex: 1; margin-left: 15px; }
+    .score-verdict { font-size: 18px; font-weight: 800; color: var(--score-color); line-height: 1.2; }
+    .score-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; cursor: pointer; text-decoration: underline; }
+
+    .result-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+    .result-title { font-size: 20px; font-weight: 800; color: #111; line-height: 1.3; }
+    
+    .speech-toggle { background: #F3F4F6; padding: 8px 15px; border-radius: 20px; border: none; color: #4B5563; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .speech-toggle.active { background: #DCFCE7; color: #166534; }
+    .result-text { font-size: 15px; line-height: 1.7; color: #374151; white-space: pre-line; margin-bottom: 15px; }
+
+    /* RECOMMENDATIONS */
+    .recommendations-title { font-size: 14px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: 1px; margin: 30px 0 15px 0; text-align: center; }
+    .rec-card { display: flex; align-items: center; background: white; border-radius: 16px; padding: 15px; margin-bottom: 15px; text-decoration: none; color: inherit; position: relative; overflow: hidden; border: 1px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+    .rec-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
+    
+    .theme-gold::before { background: #FFD700; } .theme-gold .award-badge { background: #FFF9C4; color: #856404; }
+    .theme-silver::before { background: #A0AEC0; } .theme-silver .award-badge { background: #EDF2F7; color: #4A5568; }
+    .theme-default::before { background: var(--primary); } .theme-default .award-badge { background: #D1FAE5; color: #065F46; }
+    
+    .rec-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #555; background: #F9FAFB; margin-left: 10px; margin-right: 15px; flex-shrink: 0; }
+    .rec-content { flex: 1; }
+    .award-badge { display: inline-block; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; margin-bottom: 6px; letter-spacing: 0.5px; }
+    .rec-name { font-weight: 700; font-size: 15px; line-height: 1.3; margin-bottom: 4px; color: #111; }
+    .rec-reason { font-size: 12px; color: #6B7280; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .rec-arrow { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #9CA3AF; background: #F3F4F6; border-radius: 50%; margin-left: 10px; flex-shrink: 0; }
+
+    /* IMAGE PREVIEW */
+    #imgWrap { display: none; margin-bottom: 20px; position: relative; border-radius: 16px; overflow: hidden; border: 2px dashed var(--primary); }
+    #imgPreview { width: 100%; display: block; }
+    .img-cancel { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+    /* WHATSAPP BUTONU */
+    .whatsapp-btn {
+        position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+        background-color: #25D366; color: white; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        z-index: 1000; text-decoration: none; transition: transform 0.3s;
+    }
+    .whatsapp-btn:hover { transform: scale(1.1); }
+
+    .scene { display: none; }
+    .scene.active { display: block; }
+
+    /* FOOTER */
+    footer { background: #F8F9FA; border-top: 1px solid #DADCE0; padding: 30px 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; font-size: 12px; color: #70757A; margin-top: auto; }
+    .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; width: 100%; max-width: 400px; text-align: center; }
+    .footer-links a { color: #5F6368; text-decoration: none; font-weight: 500; padding: 5px; display: block; }
+    .footer-links a:hover { color: var(--primary); }
+    .company-tag { display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 800; color: #9CA3AF; font-size: 10px; margin-top: 10px; }
+    .italian-bar { height: 4px; background: linear-gradient(to right, #009246 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ce2b37 66.6%); border-radius: 2px; border: 1px solid rgba(0,0,0,0.05); width: 120px; }
+
+    /* STATIC PAGE STYLES */
+    .static-content h3 { color: var(--primary); font-size: 16px; margin-top: 20px; margin-bottom: 10px; border-bottom: 2px solid #eee; padding-bottom: 5px; }
+    .static-content p { margin-bottom: 10px; }
+    .static-content strong { color: #111; }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="logo-container" onclick="window.location.reload()">
+      <div class="logo-icon">C</div>
+      <div class="logo-text">CAYNANA.AI</div>
+    </div>
+    
+    <div style="display:flex;">
+        <button class="header-btn" onclick="resetAll()" title="Yeni Arama"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <button class="header-btn" onclick="fillSearch('Caynana kendini tanıt')" title="Ben Kimim?"><i class="fa-solid fa-user-nurse"></i></button>
+    </div>
+  </div>
+
+  <div class="mode-selector">
+    <button class="mode-btn active" id="mode-shopping" onclick="setMode('shopping')"><i class="fa-solid fa-bag-shopping"></i> Alışveriş</button>
+    <button class="mode-btn" id="mode-places" onclick="setMode('places')"><i class="fa-solid fa-map-location-dot"></i> Mekan</button>
+    <button class="mode-btn" id="mode-daily" onclick="setMode('daily')"><i class="fa-solid fa-cloud-sun"></i> Günlük</button>
+  </div>
+
+  <button id="installBtn" onclick="installPWA()">Uygulamayı Yükle</button>
+</header>
+
+<main>
+  
+  <section id="scene-home" class="scene active">
+    <div class="hero-title">Almadan Önce<br><span>CAYNANA'ya Sor.</span></div>
+    <div class="hero-sub">Kararsız mısın? Ürün, mekan, yemek veya kıyafet... Kaynanana danış, pişman olma.</div>
+
+    <div id="imgWrap">
+       <img id="imgPreview" src="">
+       <button class="img-cancel" onclick="clearImage()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <form id="searchForm" class="search-container" onsubmit="event.preventDefault(); start();">
+      <div class="search-bar">
+        <button type="button" class="action-btn" onclick="startVoice()"><i class="fa-solid fa-microphone"></i></button>
+        <input id="q" type="text" placeholder="Ürün adı, linki veya sor..." autocomplete="off">
+        <button type="button" class="action-btn" onclick="triggerFile()"><i class="fa-solid fa-camera"></i></button>
+        <button type="button" class="action-btn search-btn" onclick="start()"><i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+      <input id="fileInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this.files[0])">
+    </form>
+    
+    <div class="chips-container" id="chipContainer">
+        </div>
+
+    <div class="sponsor-card" onclick="openContent('sponsor')">
+        <div>
+            <div style="font-size: 10px; font-weight: 800; opacity: 0.8; letter-spacing: 1px; margin-bottom: 5px;">SPONSORLU</div>
+            <div style="font-size: 18px; font-weight: 800; line-height: 1.2;">Günün Fırsatları<br>Seni Bekliyor!</div>
+        </div>
+        <div style="font-size: 30px; opacity: 0.9;"><i class="fa-solid fa-bag-shopping"></i></div>
+    </div>
+  </section>
+
+  <section id="scene-loading" class="scene">
+    <div class="loader-box">
+      <div class="spinner"></div>
+      <h3 style="color:#374151;">Kaynanan Araştırıyor...</h3>
+      <p id="loadingSub" class="loading-step">Detaylara bakılıyor...</p>
+      <button onclick="resetAll()" style="margin-top: 30px; color: var(--bad); background: none; border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-size: 12px; cursor: pointer;">İptal Et</button>
+    </div>
+  </section>
+
+  <section id="scene-results" class="scene">
+    <div class="result-box">
+        <div class="result-header">
+            <div class="result-title" id="finalHeadline">Sonuç</div>
+            <button id="btnListen" class="speech-toggle" onclick="toggleSpeech()">
+                <i class="fa-solid fa-volume-high"></i> Dinle
+            </button>
+        </div>
+
+        <div id="scoreArea" class="score-container" style="display:none;">
+            <div class="score-gauge" id="scoreGauge">
+                <div class="score-inner">
+                    <span id="scoreVal">0</span>
+                    <span class="score-label">PUAN</span>
+                </div>
+            </div>
+            <div class="score-text-area">
+                <div class="score-verdict" id="scoreVerdict">--</div>
+                <div class="score-sub" onclick="openContent('puan')"><i class="fa-solid fa-circle-info"></i> Puan Nasıl Hesaplanır?</div>
+            </div>
+        </div>
         
-        def norm(m): return m if m.startswith("models/") else "models/" + m
-        
-        if GEMINI_API_KEY:
-            # Öncelik sırası
-            candidates = [req_model, "gemini-1.5-pro", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"]
-            for c in candidates:
-                if not c: continue
-                n = norm(c)
-                if n in available and n not in models_to_try: models_to_try.append(n)
-            if not models_to_try: models_to_try = ["models/gemini-pro"]
+        <div id="heroImgBox" style="text-align:center; margin-bottom:15px; display:none;">
+            <img id="heroImg" src="" style="max-height:150px; border-radius:10px;">
+        </div>
 
-        text_resp = ""
-        
-        # 1. GEMINI İLE ANALİZ
-        if GEMINI_API_KEY and models_to_try:
-            parts = [f"Soru: {query}"]
-            mime, img_bytes = _dataurl_to_bytes(img_dataurl)
-            if img_bytes: parts.append({"mime_type": mime, "data": img_bytes})
+        <div id="finalText" class="result-text"></div>
 
-            for m in models_to_try:
-                try:
-                    # Token limitini artırdık (Daha uzun yorum için)
-                    model = genai.GenerativeModel(model_name=m, generation_config={"temperature": 0.5, "max_output_tokens": 2500, "response_mime_type": "application/json"}, system_instruction=SYSTEM_INSTRUCTION)
-                    resp = model.generate_content(parts)
-                    text_resp = (resp.text or "").strip()
-                    if text_resp: break
-                except: continue
+        <div id="indicatorRow" style="display:none; gap:10px; margin:10px 0 15px 0; flex-wrap:wrap;">
+            <div id="indTrust" style="flex:1; min-width:140px; background:#F9FAFB; border:1px solid var(--border); border-radius:12px; padding:10px; font-size:12px;"></div>
+            <div id="indChronic" style="flex:1; min-width:140px; background:#F9FAFB; border:1px solid var(--border); border-radius:12px; padding:10px; font-size:12px;"></div>
+            <div id="indReturn" style="flex:1; min-width:140px; background:#F9FAFB; border:1px solid var(--border); border-radius:12px; padding:10px; font-size:12px;"></div>
+        </div>
 
-        # 2. OPENAI FALLBACK (Gemini çalışmazsa)
-        if not text_resp and client:
-            try:
-                sys_msg = SYSTEM_INSTRUCTION
-                user_msg = f"Soru: {query}\n\nSADECE JSON."
-                if img_dataurl: user_msg += " (Görsel var ama metin olarak analiz et)"
-                
-                resp = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[{"role": "system", "content": sys_msg}, {"role": "user", "content": user_msg}],
-                    temperature=0.5,
-                    max_tokens=2500
-                )
-                text_resp = resp.choices[0].message.content or ""
-            except: pass
+        <div id="prosConsWrap" style="display:none; gap:12px; margin-top:10px; flex-wrap: wrap;">
+            <div style="flex:1; min-width: 250px; background:#F9FAFB; border:1px solid var(--border); border-radius:12px; padding:12px;">
+                <div style="font-weight:800; font-size:12px; margin-bottom:8px; color:var(--good);"><i class="fa-solid fa-check"></i> Artılar</div>
+                <ul id="prosList" style="margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:1.6;"></ul>
+            </div>
+            <div style="flex:1; min-width: 250px; background:#F9FAFB; border:1px solid var(--border); border-radius:12px; padding:12px;">
+                <div style="font-weight:800; font-size:12px; margin-bottom:8px; color:var(--bad);"><i class="fa-solid fa-xmark"></i> Eksiler</div>
+                <ul id="consList" style="margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:1.6;"></ul>
+            </div>
+        </div>
 
-        if not text_resp:
-            return jsonify({"headline": "Bağlantı Hatası", "text": "Sunuculara ulaşamıyorum evladım.", "score": {"value":0}}), 500
+        <div id="chronicWrap" style="display:none; margin-top:12px; padding:12px; border-radius:12px; border:1px solid rgba(245,158,11,0.35); background:rgba(245,158,11,0.08);">
+            <div style="font-weight:900; font-size:12px; margin-bottom:6px; color:var(--warn);">⚠️ Dikkat Edilecekler</div>
+            <ul id="chronicList" style="margin:0; padding-left:18px; color:#374151; font-size:13px; line-height:1.6;"></ul>
+        </div>
 
-        try:
-            out = try_parse_json(text_resp)
-            return jsonify(enforce_contract(out))
-        except:
-            return jsonify(enforce_contract({"headline": "Hata", "text": text_resp[:500]}))
+        <div id="riskWrap" style="display:none; margin-top:12px;">
+            <div style="font-weight:900; font-size:12px; margin-bottom:8px; color:#6B7280;">Risk Bayrakları</div>
+            <div id="riskChips" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
+        </div>
 
-    except Exception as e:
-        return jsonify({"error": True, "message": str(e)}), 500
+        <div id="evidenceWrap" style="display:none; margin-top:12px;">
+            <div style="font-weight:900; font-size:12px; margin-bottom:8px; color:#6B7280;">Kaynana Notu</div>
+            <div id="evidenceList" style="display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
 
-@app.post("/api/speak")
-def speak():
-    try:
-        if not client: return jsonify({"error": True, "message": "TTS Kapalı"}), 500
-        data = request.get_json(silent=True) or {}
-        text = (data.get("text") or "").strip()
-        if not text: text = "Evladım sesim çıkmadı."
-        
-        # Telaffuz Düzeltme
-        text = text.replace("Caynana", "Kaynanan").replace("caynana", "Kaynanan")
+    </div>
 
-        # ZORUNLU İMZA KONTROLÜ (Garanti Olsun)
-        if "kaynanan sözü dinle" not in text.lower():
-            text += " Kaynanan sözü dinle, pişman olma..."
+    <a id="waShareBtn" href="#" target="_blank" style="display:none; width:100%; padding:12px; background:#25D366; color:white; border-radius:12px; text-align:center; text-decoration:none; font-weight:bold; margin-top:15px; box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);">
+        <i class="fa-brands fa-whatsapp"></i> Bu Analizi Paylaş
+    </a>
 
-        # KADIN SESİ: NOVA
-        resp = client.audio.speech.create(model="tts-1", voice="nova", input=text[:3000], response_format="mp3")
-        
-        try: audio_bytes = resp.read()
-        except: audio_bytes = getattr(resp, "content", b"")
-        
-        return send_file(io.BytesIO(audio_bytes), mimetype="audio/mpeg", download_name="caynana.mp3")
-    except Exception as e:
-        return jsonify({"error": True, "message": str(e)}), 500
+    <div class="recommendations-title" id="recTitle">CAYNANA ÖNERİYOR</div>
+    <div id="recommendationList"></div>
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")))
+    <button onclick="resetAll()" style="width:100%; padding:15px; background:white; border:1px solid #E5E7EB; border-radius:12px; color:#6B7280; font-weight:600; cursor:pointer; margin-top:20px;">
+        <i class="fa-solid fa-arrow-left"></i> Yeni Sorgu Yap
+    </button>
+  </section>
+
+  <section id="scene-static" class="scene" style="background:white; padding:20px; border-radius:12px; border:1px solid #eee; min-height: 100vh; position:absolute; top:0; left:0; width:100%; z-index:99;">
+    <div style="max-width:600px; margin:0 auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 id="staticTitle" style="margin:0; font-size:20px;">Başlık</h2>
+            <button onclick="showScene('scene-home')" style="background:#f1f3f4; border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; font-weight:700;">✕</button>
+        </div>
+        <div id="staticText" class="static-content" style="line-height:1.6; color:#555; font-size: 14px;"></div>
+        <button onclick="showScene('scene-home')" style="margin-top:30px; padding:15px; background: var(--primary); color: white; width: 100%; border:none; border-radius:12px; cursor:pointer; font-weight: 700;">Kapat ve Dön</button>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-grid footer-links">
+    <a href="#" onclick="openContent('hakkimizda')">Hakkımızda</a>
+    <a href="#" onclick="openContent('anayasasi')">Caynana Anayasası</a>
+    <a href="#" onclick="openContent('sss')">Sıkça Sorulan Sorular</a>
+    <a href="#" onclick="openContent('gizlilik')">Gizlilik Politikası</a>
+    <a href="#" onclick="openContent('sartlar')">Kullanım Şartları</a>
+    <a href="#" onclick="openContent('iletisim')">İletişim</a>
+    <a href="#" onclick="openContent('sorumluluk')">Yasal Uyarı</a>
+  </div>
+  <div class="company-tag">
+    <span>© 2025 CAYNANA.AI BY ITALKY TECHNOLOGY</span>
+    <div class="italian-bar"></div>
+  </div>
+</footer>
+
+<a href="https://wa.me/905000000000" target="_blank" class="whatsapp-btn">
+    <i class="fa-brands fa-whatsapp"></i>
+</a>
+
+<script>
+  const CONTENTS = {
+    "hakkimizda": `<h3>1. CAYNANA nedir?</h3><p>CAYNANA, yapay zekâ destekli bir alışveriş ve karar danışmanıdır. Ürünleri analiz eder, mekan tavsiyesi verir, ne giyeceğine karışır.</p><h3>2. Amacı Nedir?</h3><p>Seni hatalı kararlardan korumak.</p>`,
+    "anayasasi": `<h3>CAYNANA ANAYASASI</h3><p>1. Caynana asla yalan söylemez, dobra konuşur.</p><p>2. Seni gaza getirmez, frenler.</p><p>3. Ürün satmaya çalışmaz, paranı korur.</p><p>4. Her konuda bir fikri vardır.</p>`,
+    "puan": `<h3>PUAN SİSTEMİ</h3><p>Puan 4 ana bileşenden oluşur: Yorum Güveni, Kronik Sorunlar, Fiyat/Performans, Satıcı Kalitesi.</p>`,
+    "sss": `<h3>SSS</h3><p>Puan neden değişir? Yeni veriler geldikçe güncellenir.</p>`,
+    "gizlilik": `<h3>Gizlilik</h3><p>Verileriniz anonimdir.</p>`,
+    "sartlar": `<h3>Kullanım Şartları</h3><p>Tavsiye amaçlıdır, kesin yargı içermez.</p>`,
+    "iletisim": `<h3>İletişim</h3><p>info@italky.com</p>`,
+    "sorumluluk": `<h3>Yasal Uyarı</h3><p>Yapay zeka hatalı olabilir. Son karar sizindir.</p>`,
+    "sponsor": `<h3>Sponsorluk</h3><p>Analizler tarafsızdır.</p>`
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+      
+      const API_BASE = "https://bikonomi-api-1.onrender.com";
+      const qInput = document.getElementById("q");
+      let session = { q: "", img: "", mode: "shopping" }; // Default mode
+      let currentAudio = null;
+      let audioText = "";
+      let loadingInterval;
+
+      // MOD SELECTOR
+      window.setMode = function(mode) {
+          session.mode = mode;
+          document.querySelectorAll(".mode-btn").forEach(btn => btn.classList.remove("active"));
+          document.getElementById("mode-"+mode).classList.add("active");
+          
+          // Placeholder & Chips Update
+          const chips = document.getElementById("chipContainer");
+          if(mode === "shopping") {
+              qInput.placeholder = "Ürün adı, linki veya sor...";
+              chips.innerHTML = `
+                <div class="chip" onclick="fillSearch('En iyi airfryer hangisi?')"><i class="fa-solid fa-fire"></i> Airfryer</div>
+                <div class="chip" onclick="fillSearch('Iphone 15 alınır mı?')"><i class="fa-solid fa-mobile"></i> Telefon</div>
+                <div class="chip" onclick="fillSearch('Robot süpürge önerisi')"><i class="fa-solid fa-robot"></i> Süpürge</div>`;
+          } else if(mode === "places") {
+              qInput.placeholder = "Şehir, mekan, aktivite sor...";
+              chips.innerHTML = `
+                <div class="chip" onclick="fillSearch('Fethiyede kahvaltı nerede yapılır?')"><i class="fa-solid fa-utensils"></i> Fethiye Kahvaltı</div>
+                <div class="chip" onclick="fillSearch('İstanbulda gezilecek sessiz yerler')"><i class="fa-solid fa-tree"></i> Sessiz Yerler</div>
+                <div class="chip" onclick="fillSearch('Düzcede ne yenir?')"><i class="fa-solid fa-burger"></i> Düzce Yemek</div>`;
+          } else {
+              qInput.placeholder = "Bugün ne giysem? Ne yapsam?";
+              chips.innerHTML = `
+                <div class="chip" onclick="fillSearch('Bugün hava yağmurlu ne giysem?')"><i class="fa-solid fa-shirt"></i> Ne Giysem?</div>
+                <div class="chip" onclick="fillSearch('Canım sıkılıyor ne izlesem?')"><i class="fa-solid fa-tv"></i> Film Öner</div>
+                <div class="chip" onclick="fillSearch('Evde yapılabilecek hobi?')"><i class="fa-solid fa-puzzle-piece"></i> Hobi</div>`;
+          }
+      };
+      
+      // Init Default Mode
+      setMode("shopping");
+
+      if ("serviceWorker" in navigator) { navigator.serviceWorker.register("/sw.js").catch(()=>{}); }
+      let deferredPrompt;
+      const installBtn = document.getElementById('installBtn');
+      window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; installBtn.style.display = 'flex'; });
+      window.installPWA = async function() { if (deferredPrompt) { deferredPrompt.prompt(); const { outcome } = await deferredPrompt.userChoice; if (outcome === 'accepted') installBtn.style.display = 'none'; deferredPrompt = null; } };
+
+      window.stopSpeech = function() {
+          const btn = document.getElementById("btnListen");
+          if(currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
+          if(btn) { btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle'; btn.classList.remove("active"); }
+      };
+
+      window.fillSearch = function(txt) { qInput.value = txt; start(); };
+
+      window.showScene = function(id) { 
+          window.stopSpeech();
+          document.querySelectorAll(".scene").forEach(el => el.classList.remove("active")); 
+          document.getElementById(id).classList.add("active"); 
+          window.scrollTo(0,0);
+      };
+      
+      window.resetAll = function() {
+          window.stopSpeech();
+          window.clearImage();
+          qInput.value = "";
+          clearInterval(loadingInterval);
+          showScene("scene-home");
+      };
+
+      window.triggerFile = function() { document.getElementById("fileInput").click(); };
+      
+      window.handleFile = function(file) {
+          if(!file) return;
+          const reader = new FileReader();
+          reader.onload = (e) => {
+              session.img = e.target.result;
+              document.getElementById("imgPreview").src = session.img;
+              document.getElementById("imgWrap").style.display = "block";
+              qInput.placeholder = "Görsel eklendi...";
+          };
+          reader.readAsDataURL(file);
+      };
+      
+      window.clearImage = function() {
+          session.img = "";
+          document.getElementById("fileInput").value = "";
+          document.getElementById("imgWrap").style.display = "none";
+          qInput.placeholder = "Bir şeyler sor...";
+      };
+
+      window.openContent = function(key) {
+          const content = CONTENTS[key] || "<p>İçerik hazırlanıyor...</p>";
+          let title = "Bilgi";
+          if(key==="hakkimizda") title="Hakkımızda";
+          if(key==="anayasasi") title="Anayasa";
+          document.getElementById("staticTitle").textContent = title;
+          document.getElementById("staticText").innerHTML = content;
+          showScene("scene-static");
+      };
+
+      window.startVoice = function() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if(!SpeechRecognition) return alert("Cihazınız sesli aramayı desteklemiyor.");
+        const rec = new SpeechRecognition();
+        rec.lang = 'tr-TR';
+        rec.start();
+        qInput.placeholder = "Dinliyorum...";
+        rec.onresult = (e) => { qInput.value = e.results[0][0].transcript; start(); };
+        rec.onend = () => { qInput.placeholder = "Bir şeyler sor..."; };
+      };
+
+      function startLoadingAnim() {
+        const texts = ["Kaynanan araştırıyor...", "Detaylara bakılıyor...", "Tecrübeler konuşuyor...", "Analiz yapılıyor..."];
+        let i = 0;
+        const sub = document.getElementById("loadingSub");
+        sub.innerText = texts[0];
+        loadingInterval = setInterval(() => {
+            i = (i + 1) % texts.length;
+            sub.innerText = texts[i];
+        }, 1500);
+      }
+
+      function setList(ul, arr) {
+        ul.innerHTML = "";
+        (arr || []).slice(0, 3).forEach(x => {
+            const li = document.createElement("li");
+            li.textContent = x;
+            ul.appendChild(li);
+        });
+      }
+      function setChips(box, arr) {
+        box.innerHTML = "";
+        (arr || []).forEach(x => {
+            const s = document.createElement("span");
+            s.textContent = x;
+            s.style.cssText = "padding:6px 10px;border-radius:999px;background:#F3F4F6;color:#374151;font-size:12px;border:1px solid var(--border);";
+            box.appendChild(s);
+        });
+      }
+      function setEvidence(box, arr) {
+        box.innerHTML = "";
+        (arr || []).slice(0, 3).forEach(x => {
+            const d = document.createElement("div");
+            d.style.cssText = "padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:white;color:#374151;font-size:13px;font-style:italic;";
+            d.textContent = "“" + x + "”";
+            box.appendChild(d);
+        });
+      }
+
+      async function start() {
+        const q = qInput.value.trim();
+        const imgToSend = session.img;
+
+        if (!q && !imgToSend) { alert("Lütfen bir şey yazın veya fotoğraf yükleyin."); return; }
+
+        showScene("scene-loading");
+        startLoadingAnim();
+
+        try {
+            // Mode bilgisini de gönderiyoruz
+            const res = await fetch(API_BASE + "/api/analyze", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ q, img: imgToSend, mode: session.mode })
+            });
+
+            clearInterval(loadingInterval);
+
+            if (!res.ok) throw new Error("Sunucu hatası");
+            const data = await res.json();
+
+            window.clearImage();
+            qInput.value = "";
+            document.getElementById("scoreArea").style.display = "none";
+
+            document.getElementById("finalHeadline").textContent = data.headline || "Analiz Sonucu";
+            document.getElementById("finalText").innerText = data.text || "Bilgi bulunamadı.";
+            audioText = data.speech_text || "";
+
+            const heroBox = document.getElementById("heroImgBox");
+            if (data.product_img && data.product_img.length > 5) {
+                document.getElementById("heroImg").src = data.product_img;
+                heroBox.style.display = "block";
+            } else {
+                heroBox.style.display = "none";
+            }
+
+            // MODE'a göre render farkı (Alışverişte Skor Var, Diğerlerinde Yok)
+            if (session.mode === "shopping" && data.score) {
+                const scoreEl = document.getElementById("scoreArea");
+                const gauge = document.getElementById("scoreGauge");
+                const valEl = document.getElementById("scoreVal");
+                const verdictEl = document.getElementById("scoreVerdict");
+
+                let scoreValue = 0;
+                let scoreLabel = "";
+                let scoreColor = "";
+
+                if (typeof data.score === 'object') {
+                    scoreValue = parseInt(data.score.value) || 0;
+                    scoreLabel = data.score.label || "";
+                    scoreColor = data.score.color || "#10B981";
+                } else {
+                    scoreValue = parseInt(data.score) || 0;
+                }
+
+                if (!scoreColor || !scoreLabel) {
+                    if(scoreValue < 50) { scoreColor = "#EF4444"; scoreLabel = "Uzak Dur"; }
+                    else if(scoreValue < 70) { scoreColor = "#F59E0B"; scoreLabel = "Dikkat Et"; }
+                    else if(scoreValue < 85) { scoreColor = "#3B82F6"; scoreLabel = "Mantıklı"; }
+                    else { scoreColor = "#10B981"; scoreLabel = "Güvenle Al"; }
+                }
+
+                scoreEl.style.display = "flex";
+                valEl.innerText = scoreValue;
+                verdictEl.innerText = scoreLabel;
+                verdictEl.style.color = scoreColor;
+                gauge.style.background = `conic-gradient(${scoreColor} ${scoreValue}%, #E5E7EB 0)`;
+            } else {
+                document.getElementById("scoreArea").style.display = "none";
+            }
+
+            // Indicators
+            const indRow = document.getElementById("indicatorRow");
+            if (data.indicators) {
+                indRow.style.display = "flex";
+                document.getElementById("indTrust").innerHTML = `<strong>Güven:</strong> %${data.indicators.comment_trust ?? "-"}`;
+                document.getElementById("indChronic").innerHTML = `<strong>Sorun:</strong> ${data.indicators.chronic_issue ? "Var" : "Yok"}`;
+                document.getElementById("indReturn").innerHTML = `<strong>Risk:</strong> ${(data.indicators.return_risk || "-")}`;
+            } else {
+                indRow.style.display = "none";
+            }
+
+            // Pros / Cons
+            const pcWrap = document.getElementById("prosConsWrap");
+            if ((data.pros && data.pros.length) || (data.cons && data.cons.length)) {
+                pcWrap.style.display = "flex";
+                setList(document.getElementById("prosList"), data.pros);
+                setList(document.getElementById("consList"), data.cons);
+            } else {
+                pcWrap.style.display = "none";
+            }
+
+            // Diğer bloklar (Chronic, Risk, Evidence)
+            const chWrap = document.getElementById("chronicWrap");
+            if (data.chronic_issues && data.chronic_issues.length) {
+                chWrap.style.display = "block";
+                setList(document.getElementById("chronicList"), data.chronic_issues);
+            } else { chWrap.style.display = "none"; }
+
+            const rWrap = document.getElementById("riskWrap");
+            if (data.risk_flags && data.risk_flags.length) {
+                rWrap.style.display = "block";
+                setChips(document.getElementById("riskChips"), data.risk_flags);
+            } else { rWrap.style.display = "none"; }
+
+            const eWrap = document.getElementById("evidenceWrap");
+            if (data.evidence_quotes && data.evidence_quotes.length) {
+                eWrap.style.display = "block";
+                setEvidence(document.getElementById("evidenceList"), data.evidence_quotes);
+            } else { eWrap.style.display = "none"; }
+
+            // WhatsApp Share
+            const waBtn = document.getElementById("waShareBtn");
+            const shareText = `Caynana Tavsiyesi: ${data.headline}\nDetaylar: caynana.ai`;
+            waBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+            waBtn.style.display = "block";
+
+            // Recommendations (Moda göre başlık değişir)
+            document.getElementById("recTitle").innerText = (session.mode === "places" ? "MEKAN ÖNERİLERİ" : (session.mode === "daily" ? "TAVSİYELER" : "ALTERNATİF ÜRÜNLER"));
+            
+            const list = document.getElementById("recommendationList");
+            list.innerHTML = "";
+            const recs = Array.isArray(data.recommendations) ? data.recommendations : [];
+            
+            if (recs.length > 0) {
+                recs.forEach(rec => {
+                    let theme = "theme-default";
+                    const award = String(rec.award || "").toLowerCase();
+                    if (award.includes("altın") || award.includes("şiddet")) theme = "theme-gold";
+                    
+                    let iconClass = "fa-solid fa-star";
+                    if (session.mode === "shopping") iconClass = "fa-solid fa-bag-shopping";
+                    if (session.mode === "places") iconClass = "fa-solid fa-location-dot";
+                    if (session.mode === "daily") iconClass = "fa-solid fa-lightbulb";
+
+                    const url = rec.url || "#";
+                    const html = `
+                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="rec-card ${theme}">
+                        <div class="rec-icon"><i class="${iconClass}"></i></div>
+                        <div class="rec-content">
+                            <div class="award-badge">${rec.award || "Tavsiye"}</div>
+                            <div class="rec-name">${rec.product_name || "Öneri"}</div>
+                            <div class="rec-reason">${rec.reason || ""}</div>
+                        </div>
+                        <div class="rec-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+                    </a>`;
+                    list.innerHTML += html;
+                });
+            } else {
+                list.innerHTML = "<div style='text-align:center; color:#999; font-size:13px;'>Başka öneri bulunamadı.</div>";
+            }
+
+            showScene("scene-results");
+
+        } catch (e) {
+            clearInterval(loadingInterval);
+            alert("Hata: " + (e.message || "Bağlantı sorunu"));
+            showScene("scene-home");
+        }
+      }
+
+      window.toggleSpeech = async function() {
+          const btn = document.getElementById("btnListen");
+          if(currentAudio) { window.stopSpeech(); return; }
+          if (!audioText || audioText.length < 2) { alert("Okunacak metin yok."); return; }
+          
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor...';
+          btn.classList.add("active");
+          
+          try {
+              const res = await fetch(API_BASE + '/api/speak', {
+                  method: 'POST',
+                  headers: {'Content-Type': 'application/json'},
+                  body: JSON.stringify({ text: audioText })
+              });
+
+              if(!res.ok) throw new Error("Ses servisi hatası");
+
+              const blob = await res.blob();
+              if (blob.size < 100) throw new Error("Boş ses dosyası");
+
+              const url = URL.createObjectURL(blob);
+              currentAudio = new Audio(url);
+              currentAudio.muted = false;
+              currentAudio.volume = 1.0;
+
+              currentAudio.onended = () => { window.stopSpeech(); };
+              currentAudio.onerror = () => { alert("Ses çalınamadı."); window.stopSpeech(); };
+
+              await currentAudio.play().catch(() => {
+                  alert("Lütfen ekranın sesini açın.");
+                  window.stopSpeech();
+              });
+
+              btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
+
+          } catch(e) {
+              alert("Ses Hatası: " + e.message);
+              window.stopSpeech();
+          }
+      };
+      
+      window.start = start;
+  });
+</script>
+
+</body>
+</html>
