@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>CAYNANA</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+<title>CAYNANA - Yaşam Koçu ve Falcı</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
   :root {
-    --primary: #10B981;
-    --primary-dark: #059669;
-    --bg: #F0F2F5;
-    --chat-bg: #E5E5E5;
-    --user-msg-bg: #10B981;
-    --ai-msg-bg: #FFFFFF;
+    --primary: #8B5CF6; /* Mor (Mistik/Fal) */
+    --primary-dark: #7C3AED;
+    --secondary: #10B981; /* Yeşil (Alışveriş/Yaşam) */
+    --bg: #F3F0FF;
+    --card-bg: #FFFFFF;
+    --text: #1F2937;
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -29,191 +29,243 @@
     overflow: hidden;
   }
 
-  /* HEADER */
+  /* --- HEADER --- */
   .header {
     background: white;
     padding: 15px 20px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.1);
     z-index: 10;
+    position: relative;
   }
-  .logo { font-weight: 900; font-size: 20px; color: #1F2937; letter-spacing: -0.5px; }
-  .logo span { color: var(--primary); }
-  .status { font-size: 11px; font-weight: 600; color: var(--primary); display: flex; align-items: center; gap: 5px; }
-  .status::before { content:''; width:8px; height:8px; background:var(--primary); border-radius:50%; display:block; animation: pulse 2s infinite; }
-  @keyframes pulse { 0% {opacity:1;} 50% {opacity:0.5;} 100% {opacity:1;} }
+  
+  .logo {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--primary);
+    letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .logo i { font-size: 28px; }
 
-  /* CHAT AREA */
-  #chat-container {
+  /* --- MAIN AREA --- */
+  #main-container {
     flex: 1;
     overflow-y: auto;
     padding: 20px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
-    background-size: 20px 20px;
+    gap: 20px;
+    padding-bottom: 100px; /* Input alanı için boşluk */
   }
 
-  .msg-row { display: flex; width: 100%; flex-direction: column; }
-  .msg-row.user { align-items: flex-end; }
-  .msg-row.ai { align-items: flex-start; }
+  /* Mesajlar */
+  .msg-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-width: 85%;
+    animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  .msg-wrapper.user { align-self: flex-end; align-items: flex-end; }
+  .msg-wrapper.ai { align-self: flex-start; align-items: flex-start; }
 
-  .msg-bubble {
-    max-width: 80%;
-    padding: 12px 16px;
-    border-radius: 18px;
+  .bubble {
+    padding: 14px 18px;
+    border-radius: 20px;
     font-size: 15px;
     line-height: 1.5;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     position: relative;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    word-wrap: break-word;
   }
-  .msg-row.user .msg-bubble { background: var(--user-msg-bg); color: white; border-bottom-right-radius: 4px; }
-  .msg-row.ai .msg-bubble { background: var(--ai-msg-bg); color: #1F2937; border-bottom-left-radius: 4px; }
-
-  /* Audio Button */
-  .audio-btn {
-    margin-top: 5px; background: none; border: none; cursor: pointer; color: #64748B;
-    font-size: 12px; display: flex; align-items: center; gap: 5px; opacity: 0.8;
+  .msg-wrapper.user .bubble {
+    background: var(--secondary);
+    color: white;
+    border-bottom-right-radius: 4px;
   }
-  .audio-btn:hover { color: var(--primary); }
-
-  /* CARDS */
-  .cards-scroll {
-    display: flex; gap: 12px; overflow-x: auto; padding: 10px 5px 20px 5px; width: 100%;
-    scrollbar-width: none;
-  }
-  .cards-scroll::-webkit-scrollbar { display: none; }
-  
-  .card {
-    min-width: 220px; max-width: 220px; background: white; border-radius: 12px;
-    padding: 10px; border: 1px solid #E2E8F0; text-decoration: none; color: inherit;
-    display: flex; flex-direction: column; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-  }
-  .card img { width: 100%; height: 110px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; background: #f1f5f9; }
-  .card-title { font-weight: 700; font-size: 13px; margin-bottom: 4px; color: #111; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .card-desc { font-size: 11px; color: #64748B; }
-
-  /* FOOTER AREA */
-  .footer {
+  .msg-wrapper.ai .bubble {
     background: white;
-    border-top: 1px solid #E2E8F0;
-    padding-bottom: env(safe-area-inset-bottom);
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+    border: 1px solid #E5E7EB;
   }
 
-  /* CHIPS */
-  .chips {
-    display: flex; gap: 8px; overflow-x: auto; padding: 10px 15px;
-    scrollbar-width: none; border-bottom: 1px solid #F1F5F9;
+  /* AI Avatar */
+  .avatar {
+    width: 36px; height: 36px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    margin-bottom: -10px;
+    margin-left: -10px;
+    z-index: 1;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
-  .chips::-webkit-scrollbar { display: none; }
-  .chip {
-    background: #F8FAFC; border: 1px solid #E2E8F0; padding: 6px 12px;
-    border-radius: 20px; font-size: 12px; font-weight: 600; color: #475569;
-    white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px;
+
+  /* Görsel Önizleme */
+  .msg-img {
+    max-width: 200px;
+    border-radius: 12px;
+    margin-bottom: 5px;
+    border: 3px solid white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+
+  /* Ses Butonu */
+  .audio-btn {
+    background: #F3F4F6;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #4B5563;
+    display: flex; align-items: center; gap: 6px;
+    cursor: pointer;
+    margin-top: 5px;
     transition: 0.2s;
   }
-  .chip:active { background: #E2E8F0; transform: scale(0.95); }
-  .chip i { color: var(--primary); }
+  .audio-btn:active { transform: scale(0.95); }
+  .audio-btn.playing { background: var(--primary); color: white; }
 
-  /* INPUT BAR */
-  .input-bar {
+  @keyframes popIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* --- INPUT AREA --- */
+  .footer {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: white;
     padding: 10px 15px;
-    display: flex; align-items: center; gap: 8px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  /* Hızlı İşlemler (Chips) */
+  .quick-actions {
+    display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none;
+  }
+  .action-chip {
+    background: #F5F3FF;
+    border: 1px solid #DDD6FE;
+    color: var(--primary);
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .action-chip:active { background: #EDE9FE; }
+
+  /* Giriş Barı */
+  .input-bar {
+    display: flex; gap: 10px; align-items: center;
   }
   
   .tool-btn {
-    width: 40px; height: 40px; border-radius: 50%; border: none;
-    background: #F1F5F9; color: #64748B; font-size: 16px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px;
+    border-radius: 50%; border: none;
+    background: #F3F4F6; color: #4B5563;
+    font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
     transition: 0.2s;
   }
-  .tool-btn:active { background: #E2E8F0; }
-  .tool-btn.active { color: #EF4444; background: #FEE2E2; animation: pulse 1s infinite; }
+  .tool-btn.cam { color: var(--primary); background: #F5F3FF; }
+  .tool-btn:active { transform: scale(0.9); }
 
-  .input-field {
-    flex: 1; background: #F8FAFC; border: 1px solid #E2E8F0;
-    padding: 12px 16px; border-radius: 24px; font-size: 15px; outline: none;
-    transition: 0.3s;
+  .text-input {
+    flex: 1;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    padding: 12px 15px;
+    border-radius: 24px;
+    font-size: 16px;
+    outline: none;
   }
-  .input-field:focus { border-color: var(--primary); background: white; }
+  .text-input:focus { border-color: var(--primary); background: white; }
 
   .send-btn {
-    width: 44px; height: 44px; border-radius: 50%; border: none;
-    background: var(--primary); color: white; font-size: 18px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 2px 5px rgba(16, 185, 129, 0.3);
-    transition: 0.2s;
+    width: 44px; height: 44px;
+    border-radius: 50%; border: none;
+    background: var(--secondary); color: white;
+    font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
   }
-  .send-btn:active { transform: scale(0.9); background: var(--primary-dark); }
+  .send-btn:active { transform: scale(0.9); }
 
-  /* Hidden File Input */
+  /* Dosya Input (Gizli) */
   #fileInput { display: none; }
-  
-  /* Typing Indicator */
-  .typing { display: none; font-size: 12px; color: #94A3B8; padding: 0 20px 10px; font-style: italic; }
+
+  /* Yükleniyor Animasyonu */
+  .typing { display: none; font-size: 12px; color: #9CA3AF; padding-left: 20px; font-style: italic; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="logo">CAYNANA<span>.AI</span></div>
-  <div class="status">Çevrimiçi</div>
+  <div class="logo"><i class="fa-solid fa-crystal-ball"></i> CAYNANA</div>
 </div>
 
-<div id="chat-container">
+<div id="main-container">
+  <div class="msg-wrapper ai">
+    <div class="avatar"><i class="fa-solid fa-user-nurse"></i></div>
+    <div class="bubble">
+      Hoş geldin evladım. Ben Kaynanan.<br><br>
+      🛍️ Alışverişte kazıklanmamanı sağlarım.<br>
+      ☕ Fincanını çek at, falına bakayım.<br>
+      🧘 Derdin varsa anlat, derman olayım.
+    </div>
+    <button class="audio-btn" onclick="playVoice(this, 'Hoş geldin evladım. Ben Kaynanan. Alışverişte kazıklanmamanı sağlarım. Fincanını çek at, falına bakayım. Derdin varsa anlat, derman olayım.')">
+      <i class="fa-solid fa-volume-high"></i> Dinle
+    </button>
   </div>
+</div>
 
-<div class="typing" id="typingIndicator">Kaynanan yazıyor...</div>
+<div class="typing" id="typingIndicator">Kaynanan fincana bakıyor...</div>
 
 <div class="footer">
-  <div class="chips">
-    <div class="chip" onclick="fill('Fal bak')"><i class="fa-solid fa-wand-magic-sparkles"></i> Fal Bak</div>
-    <div class="chip" onclick="fill('Bugün ne giysem?')"><i class="fa-solid fa-shirt"></i> Ne Giysem?</div>
-    <div class="chip" onclick="fill('Nöbetçi eczane nerede?')"><i class="fa-solid fa-kit-medical"></i> Eczane</div>
+  <div class="quick-actions">
+    <div class="action-chip" onclick="triggerCamera()"><i class="fa-solid fa-camera"></i> Fal Bak (Fincan Çek)</div>
+    <div class="action-chip" onclick="fill('Bugün ne giysem?')"><i class="fa-solid fa-shirt"></i> Ne Giysem?</div>
+    <div class="action-chip" onclick="fill('Canım çok sıkkın')"><i class="fa-solid fa-heart-crack"></i> Dertleş</div>
+    <div class="action-chip" onclick="fill('Airfryer önerisi')"><i class="fa-solid fa-bag-shopping"></i> Alışveriş</div>
   </div>
 
   <div class="input-bar">
-    <button class="tool-btn" onclick="triggerCamera()"><i class="fa-solid fa-camera"></i></button>
-    <button class="tool-btn" onclick="toggleMic()" id="micBtn"><i class="fa-solid fa-microphone"></i></button>
+    <button class="tool-btn cam" onclick="triggerCamera()"><i class="fa-solid fa-camera"></i></button>
     
-    <input type="text" id="msgInput" class="input-field" placeholder="Bir şeyler yaz..." autocomplete="off">
+    <input type="text" id="msgInput" class="text-input" placeholder="Bir şeyler yaz..." autocomplete="off">
     
-    <button class="send-btn" onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
+    <button class="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
     
     <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="handleFile(this.files[0])">
   </div>
 </div>
 
 <script>
-  // Hata yakalayıcı (Beyaz ekranı önler)
-  window.onerror = function(message, source, lineno, colno, error) {
-      console.log("Hata:", message);
-      return true; 
-  };
-
   const API_URL = "https://bikonomi-api-1.onrender.com/api/chat";
   const SPEAK_URL = "https://bikonomi-api-1.onrender.com/api/speak";
   
-  const chatBox = document.getElementById('chat-container');
+  const container = document.getElementById('main-container');
   const msgInput = document.getElementById('msgInput');
   const typing = document.getElementById('typingIndicator');
   
   let currentImg = null;
   let currentAudio = null;
 
-  // --- INIT ---
-  function initChat() {
-      addMsg("Hoş geldin evladım. Ben Kaynanan. Alışveriş, yemek, fal, dert... Ne varsa dökül, çözeriz.", 'ai');
-  }
+  // --- Functions ---
 
-  // --- ACTIONS ---
   function fill(txt) {
     msgInput.value = txt;
-    send();
+    sendMessage();
   }
 
   function triggerCamera() {
@@ -221,52 +273,80 @@
   }
 
   function handleFile(file) {
-    if(!file) return;
+    if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
       currentImg = e.target.result;
-      addMsg("Fotoğraf eklendi. Göndermek için yaz veya tuşa bas.", 'user', currentImg);
-      msgInput.focus();
+      addMessage("Fincan fotoğrafı eklendi. Yorumla bakalım Kaynana!", 'user', currentImg);
+      // Otomatik gönder
+      sendMessage(true); 
     };
     reader.readAsDataURL(file);
   }
 
-  // --- MIC LOGIC ---
-  function toggleMic() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SpeechRecognition) return alert("Tarayıcın mikrofonu desteklemiyor evladım.");
+  function addMessage(text, type, imgBase64 = null) {
+    const wrapper = document.createElement('div');
+    wrapper.className = `msg-wrapper ${type}`;
     
-    const rec = new SpeechRecognition();
-    rec.lang = 'tr-TR';
-    const btn = document.getElementById('micBtn');
+    let content = "";
     
-    rec.onstart = () => { btn.classList.add('active'); msgInput.placeholder = "Dinliyorum..."; };
-    rec.onend = () => { btn.classList.remove('active'); msgInput.placeholder = "Bir şeyler yaz..."; };
-    rec.onresult = (e) => {
-      msgInput.value = e.results[0][0].transcript;
-      send();
-    };
-    rec.start();
+    // AI ise Avatar ekle
+    if(type === 'ai') {
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar';
+        avatar.innerHTML = '<i class="fa-solid fa-user-nurse"></i>';
+        wrapper.appendChild(avatar);
+    }
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+
+    if (imgBase64) {
+      content += `<img src="${imgBase64}" class="msg-img">`;
+    }
+    content += text;
+    
+    bubble.innerHTML = content;
+    wrapper.appendChild(bubble);
+
+    // AI ise ses butonu ekle
+    if(type === 'ai' && text) {
+        const btn = document.createElement('button');
+        btn.className = 'audio-btn';
+        btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Oku';
+        // Tırnak işaretlerini temizle ki JS patlamasın
+        const safeTxt = text.replace(/'/g, "").replace(/"/g, "");
+        btn.onclick = function() { playVoice(this, safeTxt); };
+        wrapper.appendChild(btn);
+    }
+
+    container.appendChild(wrapper);
+    container.scrollTop = container.scrollHeight;
   }
 
-  // --- SEND LOGIC ---
-  async function send() {
-    const txt = msgInput.value.trim();
-    if(!txt && !currentImg) return;
+  async function sendMessage(isAuto = false) {
+    let txt = msgInput.value.trim();
+    
+    // Eğer sadece resim varsa ve otomatik gönderiliyorsa
+    if(isAuto && !txt) txt = "Şu fotoğrafı yorumla, falıma bak.";
+    
+    if (!txt && !currentImg) return;
 
-    if(!currentImg) addMsg(txt, 'user');
+    // Ekrana bas (eğer manuel gönderimse)
+    if (!isAuto && !currentImg) addMessage(txt, 'user');
     
     msgInput.value = '';
     typing.style.display = 'block';
-    chatBox.scrollTop = chatBox.scrollHeight;
+    container.scrollTop = container.scrollHeight;
 
     const payload = {
-      message: txt || "Fotoğrafı yorumla",
+      message: txt,
       image: currentImg,
       user: { city: 'İstanbul', gender: 'neutral' }
     };
 
-    currentImg = null; 
+    // Resmi temizle
+    currentImg = null;
     document.getElementById('fileInput').value = "";
 
     try {
@@ -279,105 +359,33 @@
       const data = await res.json();
       typing.style.display = 'none';
 
-      const aiRow = addMsg(data.reply, 'ai');
-      
-      if(data.data) {
-        if(Array.isArray(data.data)) renderCards(data.data);
-        else if(data.data.cards) addMsg("Kartlar: " + data.data.cards.join(", "), 'ai');
-      }
+      // Cevabı bas
+      const responseText = data.reply || data.assistant_text || "Bir şeyler ters gitti evladım.";
+      addMessage(responseText, 'ai');
 
-    } catch(e) {
+      // Otomatik seslendirme (İsteğe bağlı, şu an butonla yapıyoruz)
+      // playVoice(null, responseText);
+
+    } catch (e) {
       typing.style.display = 'none';
-      addMsg("Bağlantı koptu veya ayarlar bozuk evladım.", 'ai');
+      addMessage("Bağlantı koptu evladım.", 'ai');
     }
-  }
-
-  // --- UI BUILDER ---
-  function addMsg(text, type, imgBase64=null) {
-    const row = document.createElement('div');
-    row.className = `msg-row ${type}`;
-    
-    const bubble = document.createElement('div');
-    bubble.className = 'msg-bubble';
-    
-    if(imgBase64) {
-        const img = document.createElement('img');
-        img.src = imgBase64;
-        img.style.maxWidth = '100%';
-        img.style.borderRadius = '10px';
-        img.style.marginBottom = '8px';
-        img.style.display = 'block';
-        bubble.appendChild(img);
-    }
-    
-    const textNode = document.createTextNode(text);
-    bubble.appendChild(textNode);
-    row.appendChild(bubble);
-
-    // AI ise ses butonu
-    if(type === 'ai' && text) {
-      const btn = document.createElement('button');
-      btn.className = 'audio-btn';
-      btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Dinle';
-      btn.onclick = function() { playVoice(this, text); };
-      row.appendChild(btn);
-    }
-
-    chatBox.appendChild(row);
-    chatBox.scrollTop = chatBox.scrollHeight;
-    return row;
-  }
-
-  function renderCards(cards) {
-    const scroll = document.createElement('div');
-    scroll.className = 'cards-scroll';
-    
-    cards.forEach(c => {
-      const a = document.createElement('a');
-      a.className = 'card';
-      a.href = c.url || '#';
-      a.target = '_blank';
-      
-      if (c.image) {
-          const img = document.createElement('img');
-          img.src = c.image;
-          a.appendChild(img);
-      } else {
-          const iconDiv = document.createElement('div');
-          iconDiv.style.height = '110px';
-          iconDiv.style.background = '#f1f5f9';
-          iconDiv.style.display = 'flex';
-          iconDiv.style.alignItems = 'center';
-          iconDiv.style.justifyContent = 'center';
-          iconDiv.style.borderRadius = '8px';
-          iconDiv.style.marginBottom = '8px';
-          iconDiv.innerHTML = '<span style="font-size:30px;">📍</span>';
-          a.appendChild(iconDiv);
-      }
-
-      const title = document.createElement('div');
-      title.className = 'card-title';
-      title.textContent = c.title || 'Başlık Yok';
-      a.appendChild(title);
-
-      const desc = document.createElement('div');
-      desc.className = 'card-desc';
-      desc.textContent = c.price || c.desc || '';
-      a.appendChild(desc);
-
-      scroll.appendChild(a);
-    });
-    
-    chatBox.appendChild(scroll);
-    chatBox.scrollTop = chatBox.scrollHeight;
   }
 
   async function playVoice(btn, text) {
-    if(currentAudio) { currentAudio.pause(); currentAudio=null; }
+    if(currentAudio) { 
+        currentAudio.pause(); 
+        currentAudio = null;
+        if(btn) {
+            btn.classList.remove('playing');
+            btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Oku';
+        }
+        return;
+    }
     
-    const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-    btn.disabled = true;
+    if(btn) {
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Açılıyor...';
+    }
     
     try {
       const res = await fetch(SPEAK_URL, {
@@ -390,33 +398,28 @@
       currentAudio = new Audio(url);
       
       currentAudio.onended = () => { 
-          btn.innerHTML = originalHTML; 
-          btn.disabled = false;
+          if(btn) {
+              btn.classList.remove('playing');
+              btn.innerHTML = '<i class="fa-solid fa-volume-high"></i> Oku';
+          }
       };
       
       await currentAudio.play();
-      btn.innerHTML = '<i class="fa-solid fa-stop"></i>';
-      btn.disabled = false;
       
-      btn.onclick = function() {
-          currentAudio.pause();
-          btn.innerHTML = originalHTML;
-          btn.onclick = function() { playVoice(this, text); };
-      };
+      if(btn) {
+          btn.classList.add('playing');
+          btn.innerHTML = '<i class="fa-solid fa-stop"></i> Durdur';
+      }
 
     } catch(e) {
-      btn.innerHTML = originalHTML;
-      btn.disabled = false;
+      if(btn) btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Hata';
     }
   }
 
   // Enter Key
   msgInput.addEventListener("keypress", function(event) {
-      if (event.key === "Enter") send();
+    if (event.key === "Enter") sendMessage();
   });
-
-  // Start
-  initChat();
 
 </script>
 
