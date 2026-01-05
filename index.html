@@ -463,10 +463,10 @@
 <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
 <script>
-  // ---- CONFIG
-const API_URL   = "https://bikonomi-api-2.onrender.com/api/chat";
-const SPEAK_URL = "https://bikonomi-api-2.onrender.com/api/speak";
-const TRACK_BASE = "https://bikonomi-api-2.onrender.com";
+  // ---- CONFIG (Tek Noktadan Yönetim)
+  const TRACK_BASE = "https://bikonomi-api-2.onrender.com";
+  const API_URL    = `${TRACK_BASE}/api/chat`;
+  const SPEAK_URL  = `${TRACK_BASE}/api/speak`;
 
   // ---- SESSION
   let sessionId = localStorage.getItem("caynana_sid");
@@ -703,6 +703,7 @@ const TRACK_BASE = "https://bikonomi-api-2.onrender.com";
              <i class="fa-solid fa-image"></i>
            </div>`;
 
+      // ✅ URL YÖNETİMİ
       const normalUrl = (p.url || "#").toString();
       const token = (p.track_token || "").toString();
       const trackedUrl = token ? `${TRACK_BASE}/r/${encodeURIComponent(token)}` : normalUrl;
@@ -885,5 +886,3 @@ const TRACK_BASE = "https://bikonomi-api-2.onrender.com";
 </script>
 </body>
 </html>
-
-
