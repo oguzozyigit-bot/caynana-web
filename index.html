@@ -77,6 +77,7 @@
     padding-top:56px; /* JS ile ayarlanacak */
     padding-bottom:180px; /* JS ile ayarlanacak */
     scroll-behavior:smooth;
+    -webkit-overflow-scrolling: touch;
   }
   .content{
     max-width:var(--maxw);
@@ -185,8 +186,8 @@
   }
   .cards::-webkit-scrollbar{display:none;}
   .card{
-    min-width:210px;
-    max-width:210px;
+    min-width:220px;
+    max-width:220px;
     background:var(--white);
     border:1px solid var(--border);
     border-radius:14px;
@@ -194,9 +195,10 @@
     text-decoration:none;
     color:var(--text);
     box-shadow:0 2px 6px rgba(0,0,0,.04);
-    transition:transform .15s ease;
+    transition:transform .15s ease, border-color .15s ease;
+    position:relative;
   }
-  .card:hover{transform:translateY(-3px);}
+  .card:hover{transform:translateY(-3px); border-color:#c7f9e5;}
   .card img{
     width:100%;
     height:120px;
@@ -204,10 +206,11 @@
     border-radius:10px;
     background:#fff;
     margin-bottom:8px;
+    border:1px solid rgba(0,0,0,.03);
   }
   .card .title{
     font-size:13px;
-    font-weight:800;
+    font-weight:900;
     height:36px;
     overflow:hidden;
     display:-webkit-box;
@@ -228,6 +231,59 @@
     gap:6px;
     align-items:center;
   }
+
+  /* Trust badge */
+  .badge{
+    position:absolute;
+    top:10px;
+    left:10px;
+    font-size:10px;
+    font-weight:900;
+    padding:6px 8px;
+    border-radius:999px;
+    border:1px solid rgba(0,0,0,.06);
+    background:rgba(255,255,255,.92);
+    backdrop-filter: blur(6px);
+    display:flex;
+    gap:6px;
+    align-items:center;
+    box-shadow:0 1px 6px rgba(0,0,0,.06);
+    max-width:200px;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+  .badge.gold{ border-color:#a7f3d0; color:#065f46; }
+  .badge.blue{ border-color:#bfdbfe; color:#1e3a8a; }
+  .badge.purple{ border-color:#e9d5ff; color:#5b21b6; }
+  .badge.orange{ border-color:#fed7aa; color:#9a3412; }
+  .badge.red{ border-color:#fecaca; color:#991b1b; }
+
+  .cardActions{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-top:10px;
+  }
+  .btnLink{
+    display:block;
+    text-align:center;
+    text-decoration:none;
+    padding:9px 10px;
+    border-radius:10px;
+    font-size:13px;
+    font-weight:900;
+    border:1px solid var(--border);
+    color:var(--text);
+    background:var(--white);
+  }
+  .btnLink:hover{border-color:var(--primary); color:var(--primary);}
+  .btnPrimary{
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
+  }
+  .btnPrimary:hover{background:var(--primary-dark); border-color:var(--primary-dark); color:#fff;}
 
   /* Bottom fixed area */
   #bottom{
@@ -348,6 +404,15 @@
   .dockItem i{font-size:20px;}
   .dockItem span{font-size:10px; font-weight:700;}
   .dockItem.active{color:var(--primary);}
+
+  /* iOS kamera stabil */
+  #fileInput{
+    position:fixed;
+    left:-9999px;
+    width:1px;height:1px;
+    opacity:0;
+    pointer-events:none;
+  }
 </style>
 </head>
 
@@ -371,7 +436,7 @@
       </div>
 
       <div id="results">
-        <div id="loader"><i class="fa-solid fa-circle-notch fa-spin"></i> Kaynanan düşünüyor...</div>
+        <div id="loader"><i class="fa-solid fa-circle-notch fa-spin"></i> Caynana analiz yapıyor...</div>
       </div>
 
     </div>
@@ -400,12 +465,17 @@
 
 </div>
 
-<input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" />
+<input type="file" id="fileInput" accept="image/*" capture="environment" />
 
 <script>
   // ---- CONFIG
   const API_URL   = "https://bikonomi-api-1.onrender.com/api/chat";
   const SPEAK_URL = "https://bikonomi-api-1.onrender.com/api/speak";
+
+  // Frontend domain (Render/Vercel). Redirect endpoint backend’de olduğu için:
+  // Eğer frontend Vercel, backend Render ise BUTONLAR backend domainine gitmeli.
+  // Bu yüzden aşağıdaki BASE'i backend domaini yapıyoruz:
+  const TRACK_BASE = "https://bikonomi-api-1.onrender.com";
 
   // ---- SESSION
   let sessionId = localStorage.getItem("caynana_sid");
@@ -435,17 +505,17 @@
   const MODES = {
     shopping: {
       icon:"fa-bag-shopping", label:"Alışveriş", title:"Alışveriş Uzmanı",
-      desc:"Bugün ne alıyoruz? Ürün adı yaz veya fotoğraf yükle.",
+      desc:"Ürün adı yaz, link yapıştır veya fotoğraf yükle.",
       placeholder:"Ürün adı yaz veya link yapıştır...",
       chips:["Airfryer", "iPhone 15", "Robot süpürge"],
-      welcome:"Bugün ne alıyoruz? Ürün adı yaz, link at ya da fotoğrafını çek; detaylı analiz yapayım."
+      welcome:"Ürün adı yaz, link at ya da fotoğraf yükle; teknik + yorum analiziyle öneri çıkarayım."
     },
     health: {
       icon:"fa-user-doctor", label:"Sağlık", title:"Sağlık Danışmanı",
       desc:"Şikayetini yaz (acil durumda 112).",
       placeholder:"Şikayetin nedir?",
       chips:["Başım ağrıyor", "Boğazım yanıyor", "Grip oldum"],
-      welcome:"Şikayetini detaylıca yaz. (Unutma, acil durumlarda 112’yi ara.)"
+      welcome:"Şikayetini yaz. (Acil durumlarda 112’yi ara.)"
     },
     diet: {
       icon:"fa-apple-whole", label:"Diyet", title:"Diyetisyen",
@@ -501,19 +571,19 @@
       desc:"Dertleşelim, plan yapalım.",
       placeholder:"İçinden geçenleri yaz...",
       chips:["Canım sıkkın", "Motivasyon lazım", "Bir plan yapalım"],
-      welcome:"Anlat bakalım, seni dinliyorum. Neye takıldı aklın?"
+      welcome:"Yaz; netleştirelim, planlayalım."
     }
   };
 
   // Mode bazlı thread
-  const threads = {};      // mode -> [{role,text,img,ts,type,speechText}]
-  const welcomed = {};     // mode -> true
+  const threads = {};
+  const welcomed = {};
 
   function ensureThread(m){
     if(!threads[m]) threads[m] = [];
   }
 
-  // ---- LAYOUT
+  // ---- LAYOUT (altta kalan yazı fix)
   function adjustLayout(){
     const topH = topbarEl.offsetHeight;
     const bottomH = bottomEl.offsetHeight;
@@ -618,7 +688,6 @@
     span.innerHTML = (text||"").toString().replace(/\n/g, "<br>");
     b.appendChild(span);
 
-    // Fal modu uyarısı
     if(role === "ai" && currentMode === "future"){
       const d = document.createElement("span");
       d.className = "disclaimer";
@@ -626,7 +695,6 @@
       b.appendChild(d);
     }
 
-    // Ses butonu (AI)
     const textToSpeak = speechText || text || "";
     if(role === "ai"){
       const btn = document.createElement("button");
@@ -644,29 +712,59 @@
     }
   }
 
+  function badgeClassFromLabel(label){
+    const s = (label||"").toUpperCase();
+    if(s.includes("STRONGLY")) return "gold";
+    if(s.includes("SMART")) return "blue";
+    if(s.includes("LONG")) return "purple";
+    if(s.includes("BUDGET")) return "orange";
+    if(s.includes("BE CAREFUL")) return "red";
+    return "gold";
+  }
+
+  // ✅ KARTLAR: rozet + 2 buton (normal + affiliate redirect)
   function renderCards(cards, silent=false){
     const wrap = document.createElement("div");
     wrap.className = "cards";
 
     cards.forEach(p=>{
-      const a = document.createElement("a");
-      a.className = "card";
-      a.href = p.url || "#";
-      a.target = "_blank";
+      const card = document.createElement("div");
+      card.className = "card";
 
-      const img = p.image ? `<img src="${p.image}">`
+      const trust = p.caynana_trust || {};
+      const score = (trust.score !== undefined && trust.score !== null) ? trust.score : "";
+      const badge = trust.badge || "";
+      const badgeCls = badgeClassFromLabel(badge);
+      const badgeHtml = badge ? `<div class="badge ${badgeCls}"><b>${badge}</b> • ${score}/10</div>` : "";
+
+      const imgHtml = p.image
+        ? `<img src="${p.image}" alt="">`
         : `<div style="width:100%;height:120px;border:1px dashed #ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#bbb;margin-bottom:8px;">
              <i class="fa-solid fa-image"></i>
            </div>`;
 
-      a.innerHTML = `
-        ${img}
+      // Normal link
+      const normalUrl = (p.url || "#").toString();
+
+      // Affiliate / redirect link: backend’de /r/{token}
+      // main.py ürünlere track_token ekliyor.
+      const token = (p.track_token || "").toString();
+      const trackedUrl = token ? `${TRACK_BASE}/r/${encodeURIComponent(token)}` : normalUrl;
+
+      card.innerHTML = `
+        ${badgeHtml}
+        ${imgHtml}
         <div class="title">${(p.title||"Ürün").toString()}</div>
         <div class="price">${(p.price||"").toString()}</div>
         <div class="footer"><i class="fa-solid fa-shop"></i> ${(p.footer||p.platform||"").toString()}</div>
+
+        <div class="cardActions">
+          <a class="btnLink" href="${normalUrl}" target="_blank" rel="noopener">Trendyol’da Gör</a>
+          <a class="btnLink btnPrimary" href="${trackedUrl}" target="_blank" rel="noopener">Caynana Linkiyle Aç</a>
+        </div>
       `;
 
-      wrap.appendChild(a);
+      wrap.appendChild(card);
     });
 
     resultsEl.insertBefore(wrap, loaderEl);
@@ -678,9 +776,10 @@
     }
   }
 
+  // ✅ Scroll hedefi #main (asıl scroll container)
   function scrollToBottom(immediate=false){
     setTimeout(()=>{
-      resultsEl.scrollTop = resultsEl.scrollHeight;
+      mainEl.scrollTop = mainEl.scrollHeight;
       if(immediate){
         loaderEl.scrollIntoView({block:"end"});
       }
@@ -690,7 +789,7 @@
   // ---- Camera
   function openCamera(){
     fileEl.value = "";
-    fileEl.click();
+    setTimeout(()=>fileEl.click(), 0);
   }
 
   fileEl.addEventListener("change", (e)=>{
@@ -713,7 +812,7 @@
   function startMic(){
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!SR){ alert("Tarayıcı mikrofonu desteklemiyor."); return; }
-    
+
     const rec = new SR();
     rec.lang = "tr-TR";
     micBtnEl.classList.add("mic-active");
@@ -724,7 +823,7 @@
       const t = ev.results[0][0].transcript;
       textEl.value = t;
       micBtnEl.classList.remove("mic-active");
-      sendMessage(); // Otomatik gönder
+      sendMessage();
     };
     rec.onend = ()=>{
       micBtnEl.classList.remove("mic-active");
@@ -753,6 +852,7 @@
         headers:{"Content-Type":"application/json"},
         body:JSON.stringify({text: clean})
       });
+      if(!res.ok) throw new Error("TTS " + res.status);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       currentAudio = new Audio(url);
@@ -766,6 +866,8 @@
       btn.classList.add("playing");
     }catch(e){
       btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`;
+      btn.classList.remove("playing");
+      currentAudio = null;
     }
   }
 
@@ -777,7 +879,7 @@
     if(!rawText && !img) return;
 
     pushMessage("user", rawText || "📷 Fotoğraf gönderildi", img);
-    
+
     textEl.value = "";
     pendingImageDataUrl = null;
 
@@ -837,7 +939,7 @@
     setHeader();
     renderDock();
     renderChips(MODES[currentMode].chips);
-    
+
     welcomed[currentMode] = true;
     pushMessage("ai", MODES[currentMode].welcome, null, MODES[currentMode].welcome);
 
