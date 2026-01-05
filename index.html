@@ -613,9 +613,9 @@
       card.className = "card";
 
       const isSponsor = p.is_sponsor === true;
-      const badgeTxt = (p.caynana_trust && p.caynana_trust.badge) 
-                       ? p.caynana_trust.badge 
-                       : (isSponsor ? "SPONSOR • KAYNANA ÖNERİSİ" : "GÜVENİLİR");
+      const badgeTxt = (isSponsor) 
+                       ? "SPONSOR • KAYNANA ÖNERİSİ" 
+                       : "GÜVENİLİR";
       
       const sponsorTag = `<div class="badge ${isSponsor ? "gold": ""}">${badgeTxt}</div>`;
 
