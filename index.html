@@ -74,15 +74,12 @@
   #main{
     height:100%;
     overflow-y:auto;
-    padding-top:56px; /* JS ile ayarlanacak */
-    padding-bottom:180px; /* JS ile ayarlanacak */
+    padding-top:56px;
+    padding-bottom:180px;
     scroll-behavior:smooth;
     -webkit-overflow-scrolling: touch;
   }
-  .content{
-    max-width:var(--maxw);
-    margin:0 auto;
-  }
+  .content{ max-width:var(--maxw); margin:0 auto; }
 
   /* Header */
   #modeHeader{
@@ -192,7 +189,6 @@
     border:1px solid var(--border);
     border-radius:14px;
     padding:10px;
-    text-decoration:none;
     color:var(--text);
     box-shadow:0 2px 6px rgba(0,0,0,.04);
     transition:transform .15s ease, border-color .15s ease;
@@ -232,7 +228,6 @@
     align-items:center;
   }
 
-  /* Trust badge */
   .badge{
     position:absolute;
     top:10px;
@@ -471,10 +466,6 @@
   // ---- CONFIG
   const API_URL   = "https://bikonomi-api-1.onrender.com/api/chat";
   const SPEAK_URL = "https://bikonomi-api-1.onrender.com/api/speak";
-
-  // Frontend domain (Render/Vercel). Redirect endpoint backend’de olduğu için:
-  // Eğer frontend Vercel, backend Render ise BUTONLAR backend domainine gitmeli.
-  // Bu yüzden aşağıdaki BASE'i backend domaini yapıyoruz:
   const TRACK_BASE = "https://bikonomi-api-1.onrender.com";
 
   // ---- SESSION
@@ -501,89 +492,73 @@
   let pendingImageDataUrl = null;
   let currentAudio = null;
 
-  // Mode config
   const MODES = {
-    shopping: {
-      icon:"fa-bag-shopping", label:"Alışveriş", title:"Alışveriş Uzmanı",
+    shopping: { icon:"fa-bag-shopping", label:"Alışveriş", title:"Alışveriş Uzmanı",
       desc:"Ürün adı yaz, link yapıştır veya fotoğraf yükle.",
       placeholder:"Ürün adı yaz veya link yapıştır...",
-      chips:["Airfryer", "iPhone 15", "Robot süpürge"],
+      chips:["Airfryer","iPhone 15","Robot süpürge"],
       welcome:"Ürün adı yaz, link at ya da fotoğraf yükle; teknik + yorum analiziyle öneri çıkarayım."
     },
-    health: {
-      icon:"fa-user-doctor", label:"Sağlık", title:"Sağlık Danışmanı",
+    health: { icon:"fa-user-doctor", label:"Sağlık", title:"Sağlık Danışmanı",
       desc:"Şikayetini yaz (acil durumda 112).",
       placeholder:"Şikayetin nedir?",
-      chips:["Başım ağrıyor", "Boğazım yanıyor", "Grip oldum"],
+      chips:["Başım ağrıyor","Boğazım yanıyor","Grip oldum"],
       welcome:"Şikayetini yaz. (Acil durumlarda 112’yi ara.)"
     },
-    diet: {
-      icon:"fa-apple-whole", label:"Diyet", title:"Diyetisyen",
+    diet: { icon:"fa-apple-whole", label:"Diyet", title:"Diyetisyen",
       desc:"Hedefe göre plan yapalım.",
       placeholder:"Hedefin ne? kilo ver / al...",
-      chips:["Kilo vermek istiyorum", "Kalori hesabı", "Akşam ne yesem?"],
+      chips:["Kilo vermek istiyorum","Kalori hesabı","Akşam ne yesem?"],
       welcome:"Hedefini yaz: kilo verme, kilo alma, form veya sağlık."
     },
-    food: {
-      icon:"fa-utensils", label:"Yemek", title:"Yemek Uzmanı",
+    food: { icon:"fa-utensils", label:"Yemek", title:"Yemek Uzmanı",
       desc:"Evdeki malzemeleri yaz, tarif çıkaralım.",
       placeholder:"Evde ne var? Malzemeleri yaz...",
-      chips:["Akşama ne pişirsem?", "3 malzemeli tatlı", "Diyet yemek"],
+      chips:["Akşama ne pişirsem?","3 malzemeli tatlı","Diyet yemek"],
       welcome:"Evdeki malzemeleri yaz; pratik ve net tarif çıkarayım."
     },
-    teacher: {
-      icon:"fa-chalkboard-user", label:"Eğitim", title:"Öğretmen",
+    teacher: { icon:"fa-chalkboard-user", label:"Eğitim", title:"Öğretmen",
       desc:"Konu yaz, adım adım gidelim.",
       placeholder:"Konuyu yaz, birlikte öğrenelim...",
-      chips:["Matematik", "İngilizce", "Tarih"],
+      chips:["Matematik","İngilizce","Tarih"],
       welcome:"Hangi konuda destek lazım? Konuyu yaz, adım adım öğrenelim."
     },
-    translator: {
-      icon:"fa-language", label:"Çeviri", title:"Çevirmen",
+    translator: { icon:"fa-language", label:"Çeviri", title:"Çevirmen",
       desc:"Metni yapıştır, çevireyim.",
       placeholder:"Metni buraya yaz/yapıştır...",
-      chips:["İngilizceye çevir", "Resmi çeviri", "Günlük çeviri"],
+      chips:["İngilizceye çevir","Resmi çeviri","Günlük çeviri"],
       welcome:"Metni yapıştır. Hangi dile çevirmemi istersin?"
     },
-    economist: {
-      icon:"fa-chart-line", label:"Ekonomi", title:"Ekonomist",
+    economist: { icon:"fa-chart-line", label:"Ekonomi", title:"Ekonomist",
       desc:"Bütçe, piyasa, plan.",
       placeholder:"Sorunu yaz: bütçe/yatırım...",
-      chips:["Altın alınır mı?", "Bütçe planla", "Dolar gündemi"],
+      chips:["Altın alınır mı?","Bütçe planla","Dolar gündemi"],
       welcome:"Konuyu yaz: bütçe, yatırım veya piyasa durumu."
     },
-    lawyer: {
-      icon:"fa-scale-balanced", label:"Hukuk", title:"Hukuk Danışmanı",
+    lawyer: { icon:"fa-scale-balanced", label:"Hukuk", title:"Hukuk Danışmanı",
       desc:"Genel bilgi amaçlıdır.",
       placeholder:"Olayı kısaca özetle...",
-      chips:["Kiracı hakları", "Tüketici hakem", "İşe iade"],
+      chips:["Kiracı hakları","Tüketici hakem","İşe iade"],
       welcome:"Olayı kısaca özetle. (Genel bilgilendirme; resmi danışmanlık değildir.)"
     },
-    future: {
-      icon:"fa-wand-magic-sparkles", label:"Fal", title:"Gelecek Yorumcusu",
+    future: { icon:"fa-wand-magic-sparkles", label:"Fal", title:"Gelecek Yorumcusu",
       desc:"Niyet yaz veya fotoğraf yükle (eğlence amaçlı).",
       placeholder:"Fotoğraf yükle veya niyet yaz...",
-      chips:["Kahve falı (foto)", "3 kart tarot", "Günlük burç"],
+      chips:["Kahve falı (foto)","3 kart tarot","Günlük burç"],
       welcome:"Niyetini yaz veya fincan fotoğrafı gönder. (Eğlence amaçlıdır.)"
     },
-    life: {
-      icon:"fa-heart", label:"Yaşam", title:"Yaşam Koçu",
+    life: { icon:"fa-heart", label:"Yaşam", title:"Yaşam Koçu",
       desc:"Dertleşelim, plan yapalım.",
       placeholder:"İçinden geçenleri yaz...",
-      chips:["Canım sıkkın", "Motivasyon lazım", "Bir plan yapalım"],
+      chips:["Canım sıkkın","Motivasyon lazım","Bir plan yapalım"],
       welcome:"Yaz; netleştirelim, planlayalım."
     }
   };
 
-  // Mode bazlı thread
   const threads = {};
   const welcomed = {};
+  function ensureThread(m){ if(!threads[m]) threads[m]=[]; }
 
-  function ensureThread(m){
-    if(!threads[m]) threads[m] = [];
-  }
-
-  // ---- LAYOUT (altta kalan yazı fix)
   function adjustLayout(){
     const topH = topbarEl.offsetHeight;
     const bottomH = bottomEl.offsetHeight;
@@ -591,11 +566,9 @@
     mainEl.style.paddingBottom = bottomH + "px";
     resultsEl.style.paddingBottom = (bottomH + 16) + "px";
   }
-
   window.addEventListener("resize", () => setTimeout(adjustLayout, 50));
   window.addEventListener("load", () => setTimeout(adjustLayout, 50));
 
-  // ---- UI Render
   function setHeader(){
     document.getElementById("modeTitle").innerText = MODES[currentMode].title;
     document.getElementById("modeDesc").innerText  = MODES[currentMode].desc;
@@ -634,36 +607,27 @@
     clearResults();
     ensureThread(currentMode);
     for(const m of threads[currentMode]){
-      if(m.type === "cards"){
-        renderCards(m.cards, true);
-      } else {
-        addBubble(m.role, m.text, m.img, true, m.speechText);
-      }
+      if(m.type === "cards") renderCards(m.cards, true);
+      else addBubble(m.role, m.text, m.img, true, m.speechText);
     }
     scrollToBottom(true);
   }
 
   function switchMode(m){
-    if(!MODES[m]) return;
-    if(m === currentMode) return;
-
+    if(!MODES[m] || m===currentMode) return;
     currentMode = m;
     ensureThread(m);
-
     setHeader();
     renderDock();
     renderChips(MODES[m].chips);
-
     if(!welcomed[m]){
-      welcomed[m] = true;
+      welcomed[m]=true;
       pushMessage("ai", MODES[m].welcome, null, MODES[m].welcome);
     }
-
     redrawThread();
     adjustLayout();
   }
 
-  // ---- Messages
   function pushMessage(role, text, img=null, speechText=null){
     ensureThread(currentMode);
     threads[currentMode].push({type:"msg", role, text, img, speechText, ts:Date.now()});
@@ -706,10 +670,7 @@
 
     row.appendChild(b);
     resultsEl.insertBefore(row, loaderEl);
-
-    if(!silent){
-      row.scrollIntoView({block:"end", behavior:"smooth"});
-    }
+    if(!silent) row.scrollIntoView({block:"end", behavior:"smooth"});
   }
 
   function badgeClassFromLabel(label){
@@ -722,7 +683,6 @@
     return "gold";
   }
 
-  // ✅ KARTLAR: rozet + 2 buton (normal + affiliate redirect)
   function renderCards(cards, silent=false){
     const wrap = document.createElement("div");
     wrap.className = "cards";
@@ -743,11 +703,7 @@
              <i class="fa-solid fa-image"></i>
            </div>`;
 
-      // Normal link
       const normalUrl = (p.url || "#").toString();
-
-      // Affiliate / redirect link: backend’de /r/{token}
-      // main.py ürünlere track_token ekliyor.
       const token = (p.track_token || "").toString();
       const trackedUrl = token ? `${TRACK_BASE}/r/${encodeURIComponent(token)}` : normalUrl;
 
@@ -757,13 +713,11 @@
         <div class="title">${(p.title||"Ürün").toString()}</div>
         <div class="price">${(p.price||"").toString()}</div>
         <div class="footer"><i class="fa-solid fa-shop"></i> ${(p.footer||p.platform||"").toString()}</div>
-
         <div class="cardActions">
           <a class="btnLink" href="${normalUrl}" target="_blank" rel="noopener">Trendyol’da Gör</a>
           <a class="btnLink btnPrimary" href="${trackedUrl}" target="_blank" rel="noopener">Caynana Linkiyle Aç</a>
         </div>
       `;
-
       wrap.appendChild(card);
     });
 
@@ -771,22 +725,16 @@
     ensureThread(currentMode);
     threads[currentMode].push({type:"cards", cards, ts:Date.now()});
 
-    if(!silent){
-      wrap.scrollIntoView({block:"end", behavior:"smooth"});
-    }
+    if(!silent) wrap.scrollIntoView({block:"end", behavior:"smooth"});
   }
 
-  // ✅ Scroll hedefi #main (asıl scroll container)
   function scrollToBottom(immediate=false){
     setTimeout(()=>{
       mainEl.scrollTop = mainEl.scrollHeight;
-      if(immediate){
-        loaderEl.scrollIntoView({block:"end"});
-      }
+      if(immediate) loaderEl.scrollIntoView({block:"end"});
     }, 60);
   }
 
-  // ---- Camera
   function openCamera(){
     fileEl.value = "";
     setTimeout(()=>fileEl.click(), 0);
@@ -808,7 +756,6 @@
     reader.readAsDataURL(file);
   });
 
-  // ---- Mic (Auto Send)
   function startMic(){
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!SR){ alert("Tarayıcı mikrofonu desteklemiyor."); return; }
@@ -832,7 +779,6 @@
     rec.start();
   }
 
-  // ---- TTS
   async function playVoice(btn, text){
     const clean = (text||"").toString().replace(/<[^>]*>/g, "").trim();
     if(!clean) return;
@@ -871,15 +817,12 @@
     }
   }
 
-  // ---- Send
   async function sendMessage(){
     const rawText = (textEl.value || "").trim();
     const img  = pendingImageDataUrl;
-
     if(!rawText && !img) return;
 
     pushMessage("user", rawText || "📷 Fotoğraf gönderildi", img);
-
     textEl.value = "";
     pendingImageDataUrl = null;
 
@@ -911,38 +854,29 @@
 
       pushMessage("ai", aiText, null, speechText);
 
-      if(data && Array.isArray(data.quick_replies) && data.quick_replies.length){
-        renderChips(data.quick_replies);
-      } else {
-        renderChips(MODES[currentMode].chips);
-      }
+      if(data && Array.isArray(data.quick_replies) && data.quick_replies.length) renderChips(data.quick_replies);
+      else renderChips(MODES[currentMode].chips);
 
       if(data && data.data_type === "products" && Array.isArray(data.data) && data.data.length){
         renderCards(data.data);
       }
 
       scrollToBottom(true);
-
     }catch(e){
       loaderEl.style.display = "none";
       pushMessage("ai", "Bağlantı koptu. İnternetini kontrol et.");
     }
   }
 
-  function toggleInfo(){
-    alert("Menü yakında 🙂");
-  }
+  function toggleInfo(){ alert("Menü yakında 🙂"); }
 
-  // ---- INIT
   function init(){
     ensureThread(currentMode);
     setHeader();
     renderDock();
     renderChips(MODES[currentMode].chips);
-
     welcomed[currentMode] = true;
     pushMessage("ai", MODES[currentMode].welcome, null, MODES[currentMode].welcome);
-
     adjustLayout();
     scrollToBottom(true);
   }
