@@ -183,8 +183,8 @@
   }
   .cards::-webkit-scrollbar{display:none;}
   .card{
-    min-width:220px;
-    max-width:220px;
+    min-width:240px; /* Butonlar sığsın diye biraz genişlettim */
+    max-width:240px;
     background:var(--white);
     border:1px solid var(--border);
     border-radius:14px;
@@ -193,11 +193,13 @@
     box-shadow:0 2px 6px rgba(0,0,0,.04);
     transition:transform .15s ease, border-color .15s ease;
     position:relative;
+    display: flex;
+    flex-direction: column;
   }
   .card:hover{transform:translateY(-3px); border-color:#c7f9e5;}
   .card img{
     width:100%;
-    height:120px;
+    height:130px;
     object-fit:contain;
     border-radius:10px;
     background:#fff;
@@ -217,7 +219,7 @@
     margin-top:8px;
     color:var(--primary);
     font-weight:900;
-    font-size:14px;
+    font-size:15px;
   }
   .card .footer{
     margin-top:4px;
@@ -227,6 +229,35 @@
     gap:6px;
     align-items:center;
   }
+
+  /* YENİ: Kart Aksiyon Butonları */
+  .cardActions{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-top:12px;
+  }
+  .btnLink{
+    display:block;
+    text-align:center;
+    text-decoration:none;
+    padding:10px;
+    border-radius:10px;
+    font-size:12px;
+    font-weight:700;
+    border:1px solid var(--border);
+    color:var(--text);
+    background:var(--bg);
+    transition: 0.2s;
+  }
+  .btnLink:hover{border-color:var(--muted);}
+  
+  .btnPrimary{
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
+  }
+  .btnPrimary:hover{background:var(--primary-dark); border-color:var(--primary-dark); color:#fff;}
 
   .badge{
     position:absolute;
@@ -253,32 +284,6 @@
   .badge.purple{ border-color:#e9d5ff; color:#5b21b6; }
   .badge.orange{ border-color:#fed7aa; color:#9a3412; }
   .badge.red{ border-color:#fecaca; color:#991b1b; }
-
-  .cardActions{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    margin-top:10px;
-  }
-  .btnLink{
-    display:block;
-    text-align:center;
-    text-decoration:none;
-    padding:9px 10px;
-    border-radius:10px;
-    font-size:13px;
-    font-weight:900;
-    border:1px solid var(--border);
-    color:var(--text);
-    background:var(--white);
-  }
-  .btnLink:hover{border-color:var(--primary); color:var(--primary);}
-  .btnPrimary{
-    background:var(--primary);
-    color:#fff;
-    border-color:var(--primary);
-  }
-  .btnPrimary:hover{background:var(--primary-dark); border-color:var(--primary-dark); color:#fff;}
 
   /* Bottom fixed area */
   #bottom{
@@ -463,7 +468,7 @@
 <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
 <script>
-  // ---- CONFIG (Tek Noktadan Yönetim)
+  // ---- CONFIG (YENİ DOMAIN)
   const TRACK_BASE = "https://bikonomi-api-2.onrender.com";
   const API_URL    = `${TRACK_BASE}/api/chat`;
   const SPEAK_URL  = `${TRACK_BASE}/api/speak`;
@@ -683,6 +688,7 @@
     return "gold";
   }
 
+  // ✅ KART RENDER + TRACKING LİNKİ
   function renderCards(cards, silent=false){
     const wrap = document.createElement("div");
     wrap.className = "cards";
@@ -703,9 +709,11 @@
              <i class="fa-solid fa-image"></i>
            </div>`;
 
-      // ✅ URL YÖNETİMİ
+      // Backend ham URL ve Token döner. Montajı biz yaparız.
       const normalUrl = (p.url || "#").toString();
       const token = (p.track_token || "").toString();
+      
+      // Caynana linki = bizim domain + /r/ + token
       const trackedUrl = token ? `${TRACK_BASE}/r/${encodeURIComponent(token)}` : normalUrl;
 
       card.innerHTML = `
@@ -714,6 +722,7 @@
         <div class="title">${(p.title||"Ürün").toString()}</div>
         <div class="price">${(p.price||"").toString()}</div>
         <div class="footer"><i class="fa-solid fa-shop"></i> ${(p.footer||p.platform||"").toString()}</div>
+        
         <div class="cardActions">
           <a class="btnLink" href="${normalUrl}" target="_blank" rel="noopener">Trendyol’da Gör</a>
           <a class="btnLink btnPrimary" href="${trackedUrl}" target="_blank" rel="noopener">Caynana Linkiyle Aç</a>
@@ -858,6 +867,7 @@
       if(data && Array.isArray(data.quick_replies) && data.quick_replies.length) renderChips(data.quick_replies);
       else renderChips(MODES[currentMode].chips);
 
+      // Kartları sadece ürün varsa render et
       if(data && data.data_type === "products" && Array.isArray(data.data) && data.data.length){
         renderCards(data.data);
       }
