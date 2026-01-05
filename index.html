@@ -149,15 +149,18 @@
     background:var(--white);
     border:1px solid var(--border);
     border-radius:12px;
-    padding:5px 10px;
+    padding:6px 12px;
     font-size:12px;
     cursor:pointer;
     color:var(--muted);
     display:inline-flex;
     gap:6px;
     align-items:center;
+    font-weight: 600;
+    transition: 0.2s;
   }
   .audio-btn:hover{border-color:var(--primary); color:var(--primary);}
+  .audio-btn.playing{color:var(--primary); border-color:var(--primary); background:#ECFDF5;}
 
   /* Loader */
   #loader{
@@ -397,7 +400,6 @@
 
 </div>
 
-<!-- Camera input -->
 <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" />
 
 <script>
@@ -413,134 +415,100 @@
   }
 
   // ---- DOM
-  const mainEl   = document.getElementById("main");
-  const topbarEl = document.getElementById("topbar");
-  const bottomEl = document.getElementById("bottom");
-  const resultsEl= document.getElementById("results");
-  const loaderEl = document.getElementById("loader");
-  const chipsEl  = document.getElementById("chips");
-  const dockEl   = document.getElementById("dock");
-  const textEl   = document.getElementById("text");
-  const fileEl   = document.getElementById("fileInput");
-  const micBtnEl = document.getElementById("micBtn");
+  const mainEl    = document.getElementById("main");
+  const topbarEl  = document.getElementById("topbar");
+  const bottomEl  = document.getElementById("bottom");
+  const resultsEl = document.getElementById("results");
+  const loaderEl  = document.getElementById("loader");
+  const chipsEl   = document.getElementById("chips");
+  const dockEl    = document.getElementById("dock");
+  const textEl    = document.getElementById("text");
+  const fileEl    = document.getElementById("fileInput");
+  const micBtnEl  = document.getElementById("micBtn");
 
   // ---- STATE
   let currentMode = "life";
   let pendingImageDataUrl = null;
   let currentAudio = null;
 
-  // Mode config (karşılama + placeholder + ikon + chip)
+  // Mode config
   const MODES = {
     shopping: {
-      icon:"fa-bag-shopping",
-      label:"Alışveriş",
-      title:"Alışveriş Uzmanı",
-      desc:"Bugün ne alıyoruz evladım? Ürün adı yaz, link at; istersen foto çek.",
-      placeholder:"Ürün adı yaz veya link yapıştır...",
+      icon:"fa-bag-shopping", label:"Alışveriş", title:"Alışveriş Uzmanı",
+      desc:"Bugün ne alıyoruz evladım?", placeholder:"Ürün adı yaz veya link yapıştır...",
       chips:["Airfryer", "iPhone 15", "Robot süpürge"],
       welcome:"Bugün ne alıyoruz evladım? Ürün adı yaz, link at ya da fotoğrafını çek; en uygununu bulayım."
     },
     health: {
-      icon:"fa-user-doctor",
-      label:"Sağlık",
-      title:"Sağlık Danışmanı",
-      desc:"Şikayetini yaz (Acilse 112).",
-      placeholder:"Şikayetin nedir?",
+      icon:"fa-user-doctor", label:"Sağlık", title:"Sağlık Danışmanı",
+      desc:"Şikayetini yaz (Acilse 112).", placeholder:"Şikayetin nedir?",
       chips:["Başım ağrıyor", "Boğazım yanıyor", "Grip oldum"],
       welcome:"Ne oldu evladım, rahatsızlığın nedir? (Acil durumlarda 112’yi ara.)"
     },
     diet: {
-      icon:"fa-apple-whole",
-      label:"Diyet",
-      title:"Diyetisyen",
-      desc:"Hedefe göre plan yapalım.",
-      placeholder:"Hedefin ne? kilo ver / al / form...",
+      icon:"fa-apple-whole", label:"Diyet", title:"Diyetisyen",
+      desc:"Hedefe göre plan yapalım.", placeholder:"Hedefin ne? kilo ver / al...",
       chips:["Kilo vermek istiyorum", "Kalori hesabı", "Akşam ne yesem?"],
-      welcome:"Tamam evladım, hedefin ne? Kilo verme mi, alma mı, yoksa form mu? Boy-kilo ve günlük hareketini de yazarsan şahane."
+      welcome:"Tamam evladım, hedefin ne? Kilo verme mi, alma mı, yoksa form mu?"
     },
     food: {
-      icon:"fa-utensils",
-      label:"Yemek",
-      title:"Yemek Uzmanı",
-      desc:"Ne pişirsek, ne yesek?",
-      placeholder:"Evde ne var? Malzemeleri yaz...",
+      icon:"fa-utensils", label:"Yemek", title:"Yemek Uzmanı",
+      desc:"Ne pişirsek, ne yesek?", placeholder:"Evde ne var? Malzemeleri yaz...",
       chips:["Akşama ne pişirsem?", "3 malzemeli tatlı", "Diyet yemek"],
       welcome:"Haydi bakalım evladım, evde ne malzeme var? Yaz, sana mis gibi tarif çıkarayım."
     },
     teacher: {
-      icon:"fa-chalkboard-user",
-      label:"Eğitim",
-      title:"Öğretmen",
-      desc:"Bugün hangi konuda çalışıyoruz?",
-      placeholder:"Konuyu yaz, birlikte öğrenelim...",
+      icon:"fa-chalkboard-user", label:"Eğitim", title:"Öğretmen",
+      desc:"Hangi konuda çalışıyoruz?", placeholder:"Konuyu yaz, birlikte öğrenelim...",
       chips:["Matematik", "İngilizce", "Tarih"],
       welcome:"Bugün hangi konuda ders çalışmak istersin evladım? Konuyu yaz, adım adım gidelim."
     },
     translator: {
-      icon:"fa-language",
-      label:"Çeviri",
-      title:"Çevirmen",
-      desc:"Metni yapıştır, çevireyim.",
-      placeholder:"Metni buraya yaz/yapıştır...",
+      icon:"fa-language", label:"Çeviri", title:"Çevirmen",
+      desc:"Metni yapıştır, çevireyim.", placeholder:"Metni buraya yaz/yapıştır...",
       chips:["İngilizceye çevir", "Resmi çeviri", "Günlük çeviri"],
-      welcome:"Metni yapıştır evladım. Hangi dile çevireyim—resmi mi günlük mü?"
+      welcome:"Metni yapıştır evladım. Hangi dile çevireyim?"
     },
     economist: {
-      icon:"fa-chart-line",
-      label:"Ekonomi",
-      title:"Ekonomist",
-      desc:"Bütçe, piyasa, plan.",
-      placeholder:"Sorunu yaz: bütçe/yatırım/kur...",
+      icon:"fa-chart-line", label:"Ekonomi", title:"Ekonomist",
+      desc:"Bütçe, piyasa, plan.", placeholder:"Sorunu yaz: bütçe/yatırım...",
       chips:["Altın alınır mı?", "Bütçe planla", "Dolar gündemi"],
-      welcome:"Hadi anlat evladım: bütçe mi yapıyoruz, yatırım mı konuşuyoruz? Ne istiyorsun?"
+      welcome:"Hadi anlat evladım: bütçe mi yapıyoruz, yatırım mı konuşuyoruz?"
     },
     lawyer: {
-      icon:"fa-scale-balanced",
-      label:"Hukuk",
-      title:"Hukuk Danışmanı",
-      desc:"Genel bilgi amaçlıdır.",
-      placeholder:"Olayı kısaca özetle...",
+      icon:"fa-scale-balanced", label:"Hukuk", title:"Hukuk Danışmanı",
+      desc:"Genel bilgi amaçlıdır.", placeholder:"Olayı kısaca özetle...",
       chips:["Kiracı hakları", "Tüketici hakem", "İşe iade"],
-      welcome:"Anlat evladım, olay ne? (Genel bilgi verebilirim; resmi danışmanlık için avukata danışmak en doğrusu.)"
+      welcome:"Anlat evladım, olay ne? (Genel bilgi verebilirim; resmi danışmanlık değildir.)"
     },
     future: {
-      icon:"fa-wand-magic-sparkles",
-      label:"Fal",
-      title:"Gelecek Yorumcusu",
-      desc:"Eğlence amaçlı yorum.",
-      placeholder:"Niyetini yaz veya fotoğraf yükle...",
+      icon:"fa-wand-magic-sparkles", label:"Fal", title:"Gelecek Yorumcusu",
+      desc:"Niyetini tut, falına bakayım.", placeholder:"Fotoğraf yükle veya niyet yaz...",
       chips:["Kahve falı (foto)", "3 kart tarot", "Günlük burç"],
-      welcome:"Tamam evladım… Niyetini söyle ya da fincan fotoğrafını gönder. (Eğlence amaçlıdır, kesinlik içermez.)"
+      welcome:"Hadi bakalım... Niyetini söyle ya da fincan fotoğrafını gönder. (Eğlence amaçlıdır.)"
     },
     life: {
-      icon:"fa-heart",
-      label:"Yaşam",
-      title:"Yaşam Koçu",
-      desc:"Dertleşelim, plan yapalım.",
-      placeholder:"İçinden geçenleri yaz...",
+      icon:"fa-heart", label:"Yaşam", title:"Yaşam Koçu",
+      desc:"Dertleşelim, plan yapalım.", placeholder:"İçinden geçenleri yaz...",
       chips:["Canım sıkkın", "Motivasyon lazım", "Bir plan yapalım"],
       welcome:"Hoş geldin evladım. Anlat bakalım, neye takıldı gönlün?"
     }
   };
 
-  // Mode bazlı thread (sohbet karışmasın)
-  const threads = {};      // mode -> [{role,text,img,ts,type}]
+  // Mode bazlı thread
+  const threads = {};      // mode -> [{role,text,img,ts,type,speechText}]
   const welcomed = {};     // mode -> true
 
   function ensureThread(m){
     if(!threads[m]) threads[m] = [];
   }
 
-  // ---- LAYOUT: altta kalan yazı görünür olsun
+  // ---- LAYOUT
   function adjustLayout(){
     const topH = topbarEl.offsetHeight;
     const bottomH = bottomEl.offsetHeight;
-
-    // main padding
     mainEl.style.paddingTop = topH + "px";
     mainEl.style.paddingBottom = bottomH + "px";
-
-    // RESULTS alt padding: sabit bar kadar + 16
     resultsEl.style.paddingBottom = (bottomH + 16) + "px";
   }
 
@@ -577,7 +545,6 @@
   }
 
   function clearResults(){
-    // loader kalacak
     const keepLoader = loaderEl;
     resultsEl.innerHTML = "";
     resultsEl.appendChild(keepLoader);
@@ -586,15 +553,14 @@
   function redrawThread(){
     clearResults();
     ensureThread(currentMode);
-
     for(const m of threads[currentMode]){
       if(m.type === "cards"){
         renderCards(m.cards, true);
       } else {
-        addBubble(m.role, m.text, m.img, true);
+        // speechText varsa onu da geçiyoruz
+        addBubble(m.role, m.text, m.img, true, m.speechText);
       }
     }
-
     scrollToBottom(true);
   }
 
@@ -609,10 +575,10 @@
     renderDock();
     renderChips(MODES[m].chips);
 
-    // İlk kez girince welcome mesajı (spam yok)
     if(!welcomed[m]){
       welcomed[m] = true;
-      pushMessage("ai", MODES[m].welcome);
+      // İlk mesajda speechText = normal text
+      pushMessage("ai", MODES[m].welcome, null, MODES[m].welcome);
     }
 
     redrawThread();
@@ -620,13 +586,15 @@
   }
 
   // ---- Messages
-  function pushMessage(role, text, img=null){
+  function pushMessage(role, text, img=null, speechText=null){
     ensureThread(currentMode);
-    threads[currentMode].push({type:"msg", role, text, img, ts:Date.now()});
-    addBubble(role, text, img);
+    // Thread'e speechText'i de kaydediyoruz
+    threads[currentMode].push({type:"msg", role, text, img, speechText, ts:Date.now()});
+    addBubble(role, text, img, false, speechText);
   }
 
-  function addBubble(role, text, img=null, silent=false){
+  // addBubble artık speechText alabiliyor
+  function addBubble(role, text, img=null, silent=false, speechText=null){
     const row = document.createElement("div");
     row.className = "msg " + (role === "user" ? "user" : "ai");
 
@@ -644,7 +612,7 @@
     span.innerHTML = (text||"").toString().replace(/\n/g, "<br>");
     b.appendChild(span);
 
-    // Fal modunda uyarı (AI mesajında)
+    // Fal modu uyarısı
     if(role === "ai" && currentMode === "future"){
       const d = document.createElement("span");
       d.className = "disclaimer";
@@ -653,11 +621,14 @@
     }
 
     // Ses butonu (AI)
+    // Eğer speechText yoksa text'in kendisini kullan
+    const textToSpeak = speechText || text || "";
+    
     if(role === "ai"){
       const btn = document.createElement("button");
       btn.className = "audio-btn";
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Seslendir`;
-      btn.onclick = ()=>playVoice(btn, text || "");
+      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`;
+      btn.onclick = ()=>playVoice(btn, textToSpeak);
       b.appendChild(btn);
     }
 
@@ -695,7 +666,6 @@
     });
 
     resultsEl.insertBefore(wrap, loaderEl);
-
     ensureThread(currentMode);
     threads[currentMode].push({type:"cards", cards, ts:Date.now()});
 
@@ -706,7 +676,6 @@
 
   function scrollToBottom(immediate=false){
     setTimeout(()=>{
-      // results’in alt padding’i var; en alta in
       resultsEl.scrollTop = resultsEl.scrollHeight;
       if(immediate){
         loaderEl.scrollIntoView({block:"end"});
@@ -723,12 +692,10 @@
   fileEl.addEventListener("change", (e)=>{
     const file = e.target.files && e.target.files[0];
     if(!file) return;
-
     if(file.size > 6 * 1024 * 1024){
       alert("Fotoğraf çok büyük evladım. Daha küçük bir fotoğraf seç.");
       return;
     }
-
     const reader = new FileReader();
     reader.onload = ()=>{
       pendingImageDataUrl = reader.result;
@@ -738,13 +705,11 @@
     reader.readAsDataURL(file);
   });
 
-  // ---- Mic (Speech Recognition)
+  // ---- Mic (Auto Send)
   function startMic(){
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR){
-      alert("Tarayıcı mikrofonu desteklemiyor evladım.");
-      return;
-    }
+    if(!SR){ alert("Tarayıcı mikrofonu desteklemiyor."); return; }
+    
     const rec = new SR();
     rec.lang = "tr-TR";
     micBtnEl.classList.add("mic-active");
@@ -754,7 +719,8 @@
       got = true;
       const t = ev.results[0][0].transcript;
       textEl.value = t;
-      sendMessage();
+      micBtnEl.classList.remove("mic-active");
+      sendMessage(); // Otomatik gönder
     };
     rec.onend = ()=>{
       micBtnEl.classList.remove("mic-active");
@@ -771,11 +737,12 @@
     if(currentAudio){
       currentAudio.pause();
       currentAudio = null;
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Seslendir`;
+      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`;
+      btn.classList.remove("playing");
       return;
     }
 
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Açılıyor`;
     try{
       const res = await fetch(SPEAK_URL, {
         method:"POST",
@@ -787,34 +754,45 @@
       currentAudio = new Audio(url);
       currentAudio.onended = ()=>{
         currentAudio = null;
-        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Seslendir`;
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`;
+        btn.classList.remove("playing");
       };
       await currentAudio.play();
       btn.innerHTML = `<i class="fa-solid fa-stop"></i> Durdur`;
+      btn.classList.add("playing");
     }catch(e){
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Seslendir`;
+      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`;
     }
   }
 
   // ---- Send
   async function sendMessage(){
-    const text = (textEl.value || "").trim();
+    const rawText = (textEl.value || "").trim();
     const img  = pendingImageDataUrl;
 
-    if(!text && !img) return;
+    if(!rawText && !img) return;
 
-    // user message
-    pushMessage("user", text || "📷 Fotoğraf gönderildi", img);
+    // Ekranda görünecek kullanıcı mesajı
+    pushMessage("user", rawText || "📷 Fotoğraf gönderildi", img);
+    
     textEl.value = "";
     pendingImageDataUrl = null;
 
-    // loader
+    // Loader
     loaderEl.style.display = "block";
     resultsEl.appendChild(loaderEl);
     scrollToBottom(true);
 
+    // --- PROMPT INJECTION (HİLE) ---
+    // Backend'e giden mesaja gizli talimat ekliyoruz.
+    // Bu sayede AI; ekrana uzun yazı yazarken, sese kısa ve şiveli metin hazırlar.
+    const injectedText = rawText + 
+      " [SİSTEM EMRİ: Cevabın metnini ('assistant_text') olabildiğince detaylı, uzun, açıklayıcı ve bilge bir dille yaz. " +
+      "Ancak seslendirme metnini ('speech_text') Trakyalı/Egeli yaşlı bir teyze ağzıyla, kısa, samimi ve şiveli hazırla. " +
+      "Seslendirme metni MUTLAKA şu cümleyle bitsin: 'Kaynanayı dinlersen pişman olmazsın evladım!']";
+
     const payload = {
-      message: text || "Fotoğraf gönderildi",
+      message: injectedText, // Gizli talimatlı metin
       image: img || null,
       mode: currentMode,
       session_id: sessionId,
@@ -832,16 +810,17 @@
       loaderEl.style.display = "none";
 
       const aiText = (data && (data.assistant_text || data.reply)) || "Bir şeyler ters gitti evladım.";
-      pushMessage("ai", aiText);
+      const speechText = data.speech_text || aiText; // Backend ayrı gönderirse onu kullan
 
-      // Chips backend’den gelirse güncelle (mode’a göre)
+      // Mesajı ekle (speechText'i ayrı saklayarak)
+      pushMessage("ai", aiText, null, speechText);
+
       if(data && Array.isArray(data.quick_replies) && data.quick_replies.length){
         renderChips(data.quick_replies);
       } else {
         renderChips(MODES[currentMode].chips);
       }
 
-      // Kartlar sadece response.data_type === "products" iken
       if(data && data.data_type === "products" && Array.isArray(data.data) && data.data.length){
         renderCards(data.data);
       }
@@ -854,23 +833,19 @@
     }
   }
 
-  // ---- Menu (placeholder)
   function toggleInfo(){
-    // şimdilik yok; istersen modal ekleriz
     alert("Menü yakında evladım 🙂");
   }
 
   // ---- INIT
   function init(){
     ensureThread(currentMode);
-
-    // ilk açılış
     setHeader();
     renderDock();
     renderChips(MODES[currentMode].chips);
-
+    
     welcomed[currentMode] = true;
-    pushMessage("ai", MODES[currentMode].welcome);
+    pushMessage("ai", MODES[currentMode].welcome, null, MODES[currentMode].welcome);
 
     adjustLayout();
     scrollToBottom(true);
