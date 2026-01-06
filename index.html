@@ -613,9 +613,12 @@
       card.className = "card";
 
       const isSponsor = p.is_sponsor === true;
-      const badgeTxt = (isSponsor) 
-                       ? "SPONSOR • KAYNANA ÖNERİSİ" 
-                       : "GÜVENİLİR";
+      const trust = p.caynana_trust || {};
+      const score = (trust.score != null) ? Number(trust.score).toFixed(1) : "";
+      
+      const badgeTxt = isSponsor
+        ? `SPONSOR • ${trust.badge||"ÖNERİLEN"}`
+        : `CAYNANA PUANI: ${score}/10 • ${trust.badge||"GÜVENİLİR"}`;
       
       const sponsorTag = `<div class="badge ${isSponsor ? "gold": ""}">${badgeTxt}</div>`;
 
@@ -780,9 +783,8 @@
 
       loaderEl.style.display = "none";
 
-      // Hata kontrolü: Eğer backend timeout verirse
       const aiText = (data && (data.assistant_text || data.reply)) || "Caynana biraz düşündü ama cevap yetişmedi evladım 😅 Bir daha dene.";
-      const speechText = data.speech_text || "Evladım biraz yoğunluk oldu.";
+      const speechText = data.speech_text || "Evladım biraz yoğunluk oldu ama ben buradayım.";
 
       pushMessage("ai", aiText, null, speechText);
 
