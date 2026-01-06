@@ -68,7 +68,6 @@
   .bubble h3 { font-size: 14px; margin-top: 15px; margin-bottom: 5px; font-weight: 800; }
   .bubble ul { padding-left: 20px; margin: 5px 0; }
   
-  /* PUAN ROZETİ */
   .score-badge { background: linear-gradient(135deg, #10B981, #059669); color: white; font-weight: 900; font-size: 20px; padding: 10px; border-radius: 12px; display: block; margin-bottom: 15px; text-align: center; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
   .score-label { font-size: 10px; text-transform: uppercase; opacity: 0.9; display: block; }
   
@@ -87,7 +86,7 @@
   /* --- BOTTOM AREA --- */
   #bottom{ position:absolute; bottom:0; left:0; right:0; background:#fff; padding:0; border-top:1px solid var(--border); z-index: 50; }
   
-  /* DOCK (YATAY MENÜ) */
+  /* DOCK */
   #dock { display: flex; gap: 16px; overflow-x: auto; padding: 12px 16px; background: #fff; scrollbar-width: none; border-bottom: 1px solid rgba(0,0,0,0.03); }
   #dock::-webkit-scrollbar { display: none; }
   .dockItem { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 64px; cursor: pointer; color: var(--muted); transition: 0.2s; opacity: 0.6; }
@@ -120,7 +119,6 @@
 </head>
 <body>
 <div id="app">
-  
   <div id="topbar">
     <div class="brand-container" onclick="location.reload()">
       <div class="brand"><i class="fa-solid fa-robot"></i> CAYNANA<span>.AI</span></div>
@@ -228,11 +226,17 @@
 
   const fileEl = document.getElementById("fileInput");
   function openCamera(){ fileEl.value = ""; fileEl.click(); }
+  
+  // --- FOTOĞRAF ÇEKİLİNCE OTOMATİK GÖNDER ---
   fileEl.addEventListener("change", (e)=>{
     const file = e.target.files && e.target.files[0];
     if(!file) return;
     const reader = new FileReader();
-    reader.onload = ()=>{ pendingImage = reader.result; document.getElementById("text").value = "📷 Fotoğraf eklendi"; };
+    reader.onload = ()=>{ 
+        pendingImage = reader.result; 
+        document.getElementById("text").value = "📷 Fotoğraf eklendi"; 
+        send(); // Otomatik Gönder
+    };
     reader.readAsDataURL(file);
   });
 
@@ -250,7 +254,9 @@
   async function send(){
     const txtEl = document.getElementById("text");
     let val = txtEl.value.trim();
-    if(pendingImage && val.includes("Fotoğraf eklendi")) val = "Bu fotoğraftaki ürünü bul";
+    
+    // Resim var ama yazı yoksa
+    if(pendingImage && (val.includes("Fotoğraf eklendi") || val === "")) val = "Bu fotoğraftaki ürünü bul";
     if(!val && !pendingImage) return;
     
     addBubble("user", val, false, null, pendingImage);
@@ -339,7 +345,6 @@
     }catch(e){ btn.innerHTML = "Ses Hatası!"; setTimeout(() => btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`, 2000); }
   }
   
-  // Sayfa yüklendiğinde Dock'u çiz
   renderDock();
 </script>
 </body>
