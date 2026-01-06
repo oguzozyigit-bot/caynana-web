@@ -573,17 +573,13 @@
     addBubble(role, text, img, false, speechText);
   }
 
-  // --- MARKDOWN FORMATTER EKLENDİ ---
+  // --- MARKDOWN FORMATTER ---
   function formatAssistantText(t){
     t = (t||"").toString();
-    // Başlıklar
     t = t.replace(/^###\s*(.*)$/gm, "<b>$1</b>");
     t = t.replace(/^####\s*(.*)$/gm, "<b>$1</b>");
-    // Bold
     t = t.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
-    // Liste
     t = t.replace(/^\-\s+(.*)$/gm, "• $1");
-    // Satır
     t = t.replace(/\n/g, "<br>");
     return t;
   }
@@ -603,7 +599,6 @@
     }
 
     const span = document.createElement("span");
-    // Markdown uygulayarak bas
     span.innerHTML = formatAssistantText(text);
     b.appendChild(span);
 
@@ -661,13 +656,16 @@
 
       card.id = token ? `card_${token}` : "";
       
-      // Token attribute (Lazy Enrich için)
+      // Token attribute (Lazım olur)
       if(token) card.setAttribute("data-token", token);
 
       card.innerHTML = `
         ${badgeHtml}
         ${imgHtml}
         <div class="title">${(p.title||"Ürün").toString()}</div>
+        <div style="margin-top:6px;font-size:12px;font-weight:900;color:#065f46;">
+          CAYNANA PUANI: ${score}/10
+        </div>
         <div class="price pprice">${price}</div>
         <div class="footer"><i class="fa-solid fa-shop"></i> ${(p.footer||p.platform||"").toString()}</div>
         <div class="cardActions">
@@ -679,9 +677,9 @@
 
       wrap.appendChild(card);
 
-      // Lazy Enrich: Sponsor veya eksik bilgili kartlar için
+      // Lazy Enrich: URL BAZLI ÇAĞRI (DB BAĞIMSIZ)
       if(token && (isSponsor || !imgSrc || price === "Fiyatı gör")){
-        lazyEnrichCard(token);
+        lazyEnrichCard(token, p.url);
       }
     });
 
@@ -692,11 +690,17 @@
     if(!silent) wrap.scrollIntoView({block:"end", behavior:"smooth"});
   }
 
-  // --- LAZY ENRICH FUNCTION ---
-  async function lazyEnrichCard(token){
+  // --- LAZY ENRICH FUNCTION (URL BAZLI) ---
+  async function lazyEnrichCard(token, productUrl){
     try{
-      const url = `${TRACK_BASE}/api/enrich/${encodeURIComponent(token)}`;
-      const res = await fetch(url, { method:"GET" });
+      // 1) Önce URL bazlı enrich (DB bağımsız - Render dostu)
+      const u = `${TRACK_BASE}/api/enrich_url?url=${encodeURIComponent(productUrl || "")}`;
+      let res = await fetch(u, { method:"GET" });
+
+      // Fallback: Eski token endpoint'i (nadiren gerekir)
+      if(!res.ok){
+        res = await fetch(`${TRACK_BASE}/api/enrich/${encodeURIComponent(token)}`, { method:"GET" });
+      }
       if(!res.ok) return;
 
       const data = await res.json();
