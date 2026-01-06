@@ -190,7 +190,8 @@
     flex-direction: column;
   }
   .card:hover{transform:translateY(-3px); border-color:#c7f9e5;}
-  .card img{
+  /* .pimg classı JS ile güncellenir */
+  .card img.pimg{
     width:100%;
     height:130px;
     object-fit:contain;
@@ -455,7 +456,7 @@
 <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
 <script>
-  // ---- CONFIG (YENİ DOMAIN)
+  // ---- CONFIG
   const TRACK_BASE = "https://bikonomi-api-2.onrender.com";
   const API_URL    = `${TRACK_BASE}/api/chat`;
   const SPEAK_URL  = `${TRACK_BASE}/api/speak`;
@@ -572,6 +573,21 @@
     addBubble(role, text, img, false, speechText);
   }
 
+  // --- MARKDOWN FORMATTER EKLENDİ ---
+  function formatAssistantText(t){
+    t = (t||"").toString();
+    // Başlıklar
+    t = t.replace(/^###\s*(.*)$/gm, "<b>$1</b>");
+    t = t.replace(/^####\s*(.*)$/gm, "<b>$1</b>");
+    // Bold
+    t = t.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+    // Liste
+    t = t.replace(/^\-\s+(.*)$/gm, "• $1");
+    // Satır
+    t = t.replace(/\n/g, "<br>");
+    return t;
+  }
+
   function addBubble(role, text, img=null, silent=false, speechText=null){
     const row = document.createElement("div");
     row.className = "msg " + (role === "user" ? "user" : "ai");
@@ -587,7 +603,8 @@
     }
 
     const span = document.createElement("span");
-    span.innerHTML = (text||"").toString().replace(/\n/g, "<br>");
+    // Markdown uygulayarak bas
+    span.innerHTML = formatAssistantText(text);
     b.appendChild(span);
 
     const textToSpeak = speechText || text || "";
@@ -604,49 +621,68 @@
     if(!silent) row.scrollIntoView({block:"end", behavior:"smooth"});
   }
 
+  // --- KART RENDER ---
   function renderCards(cards, silent=false){
     const wrap = document.createElement("div");
     wrap.className = "cards";
 
-    cards.forEach(p=>{
+    cards.forEach((p, idx) => {
       const card = document.createElement("div");
       card.className = "card";
 
-      const isSponsor = p.is_sponsor === true;
+      const isSponsor = (p.is_sponsor === true) && (idx === 0);
       const trust = p.caynana_trust || {};
-      const score = (trust.score != null) ? Number(trust.score).toFixed(1) : "";
-      
-      const badgeTxt = isSponsor
-        ? `SPONSOR • ${trust.badge||"ÖNERİLEN"}`
-        : `CAYNANA PUANI: ${score}/10 • ${trust.badge||"GÜVENİLİR"}`;
-      
-      const sponsorTag = `<div class="badge ${isSponsor ? "gold": ""}">${badgeTxt}</div>`;
-
-      const imgHtml = p.image
-        ? `<img src="${p.image}" alt="">`
-        : `<div style="width:100%;height:120px;border:1px dashed #ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#bbb;margin-bottom:8px;">
-             <i class="fa-solid fa-image"></i>
-           </div>`;
+      const score = (trust.score != null) ? Number(trust.score).toFixed(1) : "8.0";
 
       const token = (p.track_token || "").toString();
       const trackedUrl = token ? `${TRACK_BASE}/r/${encodeURIComponent(token)}` : (p.url||"#");
 
-      const price = p.price ? p.price : "Fiyatı görmek için tıkla";
+      // Fiyat ve Resim Kontrolü
+      const price = (p.price && p.price.trim() && p.price !== "Fiyatı Gör") 
+                    ? p.price 
+                    : (isSponsor ? "Yükleniyor..." : "Fiyatı gör");
+      
+      const imgSrc = (p.image && p.image.trim() && !p.image.includes("ty-web.svg")) 
+                     ? p.image 
+                     : "";
+
+      // Badge: Sponsor ve Puan Bir Arada
+      const badgeTxt = isSponsor
+        ? `SPONSOR • CAYNANA PUANI: ${score}/10`
+        : `CAYNANA PUANI: ${score}/10 • ${trust.badge||"GÜVENİLİR"}`;
+
+      const badgeHtml = `<div class="badge ${isSponsor ? "gold": ""}">${badgeTxt}</div>`;
+
+      const imgHtml = imgSrc
+        ? `<img class="pimg" src="${imgSrc}" alt="">`
+        : `<div class="pimg" style="width:100%;height:130px;border:1px dashed #ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#bbb;margin-bottom:8px;">
+             <i class="fa-solid fa-image"></i>
+           </div>`;
+
+      card.id = token ? `card_${token}` : "";
+      
+      // Token attribute (Lazy Enrich için)
+      if(token) card.setAttribute("data-token", token);
 
       card.innerHTML = `
-        ${sponsorTag}
+        ${badgeHtml}
         ${imgHtml}
         <div class="title">${(p.title||"Ürün").toString()}</div>
-        <div class="price">${price}</div>
+        <div class="price pprice">${price}</div>
         <div class="footer"><i class="fa-solid fa-shop"></i> ${(p.footer||p.platform||"").toString()}</div>
-        
         <div class="cardActions">
           <a class="btnLink btnPrimary" href="${trackedUrl}" target="_blank" rel="noopener">
             CAYNANA ÖNERİSİ
           </a>
         </div>
       `;
+
       wrap.appendChild(card);
+
+      // Lazy Enrich: Sponsor veya eksik bilgili kartlar için
+      if(token && (isSponsor || !imgSrc || price === "Fiyatı gör")){
+        lazyEnrichCard(token);
+      }
     });
 
     resultsEl.insertBefore(wrap, loaderEl);
@@ -654,6 +690,58 @@
     threads[currentMode].push({type:"cards", cards, ts:Date.now()});
 
     if(!silent) wrap.scrollIntoView({block:"end", behavior:"smooth"});
+  }
+
+  // --- LAZY ENRICH FUNCTION ---
+  async function lazyEnrichCard(token){
+    try{
+      const url = `${TRACK_BASE}/api/enrich/${encodeURIComponent(token)}`;
+      const res = await fetch(url, { method:"GET" });
+      if(!res.ok) return;
+
+      const data = await res.json();
+      if(!data || !data.ok) return;
+
+      const card = document.querySelector(`.card[data-token="${token}"]`);
+      if(!card) return;
+
+      // Resim Güncelle
+      if(data.image){
+        const img = card.querySelector("img.pimg");
+        if(img){
+          img.src = data.image;
+        }else{
+          const ph = card.querySelector(".pimg");
+          if(ph){
+            const newImg = document.createElement("img");
+            newImg.className = "pimg";
+            newImg.style.width = "100%";
+            newImg.style.height = "130px";
+            newImg.style.objectFit = "contain";
+            newImg.style.borderRadius = "10px";
+            newImg.style.background = "#fff";
+            newImg.style.marginBottom = "8px";
+            newImg.style.border = "1px solid rgba(0,0,0,.03)";
+            newImg.src = data.image;
+            ph.replaceWith(newImg);
+          }
+        }
+      }
+
+      // Fiyat Güncelle
+      if(data.price){
+        const priceEl = card.querySelector(".pprice");
+        if(priceEl) priceEl.textContent = data.price;
+      }
+
+      // Başlık Güncelle (Opsiyonel)
+      if(data.title && data.title.length > 5){
+        const t = card.querySelector(".title");
+        if(t) t.textContent = data.title;
+      }
+    }catch(e){
+      // Sessiz hata
+    }
   }
 
   function scrollToBottom(immediate=false){
