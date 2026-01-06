@@ -4,918 +4,381 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>CAYNANA.AI</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
 <style>
-  :root{
-    --primary:#10B981;
-    --primary-dark:#059669;
-    --bg:#F3F4F6;
-    --white:#fff;
-    --text:#111827;
-    --muted:#6B7280;
-    --border:#E5E7EB;
-    --maxw:768px;
-  }
-
+  :root{ --primary:#10B981; --bg:#F3F4F6; --white:#fff; --text:#111827; --muted:#6B7280; --border:#E5E7EB; }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
-  body{
-    margin:0;
-    font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
-    background:var(--bg);
-    height:100vh;
-    height:100dvh;
-    display:flex;
-    justify-content:center;
-    overflow:hidden;
-  }
-
-  #app{
-    width:100%;
-    max-width:var(--maxw);
-    height:100%;
-    background:var(--white);
-    position:relative;
-    box-shadow:0 0 20px rgba(0,0,0,.05);
-    overflow:hidden;
-  }
-
-  /* Top bar */
+  body{margin:0; font-family:'Inter', sans-serif; background:var(--bg); height:100dvh; display:flex; justify-content:center; overflow:hidden;}
+  
+  #app{width:100%; max-width:768px; height:100%; background:var(--white); position:relative; display:flex; flex-direction:column; box-shadow: 0 0 20px rgba(0,0,0,0.05);}
+  
+  /* --- HEADER DÜZENİ --- */
   #topbar{
-    position:absolute;
-    top:0; left:0; right:0;
-    height:56px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 16px;
-    padding-top:env(safe-area-inset-top);
+    height:64px; /* Slogan için biraz yükselttik */
+    display:flex; 
+    align-items:center; 
+    justify-content:space-between; 
+    padding:0 16px; 
     border-bottom:1px solid var(--border);
-    background:var(--white);
-    z-index:10;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(5px);
+    z-index: 10;
   }
-  .brand{
-    display:flex; align-items:center; gap:8px;
-    font-weight:900; letter-spacing:-.5px;
-    color:var(--text);
-    cursor:pointer;
-    user-select:none;
-  }
-  .brand span{color:var(--primary)}
-  .topbtn{
-    background:none;border:none;cursor:pointer;
-    color:var(--muted);
-    font-size:20px;
-  }
-
-  /* Main scroll */
-  #main{
-    height:100%;
-    overflow-y:auto;
-    padding-top:56px;
-    padding-bottom:180px;
-    scroll-behavior:smooth;
-    -webkit-overflow-scrolling: touch;
-  }
-  .content{ max-width:var(--maxw); margin:0 auto; }
-
-  /* Header */
-  #modeHeader{
-    text-align:center;
-    padding:22px 16px 10px;
-    background:var(--white);
-    position:sticky;
-    top:0;
-    z-index:5;
-    border-bottom:1px solid rgba(0,0,0,0.03);
-  }
-  #modeTitle{font-size:18px;font-weight:900;color:var(--text); margin-bottom:4px}
-  #modeDesc{font-size:13px;color:var(--muted)}
-
-  /* Results */
-  #results{
-    padding:16px;
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-  }
-
-  .msg{display:flex; width:100%;}
-  .msg.user{justify-content:flex-end;}
-  .msg.ai{justify-content:flex-start;}
-
-  .bubble{
-    max-width:86%;
-    padding:12px 16px;
-    border-radius:18px;
-    font-size:15px;
-    line-height:1.5;
-    box-shadow:0 1px 2px rgba(0,0,0,.05);
-    word-break:break-word;
-  }
-  .msg.user .bubble{
-    background:var(--primary);
-    color:#fff;
-    border-bottom-right-radius:4px;
-  }
-  .msg.ai .bubble{
-    background:#F3F4F6;
-    color:var(--text);
-    border-bottom-left-radius:4px;
-  }
-
-  .bubble img.preview{
-    max-width:100%;
-    border-radius:12px;
-    display:block;
-    margin-bottom:10px;
-    border:1px solid var(--border);
-  }
-
-  .audio-btn{
-    margin-top:10px;
-    background:var(--white);
-    border:1px solid var(--border);
-    border-radius:12px;
-    padding:6px 12px;
-    font-size:12px;
-    cursor:pointer;
-    color:var(--muted);
-    display:inline-flex;
-    gap:6px;
-    align-items:center;
-    font-weight: 600;
-    transition: 0.2s;
-  }
-  .audio-btn:hover{border-color:var(--primary); color:var(--primary);}
-  .audio-btn.playing{color:var(--primary); border-color:var(--primary); background:#ECFDF5;}
-  .audio-btn::after{ content:" 🗣️"; }
-
-  /* Loader */
-  #loader{
-    display:none;
-    align-self:flex-start;
-    background:var(--white);
-    border:1px solid var(--border);
-    padding:10px 14px;
-    border-radius:16px;
-    border-bottom-left-radius:4px;
-    color:var(--muted);
-    font-style:italic;
-  }
-
-  /* Cards */
-  .cards{
-    display:flex;
-    gap:12px;
-    overflow-x:auto;
-    padding:6px 2px 2px;
-    scrollbar-width:none;
-  }
-  .cards::-webkit-scrollbar{display:none;}
-  .card{
-    min-width:240px;
-    max-width:240px;
-    background:var(--white);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:10px;
-    color:var(--text);
-    box-shadow:0 2px 6px rgba(0,0,0,.04);
-    transition:transform .15s ease, border-color .15s ease;
-    position:relative;
+  
+  .brand-container {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
   }
-  .card:hover{transform:translateY(-3px); border-color:#c7f9e5;}
+
+  /* LOGO: Boşluk alındı */
+  .brand{
+    font-weight:900; 
+    color:var(--text); 
+    font-size:20px; 
+    line-height: 1;
+    letter-spacing: -0.5px;
+  } 
+  .brand span{color:var(--primary);}
   
-  .card img.pimg{
-    width:100%;
-    height:130px;
-    object-fit:contain;
-    border-radius:10px;
-    background:#fff;
-    margin-bottom:8px;
-    border:1px solid rgba(0,0,0,.03);
+  /* SLOGAN: Logonun altı */
+  .slogan {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
   }
-  .card .title{
-    font-size:13px;
-    font-weight:900;
-    height:36px;
-    overflow:hidden;
-    display:-webkit-box;
-    -webkit-line-clamp:2;
-    -webkit-box-orient:vertical;
+  
+  /* --- CHAT ALANI --- */
+  #main{flex:1; overflow-y:auto; padding:16px; padding-bottom:140px; scroll-behavior: smooth;}
+  
+  /* Karşılama Alanı */
+  .welcome-box {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 10px 0;
   }
-  .card .price{
-    margin-top:8px;
-    color:var(--primary);
-    font-weight:900;
-    font-size:15px;
-  }
-  .card .footer{
-    margin-top:4px;
-    font-size:11px;
-    color:#9CA3AF;
-    display:flex;
-    gap:6px;
-    align-items:center;
+  .welcome-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+  .welcome-desc { 
+    font-size: 13px; 
+    color: var(--muted); 
+    line-height: 1.5; 
+    max-width: 90%; 
+    margin: 0 auto;
   }
 
-  .cardActions{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    margin-top:12px;
+  .msg{display:flex; margin-bottom:16px; animation: fadeIn 0.3s ease;}
+  @keyframes fadeIn { from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:translateY(0)} }
+  
+  .msg.user{justify-content:flex-end;} .msg.ai{justify-content:flex-start;}
+  
+  .bubble{
+    max-width:85%; 
+    padding:14px 18px; 
+    border-radius:20px; 
+    font-size:15px; 
+    line-height:1.5; 
+    box-shadow:0 2px 4px rgba(0,0,0,.03);
   }
+  .msg.user .bubble{background:var(--primary); color:#fff; border-bottom-right-radius:4px;}
+  .msg.ai .bubble{background:#F3F4F6; color:var(--text); border-bottom-left-radius:4px;}
+  
+  /* --- KARTLAR --- */
+  .cards{display:flex; gap:12px; overflow-x:auto; padding:4px 4px 12px 4px; scrollbar-width:none;}
+  .cards::-webkit-scrollbar { display: none; }
+  
+  .card{
+    min-width:220px; max-width:220px; 
+    background:#fff; 
+    border:1px solid var(--border); 
+    border-radius:16px; 
+    padding:12px; 
+    display:flex; flex-direction:column;
+    transition: transform 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  }
+  .card:hover { transform: translateY(-2px); }
+  
+  .pimg{
+    width:100%; height:150px; 
+    object-fit:contain; 
+    border-radius:10px; 
+    margin-bottom:10px;
+    background: #fff;
+  }
+  .title{
+    font-size:13px; font-weight:700; color: var(--text);
+    height:36px; overflow:hidden; 
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+    margin-bottom: 4px;
+  }
+  .price{font-size:16px; font-weight:900; color:var(--primary); margin:6px 0;}
+  
+  /* RENKLİ BUTONLAR */
   .btnLink{
-    display:block;
-    text-align:center;
-    text-decoration:none;
-    padding:10px;
-    border-radius:10px;
-    font-size:12px;
-    font-weight:700;
-    border:1px solid var(--border);
-    color:var(--text);
-    background:var(--bg);
-    transition: 0.2s;
-  }
-  .btnLink:hover{border-color:var(--muted);}
-  .btnPrimary{
-    background:var(--primary);
-    color:#fff;
-    border-color:var(--primary);
-  }
-  .btnPrimary:hover{background:var(--primary-dark); border-color:var(--primary-dark); color:#fff;}
-
-  .badge{
-    position:absolute;
-    top:10px;
-    left:10px;
-    font-size:10px;
-    font-weight:900;
-    padding:6px 8px;
-    border-radius:999px;
-    border:1px solid rgba(0,0,0,.06);
-    background:rgba(255,255,255,.92);
-    backdrop-filter: blur(6px);
-    display:flex;
-    gap:6px;
-    align-items:center;
-    box-shadow:0 1px 6px rgba(0,0,0,.06);
-    max-width:210px;
-    overflow:hidden;
-    white-space:nowrap;
-    text-overflow:ellipsis;
-    z-index: 2;
-  }
-  .badge.gold{ border-color:#a7f3d0; color:#065f46; background: #ecfdf5;}
-
-  /* Bottom fixed area */
-  #bottom{
-    position:absolute;
-    bottom:0; left:0; right:0;
-    width:100%; /* Taşma önlemi */
-    background:var(--white);
-    border-top:1px solid var(--border);
-    padding-bottom:env(safe-area-inset-bottom);
-    z-index: 20;
-  }
-
-  /* CHIPS GİZLENDİ */
-  #chips{
-    display:none !important;
-  }
-
-  /* Input row - MOBİL FIX */
-  #inputRow{
-    display:flex;
-    gap:10px;
-    padding:8px 12px;
-    /* Klavye açılınca veya iPhone safe-area için padding fix */
-    padding-bottom: calc(8px + env(safe-area-inset-bottom));
-    align-items:center;
-  }
-  #inputWrap{
-    flex:1;
-    display:flex;
-    align-items:center;
-    gap:8px;
-    border:1px solid var(--border);
-    background:var(--bg);
-    border-radius:999px;
-    padding:6px 10px;
-    min-width: 0; /* Flex taşmasını önler */
-  }
-  #inputWrap:focus-within{border-color:var(--primary); background:var(--white); box-shadow:0 0 0 2px rgba(16,185,129,.12);}
-  .iconBtn{
-    width:34px;height:34px;
-    border:none;background:transparent;
-    border-radius:50%;
-    cursor:pointer;
-    color:var(--muted);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:17px;
-    flex-shrink:0;
-  }
-  .iconBtn:hover{background:rgba(0,0,0,.06); color:var(--primary);}
-  .iconBtn.mic-active{background:#FEE2E2; color:#EF4444; animation:pulse 1.2s infinite;}
-  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
-
-  #text{
-    flex:1;
-    border:none;
-    background:transparent;
-    outline:none;
-    font-size:15px;
-    padding:0 4px;
-    min-width:0;
-  }
-  #sendBtn{
-    width:42px;height:42px;
-    border:none;
-    border-radius:50%;
-    background:var(--primary);
-    color:#fff;
-    font-size:16px;
-    cursor:pointer;
-    flex: 0 0 42px; /* Boyut sabitlenir, sıkışmaz */
-    margin-left: 0;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    transition:.15s;
-  }
-  #sendBtn:hover{background:var(--primary-dark);}
-  #sendBtn:active{transform:scale(.95);}
-
-  /* Dock */
-  #dock{
-    display:flex;
-    border-top:1px solid var(--border);
-    height:60px; /* Biraz kısalttık footer için */
-    overflow-x:auto;
-    scrollbar-width:none;
-  }
-  #dock::-webkit-scrollbar{display:none;}
-  .dockItem{
-    flex:1;
-    min-width:70px;
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-    align-items:center;
-    justify-content:center;
-    color:var(--muted);
-    cursor:pointer;
-    padding:6px 0;
-    user-select:none;
-  }
-  .dockItem i{font-size:20px;}
-  .dockItem span{font-size:10px; font-weight:700;}
-  .dockItem.active{color:var(--primary);}
-
-  /* BRAND FOOTER */
-  #brandFooter{
-    padding: 6px 12px 8px; /* Alt boşluk */
-    text-align:center;
-    border-top:1px solid rgba(0,0,0,.04);
-    background: #FAFAFA;
-  }
-  #brandFooter .brandText{
-    font-size:10px;
-    font-weight:800;
-    letter-spacing:.4px;
-    color:#9CA3AF;
-    line-height:1.2;
+    display:flex; align-items: center; justify-content: center; gap: 6px;
+    text-decoration:none; padding:10px; border-radius:10px; 
+    font-size:11px; font-weight:800; color:#fff; transition:.2s;
     text-transform: uppercase;
   }
-  #brandFooter .itFlag{
-    margin:6px auto 0;
-    width:fit-content;
-    display:flex;
-    border-radius:999px;
-    overflow:hidden;
-    box-shadow:0 1px 3px rgba(0,0,0,.06);
-  }
-  #brandFooter .itFlag span{
-    display:block;
-    width:22px; 
-    height:4px; /* İnce şerit */
-  }
-  #brandFooter .itFlag .g{ background:#009246; }
-  #brandFooter .itFlag .w{ background:#FFFFFF; }
-  #brandFooter .itFlag .r{ background:#CE2B37; }
+  
+  .btnGold { background: linear-gradient(135deg, #F59E0B, #B45309); box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2); }
+  .btnSilver { background: linear-gradient(135deg, #9CA3AF, #4B5563); box-shadow: 0 4px 10px rgba(156, 163, 175, 0.2); }
+  .btnBlue { background: linear-gradient(135deg, #3B82F6, #1E40AF); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2); }
+  .btnGreen { background: var(--primary); }
 
-  /* iOS kamera stabil */
-  #fileInput{
-    position:fixed;
-    left:-9999px;
-    width:1px;height:1px;
-    opacity:0;
-    pointer-events:none;
+  /* --- INPUT & FOOTER --- */
+  #bottom{
+    position:absolute; bottom:0; left:0; right:0; 
+    background:#fff; 
+    padding:0; /* Padding sıfırlandı, içerde halledeceğiz */
+    border-top:1px solid var(--border);
+    z-index: 20;
   }
+  
+  #inputArea {
+    padding: 12px 16px;
+    display:flex; gap:10px; align-items: center;
+  }
+
+  #text{
+    flex:1; 
+    padding:14px 16px; 
+    border:1px solid var(--border); 
+    background: var(--bg);
+    border-radius:99px; 
+    outline:none; font-size: 15px;
+    transition: 0.2s;
+  }
+  #text:focus { border-color: var(--primary); background: #fff; }
+  
+  #sendBtn{
+    width:48px; height:48px; 
+    border-radius:50%; background:var(--primary); 
+    color:#fff; border:none; cursor:pointer; 
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+  }
+
+  /* BRAND FOOTER (FULL WIDTH FLAG) */
+  #brandFooter {
+    padding-top: 4px;
+    width: 100%;
+    background: #FAFAFA;
+    border-top: 1px solid rgba(0,0,0,0.03);
+  }
+  .brandText {
+    text-align:center; 
+    font-size:10px; 
+    font-weight: 800;
+    color:#9CA3AF; 
+    padding: 6px 0;
+    letter-spacing: 0.5px;
+  }
+  .itFlag {
+    width: 100%;
+    height: 5px; /* İnce şerit */
+    display: flex;
+  }
+  .itFlag span { flex: 1; height: 100%; } /* Eşit dağılım */
+  .itFlag .g{ background:#009246; }
+  .itFlag .w{ background:#FFFFFF; }
+  .itFlag .r{ background:#CE2B37; }
+
+  /* AUDIO BUTON */
+  .audio-btn{
+    margin-top:10px; padding:8px 14px; 
+    background:#fff; border:1px solid #E5E7EB; 
+    border-radius:20px; font-size:12px; font-weight: 600; color: #4B5563;
+    cursor:pointer; display:inline-flex; align-items:center; gap:8px;
+    transition: 0.2s;
+  }
+  .audio-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .audio-btn.playing{
+    border-color:var(--primary); color:var(--primary); background:#ECFDF5;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%{box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);} 70%{box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);} 100%{box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);} }
+
 </style>
 </head>
-
 <body>
 <div id="app">
-
+  
   <div id="topbar">
-    <div class="brand" onclick="location.reload()">
-      <i class="fa-solid fa-shapes"></i>
-      CAYNANA<span>.AI</span>
+    <div class="brand-container" onclick="location.reload()">
+      <div class="brand">CAYNANA<span>.AI</span></div>
+      <div class="slogan">Sanal Yaşam Koçunuz</div>
     </div>
-    <button class="topbtn" type="button" onclick="toggleInfo()"><i class="fa-solid fa-bars"></i></button>
   </div>
 
   <div id="main">
-    <div class="content">
-
-      <div id="modeHeader">
-        <div id="modeTitle"></div>
-        <div id="modeDesc"></div>
-      </div>
-
-      <div id="results">
-        <div id="loader"><i class="fa-solid fa-circle-notch fa-spin"></i> Caynana analiz yapıyor...</div>
-      </div>
-
+    <div class="welcome-box">
+        <div class="welcome-title">Alışveriş Uzmanı</div>
+        <div class="welcome-desc">
+            Aradığın ürünü yaz, link yapıştır, dilersen fotoğrafını çek. Binlerce kullanıcı yorumunu ve mağaza analizlerini inceleyerek, pişman olmayacağın ürün ve mağazayı sana tavsiye ederim.
+        </div>
     </div>
   </div>
 
   <div id="bottom">
-    
-    <div id="inputRow">
-      <div id="inputWrap">
-        <button class="iconBtn" type="button" onclick="openCamera()" title="Fotoğraf">
-          <i class="fa-solid fa-camera"></i>
-        </button>
-        <button class="iconBtn" id="micBtn" type="button" onclick="startMic()" title="Konuş">
-          <i class="fa-solid fa-microphone"></i>
-        </button>
-        <input id="text" autocomplete="off" placeholder="Bir şeyler yaz..." onkeypress="if(event.key==='Enter') sendMessage()">
-      </div>
-      <button id="sendBtn" type="button" onclick="sendMessage()" title="Gönder">
-        <i class="fa-solid fa-arrow-right"></i>
-      </button>
+    <div id="inputArea">
+      <input id="text" placeholder="Ne arıyorsun evladım?" autocomplete="off" onkeypress="if(event.key==='Enter') send()">
+      <button id="sendBtn" onclick="send()"><i class="fa-solid fa-arrow-right"></i></button>
     </div>
-
-    <div id="dock"></div>
     
     <div id="brandFooter">
       <div class="brandText">@CAYNANA BY ITALKY TECHNOLOGY</div>
-      <div class="itFlag" aria-hidden="true">
+      <div class="itFlag">
         <span class="g"></span><span class="w"></span><span class="r"></span>
       </div>
     </div>
   </div>
-
 </div>
 
-<input type="file" id="fileInput" accept="image/*" capture="environment" />
-
 <script>
-  // ---- CONFIG
-  const TRACK_BASE = "https://bikonomi-api-2.onrender.com";
-  const API_URL    = `${TRACK_BASE}/api/chat`;
-  const SPEAK_URL  = `${TRACK_BASE}/api/speak`;
-
-  // ---- SESSION
-  let sessionId = localStorage.getItem("caynana_sid");
-  if(!sessionId){
-    sessionId = "sess_" + Math.random().toString(36).slice(2, 11);
-    localStorage.setItem("caynana_sid", sessionId);
-  }
-
-  // ---- DOM
-  const mainEl    = document.getElementById("main");
-  const topbarEl  = document.getElementById("topbar");
-  const bottomEl  = document.getElementById("bottom");
-  const resultsEl = document.getElementById("results");
-  const loaderEl  = document.getElementById("loader");
-  const dockEl    = document.getElementById("dock");
-  const textEl    = document.getElementById("text");
-  const fileEl    = document.getElementById("fileInput");
-  const micBtnEl  = document.getElementById("micBtn");
-
-  // ---- STATE
-  let currentMode = "shopping";
-  let pendingImageDataUrl = null;
+  // API URL'leri (Render adresin)
+  const API_URL = "https://bikonomi-api-2.onrender.com/api/chat";
+  const SPEAK_URL = "https://bikonomi-api-2.onrender.com/api/speak";
+  
+  let sessionId = "sess_" + Math.random().toString(36).substr(2, 9);
   let currentAudio = null;
 
-  const MODES = {
-    shopping: { icon:"fa-bag-shopping", label:"Alışveriş", title:"Alışveriş Uzmanı",
-      desc:"Ürün adı yaz, link yapıştır veya fotoğraf yükle.",
-      placeholder:"Ürün adı yaz veya link yapıştır...",
-      welcome:"Kaynana bugün öneriyor. Ürününü yaz, ben senin için en güvenlisini seçeyim. Kaynanayı dinle, pişman olma."
-    }
-  };
-
-  const threads = {};
-  const welcomed = {};
-  function ensureThread(m){ if(!threads[m]) threads[m]=[]; }
-
-  function adjustLayout(){
-    const topH = topbarEl.offsetHeight;
-    const bottomH = bottomEl.offsetHeight;
-    mainEl.style.paddingTop = topH + "px";
-    mainEl.style.paddingBottom = bottomH + "px";
-    resultsEl.style.paddingBottom = (bottomH + 16) + "px";
-  }
-  window.addEventListener("resize", () => setTimeout(adjustLayout, 50));
-  window.addEventListener("load", () => setTimeout(adjustLayout, 50));
-
-  function setHeader(){
-    document.getElementById("modeTitle").innerText = MODES[currentMode].title;
-    document.getElementById("modeDesc").innerText  = MODES[currentMode].desc;
-    textEl.placeholder = MODES[currentMode].placeholder;
-  }
-
-  function renderDock(){
-    dockEl.innerHTML = "";
-    Object.keys(MODES).forEach(k=>{
-      const item = document.createElement("div");
-      item.className = "dockItem" + (k===currentMode ? " active" : "");
-      item.innerHTML = `<i class="fa-solid ${MODES[k].icon}"></i><span>${MODES[k].label}</span>`;
-      item.onclick = ()=>switchMode(k);
-      dockEl.appendChild(item);
-    });
-  }
-
-  // CHIPS RENDER IPTAL (KAPALI)
-  function renderChips(list){ return; }
-
-  function clearResults(){
-    const keepLoader = loaderEl;
-    resultsEl.innerHTML = "";
-    resultsEl.appendChild(keepLoader);
-  }
-
-  function redrawThread(){
-    clearResults();
-    ensureThread(currentMode);
-    for(const m of threads[currentMode]){
-      if(m.type === "cards") renderCards(m.cards, true);
-      else addBubble(m.role, m.text, m.img, true, m.speechText);
-    }
-    scrollToBottom(true);
-  }
-
-  function switchMode(m){
-    if(!MODES[m]) return;
-    currentMode = m;
-    ensureThread(m);
-    setHeader();
-    renderDock();
-    if(!welcomed[m]){
-      welcomed[m]=true;
-      pushMessage("ai", MODES[m].welcome, null, MODES[m].welcome);
-    }
-    redrawThread();
-    adjustLayout();
-  }
-
-  function pushMessage(role, text, img=null, speechText=null){
-    ensureThread(currentMode);
-    threads[currentMode].push({type:"msg", role, text, img, speechText, ts:Date.now()});
-    addBubble(role, text, img, false, speechText);
-  }
-
-  // --- MARKDOWN FORMATTER ---
-  function formatAssistantText(t){
-    t = (t||"").toString();
-    t = t.replace(/^###\s*(.*)$/gm, "<b>$1</b>");
-    t = t.replace(/^####\s*(.*)$/gm, "<b>$1</b>");
-    t = t.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
-    t = t.replace(/^\-\s+(.*)$/gm, "• $1");
-    t = t.replace(/\n/g, "<br>");
-    return t;
-  }
-
-  function addBubble(role, text, img=null, silent=false, speechText=null){
-    const row = document.createElement("div");
-    row.className = "msg " + (role === "user" ? "user" : "ai");
-
-    const b = document.createElement("div");
-    b.className = "bubble";
-
-    if(img){
-      const im = document.createElement("img");
-      im.src = img;
-      im.className = "preview";
-      b.appendChild(im);
-    }
-
-    const span = document.createElement("span");
-    span.innerHTML = formatAssistantText(text);
-    b.appendChild(span);
-
-    const textToSpeak = speechText || text || "";
-    if(role === "ai"){
-      const btn = document.createElement("button");
-      btn.className = "audio-btn";
-      btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Kaynanayı Dinle`;
-      btn.onclick = ()=>playVoice(btn, textToSpeak);
-      b.appendChild(btn);
-    }
-
-    row.appendChild(b);
-    resultsEl.insertBefore(row, loaderEl);
-    if(!silent) row.scrollIntoView({block:"end", behavior:"smooth"});
-  }
-
-  // --- KART RENDER ---
-  function renderCards(cards, silent=false){
-    const wrap = document.createElement("div");
-    wrap.className = "cards";
-
-    cards.forEach((p, idx) => {
-      const card = document.createElement("div");
-      card.className = "card";
-
-      const isSponsor = (p.is_sponsor === true) && (idx === 0);
-      const trust = p.caynana_trust || {};
-      const score = (trust.score != null) ? Number(trust.score).toFixed(1) : "8.0";
-
-      const token = (p.track_token || "").toString();
-      const trackedUrl = token ? `${TRACK_BASE}/r/${encodeURIComponent(token)}` : (p.url||"#");
-
-      const price = (p.price && p.price.trim() && p.price !== "Fiyatı Gör") 
-                    ? p.price 
-                    : (isSponsor ? "Yükleniyor..." : "Fiyatı gör");
-      
-      const imgSrc = (p.image && p.image.trim() && !p.image.includes("ty-web.svg")) 
-                     ? p.image 
-                     : "";
-
-      // BADGE MANTIĞI
-      const badgeTxt = isSponsor 
-        ? "SPONSOR • KAYNANA ÖNERİSİ"
-        : `CAYNANA PUANI: ${score}/10 • ${trust.badge||"GÜVENİLİR"}`;
-      
-      const badgeHtml = `<div class="badge ${isSponsor ? "gold": ""}">${badgeTxt}</div>`;
-
-      // IMG LOGIC
-      const imgHtml = imgSrc
-        ? `<img class="pimg" src="${imgSrc}" alt="">`
-        : `<div class="pimg" style="width:100%;height:130px;border:1px dashed #ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#bbb;margin-bottom:8px;">
-             <i class="fa-solid fa-image"></i>
-           </div>`;
-
-      card.id = token ? `card_${token}` : "";
-      if(token) card.setAttribute("data-token", token);
-
-      card.innerHTML = `
-        ${badgeHtml}
-        ${imgHtml}
-        <div class="title">${(p.title||"Ürün").toString()}</div>
-        <div class="price pprice">${price}</div>
-        <div class="footer"><i class="fa-solid fa-shop"></i> ${(p.footer||p.platform||"").toString()}</div>
-        
-        <div class="cardActions">
-          <a class="btnLink btnPrimary" href="${trackedUrl}" target="_blank" rel="noopener">
-            CAYNANA ÖNERİSİ
-          </a>
-        </div>
-      `;
-
-      wrap.appendChild(card);
-
-      // LAZY ENRICH TRIGGER
-      if(token && (isSponsor || !imgSrc || price === "Fiyatı gör")){
-        lazyEnrichCard(token, p.url);
-      }
-    });
-
-    resultsEl.insertBefore(wrap, loaderEl);
-    ensureThread(currentMode);
-    threads[currentMode].push({type:"cards", cards, ts:Date.now()});
-
-    if(!silent) wrap.scrollIntoView({block:"end", behavior:"smooth"});
-  }
-
-  // --- LAZY ENRICH (FIXED: DOM REPLACEMENT) ---
-  async function lazyEnrichCard(token, productUrl){
-    const card = document.querySelector(`.card[data-token="${token}"]`);
-    if(!card) return;
-
-    try{
-      let res = await fetch(`${TRACK_BASE}/api/enrich_url?url=${encodeURIComponent(productUrl || "")}`);
-      if(!res.ok){
-        res = await fetch(`${TRACK_BASE}/api/enrich/${encodeURIComponent(token)}`);
-      }
-      if(!res.ok) throw new Error("Enrich fail");
-
-      const data = await res.json();
-      if(!data || !data.ok) throw new Error("Data fail");
-
-      // FIX: IMG PLACEHOLDER REPLACEMENT
-      if(data.image){
-        const existingImg = card.querySelector("img.pimg");
-        if(existingImg){
-          existingImg.src = data.image;
-        } else {
-          const ph = card.querySelector("div.pimg");
-          if(ph){
-            const newImg = document.createElement("img");
-            newImg.className = "pimg";
-            newImg.src = data.image;
-            newImg.alt = "";
-            ph.replaceWith(newImg); // DIV'i IMG ile değiştir
-          }
-        }
-      }
-
-      // FIX: FIYAT GÜNCELLEME VEYA FALLBACK
-      const priceEl = card.querySelector(".pprice");
-      if(priceEl){
-        if(data.price && data.price.trim()){
-          priceEl.textContent = data.price;
-        } else if(priceEl.textContent.includes("Yükleniyor")){
-          // Eğer hala yükleniyor diyorsa ve data yoksa link ver
-          priceEl.textContent = "Trendyol'da Gör";
-        }
-      }
-
-      if(data.title && data.title.length > 5){
-        const t = card.querySelector(".title");
-        if(t) t.textContent = data.title;
-      }
-
-    }catch(e){
-      // HATA DURUMU -> Yükleniyor'u kaldır
-      const priceEl = card.querySelector(".pprice");
-      if(priceEl && priceEl.textContent.includes("Yükleniyor")){
-        priceEl.textContent = "Trendyol'da Gör";
-      }
-    }
-  }
-
-  function scrollToBottom(immediate=false){
-    setTimeout(()=>{
-      mainEl.scrollTop = mainEl.scrollHeight;
-      if(immediate) loaderEl.scrollIntoView({block:"end"});
-    }, 60);
-  }
-
-  function openCamera(){
-    fileEl.value = "";
-    fileEl.click();
-  }
-
-  fileEl.addEventListener("change", (e)=>{
-    const file = e.target.files && e.target.files[0];
-    if(!file) return;
-    if(file.size > 6 * 1024 * 1024){
-      alert("Fotoğraf çok büyük. Daha küçük bir fotoğraf seç.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = ()=>{
-      pendingImageDataUrl = reader.result;
-      textEl.value = "Fotoğraf eklendi. (Gönder)";
-      textEl.focus();
-    };
-    reader.readAsDataURL(file);
-  });
-
-  function startMic(){
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR){ alert("Tarayıcı mikrofonu desteklemiyor."); return; }
-
-    const rec = new SR();
-    rec.lang = "tr-TR";
-    micBtnEl.classList.add("mic-active");
-
-    let got = false;
-    rec.onresult = (ev)=>{
-      got = true;
-      const t = ev.results[0][0].transcript;
-      textEl.value = t;
-      micBtnEl.classList.remove("mic-active");
-      sendMessage();
-    };
-    rec.onend = ()=>{
-      micBtnEl.classList.remove("mic-active");
-      if(!got) textEl.placeholder = MODES[currentMode].placeholder;
-    };
-    rec.start();
-  }
-
-  async function playVoice(btn, text){
-    const clean = (text||"").toString().replace(/<[^>]*>/g, "").trim();
-    if(!clean) return;
-
-    if(currentAudio){
-      currentAudio.pause();
-      currentAudio = null;
-      btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Kaynanayı Dinle`;
-      btn.classList.remove("playing");
-      return;
-    }
-
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Açılıyor`;
-    try{
-      const res = await fetch(SPEAK_URL, {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({text: clean})
-      });
-      
-      if(!res.ok){
-        throw new Error("TTS " + res.status);
-      }
-
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      currentAudio = new Audio(url);
-      currentAudio.onended = ()=>{
-        currentAudio = null;
-        btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Kaynanayı Dinle`;
-        btn.classList.remove("playing");
-      };
-      await currentAudio.play();
-      btn.innerHTML = `<i class="fa-solid fa-stop"></i> Sustur`;
-      btn.classList.add("playing");
-    }catch(e){
-      btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Kaynanayı Dinle`;
-      btn.classList.remove("playing");
-      currentAudio = null;
-    }
-  }
-
-  async function sendMessage(){
-    const rawText = (textEl.value || "").trim();
-    const img  = pendingImageDataUrl;
-    if(!rawText && !img) return;
-
-    pushMessage("user", rawText || "📷 Fotoğraf gönderildi", img);
-    textEl.value = "";
-    pendingImageDataUrl = null;
-
-    loaderEl.style.display = "block";
-    resultsEl.appendChild(loaderEl);
-    scrollToBottom(true);
-
-    const payload = {
-      message: rawText || "",
-      image: img || null,
-      mode: currentMode,
-      session_id: sessionId,
-      user: { city: "İstanbul", gender: "neutral" },
-      response_prefs: { assistant_text: "detailed", speech_text: "short" }
-    };
-
+  async function send(){
+    const txt = document.getElementById("text");
+    const val = txt.value.trim();
+    if(!val) return;
+    
+    // Kullanıcı mesajı
+    addBubble("user", val);
+    txt.value = "";
+    
+    // Loader
+    const loader = addBubble("ai", "<i class='fa-solid fa-circle-notch fa-spin'></i> Analiz ediyorum evladım...", true);
+    
     try{
       const res = await fetch(API_URL, {
-        method:"POST",
+        method:"POST", 
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(payload)
+        body:JSON.stringify({message: val, session_id: sessionId})
       });
       const data = await res.json();
-
-      loaderEl.style.display = "none";
+      loader.remove(); // Loader'ı sil
       
-      // DEBUG LOG
-      if(data.debug) console.log("API DEBUG:", data.debug);
-
-      const aiText = (data && (data.assistant_text || data.reply)) || "Caynana biraz düşündü ama cevap yetişmedi evladım 😅 Bir daha dene.";
-      const speechText = data.speech_text || "Evladım biraz yoğunluk oldu ama ben buradayım.";
-
-      pushMessage("ai", aiText, null, speechText);
-
-      // CHIPS KAPALI (Render etme)
-
-      if(data && data.data_type === "products" && Array.isArray(data.data) && data.data.length){
-        renderCards(data.data);
-      }
-
-      scrollToBottom(true);
+      // Cevabı bas
+      addBubble("ai", data.assistant_text, false, data.speech_text);
+      
+      // Kartları bas
+      if(data.data && data.data.length) renderCards(data.data);
+      
     }catch(e){
-      loaderEl.style.display = "none";
-      pushMessage("ai", "Caynana biraz düşündü ama cevap yetişmedi evladım 😅 Bir daha dene.");
+      loader.innerHTML = "Bir hata oldu evladım, internetini kontrol et.";
+      console.error(e);
     }
   }
 
-  function toggleInfo(){ alert("Menü yakında 🙂"); }
-
-  function init(){
-    ensureThread(currentMode);
-    setHeader();
-    renderDock();
-    // Chips kapalı
-    switchMode("shopping");
-    adjustLayout();
-    scrollToBottom(true);
+  function addBubble(role, text, isLoader=false, speech=null){
+    const div = document.createElement("div");
+    div.className = "msg " + role;
+    
+    // Markdown basit temizlik (backend zaten temizliyor ama garanti olsun)
+    let cleanText = text.replace(/\n/g,"<br>").replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+    
+    let html = `<div class="bubble">${cleanText}</div>`;
+    div.innerHTML = html;
+    
+    document.getElementById("main").appendChild(div);
+    div.scrollIntoView({behavior:"smooth", block:"end"});
+    
+    // Ses butonu ekle (Sadece AI ve loader değilse)
+    if(speech && role === "ai" && !isLoader){
+        const btn = document.createElement("button");
+        btn.className = "audio-btn";
+        // İstenilen metin: "Caynana Konuşuyor"
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
+        btn.onclick = () => playAudio(speech, btn);
+        div.querySelector(".bubble").appendChild(btn);
+    }
+    return div;
   }
 
-  init();
+  function renderCards(list){
+    const wrap = document.createElement("div");
+    wrap.className = "cards";
+    
+    list.forEach((p, idx) => {
+        let btnClass = "btnGreen";
+        let btnText = "CAYNANA ÖNERİSİ";
+        let icon = "";
+        
+        // RENKLİ BUTONLAR
+        if(idx === 0) { btnClass = "btnGold"; btnText = "ALTIN TERCİH"; icon="<i class='fa-solid fa-trophy'></i>"; }
+        else if(idx === 1) { btnClass = "btnSilver"; btnText = "GÜMÜŞ TERCİH"; icon="<i class='fa-solid fa-medal'></i>"; }
+        else if(idx === 2) { btnClass = "btnBlue"; btnText = "FİYAT/PERF."; icon="<i class='fa-solid fa-tag'></i>"; }
+
+        const card = document.createElement("div");
+        card.className = "card";
+        
+        // Resim yoksa placeholder
+        const imgUrl = p.image || 'https://via.placeholder.com/150?text=Resim+Yok';
+        
+        card.innerHTML = `
+            <img class="pimg" src="${imgUrl}" onerror="this.src='https://via.placeholder.com/150?text=Hata'">
+            <div class="title">${p.title}</div>
+            <div class="price">${p.price}</div>
+            <a href="${p.url}" target="_blank" class="btnLink ${btnClass}">${icon} ${btnText}</a>
+        `;
+        wrap.appendChild(card);
+    });
+    
+    document.getElementById("main").appendChild(wrap);
+    wrap.scrollIntoView({behavior:"smooth", block:"end"});
+  }
+
+  async function playAudio(text, btn){
+    if(currentAudio) { 
+        currentAudio.pause(); 
+        currentAudio = null; 
+        btn.classList.remove("playing"); 
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
+        return; 
+    }
+    
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Açılıyor...`;
+    
+    try{
+        const res = await fetch(SPEAK_URL, {
+            method:"POST", headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({text: text})
+        });
+        
+        if(!res.ok) throw new Error("Ses hatası");
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        currentAudio = new Audio(url);
+        
+        currentAudio.onended = () => { 
+            btn.classList.remove("playing"); 
+            btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`; 
+            currentAudio = null;
+        };
+        
+        await currentAudio.play();
+        btn.classList.add("playing");
+        btn.innerHTML = `<i class="fa-solid fa-stop"></i> Sustur`;
+        
+    }catch(e){
+        btn.innerHTML = "Ses Hatası!";
+        setTimeout(() => btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`, 2000);
+    }
+  }
 </script>
 </body>
 </html>
