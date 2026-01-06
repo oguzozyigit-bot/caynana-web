@@ -196,19 +196,45 @@
     fal: { icon: "fa-mug-hot", label: "Fal", title: "Falcı Bacı", desc: "Niyetini tut.", ph: "Niyet ettin mi?" }
   };
 
-  function renderDock(){
-    const dock = document.getElementById("dock");
-    dock.innerHTML = "";
-    Object.keys(MODES).forEach(key => {
-        const m = MODES[key];
-        const item = document.createElement("div");
-        item.className = `dockItem ${key === currentMode ? 'active' : ''}`;
-        item.onclick = () => switchMode(key);
-        item.innerHTML = `<i class="fa-solid ${m.icon}"></i><span>${m.label}</span>`;
-        dock.appendChild(item);
-    });
-  }
+function renderCards(list){
+    const wrap = document.createElement("div");
+    wrap.className = "cards";
+    
+    list.forEach((p, idx) => {
+        let btnClass = "btnGreen";
+        let btnText = "CAYNANA ÖNERİSİ";
+        let icon = "";
+        
+        // Alışveriş Modu İçin Butonlar
+        if(idx === 0) { btnClass = "btnGold"; btnText = "ALTIN TERCİH"; icon="<i class='fa-solid fa-trophy'></i>"; }
+        else if(idx === 1) { btnClass = "btnSilver"; btnText = "GÜMÜŞ TERCİH"; icon="<i class='fa-solid fa-medal'></i>"; }
+        else if(idx === 2) { btnClass = "btnBlue"; btnText = "FİYAT/PERF."; icon="<i class='fa-solid fa-tag'></i>"; }
 
+        const card = document.createElement("div");
+        card.className = "card";
+        
+        const imgUrl = p.image || 'https://via.placeholder.com/150?text=Resim+Yok';
+        
+        // KRİTİK: EĞER URL YOKSA (Burç gibi) BUTON KOYMA
+        let actionHtml = "";
+        if(p.url && p.url.startsWith("http")){
+            actionHtml = `<a href="${p.url}" target="_blank" class="btnLink ${btnClass}">${icon} ${btnText}</a>`;
+        } else {
+            actionHtml = `<div style="height:10px;"></div>`; 
+        }
+
+        card.innerHTML = `
+            <img class="pimg" src="${imgUrl}" onerror="this.src='https://via.placeholder.com/150?text=Hata'">
+            <div class="title">${p.title}</div>
+            <div class="price">${p.price}</div>
+            ${actionHtml}
+        `;
+        wrap.appendChild(card);
+    });
+    
+    document.getElementById("main").appendChild(wrap);
+    setTimeout(() => { wrap.scrollIntoView({behavior:"smooth", block:"nearest"}); }, 100);
+  }
   function switchMode(key){
     currentMode = key;
     renderDock();
@@ -347,3 +373,4 @@
 </script>
 </body>
 </html>
+
