@@ -209,12 +209,21 @@
 
   function switchMode(key){
     currentMode = key;
-    renderDock();
+    renderDock(); // Alt menü ikonunu güncelle
+    
     const m = MODES[key];
-    document.getElementById("welcomeTitle").innerText = m.title;
-    document.getElementById("welcomeDesc").innerText = m.desc;
+    
+    // UI Güncelleme (Input placeholder vb.)
     document.getElementById("text").placeholder = m.ph;
-    document.getElementById("main").innerHTML = `<div class="welcome-box"><div class="welcome-title">${m.title}</div><div class="welcome-desc">${m.desc}</div></div>`;
+    
+    // EKRANI TEMİZLE VE YENİ HOŞGELDİN KUTUSUNU KOY
+    const mainDiv = document.getElementById("main");
+    mainDiv.innerHTML = `
+        <div class="welcome-box">
+            <div class="welcome-title" id="welcomeTitle">${m.title}</div>
+            <div class="welcome-desc" id="welcomeDesc">${m.desc}</div>
+        </div>
+    `;
   }
 
   function toggleMenu(){
@@ -349,3 +358,4 @@
 </script>
 </body>
 </html>
+
