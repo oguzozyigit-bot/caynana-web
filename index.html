@@ -632,6 +632,906 @@
       const token = (p.track_token || "").toString();
       const trackedUrl = token ? `${TRACK_BASE}/r/${encodeURIComponent(token)}` : (p.url||"#");
 
+      const price = (p.price && p.price.trim() && p.price !== "Fiyatı Gör") 
+                    ? p.price 
+                    : (isSponsor ? "Yükleniyor..." : "Fiyatı gör");
+      
+      const imgSrc = (p.image && p.image.trim() && !p.image.includes("ty-web.svg")) 
+                     ? p.image 
+                     : "";
+
+      // BADGE: "Güvenilir" veya "Sponsor"
+      const badgeText = isSponsor ? "SPONSOR" : "GÜVENİLİR";
+      const badgeHtml = `<div class="badge ${isSponsor ? "gold": ""}">${badgeText}</div>`;
+
+      const imgHtml = imgSrc
+        ? `<img class="pimg" src="${imgSrc}" alt="">`
+        : `<div class="pimg" style="width:100%;height:130px;border:1px dashed #ddd;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#bbb;margin-bottom:8px;">
+             <i class="fa-solid fa-image"></i>
+           </div>`;
+
+      card.id = token ? `card_${token}` : "";
+      if(token) card.setAttribute("data-token", token);
+
+      card.innerHTML = `
+        ${badgeHtml}
+        ${imgHtml}
+        <div class="title">${(p.title||"Ürün").toString()}</div>
+        <div style="margin-top:6px;font-size:12px;font-weight:900;color:#065f46;">
+          CAYNANA PUANI: ${score}/10
+        </div>
+        <div class="price pprice">${price}</div>
+        <div class="footer"><i class="fa-solid fa-shop"></i> ${(p.footer||p.platform||"").toString()}</div>
+        
+        <div class="cardActions">
+          <a class="btnLink btnPrimary" href="${trackedUrl}" target="_blank" rel="noopener">
+            CAYNANA ÖNERİSİ
+          </a>
+        </div>
+      `;
+
+      wrap.appendChild(card);
+
+      // LAZY ENRICH (URL BAZLI - GÜÇLÜ FALLBACK)
+      if(token && (isSponsor || !imgSrc || price === "Fiyatı gör")){
+        lazyEnrichCard(token, p.url);
+      }
+    });
+
+    resultsEl.insertBefore(wrap, loaderEl);
+    ensureThread(currentMode);
+    threads[currentMode].push({type:"cards", cards, ts:Date.now()});
+
+    if(!silent) wrap.scrollIntoView({block:"end", behavior:"smooth"});
+  }
+
+  // --- LAZY ENRICH (URL BAZLI + HATA YÖNETİMİ) ---
+  async function lazyEnrichCard(token, productUrl){
+    // Kartı baştan bul
+    const card = document.querySelector(`.card[data-token="${token}"]`);
+    if(!card) return;
+
+    try{
+      // 1. URL ile dene
+      let res = await fetch(`${TRACK_BASE}/api/enrich_url?url=${encodeURIComponent(productUrl || "")}`);
+      
+      // 2. Olmazsa Token ile dene
+      if(!res.ok){
+        res = await fetch(`${TRACK_BASE}/api/enrich/${encodeURIComponent(token)}`);
+      }
+
+      if(!res.ok) throw new Error("Enrich fail");
+
+      const data = await res.json();
+      if(!data || !data.ok) throw new Error("Data fail");
+
+      // Başarılı -> DOM güncelle
+      if(data.image){
+        const img = card.querySelector("img.pimg");
+        if(img) img.src = data.image;
+        else {
+           // Placeholder varsa değiştir
+           const ph = card.querySelector(".pimg");
+           if(ph && !ph.tagName.match(/IMG/i)){
+             ph.innerHTML = `<img class="pimg" src="${data.image}" style="width:100%;height:130px;object-fit:contain;border-radius:10px;">`;
+           }
+        }
+      }
+      if(data.price){
+        const priceEl = card.querySelector(".pprice");
+        if(priceEl) priceEl.textContent = data.price;
+      }
+      if(data.title && data.title.length > 5){
+        const t = card.querySelector(".title");
+        if(t) t.textContent = data.title;
+      }
+
+    }catch(e){
+      // HATA DURUMU -> SONSUZ YÜKLENİYOR'U BİTİR
+      const priceEl = card.querySelector(".pprice");
+      if(priceEl && priceEl.textContent.includes("Yükleniyor")){
+        priceEl.textContent = "Trendyol'da Gör";
+      }
+    }
+  }
+
+  function scrollToBottom(immediate=false){
+    setTimeout(()=>{
+      mainEl.scrollTop = mainEl.scrollHeight;
+      if(immediate) loaderEl.scrollIntoView({block:"end"});
+    }, 60);
+  }
+
+  function openCamera(){
+    fileEl.value = "";
+    fileEl.click();
+  }
+
+  fileEl.addEventListener("change", (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    if(file.size > 6 * 1024 * 1024){
+      alert("Fotoğraf çok büyük. Daha küçük bir fotoğraf seç.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      pendingImageDataUrl = reader.result;
+      textEl.value = "Fotoğraf eklendi. (Gönder)";
+      textEl.focus();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function startMic(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR){ alert("Tarayıcı mikrofonu desteklemiyor."); return; }
+
+    const rec = new SR();
+    rec.lang = "tr-TR";
+    micBtnEl.classList.add("mic-active");
+
+    let got = false;
+    rec.onresult = (ev)=>{
+      got = true;
+      const t = ev.results[0][0].transcript;
+      textEl.value = t;
+      micBtnEl.classList.remove("mic-active");
+      sendMessage();
+    };
+    rec.onend = ()=>{
+      micBtnEl.classList.remove("mic-active");
+      if(!got) textEl.placeholder = MODES[currentMode].placeholder;
+    };
+    rec.start();
+  }
+
+  async function playVoice(btn, text){
+    const clean = (text||"").toString().replace(/<[^>]*>/g, "").trim();
+    if(!clean) return;
+
+    if(currentAudio){
+      currentAudio.pause();
+      currentAudio = null;
+      btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Kaynanayı Dinle`;
+      btn.classList.remove("playing");
+      return;
+    }
+
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Açılıyor`;
+    try{
+      const res = await fetch(SPEAK_URL, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({text: clean})
+      });
+      
+      if(!res.ok){
+          const errText = await res.text().catch(()=> "");
+          alert("TTS HATA: " + res.status + " " + errText);
+          throw new Error("TTS " + res.status);
+      }
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      currentAudio = new Audio(url);
+      currentAudio.onended = ()=>{
+        currentAudio = null;
+        btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Kaynanayı Dinle`;
+        btn.classList.remove("playing");
+      };
+      await currentAudio.play();
+      btn.innerHTML = `<i class="fa-solid fa-stop"></i> Sustur`;
+      btn.classList.add("playing");
+    }catch(e){
+      btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Kaynanayı Dinle`;
+      btn.classList.remove("playing");
+      currentAudio = null;
+    }
+  }
+
+  async function sendMessage(){
+    const rawText = (textEl.value || "").trim();
+    const img  = pendingImageDataUrl;
+    if(!rawText && !img) return;
+
+    pushMessage("user", rawText || "📷 Fotoğraf gönderildi", img);
+    textEl.value = "";
+    pendingImageDataUrl = null;
+
+    loaderEl.style.display = "block";
+    resultsEl.appendChild(loaderEl);
+    scrollToBottom(true);
+
+    const payload = {
+      message: rawText || "",
+      image: img || null,
+      mode: currentMode,
+      session_id: sessionId,
+      user: { city: "İstanbul", gender: "neutral" },
+      response_prefs: { assistant_text: "detailed", speech_text: "short" }
+    };
+
+    try{
+      const res = await fetch(API_URL, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      loaderEl.style.display = "none";
+
+      const aiText = (data && (data.assistant_text || data.reply)) || "Caynana biraz düşündü ama cevap yetişmedi evladım 😅 Bir daha dene.";
+      const speechText = data.speech_text || "Evladım biraz yoğunluk oldu ama ben buradayım.";
+
+      pushMessage("ai", aiText, null, speechText);
+
+      if(data && Array.isArray(data.quick_replies) && data.quick_replies.length) renderChips(data.quick_replies);
+      else renderChips(MODES[currentMode].chips);
+
+      if(data && data.data_type === "products" && Array.isArray(data.data) && data.data.length){
+        renderCards(data.data);
+      }
+
+      scrollToBottom(true);
+    }catch(e){
+      loaderEl.style.display = "none";
+      pushMessage("ai", "Caynana biraz düşündü ama cevap yetişmedi evladım 😅 Bir daha dene.");
+    }
+  }
+
+  function toggleInfo(){ alert("Menü yakında 🙂"); }
+
+  function init(){
+    ensureThread(currentMode);
+    setHeader();
+    renderDock();
+    renderChips(MODES[currentMode].chips);
+    
+    switchMode("shopping");
+    
+    adjustLayout();
+    scrollToBottom(true);
+  }
+
+  init();
+</script>
+</body>
+</html><!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>CAYNANA.AI</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  :root{
+    --primary:#10B981;
+    --primary-dark:#059669;
+    --bg:#F3F4F6;
+    --white:#fff;
+    --text:#111827;
+    --muted:#6B7280;
+    --border:#E5E7EB;
+    --maxw:768px;
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{
+    margin:0;
+    font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+    background:var(--bg);
+    height:100vh;
+    height:100dvh;
+    display:flex;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  #app{
+    width:100%;
+    max-width:var(--maxw);
+    height:100%;
+    background:var(--white);
+    position:relative;
+    box-shadow:0 0 20px rgba(0,0,0,.05);
+    overflow:hidden;
+  }
+
+  /* Top bar */
+  #topbar{
+    position:absolute;
+    top:0; left:0; right:0;
+    height:56px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 16px;
+    padding-top:env(safe-area-inset-top);
+    border-bottom:1px solid var(--border);
+    background:var(--white);
+    z-index:10;
+  }
+  .brand{
+    display:flex; align-items:center; gap:8px;
+    font-weight:900; letter-spacing:-.5px;
+    color:var(--text);
+    cursor:pointer;
+    user-select:none;
+  }
+  .brand span{color:var(--primary)}
+  .topbtn{
+    background:none;border:none;cursor:pointer;
+    color:var(--muted);
+    font-size:20px;
+  }
+
+  /* Main scroll */
+  #main{
+    height:100%;
+    overflow-y:auto;
+    padding-top:56px;
+    padding-bottom:180px;
+    scroll-behavior:smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  .content{ max-width:var(--maxw); margin:0 auto; }
+
+  /* Header */
+  #modeHeader{
+    text-align:center;
+    padding:22px 16px 10px;
+    background:var(--white);
+    position:sticky;
+    top:0;
+    z-index:5;
+    border-bottom:1px solid rgba(0,0,0,0.03);
+  }
+  #modeTitle{font-size:18px;font-weight:900;color:var(--text); margin-bottom:4px}
+  #modeDesc{font-size:13px;color:var(--muted)}
+
+  /* Results */
+  #results{
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .msg{display:flex; width:100%;}
+  .msg.user{justify-content:flex-end;}
+  .msg.ai{justify-content:flex-start;}
+
+  .bubble{
+    max-width:86%;
+    padding:12px 16px;
+    border-radius:18px;
+    font-size:15px;
+    line-height:1.5;
+    box-shadow:0 1px 2px rgba(0,0,0,.05);
+    word-break:break-word;
+  }
+  .msg.user .bubble{
+    background:var(--primary);
+    color:#fff;
+    border-bottom-right-radius:4px;
+  }
+  .msg.ai .bubble{
+    background:#F3F4F6;
+    color:var(--text);
+    border-bottom-left-radius:4px;
+  }
+
+  .bubble img.preview{
+    max-width:100%;
+    border-radius:12px;
+    display:block;
+    margin-bottom:10px;
+    border:1px solid var(--border);
+  }
+
+  .audio-btn{
+    margin-top:10px;
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:6px 12px;
+    font-size:12px;
+    cursor:pointer;
+    color:var(--muted);
+    display:inline-flex;
+    gap:6px;
+    align-items:center;
+    font-weight: 600;
+    transition: 0.2s;
+  }
+  .audio-btn:hover{border-color:var(--primary); color:var(--primary);}
+  .audio-btn.playing{color:var(--primary); border-color:var(--primary); background:#ECFDF5;}
+  .audio-btn::after{ content:" 🗣️"; }
+
+  /* Loader */
+  #loader{
+    display:none;
+    align-self:flex-start;
+    background:var(--white);
+    border:1px solid var(--border);
+    padding:10px 14px;
+    border-radius:16px;
+    border-bottom-left-radius:4px;
+    color:var(--muted);
+    font-style:italic;
+  }
+
+  /* Cards */
+  .cards{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    padding:6px 2px 2px;
+    scrollbar-width:none;
+  }
+  .cards::-webkit-scrollbar{display:none;}
+  .card{
+    min-width:240px;
+    max-width:240px;
+    background:var(--white);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:10px;
+    color:var(--text);
+    box-shadow:0 2px 6px rgba(0,0,0,.04);
+    transition:transform .15s ease, border-color .15s ease;
+    position:relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .card:hover{transform:translateY(-3px); border-color:#c7f9e5;}
+  /* .pimg classı JS ile güncellenir */
+  .card img.pimg{
+    width:100%;
+    height:130px;
+    object-fit:contain;
+    border-radius:10px;
+    background:#fff;
+    margin-bottom:8px;
+    border:1px solid rgba(0,0,0,.03);
+  }
+  .card .title{
+    font-size:13px;
+    font-weight:900;
+    height:36px;
+    overflow:hidden;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+  }
+  .card .price{
+    margin-top:8px;
+    color:var(--primary);
+    font-weight:900;
+    font-size:15px;
+  }
+  .card .footer{
+    margin-top:4px;
+    font-size:11px;
+    color:#9CA3AF;
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+
+  .cardActions{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-top:12px;
+  }
+  .btnLink{
+    display:block;
+    text-align:center;
+    text-decoration:none;
+    padding:10px;
+    border-radius:10px;
+    font-size:12px;
+    font-weight:700;
+    border:1px solid var(--border);
+    color:var(--text);
+    background:var(--bg);
+    transition: 0.2s;
+  }
+  .btnLink:hover{border-color:var(--muted);}
+  .btnPrimary{
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
+  }
+  .btnPrimary:hover{background:var(--primary-dark); border-color:var(--primary-dark); color:#fff;}
+
+  .badge{
+    position:absolute;
+    top:10px;
+    left:10px;
+    font-size:10px;
+    font-weight:900;
+    padding:6px 8px;
+    border-radius:999px;
+    border:1px solid rgba(0,0,0,.06);
+    background:rgba(255,255,255,.92);
+    backdrop-filter: blur(6px);
+    display:flex;
+    gap:6px;
+    align-items:center;
+    box-shadow:0 1px 6px rgba(0,0,0,.06);
+    max-width:200px;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+  .badge.gold{ border-color:#a7f3d0; color:#065f46; background: #ecfdf5;}
+
+  /* Bottom fixed area */
+  #bottom{
+    position:absolute;
+    bottom:0; left:0; right:0;
+    background:var(--white);
+    border-top:1px solid var(--border);
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+
+  /* Chips */
+  #chips{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:8px 12px;
+    scrollbar-width:none;
+    align-items:center;
+  }
+  #chips::-webkit-scrollbar{display:none;}
+  .chip{
+    border:1px solid var(--border);
+    background:var(--bg);
+    color:var(--muted);
+    padding:7px 14px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:.15s;
+  }
+  .chip:hover{border-color:var(--primary); color:var(--primary); background:#ECFDF5;}
+  .chip:active{transform:scale(.98);}
+
+  /* Input row */
+  #inputRow{
+    display:flex;
+    gap:10px;
+    padding:8px 12px 10px;
+    align-items:center;
+  }
+  #inputWrap{
+    flex:1;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid var(--border);
+    background:var(--bg);
+    border-radius:999px;
+    padding:6px 10px;
+  }
+  #inputWrap:focus-within{border-color:var(--primary); background:var(--white); box-shadow:0 0 0 2px rgba(16,185,129,.12);}
+  .iconBtn{
+    width:34px;height:34px;
+    border:none;background:transparent;
+    border-radius:50%;
+    cursor:pointer;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:17px;
+    flex-shrink:0;
+  }
+  .iconBtn:hover{background:rgba(0,0,0,.06); color:var(--primary);}
+  .iconBtn.mic-active{background:#FEE2E2; color:#EF4444; animation:pulse 1.2s infinite;}
+  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+  #text{
+    flex:1;
+    border:none;
+    background:transparent;
+    outline:none;
+    font-size:15px;
+    padding:0 4px;
+    min-width:0;
+  }
+  #sendBtn{
+    width:42px;height:42px;
+    border:none;
+    border-radius:50%;
+    background:var(--primary);
+    color:#fff;
+    font-size:16px;
+    cursor:pointer;
+    flex-shrink:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:.15s;
+  }
+  #sendBtn:hover{background:var(--primary-dark);}
+  #sendBtn:active{transform:scale(.95);}
+
+  /* Dock */
+  #dock{
+    display:flex;
+    border-top:1px solid var(--border);
+    height:72px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  #dock::-webkit-scrollbar{display:none;}
+  .dockItem{
+    flex:1;
+    min-width:70px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    align-items:center;
+    justify-content:center;
+    color:var(--muted);
+    cursor:pointer;
+    padding:6px 0;
+    user-select:none;
+  }
+  .dockItem i{font-size:20px;}
+  .dockItem span{font-size:10px; font-weight:700;}
+  .dockItem.active{color:var(--primary);}
+
+  /* iOS kamera stabil */
+  #fileInput{
+    position:fixed;
+    left:-9999px;
+    width:1px;height:1px;
+    opacity:0;
+    pointer-events:none;
+  }
+</style>
+</head>
+
+<body>
+<div id="app">
+
+  <div id="topbar">
+    <div class="brand" onclick="location.reload()">
+      <i class="fa-solid fa-shapes"></i>
+      CAYNANA<span>.AI</span>
+    </div>
+    <button class="topbtn" type="button" onclick="toggleInfo()"><i class="fa-solid fa-bars"></i></button>
+  </div>
+
+  <div id="main">
+    <div class="content">
+
+      <div id="modeHeader">
+        <div id="modeTitle"></div>
+        <div id="modeDesc"></div>
+      </div>
+
+      <div id="results">
+        <div id="loader"><i class="fa-solid fa-circle-notch fa-spin"></i> Caynana analiz yapıyor...</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="bottom">
+    <div id="chips"></div>
+
+    <div id="inputRow">
+      <div id="inputWrap">
+        <button class="iconBtn" type="button" onclick="openCamera()" title="Fotoğraf">
+          <i class="fa-solid fa-camera"></i>
+        </button>
+        <button class="iconBtn" id="micBtn" type="button" onclick="startMic()" title="Konuş">
+          <i class="fa-solid fa-microphone"></i>
+        </button>
+        <input id="text" autocomplete="off" placeholder="Bir şeyler yaz..." onkeypress="if(event.key==='Enter') sendMessage()">
+      </div>
+      <button id="sendBtn" type="button" onclick="sendMessage()" title="Gönder">
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <div id="dock"></div>
+  </div>
+
+</div>
+
+<input type="file" id="fileInput" accept="image/*" capture="environment" />
+
+<script>
+  // ---- CONFIG
+  const TRACK_BASE = "https://bikonomi-api-2.onrender.com";
+  const API_URL    = `${TRACK_BASE}/api/chat`;
+  const SPEAK_URL  = `${TRACK_BASE}/api/speak`;
+
+  // ---- SESSION
+  let sessionId = localStorage.getItem("caynana_sid");
+  if(!sessionId){
+    sessionId = "sess_" + Math.random().toString(36).slice(2, 11);
+    localStorage.setItem("caynana_sid", sessionId);
+  }
+
+  // ---- DOM
+  const mainEl    = document.getElementById("main");
+  const topbarEl  = document.getElementById("topbar");
+  const bottomEl  = document.getElementById("bottom");
+  const resultsEl = document.getElementById("results");
+  const loaderEl  = document.getElementById("loader");
+  const chipsEl   = document.getElementById("chips");
+  const dockEl    = document.getElementById("dock");
+  const textEl    = document.getElementById("text");
+  const fileEl    = document.getElementById("fileInput");
+  const micBtnEl  = document.getElementById("micBtn");
+
+  // ---- STATE
+  let currentMode = "shopping";
+  let pendingImageDataUrl = null;
+  let currentAudio = null;
+
+  const MODES = {
+    shopping: { icon:"fa-bag-shopping", label:"Alışveriş", title:"Alışveriş Uzmanı",
+      desc:"Ürün adı yaz, link yapıştır veya fotoğraf yükle.",
+      placeholder:"Ürün adı yaz veya link yapıştır...",
+      chips:["Airfryer","iPhone 15","Robot süpürge"],
+      welcome:"Kaynana bugün öneriyor. Ürününü yaz, ben senin için en güvenlisini seçeyim. Kaynanayı dinle, pişman olma. Ben senin yanlış karar vermeni istemem."
+    }
+  };
+
+  const threads = {};
+  const welcomed = {};
+  function ensureThread(m){ if(!threads[m]) threads[m]=[]; }
+
+  function adjustLayout(){
+    const topH = topbarEl.offsetHeight;
+    const bottomH = bottomEl.offsetHeight;
+    mainEl.style.paddingTop = topH + "px";
+    mainEl.style.paddingBottom = bottomH + "px";
+    resultsEl.style.paddingBottom = (bottomH + 16) + "px";
+  }
+  window.addEventListener("resize", () => setTimeout(adjustLayout, 50));
+  window.addEventListener("load", () => setTimeout(adjustLayout, 50));
+
+  function setHeader(){
+    document.getElementById("modeTitle").innerText = MODES[currentMode].title;
+    document.getElementById("modeDesc").innerText  = MODES[currentMode].desc;
+    textEl.placeholder = MODES[currentMode].placeholder;
+  }
+
+  function renderDock(){
+    dockEl.innerHTML = "";
+    Object.keys(MODES).forEach(k=>{
+      const item = document.createElement("div");
+      item.className = "dockItem" + (k===currentMode ? " active" : "");
+      item.innerHTML = `<i class="fa-solid ${MODES[k].icon}"></i><span>${MODES[k].label}</span>`;
+      item.onclick = ()=>switchMode(k);
+      dockEl.appendChild(item);
+    });
+  }
+
+  function renderChips(list){
+    chipsEl.innerHTML = "";
+    (list||[]).forEach(txt=>{
+      const c = document.createElement("div");
+      c.className = "chip";
+      c.innerText = txt;
+      c.onclick = ()=>{ textEl.value = txt; sendMessage(); };
+      chipsEl.appendChild(c);
+    });
+  }
+
+  function clearResults(){
+    const keepLoader = loaderEl;
+    resultsEl.innerHTML = "";
+    resultsEl.appendChild(keepLoader);
+  }
+
+  function redrawThread(){
+    clearResults();
+    ensureThread(currentMode);
+    for(const m of threads[currentMode]){
+      if(m.type === "cards") renderCards(m.cards, true);
+      else addBubble(m.role, m.text, m.img, true, m.speechText);
+    }
+    scrollToBottom(true);
+  }
+
+  function switchMode(m){
+    if(!MODES[m]) return;
+    currentMode = m;
+    ensureThread(m);
+    setHeader();
+    renderDock();
+    renderChips(MODES[m].chips);
+    if(!welcomed[m]){
+      welcomed[m]=true;
+      pushMessage("ai", MODES[m].welcome, null, MODES[m].welcome);
+    }
+    redrawThread();
+    adjustLayout();
+  }
+
+  function pushMessage(role, text, img=null, speechText=null){
+    ensureThread(currentMode);
+    threads[currentMode].push({type:"msg", role, text, img, speechText, ts:Date.now()});
+    addBubble(role, text, img, false, speechText);
+  }
+
+  // --- MARKDOWN FORMATTER ---
+  function formatAssistantText(t){
+    t = (t||"").toString();
+    t = t.replace(/^###\s*(.*)$/gm, "<b>$1</b>");
+    t = t.replace(/^####\s*(.*)$/gm, "<b>$1</b>");
+    t = t.replace(/\*\*(.*?)\*\*/g, "<b>$1</b>");
+    t = t.replace(/^\-\s+(.*)$/gm, "• $1");
+    t = t.replace(/\n/g, "<br>");
+    return t;
+  }
+
+  function addBubble(role, text, img=null, silent=false, speechText=null){
+    const row = document.createElement("div");
+    row.className = "msg " + (role === "user" ? "user" : "ai");
+
+    const b = document.createElement("div");
+    b.className = "bubble";
+
+    if(img){
+      const im = document.createElement("img");
+      im.src = img;
+      im.className = "preview";
+      b.appendChild(im);
+    }
+
+    const span = document.createElement("span");
+    span.innerHTML = formatAssistantText(text);
+    b.appendChild(span);
+
+    const textToSpeak = speechText || text || "";
+    if(role === "ai"){
+      const btn = document.createElement("button");
+      btn.className = "audio-btn";
+      btn.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Kaynanayı Dinle`;
+      btn.onclick = ()=>playVoice(btn, textToSpeak);
+      b.appendChild(btn);
+    }
+
+    row.appendChild(b);
+    resultsEl.insertBefore(row, loaderEl);
+    if(!silent) row.scrollIntoView({block:"end", behavior:"smooth"});
+  }
+
+  // --- KART RENDER ---
+  function renderCards(cards, silent=false){
+    const wrap = document.createElement("div");
+    wrap.className = "cards";
+
+    cards.forEach((p, idx) => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const isSponsor = (p.is_sponsor === true) && (idx === 0);
+      const trust = p.caynana_trust || {};
+      const score = (trust.score != null) ? Number(trust.score).toFixed(1) : "8.0";
+
+      const token = (p.track_token || "").toString();
+      const trackedUrl = token ? `${TRACK_BASE}/r/${encodeURIComponent(token)}` : (p.url||"#");
+
       // Fiyat ve Resim Kontrolü
       const price = (p.price && p.price.trim() && p.price !== "Fiyatı Gör") 
                     ? p.price 
@@ -912,3 +1812,4 @@
 </script>
 </body>
 </html>
+
