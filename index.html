@@ -18,210 +18,120 @@
   /* --- HEADER --- */
   #topbar{
     height:64px; 
-    display:flex; 
-    align-items:center; 
-    justify-content:space-between; 
-    padding:0 16px; 
-    border-bottom:1px solid var(--border);
-    background: rgba(255,255,255,0.98);
-    z-index: 20;
+    display:flex; align-items:center; justify-content:space-between; 
+    padding:0 16px; border-bottom:1px solid var(--border);
+    background: rgba(255,255,255,0.98); z-index: 20;
   }
   
-  .brand-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    cursor: pointer;
-  }
-
-  .brand{
-    font-weight:900; 
-    color:var(--text); 
-    font-size:20px; 
-    line-height: 1;
-    letter-spacing: -0.5px;
-    display: flex; align-items: center; gap: 8px;
-  } 
+  .brand-container { display: flex; flex-direction: column; justify-content: center; cursor: pointer; }
+  .brand{ font-weight:900; color:var(--text); font-size:20px; line-height: 1; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; } 
   .brand i { color: var(--primary); font-size: 22px; }
   .brand span{color:var(--primary);}
-  
-  .slogan {
-    font-size: 10px; font-weight: 600; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; margin-left: 30px;
-  }
-
+  .slogan { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; margin-left: 30px; }
   .menu-btn { font-size: 20px; color: var(--text); cursor: pointer; padding: 5px; }
   
   /* --- SIDE MENU --- */
   #sideMenu {
     position: absolute; top:0; right:-100%; width: 280px; height: 100%;
     background: #fff; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-    z-index: 100; transition: 0.3s ease; padding: 20px;
-    display: flex; flex-direction: column;
+    z-index: 100; transition: 0.3s ease; padding: 20px; display: flex; flex-direction: column;
   }
   #sideMenu.open { right: 0; }
-  
   .menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
   .close-btn { font-size: 24px; cursor: pointer; color: var(--muted); }
-  
-  .menu-item { 
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 0; border-bottom: 1px solid var(--border);
-    color: var(--text); font-weight: 600; text-decoration: none; font-size: 14px;
-  }
+  .menu-item { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); color: var(--text); font-weight: 600; text-decoration: none; font-size: 14px; }
   .menu-item i { width: 20px; color: var(--primary); text-align: center; }
-  
   .auth-buttons { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
-  .btn-auth {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer;
-  }
-  .btn-google { background: #DB4437; }
-  .btn-facebook { background: #4267B2; }
+  .btn-auth { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; }
+  .btn-google { background: #DB4437; } .btn-facebook { background: #4267B2; }
   .gold-promo { margin-top: auto; padding: 15px; background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 10px; font-size: 12px; color: #B45309; text-align: center; }
-
-  #overlay {
-    position: absolute; top:0; left:0; width:100%; height:100%;
-    background: rgba(0,0,0,0.4); z-index: 90; display: none; opacity: 0; transition: opacity 0.3s;
-  }
+  #overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); z-index: 90; display: none; opacity: 0; transition: opacity 0.3s; }
   #overlay.active { display: block; opacity: 1; }
   
   /* --- CHAT ALANI --- */
-  #main{flex:1; overflow-y:auto; padding:16px; padding-bottom:180px; scroll-behavior: smooth;}
-  
+  /* Padding-bottom arttırıldı çünkü altta Dock var artık */
+  #main{flex:1; overflow-y:auto; padding:16px; padding-bottom:240px; scroll-behavior: smooth;}
   .welcome-box { text-align: center; margin-bottom: 20px; padding: 10px 0; }
-  .welcome-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
-  .welcome-desc { font-size: 13px; color: var(--muted); line-height: 1.5; max-width: 90%; margin: 0 auto; }
-
+  .welcome-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 8px; transition: 0.3s; }
+  .welcome-desc { font-size: 13px; color: var(--muted); line-height: 1.5; max-width: 90%; margin: 0 auto; transition: 0.3s; }
   .msg{display:flex; margin-bottom:16px; animation: fadeIn 0.3s ease;}
   @keyframes fadeIn { from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:translateY(0)} }
-  
   .msg.user{justify-content:flex-end;} .msg.ai{justify-content:flex-start;}
-  
-  .bubble{
-    max-width:90%; padding:14px 18px; border-radius:20px; 
-    font-size:14px; line-height:1.6; box-shadow:0 2px 4px rgba(0,0,0,.03);
-  }
+  .bubble{ max-width:90%; padding:14px 18px; border-radius:20px; font-size:14px; line-height:1.6; box-shadow:0 2px 4px rgba(0,0,0,.03); position: relative; }
   .msg.user .bubble{background:var(--primary); color:#fff; border-bottom-right-radius:4px;}
   .msg.ai .bubble{background:#F3F4F6; color:var(--text); border-bottom-left-radius:4px;}
+  .bubble img.preview { max-width: 100%; border-radius: 12px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.2); }
 
-  /* --- MARKDOWN STYLES (TABLOLAR) --- */
-  .bubble table {
-    width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px;
-    background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #eee;
-  }
+  /* MARKDOWN STYLES */
+  .bubble table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #eee; }
   .bubble th { background: #E5E7EB; color: #374151; font-weight: 800; text-align: left; padding: 8px; }
   .bubble td { border-top: 1px solid #eee; padding: 8px; color: #4B5563; }
   .bubble tr:nth-child(even) { background: #FAFAFA; }
   .bubble h3 { font-size: 14px; margin-top: 15px; margin-bottom: 5px; font-weight: 800; }
   .bubble ul { padding-left: 20px; margin: 5px 0; }
-  .bubble li { margin-bottom: 4px; }
-
-  /* PUAN KUTUSU */
-  .score-badge {
-    background: linear-gradient(135deg, #10B981, #059669);
-    color: white; font-weight: 900; font-size: 20px;
-    padding: 10px; border-radius: 12px; display: block;
-    margin-bottom: 15px; text-align: center;
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-  }
+  .score-badge { background: linear-gradient(135deg, #10B981, #059669); color: white; font-weight: 900; font-size: 20px; padding: 10px; border-radius: 12px; display: block; margin-bottom: 15px; text-align: center; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
   .score-label { font-size: 10px; text-transform: uppercase; opacity: 0.9; display: block; }
   
-  /* --- GRID KARTLAR --- */
-  .cards {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-    padding: 4px; margin-top: 10px;
-  }
-  .card{
-    background:#fff; border:1px solid var(--border); 
-    border-radius:12px; padding:10px; 
-    display:flex; flex-direction:column;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-  }
-  .pimg{
-    width:100%; height:130px; object-fit:contain; 
-    border-radius:8px; margin-bottom:8px; background: #fff;
-  }
-  .title{
-    font-size:12px; font-weight:700; color: var(--text);
-    height:34px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
-    margin-bottom: 4px;
-  }
-  .price{font-size:14px; font-weight:900; color:var(--primary); margin:4px 0;}
-  
-  .btnLink{
-    display:flex; align-items: center; justify-content: center; gap: 4px;
-    text-decoration:none; padding:8px; border-radius:8px; 
-    font-size:10px; font-weight:800; color:#fff; transition:.2s; text-transform: uppercase;
-    margin-top: auto;
-  }
-  .btnGold { background: linear-gradient(135deg, #F59E0B, #B45309); }
-  .btnSilver { background: linear-gradient(135deg, #9CA3AF, #4B5563); }
-  .btnBlue { background: linear-gradient(135deg, #3B82F6, #1E40AF); }
-  .btnGreen { background: var(--primary); }
+  /* GRID CARDS */
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 4px; margin-top: 10px; }
+  .card{ background:#fff; border:1px solid var(--border); border-radius:12px; padding:10px; display:flex; flex-direction:column; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+  .pimg{ width:100%; height:130px; object-fit:contain; border-radius:8px; margin-bottom:8px; background: #fff; }
+  .title{ font-size:12px; font-weight:700; color: var(--text); height:34px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; margin-bottom: 4px; }
+  .price{ font-size:14px; font-weight:900; color:var(--primary); margin:4px 0; }
+  .btnLink{ display:flex; align-items: center; justify-content: center; gap: 4px; text-decoration:none; padding:8px; border-radius:8px; font-size:10px; font-weight:800; color:#fff; transition:.2s; text-transform: uppercase; margin-top: auto; }
+  .btnGold { background: linear-gradient(135deg, #F59E0B, #B45309); } .btnSilver { background: linear-gradient(135deg, #9CA3AF, #4B5563); } .btnBlue { background: linear-gradient(135deg, #3B82F6, #1E40AF); } .btnGreen { background: var(--primary); }
 
-  /* --- FOOTER & INPUT --- */
-  #bottom{
-    position:absolute; bottom:0; left:0; right:0; 
-    background:#fff; padding:0; border-top:1px solid var(--border);
-    z-index: 50;
-  }
+  /* --- BOTTOM AREA (Dock + Input + Footer) --- */
+  #bottom{ position:absolute; bottom:0; left:0; right:0; background:#fff; padding:0; border-top:1px solid var(--border); z-index: 50; }
   
-  #inputArea { padding: 12px 16px; display:flex; gap:10px; align-items: center; }
-
-  #text{
-    flex:1; padding:14px 16px; border:1px solid var(--border); 
-    background: var(--bg); border-radius:99px; outline:none; font-size: 15px;
+  /* DOCK (YATAY MENÜ) */
+  #dock {
+    display: flex; gap: 16px; overflow-x: auto; padding: 12px 16px;
+    background: #fff; scrollbar-width: none; border-bottom: 1px solid rgba(0,0,0,0.03);
   }
+  #dock::-webkit-scrollbar { display: none; }
+  
+  .dockItem {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    min-width: 64px; cursor: pointer; color: var(--muted); transition: 0.2s;
+    opacity: 0.6;
+  }
+  .dockItem.active { color: var(--primary); opacity: 1; transform: scale(1.05); }
+  .dockItem i { font-size: 22px; margin-bottom: 2px; }
+  .dockItem span { font-size: 10px; font-weight: 700; white-space: nowrap; }
+
+  /* INPUT ROW */
+  #inputArea { padding: 12px 16px; display:flex; gap:8px; align-items: center; }
+  
+  .iconBtn {
+    width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--border);
+    background: var(--bg); color: var(--muted); cursor: pointer;
+    display: flex; align-items: center; justify-content: center; font-size: 16px;
+    flex-shrink: 0; transition: 0.2s;
+  }
+  .iconBtn:hover { border-color: var(--primary); color: var(--primary); background: #fff; }
+  .mic-active { background: #FEE2E2 !important; color: #EF4444 !important; border-color: #EF4444 !important; animation: pulseRed 1.2s infinite; }
+  @keyframes pulseRed{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
+
+  #text{ flex:1; padding:12px 16px; border:1px solid var(--border); background: var(--bg); border-radius:99px; outline:none; font-size: 15px; min-width: 0; }
   #text:focus { border-color: var(--primary); background: #fff; }
   
-  #sendBtn{
-    width:48px; height:48px; border-radius:50%; background:var(--primary); 
-    color:#fff; border:none; cursor:pointer; display: flex; align-items: center; justify-content: center; font-size: 18px;
-  }
+  #sendBtn{ width:44px; height:44px; border-radius:50%; background:var(--primary); color:#fff; border:none; cursor:pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 
-  /* BRAND FOOTER */
-  #brandFooter {
-    padding-bottom: 12px; padding-top: 4px;
-    width: 100%; background: #FAFAFA;
-    border-top: 1px solid rgba(0,0,0,0.03);
-    display: flex; flex-direction: column; align-items: center;
-  }
+  /* FOOTER */
+  #brandFooter { padding-bottom: 12px; padding-top: 4px; width: 100%; background: #FAFAFA; border-top: 1px solid rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center; }
   .footer-content { display: inline-block; text-align: center; }
-  
-  .brandText {
-    font-size:10px; font-weight: 800; color:#9CA3AF; 
-    padding: 4px 0; letter-spacing: 0.5px;
-  }
-  
-  /* Kalın Bayrak */
-  .itFlag {
-    width: 100%; height: 8px; display: flex;
-    border-radius: 4px; overflow: hidden; margin-top: 2px;
-  }
-  .itFlag span { flex: 1; height: 100%; }
-  .itFlag .g{ background:#009246; }
-  .itFlag .w{ background:#FFFFFF; border-left:1px solid #eee; border-right:1px solid #eee; }
-  .itFlag .r{ background:#CE2B37; }
+  .brandText { font-size:10px; font-weight: 800; color:#9CA3AF; padding: 4px 0; letter-spacing: 0.5px; }
+  .itFlag { width: 100%; height: 8px; display: flex; border-radius: 4px; overflow: hidden; margin-top: 2px; }
+  .itFlag span { flex: 1; height: 100%; } .itFlag .g{ background:#009246; } .itFlag .w{ background:#FFFFFF; border-left:1px solid #eee; border-right:1px solid #eee; } .itFlag .r{ background:#CE2B37; }
 
-  /* SES BUTONU */
-  .audio-btn{
-    margin-top:10px; padding:10px 16px; 
-    background: linear-gradient(135deg, #8B5CF6, #6D28D9); 
-    border:none; border-radius:25px; 
-    font-size:13px; font-weight: 700; color: #fff;
-    cursor:pointer; display:inline-flex; align-items:center; gap:8px;
-    box-shadow: 0 4px 10px rgba(109, 40, 217, 0.3);
-    transition: 0.2s;
-  }
+  /* AUDIO BUTTON */
+  .audio-btn{ margin-top:10px; padding:10px 16px; background: linear-gradient(135deg, #8B5CF6, #6D28D9); border:none; border-radius:25px; font-size:13px; font-weight: 700; color: #fff; cursor:pointer; display:inline-flex; align-items:center; gap:8px; box-shadow: 0 4px 10px rgba(109, 40, 217, 0.3); transition: 0.2s; }
   .audio-btn:hover { transform: scale(1.02); }
-  .audio-btn.playing{
-    background: linear-gradient(135deg, #EF4444, #B91C1C); 
-    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
-    animation: pulse 1.5s infinite;
-  }
+  .audio-btn.playing{ background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); animation: pulse 1.5s infinite; }
   @keyframes pulse { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
-
+  
+  #fileInput { display: none; }
 </style>
 </head>
 <body>
@@ -243,12 +153,10 @@
         <div class="brand" style="font-size:16px;">CAYNANA<span>.AI</span></div>
         <div class="close-btn" onclick="toggleMenu()">&times;</div>
     </div>
-    
     <div class="auth-buttons">
         <div class="btn-auth btn-google"><i class="fa-brands fa-google"></i> Google ile Giriş</div>
         <div class="btn-auth btn-facebook"><i class="fa-brands fa-facebook"></i> Facebook ile Giriş</div>
     </div>
-    
     <a href="#" class="menu-item"><i class="fa-solid fa-user-plus"></i> Üye Ol</a>
     <a href="#" class="menu-item"><i class="fa-solid fa-key"></i> Şifremi Unuttum</a>
     <hr style="border:0; border-top:1px solid #eee; width:100%; margin:10px 0;">
@@ -256,23 +164,25 @@
     <a href="#" class="menu-item"><i class="fa-solid fa-lock"></i> Gizlilik Politikası</a>
     <a href="#" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S.</a>
     <a href="#" class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
-
-    <div class="gold-promo">
-        <i class="fa-solid fa-crown"></i> Gold Üyelik Çok Yakında!
-    </div>
+    <div class="gold-promo"><i class="fa-solid fa-crown"></i> Gold Üyelik Çok Yakında!</div>
   </div>
 
   <div id="main">
     <div class="welcome-box">
-        <div class="welcome-title">Alışveriş Uzmanı</div>
-        <div class="welcome-desc">
-            Aradığın ürünü yaz, link yapıştır dilersen fotoğrafını çek. Binlerce kullanıcı yorumunun ürüne ve satıcı mağazaya yapmış olduğu yorumları analiz ederek, pişman olmayacağın ürün ve mağazayı sana tavsiye ederim.
+        <div class="welcome-title" id="welcomeTitle">Alışveriş Uzmanı</div>
+        <div class="welcome-desc" id="welcomeDesc">
+            Aradığın ürünü yaz, link yapıştır dilersen fotoğrafını çek. En iyi fiyatı ve satıcıyı bulayım.
         </div>
     </div>
   </div>
 
   <div id="bottom">
+    <div id="dock"></div>
+
     <div id="inputArea">
+      <button class="iconBtn" onclick="openCamera()"><i class="fa-solid fa-camera"></i></button>
+      <button class="iconBtn" id="micBtn" onclick="startMic()"><i class="fa-solid fa-microphone"></i></button>
+      
       <input id="text" placeholder="Ne arıyorsun evladım?" autocomplete="off" onkeypress="if(event.key==='Enter') send()">
       <button id="sendBtn" onclick="send()"><i class="fa-solid fa-arrow-right"></i></button>
     </div>
@@ -288,12 +198,62 @@
   </div>
 </div>
 
+<input type="file" id="fileInput" accept="image/*" capture="environment">
+
 <script>
   const API_URL = "https://bikonomi-api-2.onrender.com/api/chat";
   const SPEAK_URL = "https://bikonomi-api-2.onrender.com/api/speak";
   
   let sessionId = "sess_" + Math.random().toString(36).substr(2, 9);
   let currentAudio = null;
+  let pendingImage = null;
+  let currentMode = "shopping"; // Varsayılan mod
+
+  // --- MOD AYARLARI ---
+  const MODES = {
+    shopping: { icon: "fa-bag-shopping", label: "Alışveriş", title: "Alışveriş Uzmanı", desc: "Aradığın ürünü yaz, link yapıştır veya fotoğrafını çek. En iyi fiyat ve satıcıyı bulayım.", ph: "Ne arıyorsun evladım?" },
+    health: { icon: "fa-heart-pulse", label: "Sağlık", title: "Sağlık Danışmanı", desc: "Şikayetini söyle, sana sağlıklı yaşam tavsiyeleri vereyim. (Tıbbi tanı koymaz).", ph: "Neren ağrıyor evladım?" },
+    diet: { icon: "fa-carrot", label: "Diyet", title: "Diyetisyen", desc: "Boyunu, kilonu ve hedefini söyle, sana özel diyet listesi hazırlayayım.", ph: "Bugün ne yedin?" },
+    food: { icon: "fa-utensils", label: "Yemek", title: "Şef & Tarifler", desc: "Evdeki malzemeleri söyle, sana nefis yemek tarifleri vereyim.", ph: "Dolapta ne var?" },
+    law: { icon: "fa-scale-balanced", label: "Hukuk", title: "Hukuk Danışmanı", desc: "Hukuki sorunu kısaca anlat, sana yol göstereyim.", ph: "Derdim ne evladım?" },
+    translate: { icon: "fa-language", label: "Çevirmen", title: "Anlık Çeviri", desc: "İstediğin dilde yaz veya konuş, anında çevireyim.", ph: "Ne çevirelim?" },
+    astro: { icon: "fa-star", label: "Burç", title: "Günlük Burç", desc: "Burcunu söyle, bugünün enerjisini yorumlayayım.", ph: "Burcun ne senin?" },
+    dream: { icon: "fa-cloud-moon", label: "Rüya", title: "Rüya Tabiri", desc: "Rüyanı anlat, hayra yoralım.", ph: "Ne gördün rüyanda?" },
+    fal: { icon: "fa-mug-hot", label: "Fal", title: "Falcı Bacı", desc: "Kahve fincanını çek gönder ya da niyetini tut.", ph: "Niyet ettin mi?" }
+  };
+
+  // --- DOCK RENDER ---
+  function renderDock(){
+    const dock = document.getElementById("dock");
+    dock.innerHTML = "";
+    Object.keys(MODES).forEach(key => {
+        const m = MODES[key];
+        const item = document.createElement("div");
+        item.className = `dockItem ${key === currentMode ? 'active' : ''}`;
+        item.onclick = () => switchMode(key);
+        item.innerHTML = `<i class="fa-solid ${m.icon}"></i><span>${m.label}</span>`;
+        dock.appendChild(item);
+    });
+  }
+
+  function switchMode(key){
+    currentMode = key;
+    renderDock(); // Aktif class'ı güncelle
+    
+    // UI Güncelle
+    const m = MODES[key];
+    document.getElementById("welcomeTitle").innerText = m.title;
+    document.getElementById("welcomeDesc").innerText = m.desc;
+    document.getElementById("text").placeholder = m.ph;
+    
+    // Ekranı temizle (isteğe bağlı)
+    document.getElementById("main").innerHTML = `
+        <div class="welcome-box">
+            <div class="welcome-title" id="welcomeTitle">${m.title}</div>
+            <div class="welcome-desc" id="welcomeDesc">${m.desc}</div>
+        </div>
+    `;
+  }
 
   function toggleMenu(){
     const menu = document.getElementById("sideMenu");
@@ -307,27 +267,66 @@
     }
   }
 
+  const fileEl = document.getElementById("fileInput");
+  function openCamera(){ fileEl.value = ""; fileEl.click(); }
+  
+  fileEl.addEventListener("change", (e)=>{
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ()=>{
+        pendingImage = reader.result;
+        document.getElementById("text").value = "📷 Fotoğraf eklendi (Gönder'e bas)";
+        document.getElementById("text").focus();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function startMic(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR) { alert("Tarayıcın mikrofonu desteklemiyor."); return; }
+    
+    const rec = new SR();
+    rec.lang = "tr-TR";
+    const btn = document.getElementById("micBtn");
+    btn.classList.add("mic-active");
+    
+    rec.onresult = (e) => {
+        const t = e.results[0][0].transcript;
+        document.getElementById("text").value = t;
+        btn.classList.remove("mic-active");
+        send();
+    };
+    rec.onerror = () => btn.classList.remove("mic-active");
+    rec.onend = () => btn.classList.remove("mic-active");
+    rec.start();
+  }
+
   async function send(){
-    const txt = document.getElementById("text");
-    const val = txt.value.trim();
-    if(!val) return;
+    const txtEl = document.getElementById("text");
+    let val = txtEl.value.trim();
     
-    addBubble("user", val);
-    txt.value = "";
+    if(pendingImage && val.includes("Fotoğraf eklendi")) val = "Bu fotoğraftaki ürünü bul";
+    if(!val && !pendingImage) return;
     
-    const loader = addBubble("ai", "<i class='fa-solid fa-circle-notch fa-spin'></i> Analiz ediyorum evladım...", true);
+    addBubble("user", val, false, null, pendingImage);
+    txtEl.value = "";
     
+    const loader = addBubble("ai", "<i class='fa-solid fa-circle-notch fa-spin'></i> Düşünüyorum evladım...", true);
+    
+    const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode };
+    pendingImage = null;
+
     try{
       const res = await fetch(API_URL, {
         method:"POST", 
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({message: val, session_id: sessionId})
+        body:JSON.stringify(payload)
       });
       const data = await res.json();
       loader.remove(); 
       
       addBubble("ai", data.assistant_text, false, data.speech_text);
-      
       if(data.data && data.data.length) renderCards(data.data);
       
     }catch(e){
@@ -335,23 +334,22 @@
     }
   }
 
-  function addBubble(role, text, isLoader=false, speech=null){
+  function addBubble(role, text, isLoader=false, speech=null, imgData=null){
     const div = document.createElement("div");
     div.className = "msg " + role;
     
-    // PUAN ROZETİ VE MARKDOWN PARSE (Marked.js Kullanımı)
-    let processedText = text.replace(/\[PUAN:\s*(.*?)\]/g, '<div class="score-badge"><span class="score-label">Caynana Puanı</span>$1</div>');
+    let content = "";
+    if(imgData) content += `<img src="${imgData}" class="preview">`;
     
-    // Eğer AI mesajıysa Markdown'ı HTML'e çevir, değilse düz metin bas
+    let processedText = text.replace(/\[PUAN:\s*(.*?)\]/g, '<div class="score-badge"><span class="score-label">Caynana Puanı</span>$1</div>');
     let htmlContent = (role === "ai" && !isLoader) ? marked.parse(processedText) : processedText;
+    
+    content += htmlContent;
 
-    div.innerHTML = `<div class="bubble">${htmlContent}</div>`;
+    div.innerHTML = `<div class="bubble">${content}</div>`;
     
     document.getElementById("main").appendChild(div);
-    
-    setTimeout(() => {
-        div.scrollIntoView({behavior:"smooth", block:"start"});
-    }, 100);
+    setTimeout(() => { div.scrollIntoView({behavior:"smooth", block:"start"}); }, 100);
     
     if(speech && role === "ai" && !isLoader){
         const btn = document.createElement("button");
@@ -378,7 +376,6 @@
 
         const card = document.createElement("div");
         card.className = "card";
-        
         const imgUrl = p.image || 'https://via.placeholder.com/150?text=Resim+Yok';
         
         card.innerHTML = `
@@ -391,22 +388,17 @@
     });
     
     document.getElementById("main").appendChild(wrap);
-    setTimeout(() => {
-        wrap.scrollIntoView({behavior:"smooth", block:"nearest"});
-    }, 100);
+    setTimeout(() => { wrap.scrollIntoView({behavior:"smooth", block:"nearest"}); }, 100);
   }
 
   async function playAudio(text, btn){
     if(currentAudio) { 
-        currentAudio.pause(); 
-        currentAudio = null; 
+        currentAudio.pause(); currentAudio = null; 
         btn.classList.remove("playing"); 
         btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
         return; 
     }
-    
     btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Yükleniyor...`;
-    
     try{
         const res = await fetch(SPEAK_URL, {
             method:"POST", headers:{"Content-Type":"application/json"},
@@ -429,6 +421,9 @@
         setTimeout(() => btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`, 2000);
     }
   }
+
+  // Başlangıçta Dock'u Render Et
+  renderDock();
 </script>
 </body>
 </html>
