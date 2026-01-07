@@ -49,17 +49,18 @@
   .msg.ai .bubble{background:#F3F4F6; color:var(--text); border-bottom-left-radius:4px;}
   .bubble img.preview { max-width: 100%; border-radius: 12px; margin-bottom: 8px; }
 
-  /* AUDIO BUTTON (Eski Stil Geri Geldi) */
+  /* --- O SEVDİĞİN MOR BUTON (FİNAL) --- */
   .audio-btn { 
-    margin-top: 10px; padding: 10px 16px; 
+    margin-top: 12px; padding: 12px 20px; width: fit-content;
     background: linear-gradient(135deg, #8B5CF6, #6D28D9); 
-    color: #fff; border-radius: 25px; 
-    font-size: 13px; font-weight: 700; 
-    display: inline-flex; align-items: center; gap: 8px; 
-    cursor: pointer; box-shadow: 0 4px 10px rgba(109, 40, 217, 0.3); 
-    transition: 0.2s; border: none;
+    color: #fff; border-radius: 50px; 
+    font-size: 14px; font-weight: 700; 
+    display: flex; align-items: center; gap: 8px; 
+    cursor: pointer; box-shadow: 0 4px 15px rgba(109, 40, 217, 0.3); 
+    transition: 0.2s; border: none; outline: none;
   }
-  .audio-btn.playing { background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3); animation: pulse 1.5s infinite; }
+  .audio-btn:active { transform: scale(0.95); }
+  .audio-btn.playing { background: linear-gradient(135deg, #EF4444, #B91C1C); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); animation: pulse 1.5s infinite; }
 
   /* MARKDOWN & CARDS */
   .bubble table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #eee; }
@@ -88,7 +89,7 @@
   #text { flex:1; padding:12px 16px; border:1px solid var(--border); border-radius:24px; font-size:15px; outline:none; }
   #sendBtn { width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-  /* FOOTER (BAYRAKLI) */
+  /* FOOTER (İTALYAN BAYRAKLI - GERİ GELDİ) */
   #brandFooter { padding-bottom: 12px; padding-top: 8px; width: 100%; background: #FAFAFA; border-top: 1px solid rgba(0,0,0,0.03); display: flex; flex-direction: column; align-items: center; }
   .footer-content { display: inline-block; text-align: center; }
   .brandText { font-size:10px; font-weight: 800; color:#9CA3AF; padding: 4px 0; letter-spacing: 0.5px; }
@@ -101,6 +102,7 @@
   .modal-box { background: #fff; width: 100%; max-width: 350px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); transform: translateY(20px); animation: slideUp 0.3s forwards; }
   @keyframes slideUp { to { transform: translateY(0); } }
   .modal-header { padding: 20px; background: var(--primary); color: #fff; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 16px; }
+  .modal-close { cursor: pointer; font-size: 20px; opacity: 0.8; }
   .modal-body { padding: 25px; text-align: center; color: var(--text); line-height: 1.5; font-size: 14px; }
   #fileInput { display: none; }
 </style>
@@ -139,7 +141,7 @@
     <div class="modal-box">
       <div class="modal-header">
         <span id="modalTitle">Başlık</span>
-        <span onclick="closeModal()" style="cursor:pointer">&times;</span>
+        <span class="modal-close" onclick="closeModal()">&times;</span>
       </div>
       <div class="modal-body" id="modalContent">...</div>
     </div>
@@ -187,7 +189,7 @@
   let currentMode = "shopping";
 
   const MODES = {
-    chat: { label: "Sohbet", icon: "fa-comments", title: "Dert Ortağı", desc: "Canın mı sıkkın? Gel konuşalım.", ph: "Naber?", color: "#6366F1" },
+    chat: { label: "Sohbet", icon: "fa-comments", title: "Dert Ortağı", desc: "Canın mı sıkkın? Gel iki lafın belini kıralım.", ph: "Naber Caynana?", color: "#6366F1" },
     shopping: { label: "Alışveriş", icon: "fa-bag-shopping", title: "Alışveriş Uzmanı", desc: "Aradığın ürünü yaz, bulayım.", ph: "Ne lazım?", color: "#10B981" },
     health: { label: "Sağlık", icon: "fa-heart-pulse", title: "Sağlık Köşesi", desc: "Şikayetini söyle, tavsiye vereyim.", ph: "Neren ağrıyor?", color: "#EF4444" },
     diet: { label: "Diyet", icon: "fa-carrot", title: "Diyetisyen", desc: "Boyunu kilonu yaz, diyet vereyim.", ph: "Boy kilo kaç?", color: "#84CC16" },
@@ -264,7 +266,7 @@
 
   function startMic(){
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR) { alert("Mikrofon için tarayıcı izni veya HTTPS gerekli."); return; }
+    if(!SR) { alert("Mikrofon için tarayıcı izni gerekli."); return; }
     const rec = new SR(); rec.lang = "tr-TR";
     const btn = document.getElementById("micBtn");
     btn.classList.add("mic-active");
