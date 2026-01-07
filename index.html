@@ -27,23 +27,57 @@
   .slogan { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; margin-top: 2px; margin-left: 30px; }
   .menu-btn { font-size: 20px; color: var(--text); cursor: pointer; padding: 5px; }
   
-  /* --- SIDE MENU --- */
+  /* --- SIDE MENU (GÜNCELLENDİ) --- */
   #sideMenu {
     position: absolute; top:0; right:-100%; width: 280px; height: 100%;
     background: #fff; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-    z-index: 100; transition: 0.3s ease; padding: 20px; display: flex; flex-direction: column;
+    z-index: 100; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: 0; display: flex; flex-direction: column;
   }
   #sideMenu.open { right: 0; }
-  .menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-  .close-btn { font-size: 24px; cursor: pointer; color: var(--muted); }
-  .menu-item { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--border); color: var(--text); font-weight: 600; text-decoration: none; font-size: 14px; }
+  
+  .menu-header { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid var(--border); background: #FAFAFA; }
+  .close-btn { font-size: 24px; cursor: pointer; color: var(--muted); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
+  
+  .menu-content { padding: 20px; overflow-y: auto; flex: 1; }
+
+  .menu-item { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); color: var(--text); font-weight: 600; text-decoration: none; font-size: 14px; transition: 0.2s; cursor: pointer; }
+  .menu-item:hover { color: var(--primary); padding-left: 5px; }
   .menu-item i { width: 20px; color: var(--primary); text-align: center; }
-  .auth-buttons { margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px; }
-  .btn-auth { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; }
-  .btn-google { background: #DB4437; } .btn-facebook { background: #4267B2; }
-  .gold-promo { margin-top: auto; padding: 15px; background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 10px; font-size: 12px; color: #B45309; text-align: center; }
-  #overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); z-index: 90; display: none; opacity: 0; transition: opacity 0.3s; }
+  
+  .auth-buttons { margin-bottom: 25px; display: flex; flex-direction: column; gap: 10px; }
+  .btn-auth { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; border-radius: 8px; font-size: 13px; font-weight: 700; color: #fff; cursor: pointer; transition: 0.2s; }
+  .btn-auth:active { transform: scale(0.98); }
+  .btn-google { background: #DB4437; box-shadow: 0 2px 5px rgba(219, 68, 55, 0.3); } 
+  .btn-facebook { background: #4267B2; box-shadow: 0 2px 5px rgba(66, 103, 178, 0.3); }
+  
+  .gold-promo { margin: 20px; padding: 15px; background: linear-gradient(135deg, #FFFBEB, #FEF3C7); border: 1px solid #FCD34D; border-radius: 12px; font-size: 13px; color: #B45309; text-align: center; font-weight: 700; box-shadow: 0 4px 10px rgba(251, 191, 36, 0.2); display: flex; align-items: center; justify-content: center; gap: 8px; }
+  
+  #overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); z-index: 90; display: none; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(2px); }
   #overlay.active { display: block; opacity: 1; }
+
+  /* --- MODAL (BİLGİ PENCERESİ - YENİ EKLENDİ) --- */
+  .modal {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); z-index: 200; display: none;
+    align-items: center; justify-content: center; padding: 20px;
+    backdrop-filter: blur(3px);
+  }
+  .modal.active { display: flex; animation: fadeIn 0.2s; }
+  .modal-box {
+    background: #fff; width: 100%; max-width: 400px; border-radius: 16px;
+    overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    transform: translateY(20px); animation: slideUp 0.3s forwards;
+  }
+  @keyframes slideUp { to { transform: translateY(0); } }
+  
+  .modal-header {
+    background: var(--primary); color: #fff; padding: 15px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-weight: 700; font-size: 16px;
+  }
+  .modal-close { cursor: pointer; font-size: 20px; opacity: 0.8; }
+  .modal-body { padding: 20px; line-height: 1.6; color: var(--text); font-size: 14px; max-height: 60vh; overflow-y: auto; }
+  .modal-body h3 { color: var(--primary); margin-top: 0; }
   
   /* --- CHAT ALANI --- */
   #main{flex:1; overflow-y:auto; padding:16px; padding-bottom:240px; scroll-behavior: smooth;}
@@ -128,23 +162,45 @@
   </div>
 
   <div id="overlay" onclick="toggleMenu()"></div>
+  
   <div id="sideMenu">
     <div class="menu-header">
-        <div class="brand" style="font-size:16px;">CAYNANA<span>.AI</span></div>
+        <div class="brand" style="font-size:18px;">CAYNANA<span>.AI</span></div>
         <div class="close-btn" onclick="toggleMenu()">&times;</div>
     </div>
-    <div class="auth-buttons">
-        <div class="btn-auth btn-google"><i class="fa-brands fa-google"></i> Google ile Giriş</div>
-        <div class="btn-auth btn-facebook"><i class="fa-brands fa-facebook"></i> Facebook ile Giriş</div>
+    
+    <div class="menu-content">
+        <div class="auth-buttons">
+            <div class="btn-auth btn-google" onclick="showModal('info', 'Giriş Yap')"><i class="fa-brands fa-google"></i> Google ile Giriş</div>
+            <div class="btn-auth btn-facebook" onclick="showModal('info', 'Giriş Yap')"><i class="fa-brands fa-facebook"></i> Facebook ile Giriş</div>
+        </div>
+
+        <div class="menu-item" onclick="showModal('info', 'Üye Ol')"><i class="fa-solid fa-user-plus"></i> Üye Ol</div>
+        <div class="menu-item" onclick="showModal('info', 'Şifre Sıfırla')"><i class="fa-solid fa-key"></i> Şifremi Unuttum</div>
+        
+        <hr style="border:0; border-top:1px solid #eee; width:100%; margin:15px 0;">
+        
+        <div class="menu-item" onclick="showModal('about')"><i class="fa-solid fa-info-circle"></i> Hakkımızda</div>
+        <div class="menu-item" onclick="showModal('privacy')"><i class="fa-solid fa-shield-halved"></i> Gizlilik Politikası</div>
+        <div class="menu-item" onclick="showModal('faq')"><i class="fa-solid fa-circle-question"></i> S.S.S.</div>
+        <div class="menu-item" onclick="showModal('contact')"><i class="fa-solid fa-envelope"></i> İletişim</div>
     </div>
-    <a href="#" class="menu-item"><i class="fa-solid fa-user-plus"></i> Üye Ol</a>
-    <a href="#" class="menu-item"><i class="fa-solid fa-key"></i> Şifremi Unuttum</a>
-    <hr style="border:0; border-top:1px solid #eee; width:100%; margin:10px 0;">
-    <a href="#" class="menu-item"><i class="fa-solid fa-info-circle"></i> Hakkımızda</a>
-    <a href="#" class="menu-item"><i class="fa-solid fa-lock"></i> Gizlilik Politikası</a>
-    <a href="#" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S.</a>
-    <a href="#" class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
-    <div class="gold-promo"><i class="fa-solid fa-crown"></i> Gold Üyelik Çok Yakında!</div>
+
+    <div class="gold-promo">
+        <i class="fa-solid fa-crown" style="color: #F59E0B; font-size:16px;"></i> Gold Üyelik Çok Yakında!
+    </div>
+  </div>
+
+  <div class="modal" id="infoModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span id="modalTitle">Başlık</span>
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+      </div>
+      <div class="modal-body" id="modalContent">
+        İçerik yükleniyor...
+      </div>
+    </div>
   </div>
 
   <div id="main">
@@ -194,6 +250,14 @@
     fal: { icon: "fa-mug-hot", label: "Fal", title: "Falcı Bacı", desc: "Niyetini tut.", ph: "Niyet ettin mi?" }
   };
 
+  // --- STATİK İÇERİKLER (HAKKIMIZDA VS.) ---
+  const staticContent = {
+    about: "<h3>Biz Kimiz?</h3><p>Ben Caynana! Italky Technology tarafından geliştirilen, yerli ve milli, biraz huysuz ama altın kalpli yapay zeka asistanınım.</p><p>Amacım sana alışverişten sağlığa, hukuktan fala kadar her konuda yardımcı olmak. Ama unutma, ben bir yapay zekayım, son karar hep senin evladım.</p>",
+    privacy: "<h3>Gizlilik Politikası</h3><p>Evladım, senin verilerin benim namusumdur. Konuştuklarımız aramızda kalır. Verilerini üçüncü şahıslarla paylaşmam.</p><p>Ancak sen yine de kredi kartı şifreni, devlet sırlarını buraya yazma. Tedbirli olmakta fayda var.</p>",
+    faq: "<h3>Sıkça Sorulan Sorular</h3><p><strong>Ücretli mi?</strong><br>Şimdilik bedava evladım, tepe tepe kullan.</p><p><strong>Gerçek insan mısın?</strong><br>Yok evladım, kod yığınıyım ama ruhum var sanıyorum bazen.</p>",
+    contact: "<h3>İletişim</h3><p>Bana ulaşmak için dumanla haberleşemeyiz.</p><p>E-posta: <strong>destek@caynana.com</strong></p><p>Adres: Teknopark, Düzce</p>"
+  };
+
   function renderDock(){
     const dock = document.getElementById("dock");
     dock.innerHTML = "";
@@ -209,14 +273,11 @@
 
   function switchMode(key){
     currentMode = key;
-    renderDock(); // Alt menü ikonunu güncelle
+    renderDock();
     
     const m = MODES[key];
-    
-    // UI Güncelleme (Input placeholder vb.)
     document.getElementById("text").placeholder = m.ph;
     
-    // EKRANI TEMİZLE VE YENİ HOŞGELDİN KUTUSUNU KOY
     const mainDiv = document.getElementById("main");
     mainDiv.innerHTML = `
         <div class="welcome-box">
@@ -226,6 +287,7 @@
     `;
   }
 
+  // --- MENÜ VE MODAL İŞLEMLERİ ---
   function toggleMenu(){
     const menu = document.getElementById("sideMenu");
     const overlay = document.getElementById("overlay");
@@ -233,10 +295,29 @@
     else { menu.classList.add("open"); overlay.classList.add("active"); }
   }
 
+  function closeModal() {
+    document.getElementById('infoModal').classList.remove('active');
+  }
+
+  function showModal(type, titleStr) {
+    toggleMenu(); // Menüyü kapat
+    const modal = document.getElementById('infoModal');
+    const title = document.getElementById('modalTitle');
+    const content = document.getElementById('modalContent');
+
+    if(staticContent[type]) {
+      title.innerText = type === 'about' ? 'Hakkımızda' : (type==='privacy'?'Gizlilik':(type==='faq'?'S.S.S.':'İletişim'));
+      content.innerHTML = staticContent[type];
+    } else {
+      title.innerText = titleStr || "Bilgi";
+      content.innerHTML = "<p>Bu özellik (Üyelik/Giriş) çok yakında aktif olacak evladım. Şimdilik misafirimizsin, keyfine bak.</p>";
+    }
+    modal.classList.add('active');
+  }
+
   const fileEl = document.getElementById("fileInput");
   function openCamera(){ fileEl.value = ""; fileEl.click(); }
   
-  // --- FOTOĞRAF ÇEKİLİNCE OTOMATİK GÖNDER ---
   fileEl.addEventListener("change", (e)=>{
     const file = e.target.files && e.target.files[0];
     if(!file) return;
@@ -244,7 +325,7 @@
     reader.onload = ()=>{ 
         pendingImage = reader.result; 
         document.getElementById("text").value = "📷 Fotoğraf eklendi"; 
-        send(); // Otomatik Gönder
+        send();
     };
     reader.readAsDataURL(file);
   });
@@ -264,7 +345,6 @@
     const txtEl = document.getElementById("text");
     let val = txtEl.value.trim();
     
-    // Resim var ama yazı yoksa
     if(pendingImage && (val.includes("Fotoğraf eklendi") || val === "")) val = "Bu fotoğraftaki ürünü bul";
     if(!val && !pendingImage) return;
     
@@ -358,4 +438,3 @@
 </script>
 </body>
 </html>
-
