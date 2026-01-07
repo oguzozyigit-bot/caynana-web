@@ -27,7 +27,7 @@
   .slogan { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; margin-top: 2px; margin-left: 30px; }
   .menu-btn { font-size: 20px; color: var(--text); cursor: pointer; padding: 5px; }
   
-  /* --- SIDE MENU (GÜNCELLENDİ) --- */
+  /* --- SIDE MENU --- */
   #sideMenu {
     position: absolute; top:0; right:-100%; width: 280px; height: 100%;
     background: #fff; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
@@ -55,7 +55,7 @@
   #overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); z-index: 90; display: none; opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(2px); }
   #overlay.active { display: block; opacity: 1; }
 
-  /* --- MODAL (BİLGİ PENCERESİ - YENİ EKLENDİ) --- */
+  /* --- MODAL (BİLGİ PENCERESİ) --- */
   .modal {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.5); z-index: 200; display: none;
@@ -77,8 +77,14 @@
   }
   .modal-close { cursor: pointer; font-size: 20px; opacity: 0.8; }
   .modal-body { padding: 20px; line-height: 1.6; color: var(--text); font-size: 14px; max-height: 60vh; overflow-y: auto; }
-  .modal-body h3 { color: var(--primary); margin-top: 0; }
   
+  /* Form Elemanları */
+  .form-group { margin-bottom: 15px; }
+  .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 12px; color: var(--muted); }
+  .form-group input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; }
+  .form-group input:focus { border-color: var(--primary); }
+  .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+
   /* --- CHAT ALANI --- */
   #main{flex:1; overflow-y:auto; padding:16px; padding-bottom:240px; scroll-behavior: smooth;}
   .welcome-box { text-align: center; margin-bottom: 20px; padding: 10px 0; }
@@ -169,17 +175,12 @@
         <div class="close-btn" onclick="toggleMenu()">&times;</div>
     </div>
     
-    <div class="menu-content">
-        <div class="auth-buttons">
-            <div class="btn-auth btn-google" onclick="showModal('info', 'Giriş Yap')"><i class="fa-brands fa-google"></i> Google ile Giriş</div>
-            <div class="btn-auth btn-facebook" onclick="showModal('info', 'Giriş Yap')"><i class="fa-brands fa-facebook"></i> Facebook ile Giriş</div>
-        </div>
+    <div class="menu-content" id="authSection">
+        <div style="text-align:center; color:#999; margin-top:20px;">Yükleniyor...</div>
+    </div>
 
-        <div class="menu-item" onclick="showModal('info', 'Üye Ol')"><i class="fa-solid fa-user-plus"></i> Üye Ol</div>
-        <div class="menu-item" onclick="showModal('info', 'Şifre Sıfırla')"><i class="fa-solid fa-key"></i> Şifremi Unuttum</div>
-        
+    <div class="menu-content" style="padding-top:0;">
         <hr style="border:0; border-top:1px solid #eee; width:100%; margin:15px 0;">
-        
         <div class="menu-item" onclick="showModal('about')"><i class="fa-solid fa-info-circle"></i> Hakkımızda</div>
         <div class="menu-item" onclick="showModal('privacy')"><i class="fa-solid fa-shield-halved"></i> Gizlilik Politikası</div>
         <div class="menu-item" onclick="showModal('faq')"><i class="fa-solid fa-circle-question"></i> S.S.S.</div>
@@ -230,14 +231,62 @@
 <input type="file" id="fileInput" accept="image/*" capture="environment">
 
 <script>
+  // API URL'leri (Canlı Sunucu)
   const API_URL = "https://bikonomi-api-2.onrender.com/api/chat";
+  const LOGIN_URL = "https://bikonomi-api-2.onrender.com/api/login";
+  const REGISTER_URL = "https://bikonomi-api-2.onrender.com/api/register";
   const SPEAK_URL = "https://bikonomi-api-2.onrender.com/api/speak";
   
   let sessionId = "sess_" + Math.random().toString(36).substr(2, 9);
   let currentAudio = null;
   let pendingImage = null;
   let currentMode = "shopping";
+  let userToken = localStorage.getItem("caynana_token");
+  let userData = JSON.parse(localStorage.getItem("caynana_user") || "null");
 
+  // BAŞLANGIÇ
+  window.onload = () => {
+      checkLoginStatus();
+      renderDock();
+  };
+
+  // --- KULLANICI KONTROLÜ ---
+  function checkLoginStatus() {
+      const authDiv = document.getElementById("authSection");
+      if(userToken && userData) {
+          // Giriş Yapılmış
+          authDiv.innerHTML = `
+              <div style="padding:15px; background:#ECFDF5; border-radius:12px; border:1px solid #10B981; margin-bottom:10px;">
+                  <div style="font-weight:800; color:#065F46; font-size:16px; margin-bottom:4px;">Merhaba, ${userData.name}</div>
+                  <div style="font-size:12px; color:#047857;">${userData.email}</div>
+                  ${userData.is_gold ? '<div style="color:#F59E0B; font-size:12px; font-weight:700; margin-top:5px;"><i class="fa-solid fa-crown"></i> GOLD ÜYE</div>' : ''}
+              </div>
+              <div class="menu-item" onclick="logout()"><i class="fa-solid fa-sign-out-alt"></i> Çıkış Yap</div>
+          `;
+      } else {
+          // Giriş Yapılmamış
+          authDiv.innerHTML = `
+              <div class="auth-buttons">
+                  <div class="btn-auth btn-google" onclick="showAuthModal('login')"><i class="fa-brands fa-google"></i> Google ile Giriş</div>
+                  <div class="btn-auth btn-facebook" onclick="showAuthModal('login')"><i class="fa-brands fa-facebook"></i> Facebook ile Giriş</div>
+              </div>
+              <div class="menu-item" onclick="showAuthModal('register')"><i class="fa-solid fa-user-plus"></i> Üye Ol</div>
+              <div class="menu-item" onclick="showAuthModal('login')"><i class="fa-solid fa-sign-in-alt"></i> Giriş Yap</div>
+          `;
+      }
+  }
+
+  function logout() {
+      localStorage.removeItem("caynana_token");
+      localStorage.removeItem("caynana_user");
+      userToken = null;
+      userData = null;
+      alert("Güle güle evladım, yine beklerim.");
+      checkLoginStatus();
+      toggleMenu();
+  }
+
+  // --- MODLAR ---
   const MODES = {
     shopping: { icon: "fa-bag-shopping", label: "Alışveriş", title: "Alışveriş Uzmanı", desc: "Aradığın ürünü yaz, en iyisini bulayım.", ph: "Ne arıyorsun evladım?" },
     health: { icon: "fa-heart-pulse", label: "Sağlık", title: "Sağlık Danışmanı", desc: "Şikayetini söyle, tavsiye vereyim.", ph: "Neren ağrıyor?" },
@@ -250,14 +299,68 @@
     fal: { icon: "fa-mug-hot", label: "Fal", title: "Falcı Bacı", desc: "Niyetini tut.", ph: "Niyet ettin mi?" }
   };
 
-  // --- STATİK İÇERİKLER (HAKKIMIZDA VS.) ---
-  const staticContent = {
-    about: "<h3>Biz Kimiz?</h3><p>Ben Caynana! Italky Technology tarafından geliştirilen, yerli ve milli, biraz huysuz ama altın kalpli yapay zeka asistanınım.</p><p>Amacım sana alışverişten sağlığa, hukuktan fala kadar her konuda yardımcı olmak. Ama unutma, ben bir yapay zekayım, son karar hep senin evladım.</p>",
-    privacy: "<h3>Gizlilik Politikası</h3><p>Evladım, senin verilerin benim namusumdur. Konuştuklarımız aramızda kalır. Verilerini üçüncü şahıslarla paylaşmam.</p><p>Ancak sen yine de kredi kartı şifreni, devlet sırlarını buraya yazma. Tedbirli olmakta fayda var.</p>",
-    faq: "<h3>Sıkça Sorulan Sorular</h3><p><strong>Ücretli mi?</strong><br>Şimdilik bedava evladım, tepe tepe kullan.</p><p><strong>Gerçek insan mısın?</strong><br>Yok evladım, kod yığınıyım ama ruhum var sanıyorum bazen.</p>",
-    contact: "<h3>İletişim</h3><p>Bana ulaşmak için dumanla haberleşemeyiz.</p><p>E-posta: <strong>destek@caynana.com</strong></p><p>Adres: Teknopark, Düzce</p>"
+  // --- HTML FORMLARI ---
+  const authForms = {
+    login: `
+      <h3>Giriş Yap</h3>
+      <div class="form-group"><label>E-posta</label><input type="email" id="loginEmail" placeholder="ornek@mail.com"></div>
+      <div class="form-group"><label>Şifre</label><input type="password" id="loginPass" placeholder="******"></div>
+      <button class="btn-submit" onclick="doLogin()">Giriş Yap</button>
+    `,
+    register: `
+      <h3>Üye Ol (Ücretsiz)</h3>
+      <div class="form-group"><label>Adın Soyadın</label><input type="text" id="regName" placeholder="Ad Soyad"></div>
+      <div class="form-group"><label>E-posta</label><input type="email" id="regEmail" placeholder="ornek@mail.com"></div>
+      <div class="form-group"><label>Şifre Belirle</label><input type="password" id="regPass" placeholder="******"></div>
+      <button class="btn-submit" onclick="doRegister()">Kayıt Ol</button>
+    `
   };
 
+  const staticContent = {
+    about: "<h3>Biz Kimiz?</h3><p>Ben Caynana! Italky Teknoloji A.Ş. tarafından geliştirilen, yerli ve milli, biraz huysuz ama altın kalpli yapay zeka asistanınım.</p>",
+    privacy: "<h3>Gizlilik Politikası</h3><p>Evladım, verilerin benim namusumdur. Konuştuklarımız aramızda kalır.</p>",
+    faq: "<h3>Sıkça Sorulan Sorular</h3><p><strong>Ücretli mi?</strong><br>Şimdilik bedava evladım, tepe tepe kullan.</p>",
+    contact: "<h3>İletişim</h3><p>Firma: <strong>Italky Teknoloji A.Ş.</strong></p><p>E-posta: <strong>destek@caynana.com</strong></p><p>Adres: Teknopark, Düzce</p>"
+  };
+
+  // --- API İŞLEMLERİ ---
+  async function doLogin() {
+      const email = document.getElementById("loginEmail").value;
+      const pass = document.getElementById("loginPass").value;
+      if(!email || !pass) { alert("E-posta ve şifreni yaz evladım."); return; }
+
+      try {
+          const res = await fetch(LOGIN_URL, {
+              method: "POST", headers: {"Content-Type": "application/json"},
+              body: JSON.stringify({email: email, password: pass})
+          });
+          const data = await res.json();
+          if(data.ok) {
+              localStorage.setItem("caynana_token", data.access_token);
+              localStorage.setItem("caynana_user", JSON.stringify(data.user));
+              userToken = data.access_token; userData = data.user;
+              alert(data.msg); closeModal(); checkLoginStatus(); toggleMenu();
+          } else { alert("Hata: " + data.msg); }
+      } catch(e) { alert("Sunucuya bağlanamadım."); }
+  }
+
+  async function doRegister() {
+      const name = document.getElementById("regName").value;
+      const email = document.getElementById("regEmail").value;
+      const pass = document.getElementById("regPass").value;
+      if(!name || !email || !pass) { alert("Hepsini doldur evladım."); return; }
+
+      try {
+          const res = await fetch(REGISTER_URL, {
+              method: "POST", headers: {"Content-Type": "application/json"},
+              body: JSON.stringify({full_name: name, email: email, password: pass})
+          });
+          const data = await res.json();
+          if(data.ok) { alert(data.msg); showAuthModal('login'); } else { alert("Hata: " + data.msg); }
+      } catch(e) { alert("Kayıt olunamadı."); }
+  }
+
+  // --- DİĞER FONKSİYONLAR ---
   function renderDock(){
     const dock = document.getElementById("dock");
     dock.innerHTML = "";
@@ -274,10 +377,8 @@
   function switchMode(key){
     currentMode = key;
     renderDock();
-    
     const m = MODES[key];
     document.getElementById("text").placeholder = m.ph;
-    
     const mainDiv = document.getElementById("main");
     mainDiv.innerHTML = `
         <div class="welcome-box">
@@ -287,7 +388,6 @@
     `;
   }
 
-  // --- MENÜ VE MODAL İŞLEMLERİ ---
   function toggleMenu(){
     const menu = document.getElementById("sideMenu");
     const overlay = document.getElementById("overlay");
@@ -295,38 +395,34 @@
     else { menu.classList.add("open"); overlay.classList.add("active"); }
   }
 
-  function closeModal() {
-    document.getElementById('infoModal').classList.remove('active');
+  function closeModal() { document.getElementById('infoModal').classList.remove('active'); }
+
+  function showModal(type) {
+    toggleMenu();
+    const modal = document.getElementById('infoModal');
+    document.getElementById('modalTitle').innerText = (type==='about'?'Hakkımızda':type==='contact'?'İletişim':(type==='privacy'?'Gizlilik':'Bilgi'));
+    document.getElementById('modalContent').innerHTML = staticContent[type] || "İçerik yok.";
+    modal.classList.add('active');
   }
 
-  function showModal(type, titleStr) {
-    toggleMenu(); // Menüyü kapat
-    const modal = document.getElementById('infoModal');
-    const title = document.getElementById('modalTitle');
-    const content = document.getElementById('modalContent');
+  function showAuthModal(type) {
+    // toggleMenu(); // Mobilde menü açık kalsın mı? Kapatalım daha temiz görünür
+    const menu = document.getElementById("sideMenu");
+    if(menu.classList.contains("open")) toggleMenu(); // Menü açıksa kapat
 
-    if(staticContent[type]) {
-      title.innerText = type === 'about' ? 'Hakkımızda' : (type==='privacy'?'Gizlilik':(type==='faq'?'S.S.S.':'İletişim'));
-      content.innerHTML = staticContent[type];
-    } else {
-      title.innerText = titleStr || "Bilgi";
-      content.innerHTML = "<p>Bu özellik (Üyelik/Giriş) çok yakında aktif olacak evladım. Şimdilik misafirimizsin, keyfine bak.</p>";
-    }
+    const modal = document.getElementById('infoModal');
+    document.getElementById('modalTitle').innerText = (type==='login'?'Giriş Yap':'Üye Ol');
+    document.getElementById('modalContent').innerHTML = authForms[type];
     modal.classList.add('active');
   }
 
   const fileEl = document.getElementById("fileInput");
   function openCamera(){ fileEl.value = ""; fileEl.click(); }
-  
   fileEl.addEventListener("change", (e)=>{
     const file = e.target.files && e.target.files[0];
     if(!file) return;
     const reader = new FileReader();
-    reader.onload = ()=>{ 
-        pendingImage = reader.result; 
-        document.getElementById("text").value = "📷 Fotoğraf eklendi"; 
-        send();
-    };
+    reader.onload = ()=>{ pendingImage = reader.result; document.getElementById("text").value = "📷 Fotoğraf eklendi"; send(); };
     reader.readAsDataURL(file);
   });
 
@@ -344,7 +440,6 @@
   async function send(){
     const txtEl = document.getElementById("text");
     let val = txtEl.value.trim();
-    
     if(pendingImage && (val.includes("Fotoğraf eklendi") || val === "")) val = "Bu fotoğraftaki ürünü bul";
     if(!val && !pendingImage) return;
     
@@ -352,7 +447,8 @@
     txtEl.value = "";
     
     const loader = addBubble("ai", "<i class='fa-solid fa-circle-notch fa-spin'></i> Düşünüyorum evladım...", true);
-    const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode };
+    // TOKEN GÖNDERME
+    const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode, token: userToken };
     pendingImage = null;
 
     try{
@@ -375,7 +471,6 @@
     div.innerHTML = `<div class="bubble">${content}</div>`;
     document.getElementById("main").appendChild(div);
     setTimeout(() => { div.scrollIntoView({behavior:"smooth", block:"start"}); }, 100);
-    
     if(speech && role === "ai" && !isLoader){
         const btn = document.createElement("button");
         btn.className = "audio-btn";
@@ -394,24 +489,14 @@
         if(idx === 0) { btnClass = "btnGold"; btnText = "ALTIN TERCİH"; icon="<i class='fa-solid fa-trophy'></i>"; }
         else if(idx === 1) { btnClass = "btnSilver"; btnText = "GÜMÜŞ TERCİH"; icon="<i class='fa-solid fa-medal'></i>"; }
         else if(idx === 2) { btnClass = "btnBlue"; btnText = "FİYAT/PERF."; icon="<i class='fa-solid fa-tag'></i>"; }
-
         const card = document.createElement("div");
         card.className = "card";
         const imgUrl = p.image || 'https://via.placeholder.com/150?text=Resim+Yok';
-        
         let actionHtml = "";
         if(p.url && p.url.startsWith("http")){
             actionHtml = `<a href="${p.url}" target="_blank" class="btnLink ${btnClass}">${icon} ${btnText}</a>`;
-        } else {
-            actionHtml = `<div style="height:10px;"></div>`;
-        }
-
-        card.innerHTML = `
-            <img class="pimg" src="${imgUrl}" onerror="this.src='https://via.placeholder.com/150?text=Hata'">
-            <div class="title">${p.title}</div>
-            <div class="price">${p.price}</div>
-            ${actionHtml}
-        `;
+        } else { actionHtml = `<div style="height:10px;"></div>`; }
+        card.innerHTML = `<img class="pimg" src="${imgUrl}" onerror="this.src='https://via.placeholder.com/150?text=Hata'"><div class="title">${p.title}</div><div class="price">${p.price}</div>${actionHtml}`;
         wrap.appendChild(card);
     });
     document.getElementById("main").appendChild(wrap);
@@ -434,6 +519,7 @@
     }catch(e){ btn.innerHTML = "Ses Hatası!"; setTimeout(() => btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`, 2000); }
   }
   
+  // Dock'u ilk kez çiz
   renderDock();
 </script>
 </body>
