@@ -34,10 +34,11 @@
     width: 100%; max-width: 480px; height: 100%; 
     position: relative; display: flex; flex-direction: column; 
     
-    /* 🌟 RESİMLER LOCAL ÇEKİLİYOR 🌟 */
-    background-color: #fff;
-    /* Varsayılan resim: Sayfa yüklenirken boş kalmasın */
-    background-image: url("mode_shopping.png"); 
+    /* 🌟 ARKA PLAN AYARLARI 🌟 */
+    background-color: #f0f0f0; /* Resim gelmezse gri fon */
+    
+    /* Varsayılan olarak GitHub'dan Alışveriş resmini çekiyoruz */
+    background-image: url("https://raw.githubusercontent.com/oguzozyigit-bot/bikonomi-frontend/main/mode_shopping.png");
     
     background-position: center bottom; /* Karakter aşağıdan başlar */
     background-size: cover; /* Resmi ekrana sığdır (Tam ekran) */
@@ -102,8 +103,8 @@
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* Sohbet Alanı */
-  .msg-container { margin-top: 20px; width: 100%; display: none; }
+  /* Sohbet Alanı (Kartlar ve Balonlar) */
+  .msg-container { margin-top: 20px; width: 100%; display: none; /* Başta gizli */ }
   .msg { display: flex; margin-bottom: 16px; animation: slideUp 0.3s ease; }
   @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   
@@ -237,18 +238,20 @@
 
   marked.setOptions({ mangle: false, headerIds: false });
 
-  // --- LOCAL RESİM LİNKLERİ (SENİN KLASÖR YAPIN) ---
+  // --- GARANTİLİ LINKLER (GITHUB RAW) ---
+  const GH_BASE = "https://raw.githubusercontent.com/oguzozyigit-bot/bikonomi-frontend/main/";
+
   const MODES = {
-    shopping: { label: "Alışveriş", icon: "fa-bag-shopping", color: "#00C897", title: "Almadan önce<br>Caynana’ya sor.", desc: "Sonra “keşke” dememek için buradayım.", img: "mode_shopping.png", ph: "Ne arıyorsun evladım?", sugg: "Her indirime atlayan sonunda pahalı öder." },
-    chat: { label: "Sohbet", icon: "fa-comments", color: "#FFB300", title: "Caynana ile<br>iki lafın belini kır.", desc: "Biraz dur bakalım, neler anlatacaksın?", img: "mode_chat.png", ph: "Naber Caynana?", sugg: "Benim zamanımda her şey daha güzeldi ah ah..." },
-    fal: { label: "Fal", icon: "fa-mug-hot", color: "#8B5CF6", title: "Kahveni içtin mi?<br>Gel falına bakayım.", desc: "Fal eğlencedir evladım, ama bazen tutar.", img: "mode_fal.png", ph: "Fincanı kapattın mı?", sugg: "Hemen inanma ama kulak da tıka." },
-    health: { label: "Sağlık", icon: "fa-heart-pulse", color: "#EF4444", title: "Caynana Sağlık'la<br>alışkanlık kazan.", desc: "Neren ağrıyor söyle bakayım?", img: "mode_health.png", ph: "Neren ağrıyor?", sugg: "Çay üstüne sakın soğuk su içme!" },
-    diet: { label: "Diyet", icon: "fa-carrot", color: "#84CC16", title: "Caynana Diyet'le<br>sağlıklı beslen!", desc: "Açlıktan değil, keyiften yiyin.", img: "mode_diet.png", ph: "Boy kilo kaç evladım?", sugg: "Ekmek değil, yeşillik ye yeşillik." },
-    food: { label: "Yemek", icon: "fa-utensils", color: "#F97316", title: "Caynana Yemek'le<br>en lezzetli tarifler!", desc: "Ne pişirsem evladım? Ekranı kokutalım mı?", img: "mode_food.png", ph: "Dolapta ne var?", sugg: "Malzemeyi ziyan etme, bereket kaçar." },
-    law: { label: "Hukuk", icon: "fa-scale-balanced", color: "#3B82F6", title: "Caynana Hukuk'la<br>kim haklı öğren!", desc: "Ben avukat değilim ama çok dava gördüm.", img: "mode_law.png", ph: "Derdini kısaca anlat.", sugg: "Sözleşmeye bakmadan imza atma!" },
-    dream: { label: "Rüya", icon: "fa-cloud-moon", color: "#6366F1", title: "Rüyada yılan mı?<br>Gel tabir edeyim.", desc: "Hayırdır inşallah de bakalım.", img: "mode_dream.png", ph: "Ne gördün rüyanda?", sugg: "Rüyalar tersine çıkar derler ama..." },
-    translate: { label: "Çeviri", icon: "fa-language", color: "#64748B", title: "Uygarlık destanı<br>ne demek İtalyanca?", desc: "Söyle çevireyim evladım.", img: "mode_translate.png", ph: "Ne yazıyor orada?", sugg: "Dil bilmek altın bileziktir." },
-    astro: { label: "Burç", icon: "fa-star", color: "#D946EF", title: "Yıldızlar senin için<br>ne diyor?", desc: "Merkür retrosu falan, dikkat et.", img: "mode_astro.png", ph: "Burcun ne senin?", sugg: "Yıldıznameye baktım, yolun açık." }
+    shopping: { label: "Alışveriş", icon: "fa-bag-shopping", color: "#00C897", title: "Almadan önce<br>Caynana’ya sor.", desc: "Sonra “keşke” dememek için buradayım.", img: GH_BASE + "mode_shopping.png", ph: "Ne arıyorsun evladım?", sugg: "Her indirime atlayan sonunda pahalı öder." },
+    chat: { label: "Sohbet", icon: "fa-comments", color: "#FFB300", title: "Caynana ile<br>iki lafın belini kır.", desc: "Biraz dur bakalım, neler anlatacaksın?", img: GH_BASE + "mode_chat.png", ph: "Naber Caynana?", sugg: "Benim zamanımda her şey daha güzeldi ah ah..." },
+    fal: { label: "Fal", icon: "fa-mug-hot", color: "#8B5CF6", title: "Kahveni içtin mi?<br>Gel falına bakayım.", desc: "Fal eğlencedir evladım, ama bazen tutar.", img: GH_BASE + "mode_fal.png", ph: "Fincanı kapattın mı?", sugg: "Hemen inanma ama kulak da tıka." },
+    health: { label: "Sağlık", icon: "fa-heart-pulse", color: "#EF4444", title: "Caynana Sağlık'la<br>alışkanlık kazan.", desc: "Neren ağrıyor söyle bakayım?", img: GH_BASE + "mode_health.png", ph: "Neren ağrıyor?", sugg: "Çay üstüne sakın soğuk su içme!" },
+    diet: { label: "Diyet", icon: "fa-carrot", color: "#84CC16", title: "Caynana Diyet'le<br>sağlıklı beslen!", desc: "Açlıktan değil, keyiften yiyin.", img: GH_BASE + "mode_diet.png", ph: "Boy kilo kaç evladım?", sugg: "Ekmek değil, yeşillik ye yeşillik." },
+    food: { label: "Yemek", icon: "fa-utensils", color: "#F97316", title: "Caynana Yemek'le<br>en lezzetli tarifler!", desc: "Ne pişirsem evladım? Ekranı kokutalım mı?", img: GH_BASE + "mode_food.png", ph: "Dolapta ne var?", sugg: "Malzemeyi ziyan etme, bereket kaçar." },
+    law: { label: "Hukuk", icon: "fa-scale-balanced", color: "#3B82F6", title: "Caynana Hukuk'la<br>kim haklı öğren!", desc: "Ben avukat değilim ama çok dava gördüm.", img: GH_BASE + "mode_law.png", ph: "Derdini kısaca anlat.", sugg: "Sözleşmeye bakmadan imza atma!" },
+    dream: { label: "Rüya", icon: "fa-cloud-moon", color: "#6366F1", title: "Rüyada yılan mı?<br>Gel tabir edeyim.", desc: "Hayırdır inşallah de bakalım.", img: GH_BASE + "mode_dream.png", ph: "Ne gördün rüyanda?", sugg: "Rüyalar tersine çıkar derler ama..." },
+    translate: { label: "Çeviri", icon: "fa-language", color: "#64748B", title: "Uygarlık destanı<br>ne demek İtalyanca?", desc: "Söyle çevireyim evladım.", img: GH_BASE + "mode_translate.png", ph: "Ne yazıyor orada?", sugg: "Dil bilmek altın bileziktir." },
+    astro: { label: "Burç", icon: "fa-star", color: "#D946EF", title: "Yıldızlar senin için<br>ne diyor?", desc: "Merkür retrosu falan, dikkat et.", img: GH_BASE + "mode_astro.png", ph: "Burcun ne senin?", sugg: "Yıldıznameye baktım, yolun açık." }
   };
 
   function renderDock() {
@@ -277,7 +280,7 @@
     currentMode = newMode;
     const m = MODES[newMode];
     
-    // --- ARKA PLANI DEĞİŞTİR (LOCAL RESİM) ---
+    // --- RESİM YÜKLE (GITHUB CDN) ---
     document.getElementById("app").style.backgroundImage = `url("${m.img}")`;
     
     document.documentElement.style.setProperty('--primary', m.color);
