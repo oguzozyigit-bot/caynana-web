@@ -85,7 +85,7 @@
   .msg.user .bubble { background: var(--primary); color: #fff; border-bottom-right-radius: 4px; transition: background 0.3s; }
   .msg.ai .bubble { background: #F3F4F6; color: var(--text); border-bottom-left-radius: 4px; }
   
-  /* Markdown Tablo */
+  /* Markdown Tablo Fix */
   .bubble table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0; background: rgba(255,255,255,0.7); border-radius: 8px; overflow: hidden; }
   .bubble th { background: rgba(0,0,0,0.05); padding: 6px; text-align: left; font-weight: 700; color: #374151; }
   .bubble td { padding: 6px; border-top: 1px solid rgba(0,0,0,0.05); color: #4B5563; }
@@ -121,7 +121,7 @@
   .title { font-size: 12px; font-weight: 600; height: 32px; overflow: hidden; margin-bottom: 4px; color: var(--text); }
   .price { font-size: 14px; font-weight: 800; color: var(--primary); }
   .btnLink { background: var(--primary); color: #fff; padding: 6px; border-radius: 6px; text-align: center; font-size: 11px; text-decoration: none; margin-top: auto; display: block; font-weight: 700; transition: 0.2s; }
-  /* Buton Renkleri */
+  /* Buton Renkleri (Dynamic) */
   .btnLink.btn-gold { background: linear-gradient(135deg, #F59E0B, #B45309); }
   .btnLink.btn-silver { background: linear-gradient(135deg, #9CA3AF, #4B5563); }
   .btnLink.btn-blue { background: linear-gradient(135deg, #3B82F6, #1E40AF); }
@@ -207,7 +207,7 @@
       <p class="hero-desc" id="heroDesc">Sonra “keşke” dememek için buradayım.</p>
       
       <div class="kaynana-img-container">
-        <img id="heroImg" src="mode_shopping.png" class="kaynana-img" 
+        <img id="heroImg" src="https://raw.githubusercontent.com/oguzozyigit-bot/bikonomi-frontend/main/mode_shopping.png" class="kaynana-img" 
              onload="this.style.display='block'; document.getElementById('heroFallback').style.display='none';"
              onerror="this.style.display='none'; document.getElementById('heroFallback').style.display='block';">
         <div id="heroFallback" class="kaynana-fallback">👵🏻</div>
@@ -256,18 +256,20 @@
 
   marked.setOptions({ mangle: false, headerIds: false });
 
-  // --- MODÜL VERİLERİ ---
+  // --- MODÜL VERİLERİ (CDN LİNKLERİ İLE GÜNCELLENDİ) ---
+  const GH_BASE = "https://raw.githubusercontent.com/oguzozyigit-bot/bikonomi-frontend/main/";
+
   const MODES = {
-    shopping: { label: "Alışveriş", icon: "fa-bag-shopping", color: "#10B981", title: "Almadan önce<br>Caynana’ya sor.", desc: "Sonra “keşke” dememek için buradayım.", img: "mode_shopping.png", ph: "Ne arıyorsun evladım?", sugg: "Her indirime atlayan sonunda pahalı öder." },
-    chat: { label: "Sohbet", icon: "fa-comments", color: "#EAB308", title: "Caynana ile<br>iki lafın belini kır.", desc: "Biraz dur bakalım, neler anlatacaksın?", img: "mode_chat.png", ph: "Naber Caynana?", sugg: "Benim zamanımda her şey daha güzeldi ah ah..." },
-    fal: { label: "Fal", icon: "fa-mug-hot", color: "#8B5CF6", title: "Kahveni içtin mi?<br>Gel falına bakayım.", desc: "Fal eğlencedir evladım, ama bazen tutar.", img: "mode_fal.png", ph: "Fincanı kapattın mı?", sugg: "Hemen inanma ama kulak da tıka." },
-    health: { label: "Sağlık", icon: "fa-heart-pulse", color: "#EF4444", title: "Caynana Sağlık'la<br>alışkanlık kazan.", desc: "Neren ağrıyor söyle bakayım?", img: "mode_health.png", ph: "Neren ağrıyor?", sugg: "Çay üstüne sakın soğuk su içme!" },
-    diet: { label: "Diyet", icon: "fa-carrot", color: "#84CC16", title: "Caynana Diyet'le<br>sağlıklı beslen!", desc: "Açlıktan değil, keyiften yiyin.", img: "mode_diet.png", ph: "Boy kilo kaç evladım?", sugg: "Ekmek değil, yeşillik ye yeşillik." },
-    food: { label: "Yemek", icon: "fa-utensils", color: "#F97316", title: "Caynana Yemek'le<br>en lezzetli tarifler!", desc: "Ne pişirsem evladım? Ekranı kokutalım mı?", img: "mode_food.png", ph: "Dolapta ne var?", sugg: "Malzemeyi ziyan etme, bereket kaçar." },
-    law: { label: "Hukuk", icon: "fa-scale-balanced", color: "#3B82F6", title: "Caynana Hukuk'la<br>kim haklı öğren!", desc: "Ben avukat değilim ama çok dava gördüm.", img: "mode_law.png", ph: "Derdini kısaca anlat.", sugg: "Sözleşmeye bakmadan imza atma!" },
-    dream: { label: "Rüya", icon: "fa-cloud-moon", color: "#6366F1", title: "Rüyada yılan mı?<br>Gel tabir edeyim.", desc: "Hayırdır inşallah de bakalım.", img: "mode_dream.png", ph: "Ne gördün rüyanda?", sugg: "Rüyalar tersine çıkar derler ama..." },
-    translate: { label: "Çeviri", icon: "fa-language", color: "#64748B", title: "Uygarlık destanı<br>ne demek İtalyanca?", desc: "Söyle çevireyim evladım.", img: "mode_translate.png", ph: "Ne yazıyor orada?", sugg: "Dil bilmek altın bileziktir." },
-    astro: { label: "Burç", icon: "fa-star", color: "#D946EF", title: "Yıldızlar senin için<br>ne diyor?", desc: "Merkür retrosu falan, dikkat et.", img: "mode_astro.png", ph: "Burcun ne senin?", sugg: "Yıldıznameye baktım, yolun açık." }
+    shopping: { label: "Alışveriş", icon: "fa-bag-shopping", color: "#10B981", title: "Almadan önce<br>Caynana’ya sor.", desc: "Sonra “keşke” dememek için buradayım.", img: GH_BASE + "mode_shopping.png", ph: "Ne arıyorsun evladım?", sugg: "Her indirime atlayan sonunda pahalı öder." },
+    chat: { label: "Sohbet", icon: "fa-comments", color: "#EAB308", title: "Caynana ile<br>iki lafın belini kır.", desc: "Biraz dur bakalım, neler anlatacaksın?", img: GH_BASE + "mode_chat.png", ph: "Naber Caynana?", sugg: "Benim zamanımda her şey daha güzeldi ah ah..." },
+    fal: { label: "Fal", icon: "fa-mug-hot", color: "#8B5CF6", title: "Kahveni içtin mi?<br>Gel falına bakayım.", desc: "Fal eğlencedir evladım, ama bazen tutar.", img: GH_BASE + "mode_fal.png", ph: "Fincanı kapattın mı?", sugg: "Hemen inanma ama kulak da tıka." },
+    health: { label: "Sağlık", icon: "fa-heart-pulse", color: "#EF4444", title: "Caynana Sağlık'la<br>alışkanlık kazan.", desc: "Neren ağrıyor söyle bakayım?", img: GH_BASE + "mode_health.png", ph: "Neren ağrıyor?", sugg: "Çay üstüne sakın soğuk su içme!" },
+    diet: { label: "Diyet", icon: "fa-carrot", color: "#84CC16", title: "Caynana Diyet'le<br>sağlıklı beslen!", desc: "Açlıktan değil, keyiften yiyin.", img: GH_BASE + "mode_diet.png", ph: "Boy kilo kaç evladım?", sugg: "Ekmek değil, yeşillik ye yeşillik." },
+    food: { label: "Yemek", icon: "fa-utensils", color: "#F97316", title: "Caynana Yemek'le<br>en lezzetli tarifler!", desc: "Ne pişirsem evladım? Ekranı kokutalım mı?", img: GH_BASE + "mode_food.png", ph: "Dolapta ne var?", sugg: "Malzemeyi ziyan etme, bereket kaçar." },
+    law: { label: "Hukuk", icon: "fa-scale-balanced", color: "#3B82F6", title: "Caynana Hukuk'la<br>kim haklı öğren!", desc: "Ben avukat değilim ama çok dava gördüm.", img: GH_BASE + "mode_law.png", ph: "Derdini kısaca anlat.", sugg: "Sözleşmeye bakmadan imza atma!" },
+    dream: { label: "Rüya", icon: "fa-cloud-moon", color: "#6366F1", title: "Rüyada yılan mı?<br>Gel tabir edeyim.", desc: "Hayırdır inşallah de bakalım.", img: GH_BASE + "mode_dream.png", ph: "Ne gördün rüyanda?", sugg: "Rüyalar tersine çıkar derler ama..." },
+    translate: { label: "Çeviri", icon: "fa-language", color: "#64748B", title: "Uygarlık destanı<br>ne demek İtalyanca?", desc: "Söyle çevireyim evladım.", img: GH_BASE + "mode_translate.png", ph: "Ne yazıyor orada?", sugg: "Dil bilmek altın bileziktir." },
+    astro: { label: "Burç", icon: "fa-star", color: "#D946EF", title: "Yıldızlar senin için<br>ne diyor?", desc: "Merkür retrosu falan, dikkat et.", img: GH_BASE + "mode_astro.png", ph: "Burcun ne senin?", sugg: "Yıldıznameye baktım, yolun açık." }
   };
 
   // --- UI RENDER ---
@@ -317,6 +319,7 @@
     document.getElementById("text").placeholder = m.ph;
     document.getElementById("suggestionText").innerText = m.sugg;
     
+    // Resim Yolu Güncellendi (Github Raw)
     const imgEl = document.getElementById("heroImg");
     const fbEl = document.getElementById("heroFallback");
     fbEl.style.display = 'none'; 
