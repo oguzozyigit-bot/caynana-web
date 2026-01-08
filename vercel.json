@@ -1,4 +1,9 @@
 {
   "version": 2,
-  "routes": [{ "src": "/(.*)", "dest": "/index.html" }]
+  "routes": [
+    { "src": "/images/(.*)", "dest": "/images/$1" },
+    { "src": "/(manifest\\.json)", "dest": "/$1" },
+    { "src": "/(sw\\.js)", "dest": "/$1" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
 }
