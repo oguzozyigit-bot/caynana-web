@@ -1,781 +1,373 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<meta name="theme-color" content="#000000" />
-<title>CAYNANA.AI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Caynana.ai</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+    <style>
+        :root {
+            --primary: #D4AF37; /* Altın */
+            --bg: #F9F9F9;
+            --text: #1a1a1a;
+            --font: 'Plus Jakarta Sans', sans-serif;
+            --safe-bottom: env(safe-area-inset-bottom);
+        }
 
-<style>
-  :root{
-    --primary:#00C897;
-    --font:'Outfit', sans-serif;
-  }
+        /* --- 1. GENEL YAPILANDIRMA --- */
+        html, body {
+            height: 100%; margin: 0; padding: 0;
+            font-family: var(--font);
+            background-color: #0b0f18; /* PC arka planı koyu */
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden; user-select: none; /* Metin seçimini engelle (app hissi) */
+        }
 
-  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-  html, body { height:100%; }
+        #app {
+            width: 100%; height: 100%;
+            max-width: 480px; max-height: 920px; aspect-ratio: 9 / 19.5;
+            background-color: var(--bg); position: relative;
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 60px rgba(0,0,0,0.5);
+            border-radius: 24px; overflow: hidden;
+        }
 
-  /* ✅ MOBİLDE SİYAH YANLAR + ORTALAMA SORUNUNU BİTİR */
-  body{
-    font-family:var(--font);
-    background:#000;
-    overflow:hidden;
-  }
+        @media (max-width: 520px) {
+            body { display: block; background-color: var(--bg); }
+            #app {
+                max-width: none; max-height: none; border-radius: 0;
+                box-shadow: none; width: 100vw; height: 100dvh;
+            }
+        }
 
-  /* ✅ APP ARTIK TAM EKRAN */
-  #app{
-    width:100vw;
-    height:100vh;
-    max-width:none;
-    position:relative;
-    display:flex;
-    flex-direction:column;
+        /* --- HERO GÖRSEL ALANI (Swipe Destekli) --- */
+        #hero {
+            flex: 0 0 45%;
+            background-size: cover; background-position: center;
+            position: relative; transition: background-image 0.4s ease-in-out;
+            background-image: url('images/hero-shopping.png');
+            cursor: grab;
+        }
+        #hero:active { cursor: grabbing; }
 
-    background:linear-gradient(135deg,#0b1220 0%,#0b0f18 100%);
-    background-position:60% 40%;
-    background-size:cover;
-    background-repeat:no-repeat;
+        #hero::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 50%;
+            background: linear-gradient(to top, var(--bg), transparent);
+            pointer-events: none; /* Dokunmayı engellemesin */
+        }
 
-    transition: background-image .25s ease, background-position .25s ease, background-size .25s ease;
-    overflow:hidden;
-  }
+        /* Header */
+        header {
+            position: absolute; top: 0; left: 0; width: 100%; padding: 20px; box-sizing: border-box;
+            display: flex; justify-content: space-between; align-items: center; z-index: 10;
+        }
+        .logo {
+            font-weight: 800; font-size: 20px; color: #1a1a1a;
+            text-shadow: 0 2px 10px rgba(255,255,255,0.8);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .logo span { color: var(--primary); }
 
-  /* Üst okunurluk overlay (kadını kapatmayacak) */
-  #app::before{
-    content:"";
-    position:absolute; inset:0;
-    background:linear-gradient(to bottom,
-      rgba(0,0,0,.58) 0%,
-      rgba(0,0,0,.30) 22%,
-      rgba(0,0,0,.10) 42%,
-      rgba(0,0,0,0) 62%
-    );
-    pointer-events:none;
-    z-index:1;
-  }
+        /* --- MESAJ ALANI --- */
+        #main {
+            flex: 1; overflow-y: auto; padding: 20px 20px 180px 20px;
+            position: relative; z-index: 5; scroll-behavior: smooth;
+        }
+        .msg {
+            max-width: 80%; padding: 14px 18px; border-radius: 18px; margin-bottom: 12px;
+            font-size: 15px; line-height: 1.4;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .bot { background: #fff; color: #333; border-bottom-left-radius: 4px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); align-self: flex-start; }
+        .user { background: #1a1a1a; color: #fff; border-bottom-right-radius: 4px; margin-left: auto; }
 
-  /* HEADER */
-  #topbar{
-    position:relative;
-    z-index:10;
-    height:78px;
-    padding:14px 18px 10px 18px;
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-  }
+        /* --- ALT PANEL --- */
+        #bottom {
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(0,0,0,0.05); z-index: 20;
+            display: flex; flex-direction: column;
+            padding-bottom: calc(var(--safe-bottom) + 10px); 
+        }
 
-  .brand-wrap{ display:flex; flex-direction:column; gap:4px; cursor:pointer; }
-  .brand{
-    display:flex; align-items:center; gap:10px;
-    font-size:22px; font-weight:900; letter-spacing:-.4px;
-    color:#fff;
-  }
-  .brand i{ color:var(--primary); font-size:20px; }
-  .brand span{ color:var(--primary); }
+        /* Standart Input Alanı */
+        .input-area {
+            padding: 15px 20px; display: flex; align-items: center; gap: 10px;
+        }
+        .input-box {
+            flex: 1; background: #f0f2f5; border-radius: 25px; padding: 4px 6px;
+            display: flex; align-items: center; transition: 0.3s;
+        }
+        .input-box input {
+            flex: 1; border: none; background: transparent; padding: 12px;
+            font-size: 15px; outline: none; font-family: var(--font);
+        }
+        #sendBtn {
+            width: 48px; height: 48px; background: var(--primary); color: #fff;
+            border: none; border-radius: 50%; display: flex; justify-content: center;
+            align-items: center; cursor: pointer; font-size: 18px;
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
 
-  .brand-sub{
-    font-size:12px;
-    font-weight:700;
-    color:rgba(255,255,255,.82);
-  }
+        /* --- ÖZEL FAL BUTONU (GİZLİ BAŞLAR) --- */
+        #fal-ui {
+            display: none; /* JS ile açılacak */
+            padding: 15px 20px;
+            justify-content: center;
+        }
+        .big-fal-btn {
+            width: 100%; background: linear-gradient(135deg, #D4AF37, #B48F26);
+            color: white; border: none; padding: 15px; border-radius: 50px;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.4);
+            transition: transform 0.2s;
+        }
+        .big-fal-btn:active { transform: scale(0.98); }
+        .big-fal-btn i { font-size: 22px; }
 
-  .menu-btn{
-    width:44px; height:44px;
-    border-radius:999px;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(255,255,255,.16);
-    border:1px solid rgba(255,255,255,.22);
-    color:#fff;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
+        /* --- MENÜ (TAB BAR) --- */
+        .tab-bar-container {
+            width: 100%; overflow-x: auto; padding-bottom: 5px;
+        }
+        .tab-bar-container::-webkit-scrollbar { display: none; }
 
-  /* ORTA */
-  #main{
-    position:relative;
-    z-index:8;
-    flex:1;
-    overflow-y:auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 0 18px 260px 18px;
-  }
+        .tab-bar {
+            display: flex; padding: 10px 15px; gap: 15px; width: max-content;
+        }
 
-  /* HERO (cam panel yok) */
-  #heroContent{
-    margin-top: 64px; /* yüz üstüne gelmesin */
-    text-align:center;
-  }
-  #heroTitle{
-    font-size:34px;
-    font-weight:900;
-    line-height:1.08;
-    color:#fff;
-    letter-spacing:-1px;
-    text-shadow:0 10px 26px rgba(0,0,0,.45);
-  }
-  #heroDesc{
-    margin-top:10px;
-    font-size:16px;
-    font-weight:700;
-    color:rgba(255,255,255,.88);
-    text-shadow:0 8px 20px rgba(0,0,0,.35);
-  }
+        .tab {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            color: #999; font-size: 11px; cursor: pointer; transition: 0.3s;
+            min-width: 55px; user-select: none;
+            /* Drag işlemi için stil */
+            touch-action: none; 
+        }
+        .tab i { font-size: 20px; margin-bottom: 2px; pointer-events: none; }
+        .tab span { pointer-events: none; }
+        
+        .tab.active { color: var(--primary); font-weight: 600; }
+        .tab.active i { transform: scale(1.1); color: var(--primary); }
+        
+        /* Sürüklenirken oluşan stil */
+        .sortable-ghost { opacity: 0.4; background: #f0f0f0; border-radius: 10px; }
+        .sortable-drag { cursor: grabbing; opacity: 1; transform: scale(1.1); }
 
-  /* CHAT */
-  #chatContainer{ display:none; margin-top:18px; }
-  .msg{ display:flex; margin-bottom:14px; }
-  .msg.user{ justify-content:flex-end; }
-  .msg.ai{ justify-content:flex-start; }
+        .icon-btn {
+            width: 40px; height: 40px; color: #666;
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
+        }
 
-  .bubble{
-    max-width:86%;
-    padding:14px 16px;
-    border-radius:18px;
-    font-size:15px;
-    line-height:1.5;
-    font-weight:600;
-  }
-  .msg.user .bubble{
-    background: var(--primary);
-    color:#fff;
-    border-bottom-right-radius:6px;
-    box-shadow:0 12px 22px rgba(0,200,151,.25);
-  }
-  .msg.ai .bubble{
-    background: rgba(255,255,255,.92);
-    color:#111;
-    border:1px solid rgba(0,0,0,.06);
-    border-bottom-left-radius:6px;
-    box-shadow:0 10px 18px rgba(0,0,0,.10);
-  }
-
-  .audio-btn{
-    margin-top:10px;
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:8px 12px;
-    border-radius:999px;
-    border:1px solid rgba(0,0,0,.08);
-    background:#fff;
-    color:var(--primary);
-    font-weight:900;
-    font-size:12px;
-    cursor:pointer;
-    user-select:none;
-  }
-  .audio-btn.playing{
-    background:#ffeaea;
-    color:#d32f2f;
-    border-color:#d32f2f;
-  }
-
-  /* ÜRÜN KARTLARI */
-  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:10px; }
-  .card{
-    background: rgba(255,255,255,.96);
-    border-radius:16px;
-    padding:10px;
-    display:flex;
-    flex-direction:column;
-    position:relative;
-    border:1px solid rgba(0,0,0,.05);
-    box-shadow:0 12px 22px rgba(0,0,0,.10);
-    overflow:hidden;
-  }
-  .card-badge{
-    position:absolute; top:10px; left:0;
-    padding:4px 10px;
-    font-size:10px;
-    font-weight:900;
-    border-radius:0 10px 10px 0;
-    color:#fff;
-    z-index:2;
-  }
-  .card-badge.gold{ background:linear-gradient(90deg,#FFB300,#FF8F00); }
-  .card-badge.silver{ background:linear-gradient(90deg,#9E9E9E,#757575); }
-  .card-badge.value{ background:linear-gradient(90deg,#00C897,#00A87E); }
-
-  .pimg{ width:100%; height:120px; object-fit:contain; margin-bottom:8px; }
-  .title{ font-size:13px; font-weight:900; height:36px; overflow:hidden; margin-bottom:6px; color:#1b1b1b; }
-  .price{ font-size:15px; font-weight:900; color:var(--primary); margin-bottom:8px; }
-  .btnLink{
-    padding:9px;
-    border-radius:10px;
-    text-align:center;
-    font-size:12px;
-    font-weight:900;
-    text-decoration:none;
-    color:#fff;
-    background:var(--primary);
-  }
-  .btnLink.btn-gold{ background:#FFB300; }
-  .btnLink.btn-silver{ background:#9E9E9E; }
-  .btnLink.btn-blue{ background:#00C897; }
-
-  /* BOTTOM */
-  #bottom{
-    position:fixed; /* ✅ MOBİLDE KAYMA & BOŞLUK HATASINI KAPATIR */
-    left:0; right:0; bottom:0;
-    z-index:20;
-    background: rgba(255,255,255,.92);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-top:1px solid rgba(0,0,0,.06);
-    padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
-  }
-
-  /* ❗ fixed olunca max genişliği app ile hizalayalım */
-  #bottom .inner{
-    max-width:480px;
-    margin:0 auto;
-  }
-
-  #suggestionText{
-    width:max-content;
-    max-width:92%;
-    margin:-18px auto 10px auto;
-    padding:10px 18px;
-    border-radius:999px;
-    background:#fff;
-    color:var(--primary);
-    font-weight:900;
-    font-size:13px;
-    text-align:center;
-    box-shadow:0 10px 22px rgba(0,0,0,.12);
-    border:1px solid rgba(0,0,0,.06);
-  }
-
-  .input-wrapper{
-    padding: 10px 18px;
-    display:flex;
-    gap:10px;
-    align-items:center;
-  }
-  .search-bar{
-    flex:1;
-    height:54px;
-    border-radius:27px;
-    background:rgba(255,255,255,.98);
-    border:1px solid rgba(0,0,0,.10);
-    display:flex;
-    align-items:center;
-    padding:0 14px;
-    box-shadow:0 6px 18px rgba(0,0,0,.06);
-  }
-  .search-bar:focus-within{
-    border-color: rgba(0,200,151,.55);
-    box-shadow:0 10px 24px rgba(0,200,151,.18);
-  }
-  .tool-btn{ color:rgba(0,0,0,.45); font-size:18px; padding:6px; cursor:pointer; }
-  #text{
-    flex:1;
-    border:none;
-    background:transparent;
-    font-size:16px;
-    margin:0 10px;
-    color:#222;
-    outline:none;
-  }
-  #sendBtn{
-    width:54px;
-    height:54px;
-    border-radius:50%;
-    border:none;
-    background: var(--primary);
-    color:#fff;
-    font-size:20px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    box-shadow:0 12px 24px rgba(0,200,151,.30);
-    transition:.15s;
-    margin-bottom:6px;
-  }
-  #sendBtn:active{ transform:scale(.92); }
-  #sendBtn:disabled{ opacity:.65; }
-
-  /* Dock */
-  #dock{
-    padding: 8px 18px 8px 18px;
-    overflow-x:auto;
-    display:flex;
-    gap:16px;
-    scrollbar-width:none;
-  }
-  #dock::-webkit-scrollbar{ display:none; }
-  .dock-item{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:6px;
-    min-width:62px;
-    opacity:.42;
-    cursor:pointer;
-    transition:.2s;
-  }
-  .dock-item.active{ opacity:1; transform:translateY(-2px); }
-  .dock-icon-box{
-    width:48px; height:48px;
-    border-radius:16px;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(255,255,255,.35);
-    color:#666;
-    font-size:20px;
-    transition:.2s;
-  }
-  .dock-item.active .dock-icon-box{
-    background:var(--primary);
-    color:#fff;
-    box-shadow:0 6px 18px rgba(0,0,0,.25);
-  }
-  .dock-label{
-    font-size:11px;
-    font-weight:900;
-    color:#333;
-    white-space:nowrap;
-  }
-
-  /* Footer */
-  .brand-footer{
-    text-align:center;
-    font-size:11px;
-    font-weight:900;
-    color:#666;
-    padding:6px 0 10px;
-    opacity:.85;
-  }
-  .it-flag{
-    width:60px; height:4px;
-    margin:6px auto 0;
-    display:flex;
-    border-radius:3px;
-    overflow:hidden;
-  }
-  .it-flag span{ flex:1; }
-  .it-flag .g{ background:#009246; }
-  .it-flag .w{ background:#fff; }
-  .it-flag .r{ background:#ce2b37; }
-
-  /* ✅ “Dosya Seç” sorunu – input kesin gizli */
-  #fileInput{ display:none !important; }
-
-  .mic-active{ color:#F44336 !important; animation:pulse 1s infinite; }
-  @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
-</style>
+        @keyframes popIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
-
 <body>
-<div id="app">
 
-  <div id="topbar">
-    <div class="brand-wrap" onclick="switchMode('shopping')">
-      <div class="brand">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        CAYNANA<span>.AI</span>
-      </div>
-      <div class="brand-sub">Yapay Zekânın Geleneksel Aklı</div>
-    </div>
-    <div class="menu-btn"><i class="fa-solid fa-bars"></i></div>
-  </div>
+    <div id="app">
+        <header>
+            <div class="logo"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary)"></i> CAYNANA<span>.AI</span></div>
+            <div class="icon-btn"><i class="fa-solid fa-bars"></i></div>
+        </header>
 
-  <div id="main">
-    <div id="heroContent">
-      <div id="heroTitle">Almadan önce<br>Caynana’ya sor.</div>
-      <div id="heroDesc">Sonra “keşke” dememek için buradayım.</div>
-    </div>
+        <div id="hero"></div>
 
-    <div id="chatContainer"></div>
-  </div>
-
-  <div id="bottom">
-    <div class="inner">
-      <div id="suggestionText">Her indirime atlayan sonunda pahalı öder.</div>
-
-      <div class="input-wrapper">
-        <div class="search-bar">
-          <div class="tool-btn" onclick="openCamera()"><i class="fa-solid fa-camera"></i></div>
-          <input id="text" placeholder="Ne danışmak istersin?" autocomplete="off" onkeypress="if(event.key==='Enter') send()">
-          <div class="tool-btn" id="micBtn" onclick="startMic()"><i class="fa-solid fa-microphone"></i></div>
+        <div id="main">
+            <div class="msg bot">
+                Almadan önce bana sor evladım, sonra "keşke" deme.
+            </div>
         </div>
-        <button id="sendBtn" onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
-      </div>
 
-      <div id="dock"></div>
+        <div id="bottom">
+            <div id="standard-ui" class="input-area">
+                <div class="icon-btn"><i class="fa-solid fa-camera"></i></div>
+                <div class="input-box">
+                    <input type="text" id="userInput" placeholder="Ne danışmak istersin?">
+                    <div class="icon-btn"><i class="fa-solid fa-microphone"></i></div>
+                </div>
+                <button id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
 
-      <div class="brand-footer">
-        @CaynanaAI by Italky Technology
-        <div class="it-flag"><span class="g"></span><span class="w"></span><span class="r"></span></div>
-      </div>
+            <div id="fal-ui">
+                <button class="big-fal-btn" onclick="takeFalPhoto()">
+                    <i class="fa-solid fa-camera"></i>
+                    Fincanını Çek ve Yorumla
+                </button>
+            </div>
+
+            <div class="tab-bar-container">
+                <div class="tab-bar" id="sortable-tabs">
+                    <div class="tab active" data-id="shopping">
+                        <i class="fa-solid fa-bag-shopping"></i><span>Alışveriş</span>
+                    </div>
+                    <div class="tab" data-id="chat">
+                        <i class="fa-regular fa-comments"></i><span>Sohbet</span>
+                    </div>
+                    <div class="tab" data-id="fal">
+                        <i class="fa-solid fa-mug-hot"></i><span>Fal</span>
+                    </div>
+                    <div class="tab" data-id="dream">
+                        <i class="fa-solid fa-moon"></i><span>Rüya</span>
+                    </div>
+                    <div class="tab" data-id="health">
+                        <i class="fa-solid fa-heart-pulse"></i><span>Sağlık</span>
+                    </div>
+                    <div class="tab" data-id="diet">
+                        <i class="fa-solid fa-apple-whole"></i><span>Diyet</span>
+                    </div>
+                    <div class="tab" data-id="food">
+                        <i class="fa-solid fa-utensils"></i><span>Yemek</span>
+                    </div>
+                    <div class="tab" data-id="law">
+                        <i class="fa-solid fa-scale-balanced"></i><span>Hukuk</span>
+                    </div>
+                    <div class="tab" data-id="translate">
+                        <i class="fa-solid fa-language"></i><span>Çeviri</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-</div>
+    <script>
+        // --- 1. VERİ & AYARLAR ---
+        const modes = {
+            shopping: { img: 'images/hero-shopping.png', msg: 'İndirimleri tarıyorum. Ne alacağız?' },
+            chat: { img: 'images/hero-chat.png', msg: 'Anlat dinliyorum, canını sıkan ne?' },
+            fal: { img: 'images/hero-fal.png', msg: 'Fincanı kapattın mı? Çek gönder bakalım.' }, // input yok
+            dream: { img: 'images/hero-dream.jpg', msg: 'Hayırdır inşallah... Rüyanda ne gördün?' },
+            health: { img: 'images/hero-health.png', msg: 'Neyin var evladım? Sağlık ihmale gelmez.' },
+            diet: { img: 'images/hero-diet.png', msg: 'Sağlıklı zayıflamanın yolunu bulalım.' },
+            food: { img: 'images/hero-food.png', msg: 'Dolapta ne var? Sana harika bir tarif vereyim.' },
+            law: { img: 'images/hero-law.png', msg: 'Hukuki bir mesele mi? Danış bakalım.' },
+            astro: { img: 'images/hero-astro.png', msg: 'Yıldızlar bugün senin için ne diyor?' },
+            translate: { img: 'images/hero-translate.png', msg: 'Okuyamadığın yazıyı göster çevireyim.' }
+        };
 
-<input type="file" id="fileInput" accept="image/*" capture="environment" />
+        let currentMode = 'shopping';
 
-<script>
-  const API_URL = "https://bikonomi-api-2.onrender.com/api/chat";
-  const SPEAK_URL = "https://bikonomi-api-2.onrender.com/api/speak";
+        // --- 2. MODÜL DEĞİŞTİRME MANTIĞI ---
+        function switchMode(modeName) {
+            currentMode = modeName;
+            const modeData = modes[modeName];
+            
+            // Görseli Güncelle
+            document.getElementById('hero').style.backgroundImage = `url('${modeData.img}')`;
 
-  let sessionId = "sess_" + Math.random().toString(36).slice(2,10);
-  let currentAudio = null;
-  let pendingImage = null;
-  let currentMode = "shopping";
-  let isSending = false;
-  const chatHistory = {};
+            // Tab Aktifliği
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            // data-id'si eşleşen tab'ı bul ve active yap
+            const activeTab = document.querySelector(`.tab[data-id="${modeName}"]`);
+            if(activeTab) activeTab.classList.add('active');
 
-  marked.setOptions({ mangle:false, headerIds:false });
+            // UI Değişikliği (FAL MODU ÖZEL)
+            const standardUI = document.getElementById('standard-ui');
+            const falUI = document.getElementById('fal-ui');
 
-  const MODES = {
-    shopping:{ label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897",
-      title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.",
-      img:"/images/hero-shopping.png", ph:"Ne danışmak istersin?", sugg:"Her indirime atlayan sonunda pahalı öder.",
-      gradient:"linear-gradient(135deg,#0b1220 0%,#0b0f18 100%)", pos:"60% 40%", size:"cover"
-    },
-    chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300",
-      title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?",
-      img:"/images/hero-chat.png", ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…",
-      gradient:"linear-gradient(135deg,#1b1b1b 0%,#0b0f18 100%)", pos:"60% 40%", size:"cover"
-    },
-    fal:{ label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6",
-      title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Fal eğlencedir evladım, ama bazen tutar.",
-      img:"/images/hero-fal.png", ph:"Fincanı kapattın mı?", sugg:"Hemen inanma ama kulak da tıka.",
-      gradient:"linear-gradient(135deg,#1a1026 0%,#0b0f18 100%)", pos:"60% 40%", size:"cover"
-    },
-    health:{ label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444",
-      title:"Caynana Sağlık'la<br>alışkanlık kazan.", desc:"Neren ağrıyor söyle bakayım?",
-      img:"/images/hero-health.png", ph:"Neren ağrıyor?", sugg:"Çay üstüne sakın soğuk su içme!",
-      gradient:"linear-gradient(135deg,#201012 0%,#0b0f18 100%)", pos:"60% 38%", size:"cover"
-    },
-    diet:{ label:"Diyet", icon:"fa-carrot", color:"#84CC16",
-      title:"Caynana Diyet'le<br>sağlıklı beslen!", desc:"Açlıktan değil, keyiften yiyin.",
-      img:"/images/hero-diet.png", ph:"Boy kilo kaç evladım?", sugg:"Ekmek değil, yeşillik ye.",
-      gradient:"linear-gradient(135deg,#0f1a14 0%,#0b0f18 100%)", pos:"60% 40%", size:"cover"
-    },
-    food:{ label:"Yemek", icon:"fa-utensils", color:"#F97316",
-      title:"Caynana Yemek'le<br>ne pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.",
-      img:"/images/hero-food.png", ph:"Dolapta ne var?", sugg:"Malzemeyi ziyan etme, bereket kaçar.",
-      gradient:"linear-gradient(135deg,#1a120b 0%,#0b0f18 100%)", pos:"60% 40%", size:"cover"
-    },
-    law:{ label:"Hukuk", icon:"fa-scale-balanced", color:"#3B82F6",
-      title:"Caynana Hukuk'la<br>kim haklı öğren.", desc:"Ben avukat değilim ama çok dava gördüm.",
-      img:"/images/hero-law.png", ph:"Derdini kısaca anlat.", sugg:"Sözleşmeye bakmadan imza atma!",
-      gradient:"linear-gradient(135deg,#0b1220 0%,#0b0f18 100%)", pos:"60% 40%", size:"cover"
-    },
-    astro:{ label:"Burç", icon:"fa-star", color:"#D946EF",
-      title:"Yıldızlar senin için<br>ne diyor?", desc:"Merkür retrosu falan… dikkat et.",
-      img:"/images/hero-astro.png", ph:"Burcun ne?", sugg:"Yıldıznameye baktım, yolun açık.",
-      gradient:"linear-gradient(135deg,#170b22 0%,#0b0f18 100%)", pos:"60% 40%", size:"cover"
-    },
-    translate:{ label:"Çeviri", icon:"fa-language", color:"#64748B",
-      title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır, ben hallederim.",
-      img:"/images/hero-translate.png", ph:"Metni yapıştır.", sugg:"Dil bilmek altın bileziktir.",
-      gradient:"linear-gradient(135deg,#0f141a 0%,#0b0f18 100%)", pos:"60% 40%", size:"cover"
-    },
-    dream:{ label:"Rüya", icon:"fa-cloud-moon", color:"#6366F1",
-      title:"Rüyada yılan mı?<br>Gel tabir edeyim.", desc:"Hayırdır inşallah…",
-      img:"/images/hero-dream.png", ph:"Ne gördün rüyanda?", sugg:"Rüyalar tersine çıkar derler ama…",
-      gradient:"linear-gradient(135deg,#0f1020 0%,#0b0f18 100%)", pos:"60% 40%", size:"cover"
-    }
-  };
+            if (modeName === 'fal') {
+                standardUI.style.display = 'none';
+                falUI.style.display = 'flex';
+            } else {
+                standardUI.style.display = 'flex';
+                falUI.style.display = 'none';
+            }
 
-  function renderDock(){
-    const dock = document.getElementById("dock");
-    dock.innerHTML = "";
-    Object.keys(MODES).forEach(key=>{
-      const m = MODES[key];
-      const div = document.createElement("div");
-      div.className = "dock-item " + (key===currentMode ? "active":"");
-      div.onclick = ()=> switchMode(key);
-      div.innerHTML = `
-        <div class="dock-icon-box"><i class="fa-solid ${m.icon}"></i></div>
-        <div class="dock-label">${m.label}</div>
-      `;
-      dock.appendChild(div);
-    });
-  }
+            // Mesaj At
+            setTimeout(() => addMessage(modeData.msg, 'bot'), 300);
+        }
 
-  function setBackgroundSmart(mode){
-    const app = document.getElementById("app");
-    app.style.backgroundImage = mode.gradient;
-    app.style.backgroundPosition = mode.pos || "60% 40%";
-    app.style.backgroundSize = mode.size || "cover";
+        // --- 3. SWIPE (KAYDIRMA) MANTIĞI ---
+        const hero = document.getElementById('hero');
+        let touchStartX = 0;
+        let touchEndX = 0;
 
-    const bust = `${mode.img}?v=${Date.now()}`;
-    const img = new Image();
-    img.onload = ()=> { app.style.backgroundImage = `url("${bust}")`; };
-    img.onerror = ()=> { /* gradient */ };
-    img.src = bust;
-  }
+        hero.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
 
-  function switchMode(newMode){
-    // history
-    const chat = document.getElementById("chatContainer");
-    chatHistory[currentMode] = chat.innerHTML;
+        hero.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
 
-    currentMode = newMode;
-    const m = MODES[newMode];
+        function handleSwipe() {
+            // Şu anki sıralamayı DOM'dan al (Kullanıcı sırayı değiştirmiş olabilir!)
+            const tabs = Array.from(document.querySelectorAll('.tab'));
+            const currentOrder = tabs.map(t => t.dataset.id);
+            const currentIndex = currentOrder.indexOf(currentMode);
 
-    document.documentElement.style.setProperty("--primary", m.color);
-    setBackgroundSmart(m);
+            if (touchEndX < touchStartX - 50) {
+                // Sola Kaydır -> SONRAKİ MODÜL
+                let nextIndex = (currentIndex + 1) % currentOrder.length;
+                switchMode(currentOrder[nextIndex]);
+            }
+            if (touchEndX > touchStartX + 50) {
+                // Sağa Kaydır -> ÖNCEKİ MODÜL
+                let prevIndex = (currentIndex - 1 + currentOrder.length) % currentOrder.length;
+                switchMode(currentOrder[prevIndex]);
+            }
+        }
 
-    document.getElementById("heroTitle").innerHTML = m.title;
-    document.getElementById("heroDesc").innerText = m.desc;
-    document.getElementById("suggestionText").innerText = m.sugg;
-    document.getElementById("text").placeholder = m.ph;
+        // --- 4. DRAG & DROP (SIRALAMA) MANTIĞI ---
+        const tabBar = document.getElementById('sortable-tabs');
+        
+        new Sortable(tabBar, {
+            animation: 150,
+            delay: 200, // 200ms basılı tutunca sürükle başlar (mobilde scroll engellememek için)
+            delayOnTouchOnly: true,
+            ghostClass: 'sortable-ghost',
+            chosenClass: 'sortable-drag',
+            onEnd: function (evt) {
+                // Sıralama değişince burası çalışır
+                console.log("Yeni sıra kaydedildi.");
+                // İstersen burada yeni sırayı LocalStorage'a kaydedebilirsin.
+            }
+        });
 
-    // yazı yüze gelmesin (az oynat)
-    document.getElementById("heroContent").style.marginTop = (newMode==="chat" ? "82px" : "64px");
+        // Tablara Tıklama Eventi (Sortable içindeki onclick bazen karışabilir, manuel ekliyoruz)
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                // Eğer sürükleme yapmıyorsak tıkla
+                switchMode(tab.dataset.id);
+            });
+        });
 
-    // restore
-    chat.innerHTML = chatHistory[newMode] || "";
-    if(chat.innerHTML.trim()){
-      document.getElementById("heroContent").style.display = "none";
-      chat.style.display = "block";
-    }else{
-      document.getElementById("heroContent").style.display = "block";
-      chat.style.display = "none";
-    }
 
-    renderDock();
-  }
+        // --- 5. MESAJLAŞMA FONKSİYONLARI ---
+        const main = document.getElementById('main');
+        const userInput = document.getElementById('userInput');
 
-  function escapeHtml(s){
-    return s.replace(/[&<>"']/g, m => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
-  }
-  function safeLink(u){
-    try{
-      const url = new URL(u, location.href);
-      if(url.protocol==="http:" || url.protocol==="https:") return url.toString();
-    }catch(e){}
-    return "";
-  }
-  function safeImg(u){
-    try{
-      const url = new URL(u, location.href);
-      if(url.protocol==="http:" || url.protocol==="https:") return url.toString();
-    }catch(e){}
-    return "https://via.placeholder.com/150?text=Resim+Yok";
-  }
+        function addMessage(text, sender) {
+            const div = document.createElement('div');
+            div.className = `msg ${sender}`;
+            div.textContent = text;
+            main.appendChild(div);
+            main.scrollTo(0, main.scrollHeight);
+        }
 
-  function pickBadge(p, idx){
-    const t = (p.caynana_trust?.badge || p.badge || p.rank || p.type || p.tag || "").toString().toLowerCase();
-    if(t.includes("sponsor")) return {key:"gold", text:"SPONSORLU"};
-    if(t.includes("gold") || t.includes("altın") || t.includes("efsane")) return {key:"gold", text:"ALTIN ÖNERİ"};
-    if(t.includes("silver") || t.includes("gümüş") || t.includes("iyi")) return {key:"silver", text:"GÜMÜŞ SEÇİM"};
-    if(t.includes("perf") || t.includes("fiyat") || t.includes("value")) return {key:"value", text:"FİYAT/PERF"};
-    if(idx===0) return {key:"gold", text:"ALTIN ÖNERİ"};
-    if(idx===1) return {key:"silver", text:"GÜMÜŞ SEÇİM"};
-    if(idx===2) return {key:"value", text:"FİYAT/PERF"};
-    return null;
-  }
+        document.getElementById('sendBtn').addEventListener('click', () => {
+            if (userInput.value.trim() !== '') {
+                const txt = userInput.value;
+                addMessage(txt, 'user');
+                userInput.value = '';
+                setTimeout(() => addMessage("Hele dur, bir bakayım...", 'bot'), 1000);
+            }
+        });
+        
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') document.getElementById('sendBtn').click();
+        });
 
-  function renderCards(list){
-    const wrap = document.createElement("div");
-    wrap.className="cards";
-    list.forEach((p, idx)=>{
-      const card = document.createElement("div");
-      card.className="card";
+        // Fal butonu aksiyonu
+        function takeFalPhoto() {
+            addMessage("📸 Fincan fotoğrafları çekildi...", "user");
+            setTimeout(() => {
+                addMessage("Hmmm... Yolların var, dur yorumluyorum...", "bot");
+            }, 1000);
+        }
 
-      const badge = pickBadge(p, idx);
-      const badgeHtml = badge ? `<div class="card-badge ${badge.key}">${badge.text}</div>` : "";
-
-      const title = escapeHtml(String(p.title||""));
-      const price = escapeHtml(String(p.price||""));
-      const url = p.url ? safeLink(String(p.url)) : "";
-      const img = p.image ? safeImg(String(p.image)) : "https://via.placeholder.com/150?text=Resim+Yok";
-
-      const btnClass = badge?.key==="gold" ? "btn-gold" : badge?.key==="silver" ? "btn-silver" : "btn-blue";
-      const btnHTML = url ? `<a class="btnLink ${btnClass}" target="_blank" rel="noopener noreferrer" href="${url}">İNCELE</a>` : "";
-      const priceHTML = price ? `<div class="price">${price}</div>` : "";
-
-      card.innerHTML = `${badgeHtml}
-        <img class="pimg" src="${img}" onerror="this.src='https://via.placeholder.com/150?text=Resim+Yok'">
-        <div class="title">${title}</div>
-        ${priceHTML}
-        ${btnHTML}
-      `;
-      wrap.appendChild(card);
-    });
-    const chat = document.getElementById("chatContainer");
-    chat.appendChild(wrap);
-  }
-
-  function addBubble(role, text, isLoader=false, speech=null, imgData=null, id=null){
-    const div = document.createElement("div");
-    div.className = "msg " + role;
-    if(id) div.id = id;
-
-    let content = "";
-    if(imgData) content += `<img src="${imgData}" style="max-width:100%; border-radius:10px; margin-bottom:10px;">`;
-
-    let htmlContent = text;
-    if(role==="ai" && !isLoader){
-      const raw = marked.parse(text);
-      htmlContent = DOMPurify.sanitize(raw, { USE_PROFILES:{ html:true }});
-    }else if(role==="user"){
-      htmlContent = escapeHtml(text);
-    }
-
-    div.innerHTML = `<div class="bubble">${content + htmlContent}</div>`;
-
-    if(speech && role==="ai" && !isLoader){
-      const btn = document.createElement("div");
-      btn.className = "audio-btn";
-      btn.setAttribute("data-speech", speech);
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
-      div.querySelector(".bubble").appendChild(btn);
-    }
-
-    document.getElementById("chatContainer").appendChild(div);
-    document.getElementById("main").scrollTo(0, document.getElementById("main").scrollHeight);
-  }
-
-  async function send(){
-    if(isSending) return;
-
-    const input = document.getElementById("text");
-    let val = input.value.trim();
-
-    if(pendingImage && val===""){
-      val = (currentMode==="translate") ? "Bunu çevir" :
-            (currentMode==="fal") ? "Bu fotoğraftaki fala bak" :
-            "Buna bak evladım";
-    }
-
-    if(!val && !pendingImage) return;
-
-    if(currentMode==="shopping"){
-      document.querySelectorAll("#chatContainer .cards").forEach(el=>el.remove());
-    }
-
-    isSending = true;
-    document.getElementById("sendBtn").disabled = true;
-
-    document.getElementById("heroContent").style.display = "none";
-    document.getElementById("chatContainer").style.display = "block";
-
-    addBubble("user", val, false, null, pendingImage);
-    input.value = "";
-
-    const loaderId = "loader_" + Date.now();
-    addBubble("ai", "<i class='fa-solid fa-circle-notch fa-spin'></i> Bakıyorum...", true, null, null, loaderId);
-
-    const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode };
-    pendingImage = null;
-
-    try{
-      const res = await fetch(API_URL, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify(payload) });
-      const data = await res.json();
-      document.getElementById(loaderId)?.remove();
-      addBubble("ai", data.assistant_text || "Heh… bir şey diyemedim evladım.", false, data.speech_text || null);
-      if(data.data && data.data.length) renderCards(data.data);
-    }catch(e){
-      const el = document.getElementById(loaderId);
-      if(el) el.innerHTML="İnternet gitti galiba evladım.";
-    }finally{
-      isSending = false;
-      document.getElementById("sendBtn").disabled = false;
-    }
-  }
-
-  // audio delegation
-  document.getElementById("chatContainer").addEventListener("click",(e)=>{
-    const btn = e.target.closest(".audio-btn");
-    if(!btn) return;
-    const text = btn.getAttribute("data-speech");
-    if(text) playAudio(text, btn);
-  });
-
-  async function playAudio(text, btn){
-    const wasPlaying = btn.classList.contains("playing");
-    if(currentAudio){
-      currentAudio.pause();
-      currentAudio=null;
-    }
-    document.querySelectorAll(".audio-btn.playing").forEach(b=>{
-      b.classList.remove("playing");
-      b.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
-    });
-    if(wasPlaying) return;
-
-    const original = btn.innerHTML;
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor...`;
-
-    try{
-      const res = await fetch(SPEAK_URL, { method:"POST", headers:{ "Content-Type":"application/json" }, body: JSON.stringify({ text }) });
-      const blob = await res.blob();
-      currentAudio = new Audio(URL.createObjectURL(blob));
-      currentAudio.onended = ()=>{
-        btn.classList.remove("playing");
-        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
-        currentAudio=null;
-      };
-      await currentAudio.play();
-      btn.classList.add("playing");
-      btn.innerHTML = `<i class="fa-solid fa-stop"></i> Sus Kız!`;
-    }catch(e){
-      btn.innerHTML = "Hata";
-      setTimeout(()=>btn.innerHTML=original, 1200);
-    }
-  }
-
-  // camera
-  const fileEl = document.getElementById("fileInput");
-  function openCamera(){ fileEl.value=""; fileEl.click(); }
-  fileEl.addEventListener("change",(e)=>{
-    const file = e.target.files && e.target.files[0];
-    if(!file) return;
-    const r = new FileReader();
-    r.onload = ()=>{
-      pendingImage = r.result;
-      document.getElementById("text").value = "📷 Fotoğraf eklendi";
-      document.getElementById("text").focus();
-    };
-    r.readAsDataURL(file);
-  });
-
-  // mic
-  function startMic(){
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR){ alert("Mikrofon desteği yok."); return; }
-    const rec = new SR();
-    rec.lang="tr-TR";
-    const mic = document.getElementById("micBtn");
-    mic.classList.add("mic-active");
-    rec.onresult = (e)=>{
-      document.getElementById("text").value = e.results[0][0].transcript;
-      mic.classList.remove("mic-active");
-      send();
-    };
-    rec.onend = ()=> mic.classList.remove("mic-active");
-    rec.start();
-  }
-
-  // swipe
-  let startX = 0;
-  document.getElementById("app").addEventListener("touchstart", e=>{ startX = e.touches[0].clientX; }, {passive:true});
-  document.getElementById("app").addEventListener("touchend", e=>{
-    const diff = e.changedTouches[0].clientX - startX;
-    if(Math.abs(diff) < 60) return;
-    const keys = Object.keys(MODES);
-    const i = keys.indexOf(currentMode);
-    if(diff < 0 && i < keys.length-1) switchMode(keys[i+1]);
-    if(diff > 0 && i > 0) switchMode(keys[i-1]);
-  }, {passive:true});
-
-  // init
-  renderDock();
-  switchMode("shopping");
-</script>
+    </script>
 </body>
 </html>
-```0
