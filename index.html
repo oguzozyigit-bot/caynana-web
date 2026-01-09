@@ -6,23 +6,24 @@
   <meta name="theme-color" content="#0b0f18" />
   <title>CAYNANA.AI</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <style>
     :root{
       --primary:#00C897;
       --bg:#ffffff;
-      --text:#1a1a1a;
+      --text:#111827;
       --muted:#6b7280;
-      --safe: env(safe-area-inset-bottom);
+      --safeB: env(safe-area-inset-bottom);
+      --safeT: env(safe-area-inset-top);
       --font:'Plus Jakarta Sans', sans-serif;
     }
 
     *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
     html,body{ height:100%; }
 
-    /* WEB: telefon gibi ortala */
+    /* WEB: Telefon gibi ortala */
     body{
       font-family:var(--font);
       background:#0b0f18;
@@ -32,7 +33,6 @@
       justify-content:center;
     }
 
-    /* APP: webde telefon çerçevesi, mobilde full */
     #app{
       width:100%;
       height:100%;
@@ -47,33 +47,39 @@
       display:flex;
       flex-direction:column;
     }
+
+    /* Mobilde tam ekran */
     @media (max-width:520px){
-      body{ display:block; }
+      body{ display:block; background:#0b0f18; }
       #app{
         max-width:none; max-height:none; aspect-ratio:auto;
-        width:100vw; height:100dvh; border-radius:0; box-shadow:none;
+        width:100vw; height:100dvh;
+        border-radius:0; box-shadow:none;
       }
     }
 
     /* HERO */
     #hero{
-      flex:0 0 45%;
+      flex:0 0 46%;
       position:relative;
       background-size:cover;
-      background-position:center 28%; /* yüz üstüne yazı binmesin */
       background-repeat:no-repeat;
-      transition: background-image .35s ease, background-position .35s ease;
+      background-position:center 28%;
+      transition: background-image .30s ease, background-position .30s ease;
       touch-action: pan-y;
+      user-select:none;
     }
+
+    /* Üst yazı için koyu şerit + altta beyaz fade */
     #hero::after{
       content:"";
       position:absolute; inset:0;
-      background: linear-gradient(to bottom,
-        rgba(0,0,0,.55) 0%,
-        rgba(0,0,0,.18) 35%,
-        rgba(255,255,255,0) 72%,
-        rgba(255,255,255,.90) 100%
-      );
+      background:
+        linear-gradient(to bottom,
+          rgba(0,0,0,.62) 0%,
+          rgba(0,0,0,.25) 38%,
+          rgba(255,255,255,0) 72%,
+          rgba(255,255,255,.96) 100%);
       pointer-events:none;
     }
 
@@ -81,39 +87,44 @@
     header{
       position:absolute;
       top:0; left:0; right:0;
-      padding:18px 18px 10px 18px;
+      padding: calc(14px + var(--safeT)) 16px 10px 16px;
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      z-index:5;
+      z-index:6;
       pointer-events:none;
     }
+
     .brand{
       display:flex; flex-direction:column; gap:6px;
       pointer-events:auto;
       cursor:pointer;
     }
+
     .brand .top{
       display:flex; align-items:center; gap:10px;
       font-weight:900; font-size:22px;
       color:#fff;
-      text-shadow:0 8px 22px rgba(0,0,0,.35);
+      text-shadow:0 10px 28px rgba(0,0,0,.45);
+      letter-spacing:-.3px;
     }
     .brand .top i{ color:var(--primary); }
     .brand .top span{ color:var(--primary); }
+
     .brand .sub{
       font-size:12px;
-      font-weight:800;
+      font-weight:900;
       color:rgba(255,255,255,.86);
-      text-shadow:0 8px 22px rgba(0,0,0,.35);
+      text-shadow:0 10px 28px rgba(0,0,0,.40);
     }
+
     .menu-btn{
       width:44px; height:44px;
       border-radius:999px;
-      background:rgba(255,255,255,.18);
-      border:1px solid rgba(255,255,255,.22);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.24);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       display:flex; align-items:center; justify-content:center;
       color:#fff;
       pointer-events:auto;
@@ -122,59 +133,62 @@
     /* HERO TEXT */
     .hero-text{
       position:absolute;
-      left:18px; right:18px;
-      top:110px;
+      left:16px; right:16px;
+      top: 112px;            /* JS modlara göre günceller */
       z-index:6;
       pointer-events:none;
     }
+
     .hero-text h1{
       font-size:34px;
-      font-weight:900;
+      font-weight:950;
       line-height:1.05;
       color:#fff;
       letter-spacing:-.8px;
-      text-shadow:0 10px 26px rgba(0,0,0,.45);
+      text-shadow:0 14px 30px rgba(0,0,0,.50);
     }
+
     .hero-text p{
       margin-top:10px;
       font-size:15px;
-      font-weight:800;
+      font-weight:900;
       color:rgba(255,255,255,.88);
-      text-shadow:0 10px 26px rgba(0,0,0,.35);
+      text-shadow:0 12px 26px rgba(0,0,0,.42);
+      max-width: 92%;
     }
 
     /* MAIN */
     #main{
       flex:1;
       background: var(--bg);
-      padding:16px 16px 250px 16px; /* alt bar payı */
+      padding:16px 16px 260px 16px; /* bottom payı */
       overflow:auto;
       -webkit-overflow-scrolling: touch;
     }
 
-    /* Quick cards */
     .qwrap{ display:flex; flex-direction:column; gap:12px; }
+
     .qcard{
       background:#fff;
       border:1px solid rgba(0,0,0,.06);
       border-radius:18px;
       padding:16px 16px;
       font-size:15px;
-      font-weight:800;
-      color:#2a2a2a;
-      box-shadow:0 8px 20px rgba(0,0,0,.06);
+      font-weight:900;
+      color:#1f2937;
+      box-shadow:0 10px 22px rgba(0,0,0,.07);
     }
 
-    /* BOTTOM */
+    /* BOTTOM BAR */
     #bottom{
       position:absolute;
       left:0; right:0; bottom:0;
       background:rgba(255,255,255,.96);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       border-top:1px solid rgba(0,0,0,.06);
-      padding-bottom: calc(var(--safe) + 14px);
       z-index:20;
+      padding-bottom: calc(var(--safeB) + 12px);
     }
 
     #tip{
@@ -185,19 +199,20 @@
       border-radius:999px;
       background:#fff;
       border:1px solid rgba(0,0,0,.06);
-      box-shadow:0 10px 24px rgba(0,0,0,.10);
-      font-weight:900;
+      box-shadow:0 12px 26px rgba(0,0,0,.10);
+      font-weight:950;
       color:var(--primary);
       text-align:center;
     }
 
-    /* Standard input */
+    /* INPUT */
     #standardUI{
       padding:12px 16px;
       display:flex;
       align-items:center;
       gap:10px;
     }
+
     .iconBtn{
       width:44px; height:44px;
       display:flex; align-items:center; justify-content:center;
@@ -205,6 +220,7 @@
       border-radius:14px;
       flex:0 0 44px;
     }
+
     .inputBox{
       flex:1;
       height:52px;
@@ -216,16 +232,19 @@
       padding:0 10px;
       gap:8px;
     }
+
     .inputBox input{
       flex:1;
       border:none;
       outline:none;
       background:transparent;
       font-size:15px;
-      font-weight:800;
+      font-weight:900;
       color:#111;
       padding:0 6px;
+      min-width: 0;
     }
+
     .sendBtn{
       width:52px; height:52px;
       border:none;
@@ -234,23 +253,20 @@
       color:#fff;
       font-size:18px;
       display:flex; align-items:center; justify-content:center;
-      box-shadow:0 10px 22px rgba(0,0,0,.10);
+      box-shadow:0 10px 22px rgba(0,0,0,.12);
       cursor:pointer;
       flex:0 0 52px;
     }
 
-    /* Fal special */
-    #falUI{
-      display:none;
-      padding:12px 16px 14px 16px;
-    }
+    /* Fal özel */
+    #falUI{ display:none; padding:12px 16px 14px 16px; }
     .bigFalBtn{
       width:100%;
       border:none;
       border-radius:999px;
       padding:16px 16px;
       font-size:16px;
-      font-weight:900;
+      font-weight:950;
       color:#fff;
       display:flex;
       align-items:center;
@@ -261,19 +277,22 @@
       box-shadow:0 14px 26px rgba(0,0,0,.18);
     }
 
-    /* Dock */
+    /* DOCK */
     .dockWrap{
       padding: 8px 12px 0 12px;
       overflow-x:auto;
       scrollbar-width:none;
+      scroll-snap-type: x mandatory;
     }
     .dockWrap::-webkit-scrollbar{ display:none; }
+
     .dock{
       display:flex;
       gap:14px;
       width:max-content;
       padding: 0 4px 8px 4px;
     }
+
     .tab{
       min-width:62px;
       display:flex;
@@ -282,12 +301,14 @@
       gap:6px;
       color:#9aa0a6;
       font-size:11px;
-      font-weight:900;
+      font-weight:950;
       user-select:none;
       cursor:pointer;
-      opacity:.75;
+      opacity:.78;
       transition:.2s;
+      scroll-snap-align: start;
     }
+
     .tab i{
       width:48px; height:48px;
       border-radius:16px;
@@ -297,11 +318,12 @@
       font-size:20px;
       transition:.2s;
     }
-    .tab.active{ opacity:1; color:#222; }
+
+    .tab.active{ opacity:1; color:#111; }
     .tab.active i{
       background:var(--primary);
       color:#fff;
-      box-shadow:0 10px 20px rgba(0,0,0,.10);
+      box-shadow:0 10px 20px rgba(0,0,0,.12);
       transform: translateY(-2px);
     }
 
@@ -309,7 +331,7 @@
     .footer{
       text-align:center;
       font-size:11px;
-      font-weight:900;
+      font-weight:950;
       color:#666;
       padding:8px 0 10px;
     }
@@ -325,7 +347,6 @@
     .w{ background:#fff; }
     .r{ background:#CE2B37; }
 
-    /* hidden file input */
     #fileInput{ display:none !important; }
   </style>
 </head>
@@ -358,7 +379,7 @@
         <div class="iconBtn" onclick="openCamera()"><i class="fa-solid fa-camera"></i></div>
         <div class="inputBox">
           <input id="userInput" placeholder="Ne danışmak istersin?" />
-          <div class="iconBtn"><i class="fa-solid fa-microphone"></i></div>
+          <div class="iconBtn" onclick="void(0)"><i class="fa-solid fa-microphone"></i></div>
         </div>
         <button class="sendBtn" id="sendBtn" onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
       </div>
@@ -385,36 +406,79 @@
 <script>
   const HERO_BASE = "images/";
 
+  // YÜZÜ KAPATMAMAK İÇİN:
+  // pos: background-position (x y)
+  // top: yazı kutusunun üstten konumu
   const modes = {
-    shopping:  { color:"#00C897", img:"hero-shopping.png",  tip:"İndirimleri tarıyorum. Ne alacağız?",                 title:"Almadan önce<br>Caynana’ya sor.",           desc:"Sonra “keşke” dememek için buradayım.", top:110,
-                 cards:["İndirimleri tarıyorum. Ne alacağız?","Bütçeni söyle, en iyisini bulayım.","Sponsor varsa saklamam."] },
+    shopping:  { color:"#00C897", img:"hero-shopping.png",  pos:"center 18%", top:112,
+      tip:"Her indirime atlayan sonunda pahalı öder.",
+      title:"Almadan önce<br>Caynana’ya sor.",
+      desc:"Sonra “keşke” dememek için buradayım.",
+      ph:"Ne danışmak istersin?",
+      cards:["İndirimleri tarıyorum. Ne alacağız?","Bütçeni söyle, en iyisini bulayım.","Sponsor varsa saklamam."] },
 
-    chat:      { color:"#FFB300", img:"hero-chat.png",      tip:"Anlat dinliyorum, canını sıkan ne?",                  title:"Caynana ile<br>iki lafın belini kır.",       desc:"Biraz dur bakalım, neler anlatacaksın?", top:110,
-                 cards:["Anlat dinliyorum, canını sıkan ne?","Bugün neyi dert ettin?","Ben buradayım, dökül…"] },
+    chat:      { color:"#FFB300", img:"hero-chat.png",      pos:"center 22%", top:118,
+      tip:"Benim zamanımda her şey daha güzeldi ah ah…",
+      title:"Caynana ile<br>iki lafın belini kır.",
+      desc:"Biraz dur bakalım, neler anlatacaksın?",
+      ph:"Naber Caynana?",
+      cards:["Anlat dinliyorum, canını sıkan ne?","Bugün neyi dert ettin?","Ben buradayım, dökül…"] },
 
-    fal:       { color:"#D4AF37", img:"hero-fal.png",       tip:"Fincanı kapattın mı? Çek gönder bakalım.",            title:"Falına bakalım mı?",                         desc:"Fincanı çek, ben yorumlayayım.", top:120,
-                 cards:["Fincanı kapattın mı? Çek gönder bakalım.","Niyetini söyle, ona göre bakayım.","Korkma… ama doğruyu söylerim."] },
+    fal:       { color:"#D4AF37", img:"hero-fal.png",       pos:"center 20%", top:118,
+      tip:"Fincanı kapattın mı? Çek gönder bakalım.",
+      title:"Falına bakalım mı?",
+      desc:"Fincanı çek, ben yorumlayayım.",
+      ph:"",
+      cards:["Fincanı kapattın mı? Çek gönder bakalım.","Niyetini söyle, ona göre bakayım.","Korkma… ama doğruyu söylerim."] },
 
-    dream:     { color:"#6366F1", img:"hero-dream.png",     tip:"Hayırdır inşallah… Rüyanda ne gördün?",               title:"Rüyada ne gördün?",                          desc:"Anlat, tabir edeyim.", top:110,
-                 cards:["Hayırdır inşallah… Rüyanda ne gördün?","Detayı söyle, tabiri netleşir.","Sabaha kadar konuşuruz, sıkıntı yok."] },
+    dream:     { color:"#6366F1", img:"hero-dream.png",     pos:"center 16%", top:110,
+      tip:"Hayırdır inşallah…",
+      title:"Rüyada ne gördün?",
+      desc:"Anlat, tabir edeyim.",
+      ph:"Ne gördün rüyanda?",
+      cards:["Hayırdır inşallah… Rüyanda ne gördün?","Detayı söyle, tabiri netleşir.","Sabaha kadar konuşuruz, sıkıntı yok."] },
 
-    health:    { color:"#EF4444", img:"hero-health.png",    tip:"Neyin var evladım? Sağlık ihmale gelmez.",            title:"Caynana Sağlık’la<br>alışkanlık kazan.",      desc:"Neren ağrıyor söyle bakayım?", top:110,
-                 cards:["Neyin var evladım? Sağlık ihmale gelmez.","Belirtiyi yaz, ben yönlendireyim.","Önce sakin ol… anlat."] },
+    health:    { color:"#EF4444", img:"hero-health.png",    pos:"center 18%", top:110,
+      tip:"Sağlık ihmale gelmez.",
+      title:"Caynana Sağlık’la<br>alışkanlık kazan.",
+      desc:"Neren ağrıyor söyle bakayım?",
+      ph:"Neren ağrıyor?",
+      cards:["Neyin var evladım? Sağlık ihmale gelmez.","Belirtiyi yaz, ben yönlendireyim.","Önce sakin ol… anlat."] },
 
-    diet:      { color:"#84CC16", img:"hero-diet.png",      tip:"Sağlıklı zayıflamanın yolunu bulalım.",               title:"Caynana Diyet’le<br>sağlıklı beslen!",        desc:"Açlıktan değil, keyiften yiyin.", top:110,
-                 cards:["Sağlıklı zayıflamanın yolunu bulalım.","Boy-kilo yaz, hedef koyalım.","Ekmek değil, yeşillik ye."] },
+    diet:      { color:"#84CC16", img:"hero-diet.png",      pos:"center 18%", top:110,
+      tip:"Ekmek değil, yeşillik ye.",
+      title:"Caynana Diyet’le<br>sağlıklı beslen!",
+      desc:"Açlıktan değil, keyiften yiyin.",
+      ph:"Boy kilo kaç evladım?",
+      cards:["Sağlıklı zayıflamanın yolunu bulalım.","Boy-kilo yaz, hedef koyalım.","Ekmek değil, yeşillik ye."] },
 
-    food:      { color:"#F97316", img:"hero-food.png",      tip:"Dolapta ne var? Sana harika bir tarif vereyim.",      title:"Caynana Yemek’le<br>ne pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.", top:110,
-                 cards:["Dolapta ne var? Sana harika bir tarif vereyim.","Malzemeyi yaz, menü çıkarayım.","Ziyan etme, bereket kaçar."] },
+    food:      { color:"#F97316", img:"hero-food.png",      pos:"center 18%", top:110,
+      tip:"Malzemeyi ziyan etme, bereket kaçar.",
+      title:"Caynana Yemek’le<br>ne pişirsem derdi biter.",
+      desc:"Dolapta ne var söyle, tarif benden.",
+      ph:"Dolapta ne var?",
+      cards:["Dolapta ne var? Sana harika bir tarif vereyim.","Malzemeyi yaz, menü çıkarayım.","Ziyan etme, bereket kaçar."] },
 
-    law:       { color:"#3B82F6", img:"hero-law.png",       tip:"Sözleşmeye bakmadan imza atma!",                      title:"Caynana Hukuk’la<br>kim haklı öğren.",         desc:"Ben avukat değilim ama çok dava gördüm.", top:110,
-                 cards:["Sözleşmeye bakmadan imza atma!","Kısaca anlat, yol göstereyim.","Evrak varsa foto at."] },
+    law:       { color:"#3B82F6", img:"hero-law.png",       pos:"center 18%", top:110,
+      tip:"Sözleşmeye bakmadan imza atma!",
+      title:"Caynana Hukuk’la<br>kim haklı öğren.",
+      desc:"Ben avukat değilim ama çok dava gördüm.",
+      ph:"Kısaca anlat, yol göstereyim.",
+      cards:["Sözleşmeye bakmadan imza atma!","Kısaca anlat, yol göstereyim.","Evrak varsa foto at."] },
 
-    astro:     { color:"#D946EF", img:"hero-astro.png",     tip:"Yıldıznameye baktım, yolun açık.",                    title:"Yıldızlar senin için<br>ne diyor?",           desc:"Merkür retrosu falan… dikkat et.", top:110,
-                 cards:["Yıldıznameye baktım, yolun açık.","Burcunu yaz, yorumlayayım.","Bugün enerjin yüksek… ama temkinli ol."] },
+    astro:     { color:"#D946EF", img:"hero-astro.png",     pos:"center 18%", top:110,
+      tip:"Yıldıznameye baktım, yolun açık.",
+      title:"Yıldızlar senin için<br>ne diyor?",
+      desc:"Merkür retrosu falan… dikkat et.",
+      ph:"Burcun ne?",
+      cards:["Yıldıznameye baktım, yolun açık.","Burcunu yaz, yorumlayayım.","Bugün enerjin yüksek… ama temkinli ol."] },
 
-    translate: { color:"#9CA3AF", img:"hero-translate.png", tip:"Dil bilmek altın bileziktir.",                         title:"Çeviri lazım mı?<br>Söyle çevireyim.",         desc:"Metni yapıştır, ben hallederim.", top:110,
-                 cards:["Metni yapıştır, ben hallederim.","Fotoğraf da atabilirsin.","Kısa mı uzun mu? söyle."] }
+    translate: { color:"#9CA3AF", img:"hero-translate.png", pos:"center 18%", top:110,
+      tip:"Dil bilmek altın bileziktir.",
+      title:"Çeviri lazım mı?<br>Söyle çevireyim.",
+      desc:"Metni yapıştır, ben hallederim.",
+      ph:"Metni yapıştır.",
+      cards:["Metni yapıştır, ben hallederim.","Fotoğraf da atabilirsin.","Kısa mı uzun mu? söyle."] }
   };
 
   const dockOrder = ["shopping","chat","fal","dream","health","diet","food","law","astro","translate"];
@@ -430,26 +494,41 @@
 
   const $ = (id)=>document.getElementById(id);
 
-  function setHeroBackground(img){
-    $("hero").style.backgroundImage = `url('${HERO_BASE}${img}?v=${Date.now()}')`;
-  }
-
   function setTheme(color){
     document.documentElement.style.setProperty("--primary", color);
   }
+
+  // Preload + swap (flash yok)
+  let lastBg = "";
+  function setHeroBackground(file, pos){
+    const hero = $("hero");
+    hero.style.backgroundPosition = pos || "center 28%";
+
+    const url = `${HERO_BASE}${file}?v=${Date.now()}`;
+    const img = new Image();
+    img.onload = () => {
+      lastBg = `url("${url}")`;
+      hero.style.backgroundImage = lastBg;
+    };
+    img.onerror = () => {
+      // yüklenmezse eskisini tut
+      if (lastBg) hero.style.backgroundImage = lastBg;
+    };
+    img.src = url;
+  }
+
+  function setHeroText(topPx, title, desc){
+    document.querySelector(".hero-text").style.top = (topPx||112) + "px";
+    $("heroTitle").innerHTML = title;
+    $("heroDesc").innerText = desc;
+  }
+
+  function setTip(t){ $("tip").innerText = t || ""; }
 
   function setFalUI(isFal){
     $("standardUI").style.display = isFal ? "none" : "flex";
     $("falUI").style.display = isFal ? "block" : "none";
   }
-
-  function setHeroText(topPx, title, desc){
-    document.querySelector(".hero-text").style.top = (topPx||110) + "px";
-    $("heroTitle").innerHTML = title;
-    $("heroDesc").innerText = desc;
-  }
-
-  function setTip(t){ $("tip").innerText = t; }
 
   function renderDock(){
     const dock = $("dock");
@@ -480,33 +559,25 @@
     const m = modes[modeName];
 
     setTheme(m.color);
-    setHeroBackground(m.img);
+    setHeroBackground(m.img, m.pos);
     setHeroText(m.top, m.title, m.desc);
     setTip(m.tip);
     setFalUI(modeName==="fal");
     renderQuickCards(m.cards);
     renderDock();
-
-    // placeholder
-    $("userInput").placeholder =
-      (modeName==="translate") ? "Metni yapıştır." :
-      (modeName==="health")    ? "Neren ağrıyor?" :
-      (modeName==="diet")      ? "Boy kilo kaç evladım?" :
-      (modeName==="food")      ? "Dolapta ne var?" :
-      (modeName==="law")       ? "Derdini kısaca anlat." :
-      (modeName==="dream")     ? "Ne gördün rüyanda?" :
-      (modeName==="fal")       ? "" :
-      "Ne danışmak istersin?";
+    $("userInput").placeholder = m.ph || "";
   }
 
   function send(){
     const val = $("userInput").value.trim();
     if(!val) return;
+    // Demo quick-cards (backend entegre edince burayı senin send() fonksiyonuna bağlarız)
     renderQuickCards([`Sen: ${val}`, "Hele dur… bir bakayım…"]);
     $("userInput").value = "";
   }
 
   function openCamera(){ $("fileInput").value=""; $("fileInput").click(); }
+  function takeFalPhoto(){ openCamera(); }
 
   $("fileInput").addEventListener("change",(e)=>{
     const f = e.target.files && e.target.files[0];
@@ -514,9 +585,7 @@
     renderQuickCards([`📷 Fotoğraf seçildi: ${f.name}`, "Tamam… yorumluyorum…"]);
   });
 
-  function takeFalPhoto(){ openCamera(); }
-
-  // Swipe hero
+  // HERO SWIPE (modlar arası)
   $("hero").addEventListener("touchstart",(e)=>{ sx=e.touches[0].clientX; }, {passive:true});
   $("hero").addEventListener("touchend",(e)=>{
     const dx = e.changedTouches[0].clientX - sx;
@@ -525,6 +594,11 @@
     if(dx < 0 && i < dockOrder.length-1) switchMode(dockOrder[i+1]);
     if(dx > 0 && i > 0) switchMode(dockOrder[i-1]);
   }, {passive:true});
+
+  // Enter gönder
+  $("userInput").addEventListener("keydown",(e)=>{
+    if(e.key === "Enter") send();
+  });
 
   // Init
   switchMode("shopping");
