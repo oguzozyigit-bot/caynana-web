@@ -61,22 +61,22 @@
 
   #main{ 
     position:relative; z-index:8; flex:1; 
-    display:flex; flex-direction:column; justify-content: flex-end;
-    padding: 20px 18px 260px 18px; 
-    overflow: hidden; 
+    display:flex; flex-direction:column; 
+    overflow: hidden; /* Main container overflow gizli */
   }
   
-  #heroContent{ text-align:left; max-width:90%; pointer-events: none; margin-bottom: 40px; }
+  #heroContent{ text-align:left; max-width:90%; pointer-events: none; margin-bottom: 40px; margin-top: auto; padding: 0 18px 20px 18px; }
   #heroTitle{ font-size:32px; font-weight:900; line-height:1.1; color:#fff; letter-spacing:-1px; text-shadow:0 10px 30px rgba(0,0,0,.5); }
   #heroDesc{ margin-top:10px; font-size:15px; font-weight:600; color:rgba(255,255,255,.9); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.4); }
 
+  /* SCROLL DÜZELTMESİ YAPILDI */
   #chatContainer{ 
-    display:none; width: 100%;
-    max-height: 82vh; 
-    overflow-y: auto; padding: 20px; margin-bottom: 10px; 
+    display:none; width: 100%; height: 100%;
+    overflow-y: auto; /* Kaydırma etkinleştirildi */
+    padding: 20px 20px 180px 20px; /* Alt boşluk artırıldı ki input'un altında kalmasın */
     background: rgba(0, 0, 0, 0.25); 
     backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
-    border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 24px 24px 0 0; border: 1px solid rgba(255, 255, 255, 0.1); 
     scrollbar-width: none;
   }
   #chatContainer::-webkit-scrollbar { display: none; }
@@ -102,14 +102,14 @@
   .audio-btn.playing{ background:#ffebee; color:#d32f2f; border-color:#ffcdd2; }
   .audio-btn:active { transform: scale(0.95); }
 
-  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; width: 100%; }
+  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; width: 100%; padding-bottom: 20px; }
   .card{ background:#fff; border-radius:12px; padding:8px; display:flex; flex-direction:column; box-shadow:0 5px 15px rgba(0,0,0,.08); position:relative; overflow:hidden; }
   .card-badge{ position:absolute; top:8px; left:0; padding:3px 8px; font-size:9px; font-weight:800; color:#fff; border-radius:0 8px 8px 0; z-index:2; }
   .card-badge.gold{ background:#FFA000; } .card-badge.silver{ background:#9E9E9E; }
   .pimg{ width:100%; height:100px; object-fit:contain; margin-bottom:5px; }
   .title{ font-size:12px; font-weight:800; height:32px; overflow:hidden; margin-bottom:4px; color:#222; }
   .price{ font-size:14px; font-weight:900; color:var(--primary); }
-  .btnLink{ margin-top:6px; padding:6px; text-align:center; font-size:11px; font-weight:800; color:#fff; background:var(--primary); border-radius:6px; text-decoration:none; }
+  .btnLink{ margin-top:6px; padding:8px; text-align:center; font-size:12px; font-weight:800; color:#fff; background:var(--primary); border-radius:6px; text-decoration:none; display: block; cursor: pointer; }
 
   #bottom{ position:absolute; bottom:0; left:0; right:0; z-index:20; background:rgba(255,255,255,.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top-left-radius: 24px; border-top-right-radius: 24px; padding:15px 18px calc(env(safe-area-inset-bottom) + 20px) 18px; box-shadow:0 -10px 40px rgba(0,0,0,.15); }
   
@@ -149,7 +149,6 @@
   .oz-l-white{ background:#ffffff; border: 1px solid #eee; } 
   .oz-l-black{ background:#222; }
 
-  /* PERSONA (MOD) SEÇİM MODALI */
   #personaModal {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.6); z-index: 100;
@@ -290,7 +289,7 @@
   let currentAudio = null;
   let pendingImage = null;
   let currentMode = "chat";
-  let currentPersona = "normal"; // VARSAYILAN ARTIK NORMAL
+  let currentPersona = "normal"; 
   let isSending = false;
   const chatHistory = {};
 
@@ -338,26 +337,31 @@
     document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
     
     chat.innerHTML = chatHistory[newMode] || "";
+    // Chat doluysa hero yazısını gizle
     const hasContent = chat.innerHTML.trim().length > 0;
     document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
     chat.style.display = hasContent ? "block" : "none";
+    
     renderDock();
   }
 
   function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
   
-  // YAZI HIZI BURADAN AYARLANIYOR (speed=50 yapıldı)
+  // YAZI HIZI (speed=50 - Yavaş)
   function typeWriterEffect(element, text, speed=50) {
     let i = 0; element.innerHTML = ""; element.classList.add("typing-cursor");
     function type() {
       if (i < text.length) {
         element.textContent += text.charAt(i); i++;
-        const chatContainer = document.getElementById("chatContainer"); chatContainer.scrollTop = chatContainer.scrollHeight;
+        const chatContainer = document.getElementById("chatContainer"); 
+        // Her harfte aşağı kaydır
+        chatContainer.scrollTop = chatContainer.scrollHeight;
         setTimeout(type, speed);
       } else {
         element.classList.remove("typing-cursor");
         element.innerHTML = DOMPurify.sanitize(marked.parse(text));
-        const chatContainer = document.getElementById("chatContainer"); chatContainer.scrollTop = chatContainer.scrollHeight;
+        const chatContainer = document.getElementById("chatContainer"); 
+        chatContainer.scrollTop = chatContainer.scrollHeight;
       }
     }
     type();
@@ -369,11 +373,13 @@
       const badge = (idx===0) ? {k:"gold",t:"ALTIN"} : (idx===1) ? {k:"silver",t:"GÜMÜŞ"} : null;
       const bHtml = badge ? `<div class="card-badge ${badge.k}">${badge.t}</div>` : "";
       const div = document.createElement("div"); div.className="card";
+      // Link yapısı düzeltildi
       div.innerHTML = `${bHtml}<img class="pimg" src="${p.image||''}" onerror="this.src='https://via.placeholder.com/150'"><div class="title">${escapeHtml(p.title)}</div><div class="price">${escapeHtml(p.price)}</div><a class="btnLink" href="${p.url}" target="_blank">İNCELE</a>`;
       wrap.appendChild(div);
     });
     document.getElementById("chatContainer").appendChild(wrap);
-    const chatContainer = document.getElementById("chatContainer"); chatContainer.scrollTop = chatContainer.scrollHeight;
+    const chatContainer = document.getElementById("chatContainer"); 
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
   function addBubble(role, text, isLoader=false, speech=null, imgData=null, id=null){
@@ -397,7 +403,8 @@
     }
 
     document.getElementById("chatContainer").appendChild(div);
-    const chatContainer = document.getElementById("chatContainer"); chatContainer.scrollTop = chatContainer.scrollHeight;
+    const chatContainer = document.getElementById("chatContainer"); 
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
 
   async function send(){
@@ -449,7 +456,7 @@
   document.getElementById("menuBtn").onclick=()=>{ mask.classList.add("show"); drawer.classList.add("open"); };
   mask.onclick=()=>{ mask.classList.remove("show"); drawer.classList.remove("open"); };
 
-  // == PERSONA MENÜSÜ ==
+  // == ETKİLEŞİM ==
   function openPersonaMenu(){ document.getElementById('personaModal').classList.add('show'); }
   function closePersonaMenu(e){ if(e.target.id === 'personaModal') document.getElementById('personaModal').classList.remove('show'); }
   function selectPersona(personaId, el){
@@ -463,7 +470,6 @@
     setTimeout(()=> document.getElementById('personaModal').classList.remove('show'), 200);
   }
 
-  // ETKİLEŞİM
   const appContainer = document.getElementById("app");
   function cycleMode(direction){
     const keys = Object.keys(MODES); let idx = keys.indexOf(currentMode);
