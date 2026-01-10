@@ -89,8 +89,8 @@
     display:none; width: 100%; height: 100%;
     overflow-y: auto; 
     -webkit-overflow-scrolling: touch; 
-    /* Padding-bottom ARTIRILDI (230px) */
-    padding: 20px 20px 230px 20px; 
+    /* Padding-bottom ARTIRILDI (240px) */
+    padding: 20px 20px 240px 20px; 
     background: rgba(0, 0, 0, 0.4); 
     backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
     border-radius: 24px 24px 0 0; border: 1px solid rgba(255, 255, 255, 0.1); 
@@ -261,7 +261,6 @@
   function basePath(){ const p = location.pathname; return p.endsWith("/") ? p : p.substring(0, p.lastIndexOf("/") + 1); }
   function asset(rel){ return basePath() + rel.replace(/^\/+/, ""); }
 
-  // ---- HER MODA ÖZEL HERO KONUMU ----
   const MODES = {
     chat:{ 
       label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", pos:"55% 15%",
@@ -339,7 +338,9 @@
     document.documentElement.style.setProperty("--primary", m.color); setBackground(m);
     document.getElementById("heroTitle").innerHTML = m.title; document.getElementById("heroDesc").innerText = m.desc;
     document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
+    
     applyHeroStyle(m);
+
     chat.innerHTML = chatHistory[newMode] || "";
     const hasContent = chat.innerHTML.trim().length > 0;
     document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
@@ -349,21 +350,17 @@
 
   function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
   
-  // ---- AKILLI SCROLL YAMASI (YENİ) ----
+  // -- AKILLI SCROLL --
   function scrollToBottom(force=false){
     const c = document.getElementById("chatContainer");
     if(!c) return;
-    // Eğer kullanıcı yukarıda bir şey okuyorsa zorla aşağı çekme (force=true hariç)
     const nearBottom = (c.scrollHeight - c.scrollTop - c.clientHeight) < 150;
     if(!nearBottom && !force) return;
-
     requestAnimationFrame(()=>{
       c.scrollTop = c.scrollHeight;
       requestAnimationFrame(()=>{ c.scrollTop = c.scrollHeight; });
     });
   }
-
-  // Window resize (klavye açılması vb.) durumunda zorla aşağı çek
   window.addEventListener("resize", ()=> scrollToBottom(true));
 
   function typeWriterEffect(element, text, speed=50) {
@@ -371,12 +368,12 @@
     function type() {
       if (i < text.length) {
         element.textContent += text.charAt(i); i++;
-        scrollToBottom(false); // Yazarken yumuşak takip
+        scrollToBottom(false);
         setTimeout(type, speed);
       } else {
         element.classList.remove("typing-cursor");
         element.innerHTML = DOMPurify.sanitize(marked.parse(text));
-        scrollToBottom(true); // Bittiğinde zorla en alta
+        scrollToBottom(true);
       }
     }
     type();
@@ -392,7 +389,7 @@
       wrap.appendChild(div);
     });
     document.getElementById("chatContainer").appendChild(wrap);
-    scrollToBottom(true); // Kartlar gelince zorla aşağı
+    scrollToBottom(true);
   }
 
   function addBubble(role, text, isLoader=false, speech=null, imgData=null, id=null){
@@ -407,7 +404,6 @@
     if(speech && role==="ai"){
       const btn = document.createElement("div"); btn.className="audio-btn"; btn.setAttribute("data-speech", speech);
       btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; 
-      // Buton sonradan eklendiğinde scroll'u tetikle
       setTimeout(() => { div.appendChild(btn); scrollToBottom(true); }, Math.min(text.length * 20 + 500, 2500));
     }
     document.getElementById("chatContainer").appendChild(div);
@@ -416,9 +412,35 @@
     scrollToBottom(true);
   }
 
+  // --- YENİ: TARAYICI TARAFLI FİLTRE ---
+  function localSecurityCheck(text){
+    const lower = text.toLowerCase();
+    
+    // 1. Yasaklı Kelimeler (Basit Liste)
+    const badWords = ["küfür", "hakaret", "aptal", "salak", "gerizekalı", "porno", "sex", "silah", "uyuşturucu", "bonzai", "metamfetamin", "bahis", "kumar", "terörist", "darbe"];
+    if (badWords.some(w => lower.includes(w))) return "Terbiyem müsaade etmez evladım, düzgün konuşalım.";
+
+    // 2. Anlamsız Harf Yığını (Gibberish)
+    // - Aynı harfin 4+ tekrarı (aaaaa)
+    // - 8+ sessiz harf yan yana (sdhfjksh)
+    if (/(.)\1{4,}/.test(lower)) return "Kedi mi yürüdü klavyede evladım?";
+    
+    return null; // Temiz
+  }
+
   async function send(){
     if(isSending) return; const input = document.getElementById("text"); let val = input.value.trim();
     if(pendingImage && val==="") val = "Bu resmi yorumla"; if(!val && !pendingImage) return;
+
+    // --- FRONTEND GÜVENLİK KONTROLÜ ---
+    const badCheck = localSecurityCheck(val);
+    if(badCheck){
+       addBubble("user", val);
+       input.value = "";
+       setTimeout(()=> addBubble("ai", badCheck), 500);
+       return; // Sunucuya gitme
+    }
+
     if(currentMode==="shopping") document.querySelectorAll(".cards").forEach(e=>e.remove());
     isSending = true; document.getElementById("sendBtn").disabled = true;
     document.getElementById("heroContent").style.display="none"; document.getElementById("chatContainer").style.display="block";
