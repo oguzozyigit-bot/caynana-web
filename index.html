@@ -37,18 +37,22 @@
     #app{ width:100%; height:100dvh; max-width:none; max-height:none; border-radius:0; box-shadow:none; }
   }
 
-  /* HERO RESMİ (En Arkada) */
+  /* HERO RESMİ */
   #heroImage {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    object-fit: cover;
-    z-index: 0;
-    transition: opacity 0.3s ease;
+    object-fit: cover; z-index: 0; transition: opacity 0.3s ease;
   }
 
   /* KARARTMA */
   #app::before{
     content:""; position:absolute; inset:0;
-    background:linear-gradient(to bottom, rgba(0,0,0,.60) 0%, rgba(0,0,0,.30) 25%, rgba(0,0,0,.10) 50%, rgba(0,0,0,0) 70%);
+    /* Alt kısmı biraz daha koyulaştırdım ki yazılar net okunsun */
+    background:linear-gradient(to bottom, 
+      rgba(0,0,0,.30) 0%, 
+      rgba(0,0,0,.10) 40%, 
+      rgba(0,0,0,.40) 70%, 
+      rgba(0,0,0,.70) 90%
+    );
     pointer-events:none; z-index:1;
   }
 
@@ -60,21 +64,48 @@
   .brand-sub{ font-size:10px; font-weight:700; color:rgba(255,255,255,.7); letter-spacing: 0.5px; }
   .menu-btn{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.1); color:#fff; cursor:pointer; }
 
-  /* MAIN CONTENT */
-  #main{ position:relative; z-index:8; flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:0 18px 260px 18px; display:flex; flex-direction:column; }
+  /* MAIN CONTENT - YENİ DÜZEN */
+  #main{ 
+    position:relative; z-index:8; flex:1; 
+    /* YENİLİK: İçeriği en alta yasla */
+    display:flex; flex-direction:column; justify-content: flex-end;
+    padding:0 18px 250px 18px; /* Alt boşluk: Footer ve Input için */
+    overflow: hidden; /* Scroll'u chat container'a vereceğiz */
+  }
   
-  #heroContent{ margin-top:40px; text-align:left; max-width:90%; pointer-events: none; /* Tıklamalar arkaya geçsin */ }
+  #heroContent{ 
+    text-align:left; max-width:90%; pointer-events: none; margin-bottom: 20px;
+    /* Açılışta aşağıda dursun */
+  }
   #heroTitle{ font-size:32px; font-weight:900; line-height:1.1; color:#fff; letter-spacing:-1px; text-shadow:0 10px 30px rgba(0,0,0,.5); }
   #heroDesc{ margin-top:10px; font-size:15px; font-weight:600; color:rgba(255,255,255,.9); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.4); }
 
-  /* CHAT */
-  #chatContainer{ display:none; margin-top:10px; padding-bottom: 20px; }
-  .msg{ display:flex; margin-bottom:12px; } .msg.user{ justify-content:flex-end; } .msg.ai{ justify-content:flex-start; }
-  .bubble{ max-width:85%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.5; font-weight:600; position: relative; user-select:text; }
+  /* CHAT - YENİ DÜZEN */
+  #chatContainer{ 
+    display:none; 
+    width: 100%;
+    /* YENİLİK: Ekranın sadece %60'ını kaplasın, üst taraf (yüz) görünsün */
+    max-height: 60vh; 
+    overflow-y: auto; 
+    padding-bottom: 10px;
+    scrollbar-width: none; /* Scrollbar gizle */
+  }
+  #chatContainer::-webkit-scrollbar { display: none; }
+
+  .msg{ display:flex; margin-bottom:12px; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+
+  .msg.user{ justify-content:flex-end; } .msg.ai{ justify-content:flex-start; }
+  .bubble{ max-width:90%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.5; font-weight:600; position: relative; user-select:text; }
   .msg.user .bubble{ background:var(--primary); color:#fff; border-bottom-right-radius:4px; box-shadow:0 5px 15px rgba(0,0,0,.15); }
   .msg.ai .bubble{ background:#fff; color:#111; border-bottom-left-radius:4px; box-shadow:0 5px 15px rgba(0,0,0,.1); }
+  
+  .typing-cursor::after { content: '|'; animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
   .audio-btn{ margin-top:8px; display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; background:#f0f0f0; color:#333; font-size:11px; font-weight:800; cursor:pointer; }
   .audio-btn.playing{ background:#ffebee; color:#d32f2f; }
+  
   .cards{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
   .card{ background:#fff; border-radius:12px; padding:8px; display:flex; flex-direction:column; box-shadow:0 5px 15px rgba(0,0,0,.08); position:relative; overflow:hidden; }
   .card-badge{ position:absolute; top:8px; left:0; padding:3px 8px; font-size:9px; font-weight:800; color:#fff; border-radius:0 8px 8px 0; z-index:2; }
@@ -209,7 +240,7 @@
     Object.keys(MODES).forEach(key=>{
       const m = MODES[key]; const div = document.createElement("div");
       div.className = "dock-item " + (key===currentMode ? "active":"");
-      div.onclick = (e)=>{ e.stopPropagation(); switchMode(key); }; // Tıklama yayılmasını engelle
+      div.onclick = (e)=>{ e.stopPropagation(); switchMode(key); };
       div.innerHTML = `<div class="icon-box"><i class="fa-solid ${m.icon}"></i></div><div class="dock-label">${m.label}</div>`;
       dock.appendChild(div);
     });
@@ -231,13 +262,42 @@
     document.documentElement.style.setProperty("--primary", m.color); setBackground(m);
     document.getElementById("heroTitle").innerHTML = m.title; document.getElementById("heroDesc").innerText = m.desc;
     document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
+    
     chat.innerHTML = chatHistory[newMode] || "";
+    // Chat doluysa hero yazısını gizle
     const hasContent = chat.innerHTML.trim().length > 0;
-    document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; chat.style.display = hasContent ? "block" : "none";
+    document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
+    chat.style.display = hasContent ? "block" : "none";
+    
     renderDock();
   }
 
   function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+  
+  // TANE TANE YAZMA FONKSİYONU
+  function typeWriterEffect(element, text, speed=20) {
+    let i = 0;
+    element.innerHTML = ""; // Temizle
+    element.classList.add("typing-cursor"); // İmleç ekle
+    
+    function type() {
+      if (i < text.length) {
+        // Basit karakter ekleme (Markdown formatı sonradan işlenecek)
+        element.textContent += text.charAt(i);
+        i++;
+        // Otomatik kaydır
+        const chatContainer = document.getElementById("chatContainer");
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        setTimeout(type, speed);
+      } else {
+        // Yazma bitti, Markdown'ı işle ve HTML olarak bas
+        element.classList.remove("typing-cursor");
+        element.innerHTML = DOMPurify.sanitize(marked.parse(text));
+      }
+    }
+    type();
+  }
+
   function renderCards(list){
     const wrap = document.createElement("div"); wrap.className="cards";
     (list||[]).forEach((p, idx)=>{
@@ -248,35 +308,64 @@
       wrap.appendChild(div);
     });
     document.getElementById("chatContainer").appendChild(wrap);
-    document.getElementById("main").scrollTo(0, document.getElementById("main").scrollHeight);
+    const chatContainer = document.getElementById("chatContainer");
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
+
   function addBubble(role, text, isLoader=false, speech=null, imgData=null, id=null){
     const div = document.createElement("div"); div.className = "msg " + role; if(id) div.id = id;
     let content = ""; if(imgData) content += `<img src="${imgData}" style="max-width:100%; border-radius:12px; margin-bottom:8px;">`;
-    let htmlContent = text; if(role==="ai" && !isLoader){ htmlContent = DOMPurify.sanitize(marked.parse(text)); } else if(role==="user"){ htmlContent = escapeHtml(text); }
-    div.innerHTML = `<div class="bubble">${content + htmlContent}</div>`;
+    
+    div.innerHTML = `<div class="bubble">${content}</div>`; // İçerik sonra eklenecek
+    const bubbleContent = div.querySelector(".bubble");
+
+    if(role==="ai" && !isLoader){
+      // TANE TANE YAZ (AI Cevabı)
+      typeWriterEffect(bubbleContent, text);
+    } else {
+      // Normal Göster (Kullanıcı veya Loader)
+      let htmlContent = text;
+      if(role==="user") htmlContent = escapeHtml(text);
+      bubbleContent.innerHTML += htmlContent;
+    }
+
     if(speech && role==="ai"){
       const btn = document.createElement("div"); btn.className="audio-btn"; btn.setAttribute("data-speech", speech);
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`; div.querySelector(".bubble").appendChild(btn);
+      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Dinle`; 
+      // Ses butonu yazma bitince görünsün diye az bekletebiliriz ama şimdilik direkt ekleyelim
+      setTimeout(() => div.querySelector(".bubble").appendChild(btn), text.length * 20 + 500);
     }
+
     document.getElementById("chatContainer").appendChild(div);
-    document.getElementById("main").scrollTo(0, document.getElementById("main").scrollHeight);
+    // Kaydırma
+    const chatContainer = document.getElementById("chatContainer");
+    chatContainer.scrollTop = chatContainer.scrollHeight;
   }
+
   async function send(){
     if(isSending) return; const input = document.getElementById("text"); let val = input.value.trim();
     if(pendingImage && val==="") val = "Bu resmi yorumla"; if(!val && !pendingImage) return;
     if(currentMode==="shopping") document.querySelectorAll(".cards").forEach(e=>e.remove());
     isSending = true; document.getElementById("sendBtn").disabled = true;
-    document.getElementById("heroContent").style.display="none"; document.getElementById("chatContainer").style.display="block";
+    
+    // Mesaj geldiğinde Hero yazısı kalkar, Chat görünür
+    document.getElementById("heroContent").style.display="none"; 
+    document.getElementById("chatContainer").style.display="block";
+    
     addBubble("user", val, false, null, pendingImage); input.value = "";
     const loaderId = "ldr"+Date.now(); addBubble("ai", "<i class='fa-solid fa-spinner fa-spin'></i>", true, null, null, loaderId);
     const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode }; pendingImage = null;
+    
     try{
       const res = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
       const data = await res.json(); document.getElementById(loaderId)?.remove();
-      addBubble("ai", data.assistant_text, false, data.speech_text); if(data.data && data.data.length) renderCards(data.data);
+      
+      // Tane tane yazdırma burada tetiklenir
+      addBubble("ai", data.assistant_text, false, data.speech_text); 
+      if(data.data && data.data.length) renderCards(data.data);
     } catch(e){ document.getElementById(loaderId).innerHTML = "Bağlantı hatası."; } finally{ isSending = false; document.getElementById("sendBtn").disabled = false; }
   }
+
   async function playAudio(text, btn){
     if(currentAudio){ currentAudio.pause(); currentAudio=null; }
     document.querySelectorAll(".audio-btn.playing").forEach(b=>{ b.classList.remove("playing"); b.innerHTML=`<i class="fa-solid fa-volume-high"></i> Dinle`; });
@@ -303,59 +392,22 @@
   mask.onclick=()=>{ mask.classList.remove("show"); drawer.classList.remove("open"); };
 
   // == GELİŞMİŞ ETKİLEŞİM (Swipe + Click) ==
-  // Not: Artık tüm ekranı (#app) dinliyoruz
   const appContainer = document.getElementById("app");
-
   function cycleMode(direction){
-    const keys = Object.keys(MODES);
-    let idx = keys.indexOf(currentMode);
-    idx = (idx + direction + keys.length) % keys.length;
-    switchMode(keys[idx]);
+    const keys = Object.keys(MODES); let idx = keys.indexOf(currentMode);
+    idx = (idx + direction + keys.length) % keys.length; switchMode(keys[idx]);
   }
-
-  // 1. DOKUNMA (Click) MANTIGI
-  // Sadece Hero alanına (üst kısma) tıklayınca çalışsın
-  // Butonlara veya Input'a tıklayınca çalışmasın
   appContainer.addEventListener("click", (e) => {
-    // Eğer tıklanan yer Dock, Butonlar, Input veya Mesaj Balonu ise yoksay
-    if(e.target.closest('#dock') || 
-       e.target.closest('.input-wrapper') || 
-       e.target.closest('#topbar') || 
-       e.target.closest('.msg')) {
-      return;
-    }
-    
-    // Eğer Sohbet modu açıksa ve ekranda mesajlar varsa (Hero görünmüyorsa), 
-    // boşluğa tıklayınca değişmesin (kafa karıştırır). 
-    // Sadece "HeroContent" görünürken değişsin istiyorsak:
+    if(e.target.closest('#dock') || e.target.closest('.input-wrapper') || e.target.closest('#topbar') || e.target.closest('.msg')) return;
     const heroVisible = document.getElementById("heroContent").style.display !== "none";
-    if(heroVisible) {
-       cycleMode(1);
-    }
+    if(heroVisible) cycleMode(1);
   });
-
-  // 2. KAYDIRMA (Swipe) MANTIGI
-  let startX = 0;
-  let startY = 0;
-
-  appContainer.addEventListener("touchstart", e => {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-  }, {passive:true});
-
+  let startX = 0, startY = 0;
+  appContainer.addEventListener("touchstart", e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive:true});
   appContainer.addEventListener("touchend", e => {
-    // Dock üzerinde kaydırma yapılıyorsa engelleme (Dock kendi scrolluna sahip)
-    if(e.target.closest('#dock')) return;
-
-    const diffX = e.changedTouches[0].clientX - startX;
-    const diffY = e.changedTouches[0].clientY - startY;
-
-    // Yatay hareket dikeyden fazlaysa (Sohbeti aşağı kaydırırken değişmesin)
-    if(Math.abs(diffX) > Math.abs(diffY)) {
-        if(Math.abs(diffX) > 50) { // En az 50px kaydırıldıysa
-             cycleMode(diffX > 0 ? -1 : 1);
-        }
-    }
+    if(e.target.closest('#dock') || e.target.closest('#chatContainer')) return; // Chat içinde scroll yaparken modu değiştirme
+    const diffX = e.changedTouches[0].clientX - startX; const diffY = e.changedTouches[0].clientY - startY;
+    if(Math.abs(diffX) > Math.abs(diffY)) { if(Math.abs(diffX) > 50) cycleMode(diffX > 0 ? -1 : 1); }
   }, {passive:true});
 
   // Init
