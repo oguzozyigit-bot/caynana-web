@@ -74,8 +74,8 @@
     z-index: 9;
     transition: all 0.4s ease; /* Geçiş animasyonu */
     width: 100%;
-    /* Varsayılan değerler JS ile ezilecek */
-    bottom: 180px; 
+    /* Varsayılan olarak üstte dursun, JS ile ezilecek */
+    top: 100px; 
     left: 0;
   }
   
@@ -257,57 +257,57 @@
   function basePath(){ const p = location.pathname; return p.endsWith("/") ? p : p.substring(0, p.lastIndexOf("/") + 1); }
   function asset(rel){ return basePath() + rel.replace(/^\/+/, ""); }
 
-  // ---- HER MODA ÖZEL CSS KONUMU (YÜZLERİ KAPATMAYACAK ŞEKİLDE) ----
+  // ---- HER MODA ÖZEL CSS KONUMU (FOTOĞRAFLARA GÖRE AYARLANDI) ----
   const MODES = {
     chat:{ 
       label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", pos:"55% 15%",
-      // Sohbet: Kadın koltukta, sol alt boş
-      heroCss: "bottom: 180px; left: 0; text-align: left; max-width: 90%;" 
+      // Sohbet: Kadın sağda, sol üst boş.
+      heroCss: "top: 100px; left: 24px; text-align: left; width: auto; max-width: 70%;" 
     },
     shopping:{ 
       label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.", pos:"50% 18%",
-      // Alışveriş: Kadın altta, üst taraf boş
-      heroCss: "top: 100px; left: 0; text-align: left; max-width: 80%;"
+      // Alışveriş: Üst taraf müsait. Ortala.
+      heroCss: "top: 110px; left: 0; text-align: center; width: 100%;"
     },
     fal:{ 
       label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Fal eğlencedir evladım, ama bazen tutar.", img: asset("images/hero-fal.png"), ph:"Fincanı çektin mi?", sugg:"Kapat fincanı, fotoğrafını çek gönder.", pos:"55% 12%",
-      // Fal: Kadın ortada, üst taraf müsait
-      heroCss: "top: 110px; left: 0; text-align: center; width: 100%;"
+      // Fal: Üst taraf müsait. Ortala.
+      heroCss: "top: 100px; left: 0; text-align: center; width: 100%;"
     },
     health:{ 
       label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444", title:"Caynana Sağlık'la<br>turp gibi ol.", desc:"Neren ağrıyor söyle bakayım?", img: asset("images/hero-health.png"), ph:"Şikayetin ne?", sugg:"Çay üstüne sakın soğuk su içme!", pos:"55% 12%",
-      // Sağlık: Doktor ortada, alt taraf müsait
-      heroCss: "bottom: 180px; left: 0; text-align: center; width: 100%;"
+      // Sağlık: Doktor sağda, sol üst boş.
+      heroCss: "top: 110px; left: 24px; text-align: left; width: auto; max-width: 70%;"
     },
     diet:{ 
       label:"Diyet", icon:"fa-carrot", color:"#84CC16", title:"Sağlıklı beslen<br>zinde kal!", desc:"Açlıktan değil, keyiften yiyin.", img: asset("images/hero-diet.png"), ph:"Boy kilo kaç?", sugg:"Ekmek değil, yeşillik ye.", pos:"55% 12%",
-      // Diyet: Üst taraf boş
-      heroCss: "top: 100px; left: 0; text-align: center; width: 100%;"
+      // Diyet: Kadın ortada, sol üst boş.
+      heroCss: "top: 100px; left: 24px; text-align: left; width: auto; max-width: 75%;"
     },
     food:{ 
       label:"Yemek", icon:"fa-utensils", color:"#F97316", title:"Bugün ne<br>pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.", img: asset("images/hero-food.png"), ph:"Dolapta ne var?", sugg:"Malzemeyi ziyan etme, bereket kaçar.", pos:"55% 12%",
-      // Yemek: Kadın altta, üst boş
-      heroCss: "top: 120px; left: 0; text-align: center; width: 100%;"
+      // Yemek: Kadın altta, sol üst boş.
+      heroCss: "top: 110px; left: 24px; text-align: left; width: auto; max-width: 75%;"
     },
     law:{ 
       label:"Hukuk", icon:"fa-scale-balanced", color:"#3B82F6", title:"Hukuk işleri<br>şakaya gelmez.", desc:"Ben avukat değilim ama çok dava gördüm.", img: asset("images/hero-law.png"), ph:"Derdini anlat.", sugg:"Sözleşmeye bakmadan imza atma!", pos:"55% 12%",
-      // Hukuk: Avukat altta, orta-üst boş
-      heroCss: "top: 180px; left: 0; text-align: center; width: 100%;"
+      // Hukuk: Üst taraf müsait. Ortala.
+      heroCss: "top: 110px; left: 0; text-align: center; width: 100%;"
     },
     astro:{ 
       label:"Burç", icon:"fa-star", color:"#D946EF", title:"Yıldızlar senin için<br>ne diyor?", desc:"Merkür retrosu falan… dikkat et.", img: asset("images/hero-astro.png"), ph:"Burcun ne?", sugg:"Yıldıznameye baktım, yolun açık.", pos:"55% 12%",
-      // Burç: Gazete okuyor, sol üst veya orta boş
-      heroCss: "top: 140px; left: 0; text-align: left; max-width: 60%; padding-left: 20px;"
+      // Burç: Kadın sağda gazete okuyor, sol üst boş.
+      heroCss: "top: 110px; left: 24px; text-align: left; width: auto; max-width: 70%;"
     },
     translate:{ 
       label:"Çeviri", icon:"fa-language", color:"#64748B", title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır veya fotoğrafını çek.", img: asset("images/hero-translate.png"), ph:"Metni yaz.", sugg:"Bir lisan bir insan, iki lisan iki insan.", pos:"55% 12%",
-      // Çeviri: Turistler altta, orta boş
-      heroCss: "top: 200px; left: 0; text-align: center; width: 100%;"
+      // Çeviri: Üst taraf müsait. Ortala.
+      heroCss: "top: 110px; left: 0; text-align: center; width: 100%;"
     },
     dream:{ 
       label:"Rüya", icon:"fa-cloud-moon", color:"#6366F1", title:"Rüyalar alemine<br>hoş geldin.", desc:"Hayırdır inşallah…", img: asset("images/hero-dream.png"), ph:"Ne gördün?", sugg:"Rüyalar tersine çıkar derler ama…", pos:"55% 12%",
-      // Rüya: Alt taraf boş
-      heroCss: "bottom: 190px; left: 0; text-align: left; max-width: 90%;"
+      // Rüya: Kadın altta kitap okuyor, üst taraf müsait. Ortala.
+      heroCss: "top: 110px; left: 0; text-align: center; width: 100%;"
     }
   };
 
@@ -337,7 +337,7 @@
     document.getElementById("heroTitle").innerHTML = m.title; document.getElementById("heroDesc").innerText = m.desc;
     document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
     
-    // DINAMİK CSS UYGULAMA (GÜNCELLENDİ)
+    // DINAMİK CSS UYGULAMA
     document.getElementById("heroContent").style.cssText = m.heroCss;
 
     chat.innerHTML = chatHistory[newMode] || "";
