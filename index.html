@@ -14,10 +14,12 @@
 <style>
   :root{ --primary:#FFB300; --font:'Outfit',sans-serif; }
   *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; }
+  
   input, textarea { user-select:text; -webkit-user-select:text; }
   #text { user-select:text; -webkit-user-select:text; }
 
   html,body{ height:100%; width: 100%; overflow: hidden; }
+
   body{
     font-family:var(--font); background:#050505;
     display:flex; align-items:center; justify-content:center;
@@ -26,7 +28,7 @@
   #app{
     width:100%; height:100%; max-width:440px; max-height:880px;
     border-radius:24px; overflow:hidden; position:relative; display:flex; flex-direction:column;
-    box-shadow: 0 0 0 10px #1a1a1a, 0 20px 50px rgba(0,0,0,0.8);
+    box-shadow: 0 0 0 10px #1a1a1a, 0 20px 50px rgba(0,0,0,0.8); 
     background:#0b0f18;
   }
 
@@ -42,9 +44,9 @@
 
   #app::before{
     content:""; position:absolute; inset:0;
-    background:linear-gradient(to bottom,
-      rgba(0,0,0,.20) 0%,
-      rgba(0,0,0,.10) 50%,
+    background:linear-gradient(to bottom, 
+      rgba(0,0,0,.20) 0%, 
+      rgba(0,0,0,.10) 50%, 
       rgba(0,0,0,.60) 100%
     );
     pointer-events:none; z-index:1;
@@ -55,39 +57,41 @@
   .brand{ display:flex; align-items:center; gap:8px; font-size:20px; font-weight:900; letter-spacing:-.5px; color:#fff; }
   .brand i{ color:var(--primary); font-size:18px; } .brand span{ color:var(--primary); }
   .brand-sub{ font-size:10px; font-weight:700; color:rgba(255,255,255,.7); letter-spacing: 0.5px; }
-
+  
   .top-actions { display:flex; gap: 10px; }
   .menu-btn{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.1); color:#fff; cursor:pointer; }
   .menu-btn:active { transform: scale(0.95); background:rgba(255,255,255,.25); }
 
-  #main{
-    position:relative; z-index:8; flex:1;
-    display:flex; flex-direction:column;
-    overflow: hidden;
+  /* MAIN LAYOUT */
+  #main{ 
+    position:relative; z-index:8; flex:1; 
+    display:flex; flex-direction:column; 
+    overflow: hidden; 
   }
-
-  #heroContent{
-    position: absolute;
-    pointer-events: none;
+  
+  /* Hero Content */
+  #heroContent{ 
+    position: absolute; 
+    pointer-events: none; 
     padding: 0 24px;
     z-index: 9;
-    transition: all 0.4s ease;
+    transition: all 0.4s ease; 
     width: 100%;
-    top: 100px;
+    top: 100px; 
     left: 0;
   }
-
+  
   #heroTitle{ font-size:36px; font-weight:900; line-height:1.05; color:#fff; letter-spacing:-1.5px; text-shadow:0 10px 30px rgba(0,0,0,.6); }
   #heroDesc{ margin-top:12px; font-size:16px; font-weight:600; color:rgba(255,255,255,.95); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.5); }
 
-  #chatContainer{
+  #chatContainer{ 
     display:none; width: 100%; height: 100%;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 20px 20px 260px 20px;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-    border-radius: 24px 24px 0 0; border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow-y: auto; 
+    -webkit-overflow-scrolling: touch; 
+    padding: 20px 20px 240px 20px; 
+    background: rgba(0, 0, 0, 0.4); 
+    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
+    border-radius: 24px 24px 0 0; border: 1px solid rgba(255, 255, 255, 0.1); 
     scrollbar-width: none;
   }
   #chatContainer::-webkit-scrollbar { display: none; }
@@ -99,13 +103,13 @@
   .bubble{ max-width:95%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.5; font-weight:600; position: relative; user-select:text; }
   .msg.user .bubble{ background:var(--primary); color:#fff; border-bottom-right-radius:4px; box-shadow:0 5px 15px rgba(0,0,0,.2); }
   .msg.ai .bubble{ background:#ffffff; color:#111; border-bottom-left-radius:4px; box-shadow:0 5px 15px rgba(0,0,0,.1); }
-
+  
   .typing-cursor::after { content: '|'; animation: blink 1s infinite; margin-left: 2px; }
   @keyframes blink { 50% { opacity: 0; } }
 
   .audio-btn{
     margin-top:6px; margin-left: 4px; display:inline-flex; align-items:center; gap:8px;
-    padding:8px 14px; border-radius:20px; background:#fff; color: var(--primary);
+    padding:8px 14px; border-radius:20px; background:#fff; color: var(--primary); 
     font-size:12px; font-weight:800; cursor:pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     transition: transform 0.2s; width: fit-content;
   }
@@ -122,46 +126,41 @@
   .btnLink{ margin-top:auto; padding:8px; text-align:center; font-size:11px; font-weight:800; color:#fff; background:var(--primary); border-radius:6px; text-decoration:none; display: block; cursor: pointer; }
 
   #bottom{ position:absolute; bottom:0; left:0; right:0; z-index:20; background:rgba(255,255,255,.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top-left-radius: 24px; border-top-right-radius: 24px; padding:15px 18px calc(env(safe-area-inset-bottom) + 20px) 18px; box-shadow:0 -10px 40px rgba(0,0,0,.15); }
-
-  #suggestionText{
-    position: absolute; top: -15px; left:50%; transform:translateX(-50%);
-    background:#fff; color:var(--primary); padding:6px 14px; border-radius:20px;
-    font-size:12px; font-weight:800; box-shadow:0 -5px 15px rgba(0,0,0,.08);
-    white-space:nowrap; z-index:25; opacity:0.98; transition: all 0.3s ease; pointer-events: none;
+  
+  #suggestionText{ 
+    position: absolute; top: -15px; left:50%; transform:translateX(-50%); 
+    background:#fff; color:var(--primary); padding:6px 14px; border-radius:20px; 
+    font-size:12px; font-weight:800; box-shadow:0 -5px 15px rgba(0,0,0,.08); 
+    white-space:nowrap; z-index:25; opacity:0.98; transition: all 0.3s ease; pointer-events: none; 
   }
-
+  
   .input-wrapper{ display:flex; align-items:center; gap:8px; width:100%; }
-
-  .search-bar{
-    flex:1; height:50px; background:#ffffff; border-radius:25px;
-    display:flex; align-items:center; padding:0 5px 0 15px;
-    border:1px solid #e0e0e0; transition:0.3s; min-width: 0;
+  
+  .search-bar{ 
+    flex:1; height:50px; background:#ffffff; border-radius:25px; 
+    display:flex; align-items:center; padding:0 5px 0 15px; 
+    border:1px solid #e0e0e0; transition:0.3s; min-width: 0; 
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   }
   .search-bar:focus-within{ border-color:var(--primary); box-shadow:0 5px 15px rgba(0,0,0,.1); }
-
+  
   #text{ flex:1; border:none; background:transparent; font-size:15px; color:#333; outline:none; min-width: 0; }
-  .tool-btn{ padding:8px; color:#999; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-  .tool-btn:active{ color:var(--primary); }
-  #sendBtn{ width:50px; height:50px; border-radius:50%; border:none; background:var(--primary); color:#fff; font-size:20px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.2); }
-  #sendBtn:active{ transform:scale(0.95); }
+  .tool-btn{ padding:8px; color:#999; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; } .tool-btn:active{ color:var(--primary); }
+  #sendBtn{ width:50px; height:50px; border-radius:50%; border:none; background:var(--primary); color:#fff; font-size:20px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.2); } #sendBtn:active{ transform:scale(0.95); }
 
-  #dock{ display:flex; gap:20px; overflow-x:auto; padding:15px 5px 10px 5px; scrollbar-width:none; cursor: grab; }
-  #dock::-webkit-scrollbar{ display:none; }
-  .dock-item{ display:flex; flex-direction:column; align-items:center; gap:6px; opacity:0.5; transition:0.3s; min-width:55px; }
-  .dock-item.active{ opacity:1; transform:translateY(-3px); }
+  #dock{ display:flex; gap:20px; overflow-x:auto; padding:15px 5px 10px 5px; scrollbar-width:none; cursor: grab; } #dock::-webkit-scrollbar{ display:none; }
+  .dock-item{ display:flex; flex-direction:column; align-items:center; gap:6px; opacity:0.5; transition:0.3s; min-width:55px; } .dock-item.active{ opacity:1; transform:translateY(-3px); }
   .icon-box{ width:42px; height:42px; border-radius:14px; background:#eee; color:#666; display:flex; align-items:center; justify-content:center; font-size:18px; transition:0.3s; }
-  .dock-item.active .icon-box{ background:var(--primary); color:#fff; box-shadow:0 5px 15px rgba(0,0,0,.2); }
-  .dock-label{ font-size:10px; font-weight:800; color:#444; }
+  .dock-item.active .icon-box{ background:var(--primary); color:#fff; box-shadow:0 5px 15px rgba(0,0,0,.2); } .dock-label{ font-size:10px; font-weight:800; color:#444; }
 
   .brand-footer{ margin-top:12px; display:flex; flex-direction:column; align-items:center; gap:6px; width: fit-content; margin-left: auto; margin-right: auto; }
   .footer-text-line1{ font-size:13px; font-weight:800; color:#36454F; letter-spacing:0.5px; white-space: nowrap; }
   .footer-text-line2{ font-size:12px; font-weight:600; color:#666; letter-spacing:0.5px; }
   .oz-lines{ display:flex; gap:6px; height:5px; width: 100%; }
   .oz-lines span{ height:100%; flex:1; border-radius:3px; }
-  .oz-l-dynamic { background: var(--primary); transition: background 0.3s ease; }
-  .oz-l-red{ background:#D32F2F; }
-  .oz-l-white{ background:#ffffff; border: 1px solid #eee; }
+  .oz-l-dynamic { background: var(--primary); transition: background 0.3s ease; } 
+  .oz-l-red{ background:#D32F2F; } 
+  .oz-l-white{ background:#ffffff; border: 1px solid #eee; } 
   .oz-l-black{ background:#222; }
 
   #personaModal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
@@ -188,8 +187,7 @@
   #photoCancelBtn{ border:1px solid #e5e5e5; background:#fff; }
   #photoOkBtn{ border:none; background:var(--primary); color:#fff; }
 
-  .mic-active{ color:#D32F2F !important; animation:pulse 1s infinite; }
-  @keyframes pulse{ 0%{transform:scale(1);} 50%{transform:scale(1.2);} 100%{transform:scale(1);} }
+  .mic-active{ color:#D32F2F !important; animation:pulse 1s infinite; } @keyframes pulse{ 0%{transform:scale(1);} 50%{transform:scale(1.2);} 100%{transform:scale(1);} }
 </style>
 </head>
 
@@ -197,7 +195,6 @@
 <div id="app">
   <img id="heroImage" src="" alt="Hero Background">
 
-  <!-- Persona Modal -->
   <div id="personaModal" onclick="closePersonaMenu(event)">
     <div class="persona-content">
       <div class="persona-title">Caynana Modunu Seç</div>
@@ -210,7 +207,6 @@
     </div>
   </div>
 
-  <!-- ✅ Fotoğraf Preview Modal -->
   <div id="photoModal">
     <div class="photoBox">
       <div class="photoTitle">Fotoğraf hazır</div>
@@ -225,7 +221,6 @@
     </div>
   </div>
 
-  <!-- Drawer -->
   <div id="drawerMask"></div>
   <div id="drawer">
     <h3 style="margin-bottom:20px;">Menü</h3>
@@ -233,7 +228,6 @@
     <div style="padding:10px 0; border-bottom:1px solid #eee;">Ayarlar</div>
   </div>
 
-  <!-- Topbar -->
   <div id="topbar">
     <div class="brand-wrap" onclick="cycleMode(1)">
       <div class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i>CAYNANA<span>.AI</span></div>
@@ -245,7 +239,6 @@
     </div>
   </div>
 
-  <!-- Main -->
   <div id="main">
     <div id="heroContent">
       <div id="heroTitle"></div>
@@ -254,7 +247,6 @@
     <div id="chatContainer"></div>
   </div>
 
-  <!-- Bottom -->
   <div id="bottom">
     <div id="suggestionText"></div>
     <div class="input-wrapper">
@@ -285,17 +277,24 @@
   let currentAudio = null;
   let pendingImage = null;
   let currentMode = "chat";
-  let currentPersona = "normal";
+  let currentPersona = "normal"; 
   let isSending = false;
   const chatHistory = {};
 
   marked.setOptions({ mangle:false, headerIds:false });
-
   function basePath(){ const p = location.pathname; return p.endsWith("/") ? p : p.substring(0, p.lastIndexOf("/") + 1); }
   function asset(rel){ return basePath() + rel.replace(/^\/+/, ""); }
   function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
 
-  // ✅ Güçlü scroll
+  // ✅ Güvenli Resim Yükleme
+  function safeImg(u){
+    u = (u || "").trim();
+    if(!u) return "https://via.placeholder.com/300x300?text=Gorsel+Yok";
+    if(u.startsWith("//")) return "https:" + u;
+    return u;
+  }
+
+  // ✅ Akıllı Scroll
   function scrollToBottom(force=false){
     const c = document.getElementById("chatContainer");
     if(!c) return;
@@ -308,16 +307,13 @@
   }
   window.addEventListener("resize", ()=> scrollToBottom(true));
 
-  // ✅ Typewriter Promise: önce yorum bitsin, sonra ürünler
+  // ✅ Typewriter Efekti
   function typeWriterEffect(element, text, speed=28) {
     return new Promise((resolve) => {
-      let i = 0;
-      element.innerHTML = "";
-      element.classList.add("typing-cursor");
+      let i = 0; element.innerHTML = ""; element.classList.add("typing-cursor");
       function type() {
         if (i < text.length) {
-          element.textContent += text.charAt(i);
-          i++;
+          element.textContent += text.charAt(i); i++;
           scrollToBottom(true);
           setTimeout(type, speed);
         } else {
@@ -331,7 +327,55 @@
     });
   }
 
-  // ---- MODES (senin tasarımın aynı) ----
+  // ✅ Kartları Ekrana Bas
+  function renderCards(list){
+    const wrap = document.createElement("div"); wrap.className="cards";
+    (list||[]).forEach((p, idx)=>{
+      const badge = (idx===0) ? {k:"gold",t:"ALTIN"} : (idx===1) ? {k:"silver",t:"GÜMÜŞ"} : null;
+      const bHtml = badge ? `<div class="card-badge ${badge.k}">${badge.t}</div>` : "";
+      const imgSrc = safeImg(p.image);
+      const div = document.createElement("div"); div.className="card";
+      div.innerHTML = `
+        ${bHtml}
+        <img class="pimg" src="${imgSrc}" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=Gorsel+Yok';">
+        <div class="title">${escapeHtml(p.title||'')}</div>
+        <div class="price">${escapeHtml(p.price||'')}</div>
+        <a class="btnLink" href="${p.url||'#'}" target="_blank" rel="noopener">İNCELE</a>
+      `;
+      wrap.appendChild(div);
+    });
+    document.getElementById("chatContainer").appendChild(wrap);
+    scrollToBottom(true);
+  }
+
+  // ✅ Balon Ekle
+  async function addBubble(role, text, isLoader=false, speech=null, imgData=null, id=null){
+    const div = document.createElement("div"); div.className = "msg " + role; if(id) div.id = id;
+    let content = ""; if(imgData) content += `<img src="${imgData}" style="max-width:100%; border-radius:12px; margin-bottom:8px;">`;
+    div.innerHTML = `<div class="bubble">${content}</div>`; 
+    const bubbleContent = div.querySelector(".bubble");
+    document.getElementById("chatContainer").appendChild(div);
+    document.getElementById("heroContent").style.display = "none";
+    document.getElementById("chatContainer").style.display = "block";
+    scrollToBottom(true);
+
+    if(role==="ai" && !isLoader){
+      await typeWriterEffect(bubbleContent, text);
+    } else {
+      let htmlContent = text; if(role==="user") htmlContent = escapeHtml(text);
+      bubbleContent.innerHTML += htmlContent;
+      scrollToBottom(true);
+    }
+
+    if(speech && role==="ai"){
+      const btn = document.createElement("div"); btn.className="audio-btn"; btn.setAttribute("data-speech", speech);
+      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; 
+      div.appendChild(btn); scrollToBottom(true);
+    }
+    return div;
+  }
+
+  // --- MODLAR ----
   const MODES = {
     chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", pos:"55% 15%", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
     shopping:{ label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.", pos:"50% 18%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
@@ -346,322 +390,121 @@
   };
 
   function renderDock(){
-    const dock = document.getElementById("dock");
-    dock.innerHTML = "";
+    const dock = document.getElementById("dock"); dock.innerHTML = "";
     Object.keys(MODES).forEach(key=>{
-      const m = MODES[key];
-      const div = document.createElement("div");
+      const m = MODES[key]; const div = document.createElement("div");
       div.className = "dock-item " + (key===currentMode ? "active":"");
       div.onclick = (e)=>{ e.stopPropagation(); switchMode(key); };
       div.innerHTML = `<div class="icon-box"><i class="fa-solid ${m.icon}"></i></div><div class="dock-label">${m.label}</div>`;
       dock.appendChild(div);
     });
   }
-
+  
   function setBackground(mode){
     const imgEl = document.getElementById("heroImage");
-    imgEl.style.opacity = 0;
+    imgEl.style.opacity = 0; 
     setTimeout(()=>{
-      imgEl.src = mode.img;
-      imgEl.style.objectPosition = mode.pos || "center";
-      imgEl.style.opacity = 1;
+      imgEl.src = mode.img; imgEl.style.objectPosition = mode.pos || "center"; imgEl.style.opacity = 1;
     }, 150);
   }
 
   function applyHeroStyle(m){
     const hero = document.getElementById("heroContent");
     Object.assign(hero.style, {
-      position: "absolute",
-      pointerEvents: "none",
-      padding: "0 24px",
-      zIndex: "9",
-      transition: "all 0.4s ease",
-      width: "100%",
-      top: "100px",
-      left: "0",
-      textAlign: "left",
-      maxWidth: "100%"
+      position: "absolute", pointerEvents: "none", padding: "0 24px", zIndex: "9",
+      transition: "all 0.4s ease", width: "100%", top: "100px", left: "0", textAlign: "left", maxWidth: "100%"
     });
     if (m.heroStyle) Object.assign(hero.style, m.heroStyle);
   }
 
   function switchMode(newMode){
-    const chat = document.getElementById("chatContainer");
-    chatHistory[currentMode] = chat.innerHTML;
-
-    currentMode = newMode;
-    const m = MODES[newMode];
-
-    document.documentElement.style.setProperty("--primary", m.color);
-    setBackground(m);
-
-    document.getElementById("heroTitle").innerHTML = m.title;
-    document.getElementById("heroDesc").innerText = m.desc;
-    document.getElementById("suggestionText").innerText = m.sugg;
-    document.getElementById("text").placeholder = m.ph;
-
+    const chat = document.getElementById("chatContainer"); chatHistory[currentMode] = chat.innerHTML;
+    currentMode = newMode; const m = MODES[newMode];
+    document.documentElement.style.setProperty("--primary", m.color); setBackground(m);
+    document.getElementById("heroTitle").innerHTML = m.title; document.getElementById("heroDesc").innerText = m.desc;
+    document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
     applyHeroStyle(m);
-
     chat.innerHTML = chatHistory[newMode] || "";
     const hasContent = chat.innerHTML.trim().length > 0;
-
-    document.getElementById("heroContent").style.display = hasContent ? "none" : "block";
+    document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
     chat.style.display = hasContent ? "block" : "none";
-
     renderDock();
     scrollToBottom(true);
   }
 
-  function renderCards(list){
-    const wrap = document.createElement("div");
-    wrap.className="cards";
-    (list||[]).forEach((p, idx)=>{
-      const badge = (idx===0) ? {k:"gold",t:"ALTIN"} : (idx===1) ? {k:"silver",t:"GÜMÜŞ"} : null;
-      const bHtml = badge ? `<div class="card-badge ${badge.k}">${badge.t}</div>` : "";
-      const div = document.createElement("div");
-      div.className="card";
-      div.innerHTML = `
-        ${bHtml}
-        <function safeImg(u){
-  u = (u || "").trim();
-  if(!u) return "https://via.placeholder.com/300x300?text=Gorsel+Yok";
-  if(u.startsWith("//")) return "https:" + u;
-  return u;
-}
-
-function renderCards(list){
-  const wrap = document.createElement("div");
-  wrap.className="cards";
-
-  (list||[]).forEach((p, idx)=>{
-    const badge = (idx===0) ? {k:"gold",t:"ALTIN"} : (idx===1) ? {k:"silver",t:"GÜMÜŞ"} : null;
-    const bHtml = badge ? `<div class="card-badge ${badge.k}">${badge.t}</div>` : "";
-
-    const imgSrc = safeImg(p.image);
-
-    const div = document.createElement("div");
-    div.className="card";
-    div.innerHTML = `
-      ${bHtml}
-      <img class="pimg" src="${imgSrc}"
-           onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=Gorsel+Yok';">
-      <div class="title">${escapeHtml(p.title||'')}</div>
-      <div class="price">${escapeHtml(p.price||'')}</div>
-      <a class="btnLink" href="${p.url||'#'}" target="_blank" rel="noopener">İNCELE</a>
-    `;
-    wrap.appendChild(div);
-  });
-
-  document.getElementById("chatContainer").appendChild(wrap);
-  scrollToBottom(true);
-}
-img class="pimg" src="${p.image||''}" onerror="this.src='https://via.placeholder.com/300x300?text=Image'">
-        <div class="title">${escapeHtml(p.title||'')}</div>
-        <div class="price">${escapeHtml(p.price||'')}</div>
-        <a class="btnLink" href="${p.url||'#'}" target="_blank" rel="noopener">İNCELE</a>
-      `;
-      wrap.appendChild(div);
-    });
-    document.getElementById("chatContainer").appendChild(wrap);
-    scrollToBottom(true);
-  }
-
-  // ✅ async addBubble: önce yorum bitsin, sonra kartlar
-  async function addBubble(role, text, isLoader=false, speech=null, imgData=null, id=null){
-    const div = document.createElement("div");
-    div.className = "msg " + role;
-    if(id) div.id = id;
-
-    let content = "";
-    if(imgData) content += `<img src="${imgData}" style="max-width:100%; border-radius:12px; margin-bottom:8px;">`;
-
-    div.innerHTML = `<div class="bubble">${content}</div>`;
-    const bubbleContent = div.querySelector(".bubble");
-
-    document.getElementById("chatContainer").appendChild(div);
-    document.getElementById("heroContent").style.display = "none";
-    document.getElementById("chatContainer").style.display = "block";
-    scrollToBottom(true);
-
-    if(role==="ai" && !isLoader){
-      await typeWriterEffect(bubbleContent, text);
-    } else {
-      let htmlContent = text;
-      if(role==="user") htmlContent = escapeHtml(text);
-      bubbleContent.innerHTML += htmlContent;
-      scrollToBottom(true);
-    }
-
-    if(speech && role==="ai"){
-      const btn = document.createElement("div");
-      btn.className="audio-btn";
-      btn.setAttribute("data-speech", speech);
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`;
-      div.appendChild(btn);
-      scrollToBottom(true);
-    }
-    return div;
+  // --- GÜVENLİK ---
+  function localSecurityCheck(text){
+    const lower = text.toLowerCase();
+    const badWords = ["küfür", "hakaret", "aptal", "salak", "gerizekalı", "porno", "sex", "silah", "uyuşturucu", "bonzai", "metamfetamin", "bahis", "kumar", "terörist", "darbe"];
+    if (badWords.some(w => lower.includes(w))) return "Terbiyem müsaade etmez evladım, düzgün konuşalım.";
+    if (/(.)\1{4,}/.test(lower)) return "Kedi mi yürüdü klavyede evladım?";
+    return null; 
   }
 
   async function send(){
-    if(isSending) return;
+    if(isSending) return; const input = document.getElementById("text"); let val = input.value.trim();
+    if(pendingImage && val==="") val = "Bu resmi yorumla"; if(!val && !pendingImage) return;
 
-    const input = document.getElementById("text");
-    let val = input.value.trim();
-
-    if(pendingImage && val==="") val = "Bu resmi yorumla";
-    if(!val && !pendingImage) return;
+    // GÜVENLİK
+    const badCheck = localSecurityCheck(val);
+    if(badCheck){ addBubble("user", val); input.value = ""; setTimeout(()=> addBubble("ai", badCheck), 500); return; }
 
     if(currentMode==="shopping") document.querySelectorAll(".cards").forEach(e=>e.remove());
-
-    isSending = true;
-    document.getElementById("sendBtn").disabled = true;
-
-    document.getElementById("heroContent").style.display="none";
-    document.getElementById("chatContainer").style.display="block";
-
-    await addBubble("user", val, false, null, pendingImage);
-    input.value = "";
-
-    const loaderId = "ldr"+Date.now();
-    await addBubble("ai", "<i class='fa-solid fa-spinner fa-spin'></i>", true, null, null, loaderId);
-
-    const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode, persona: currentPersona };
+    isSending = true; document.getElementById("sendBtn").disabled = true;
+    document.getElementById("heroContent").style.display="none"; document.getElementById("chatContainer").style.display="block";
+    await addBubble("user", val, false, null, pendingImage); input.value = "";
+    
+    const loaderId = "ldr"+Date.now(); await addBubble("ai", "<i class='fa-solid fa-spinner fa-spin'></i>", true, null, null, loaderId);
+    
+    const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode, persona: currentPersona }; 
     pendingImage = null;
-
+    
     try{
-      const res = await fetch(API_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
-      const data = await res.json();
-      document.getElementById(loaderId)?.remove();
-
-      // ✅ önce yorum, sonra ürünler
-      await addBubble("ai", data.assistant_text || "Bir şeyler ters gitti evladım.", false, data.speech_text || null);
-
-      if(data.data && data.data.length){
-        renderCards(data.data);
-        scrollToBottom(true);
-      }
-
-    } catch(e){
-      const l = document.getElementById(loaderId);
-      if(l){
-        const b = l.querySelector(".bubble");
-        if(b) b.innerHTML = "Bağlantı hatası.";
-        else l.innerHTML = "Bağlantı hatası.";
-      }
-    } finally{
-      isSending = false;
-      document.getElementById("sendBtn").disabled = false;
-    }
+      const res = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
+      const data = await res.json(); document.getElementById(loaderId)?.remove();
+      await addBubble("ai", data.assistant_text, false, data.speech_text); 
+      if(data.data && data.data.length) renderCards(data.data);
+    } catch(e){ document.getElementById(loaderId).innerHTML = "Bağlantı hatası."; } finally{ isSending = false; document.getElementById("sendBtn").disabled = false; }
   }
 
-  // ✅ TTS Toggle (Durdur)
-  async function playAudio(text, btn){
-    if(btn.classList.contains("playing")){
-      try{ if(currentAudio){ currentAudio.pause(); currentAudio.currentTime = 0; } } catch(e){}
-      currentAudio = null;
-      btn.classList.remove("playing");
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`;
-      return;
-    }
-
-    if(currentAudio){
-      try{ currentAudio.pause(); currentAudio.currentTime = 0; } catch(e){}
-      currentAudio = null;
-    }
-
-    document.querySelectorAll(".audio-btn.playing").forEach(b=>{
-      b.classList.remove("playing");
-      b.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`;
-    });
-
-    const oldHtml = btn.innerHTML;
-    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
-
-    try{
-      const r = await fetch(SPEAK_URL, {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ text, persona: currentPersona })
-      });
-      if(!r.ok) throw new Error("speak http " + r.status);
-
-      const blob = await r.blob();
-      currentAudio = new Audio(URL.createObjectURL(blob));
-      currentAudio.onended = ()=>{
-        btn.classList.remove("playing");
-        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`;
-        currentAudio = null;
-      };
-
-      await currentAudio.play();
-      btn.classList.add("playing");
-      btn.innerHTML = `<i class="fa-solid fa-stop"></i> Durdur`;
-    } catch(e){
-      btn.innerHTML = oldHtml;
-      currentAudio = null;
-    }
-  }
-
-  document.getElementById("chatContainer").addEventListener("click", e=>{
-    const btn = e.target.closest(".audio-btn");
-    if(btn) playAudio(btn.getAttribute("data-speech"), btn);
-  });
-
-  // ✅ Fotoğraf çek: preview aç, Tamam deyince send()
+  // --- FOTOĞRAF ONAY MODALI ---
   const fileEl = document.getElementById("fileInput");
   const photoModal = document.getElementById("photoModal");
   const photoPreview = document.getElementById("photoPreview");
   const photoOkBtn = document.getElementById("photoOkBtn");
   const photoCancelBtn = document.getElementById("photoCancelBtn");
 
-  function openCamera(){
-    // fotoğraf özelliğini tamamen kapatmak istersen:
-    // return;
-    fileEl.value="";
-    fileEl.click();
-  }
-
+  function openCamera(){ fileEl.value=""; fileEl.click(); }
   fileEl.addEventListener("change", e=>{
-    const f = e.target.files[0];
-    if(!f) return;
+    const f = e.target.files[0]; if(!f) return;
     const r = new FileReader();
-    r.onload = ()=>{
-      pendingImage = r.result;
-      photoPreview.src = pendingImage;
-      photoModal.style.display = "flex";
-    };
+    r.onload = ()=>{ pendingImage = r.result; photoPreview.src = pendingImage; photoModal.style.display = "flex"; };
     r.readAsDataURL(f);
   });
+  photoCancelBtn.onclick = ()=>{ pendingImage = null; photoPreview.src = ""; photoModal.style.display = "none"; fileEl.value = ""; };
+  photoOkBtn.onclick = async ()=>{ photoModal.style.display = "none"; document.getElementById("text").value = ""; await send(); };
 
-  photoCancelBtn.onclick = ()=>{
-    pendingImage = null;
-    photoPreview.src = "";
-    photoModal.style.display = "none";
-  };
-
-  photoOkBtn.onclick = async ()=>{
-    photoModal.style.display = "none";
-    document.getElementById("text").value = "";
-    await send();
-  };
+  async function playAudio(text, btn){
+    if(currentAudio){ currentAudio.pause(); currentAudio=null; }
+    document.querySelectorAll(".audio-btn.playing").forEach(b=>{ b.classList.remove("playing"); b.innerHTML=`<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; });
+    const oldHtml = btn.innerHTML; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
+    try{
+      const r = await fetch(SPEAK_URL, {
+          method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({text, persona: currentPersona})
+      });
+      const blob = await r.blob(); currentAudio = new Audio(URL.createObjectURL(blob));
+      currentAudio.onended = ()=>{ btn.classList.remove("playing"); btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; };
+      await currentAudio.play(); btn.classList.add("playing"); btn.innerHTML = `<i class="fa-solid fa-stop"></i> Durdur`;
+    } catch(e){ btn.innerHTML = oldHtml; }
+  }
+  document.getElementById("chatContainer").addEventListener("click", e=>{ const btn = e.target.closest(".audio-btn"); if(btn) playAudio(btn.getAttribute("data-speech"), btn); });
 
   function startMic(){
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR) return alert("Tarayıcı desteklemiyor");
-    const r = new SR();
-    r.lang="tr-TR";
-    const mic = document.getElementById("micBtn");
-    mic.classList.add("mic-active");
-
-    r.onresult = e=>{
-      document.getElementById("text").value = e.results[0][0].transcript;
-      mic.classList.remove("mic-active");
-      send();
-    };
-    r.onend = ()=> mic.classList.remove("mic-active");
-    r.start();
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if(!SR) return alert("Tarayıcı desteklemiyor");
+    const r = new SR(); r.lang="tr-TR"; const mic = document.getElementById("micBtn"); mic.classList.add("mic-active");
+    r.onresult = e=>{ document.getElementById("text").value = e.results[0][0].transcript; mic.classList.remove("mic-active"); send(); };
+    r.onend = ()=> mic.classList.remove("mic-active"); r.start();
   }
-
   const mask=document.getElementById("drawerMask"), drawer=document.getElementById("drawer");
   document.getElementById("menuBtn").onclick=()=>{ mask.classList.add("show"); drawer.classList.add("open"); };
   mask.onclick=()=>{ mask.classList.remove("show"); drawer.classList.remove("open"); };
@@ -670,38 +513,26 @@ img class="pimg" src="${p.image||''}" onerror="this.src='https://via.placeholder
   function closePersonaMenu(e){ if(e.target.id === 'personaModal') document.getElementById('personaModal').classList.remove('show'); }
   function selectPersona(personaId, el){
     currentPersona = personaId;
-    document.querySelectorAll('.persona-opt').forEach(opt => {
-      opt.classList.remove('selected');
-      opt.querySelector('i').style.display = 'none';
-    });
-    el.classList.add('selected');
-    el.querySelector('i').style.display = 'block';
+    document.querySelectorAll('.persona-opt').forEach(opt => { opt.classList.remove('selected'); opt.querySelector('i').style.display = 'none'; });
+    el.classList.add('selected'); el.querySelector('i').style.display = 'block';
     setTimeout(()=> document.getElementById('personaModal').classList.remove('show'), 200);
   }
 
   const appContainer = document.getElementById("app");
   function cycleMode(direction){
-    const keys = Object.keys(MODES);
-    let idx = keys.indexOf(currentMode);
-    idx = (idx + direction + keys.length) % keys.length;
-    switchMode(keys[idx]);
+    const keys = Object.keys(MODES); let idx = keys.indexOf(currentMode);
+    idx = (idx + direction + keys.length) % keys.length; switchMode(keys[idx]);
   }
-
   appContainer.addEventListener("dblclick", (e) => {
     if(e.target.closest('#dock') || e.target.closest('.input-wrapper') || e.target.closest('#topbar') || e.target.closest('.msg')) return;
-    const heroVisible = document.getElementById("heroContent").style.display !== "none";
-    if(heroVisible) cycleMode(1);
+    const heroVisible = document.getElementById("heroContent").style.display !== "none"; if(heroVisible) cycleMode(1);
   });
-
   let startX = 0, startY = 0;
   appContainer.addEventListener("touchstart", e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive:true});
   appContainer.addEventListener("touchend", e => {
-    if(e.target.closest('#dock') || e.target.closest('#chatContainer')) return;
-    const diffX = e.changedTouches[0].clientX - startX;
-    const diffY = e.changedTouches[0].clientY - startY;
-    if(Math.abs(diffX) > Math.abs(diffY)) {
-      if(Math.abs(diffX) > 50) cycleMode(diffX > 0 ? -1 : 1);
-    }
+    if(e.target.closest('#dock') || e.target.closest('#chatContainer')) return; 
+    const diffX = e.changedTouches[0].clientX - startX; const diffY = e.changedTouches[0].clientY - startY;
+    if(Math.abs(diffX) > Math.abs(diffY)) { if(Math.abs(diffX) > 50) cycleMode(diffX > 0 ? -1 : 1); }
   }, {passive:true});
 
   renderDock();
@@ -709,4 +540,3 @@ img class="pimg" src="${p.image||''}" onerror="this.src='https://via.placeholder
 </script>
 </body>
 </html>
-
