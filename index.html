@@ -14,7 +14,6 @@
 <style>
   :root{ --primary:#FFB300; --font:'Outfit',sans-serif; }
   *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; }
-  
   input, textarea { user-select:text; -webkit-user-select:text; }
   #text { user-select:text; -webkit-user-select:text; }
 
@@ -28,156 +27,157 @@
   #app{
     width:100%; height:100%; max-width:440px; max-height:880px;
     border-radius:24px; overflow:hidden; position:relative; display:flex; flex-direction:column;
-    box-shadow: 0 0 0 10px #1a1a1a, 0 20px 50px rgba(0,0,0,0.8); 
+    box-shadow: 0 0 0 10px #1a1a1a, 0 20px 50px rgba(0,0,0,0.8);
     background:#0b0f18;
   }
 
   @media (max-width:500px){
-    body{ display: block; background:#000; }
+    body{ display:block; background:#000; }
     #app{ width:100%; height:100dvh; max-width:none; max-height:none; border-radius:0; box-shadow:none; }
   }
 
   #heroImage {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    object-fit: cover; z-index: 0; transition: opacity 0.3s ease;
+    position:absolute; top:0; left:0; width:100%; height:100%;
+    object-fit:cover; z-index:0; transition: opacity 0.3s ease;
   }
 
   #app::before{
     content:""; position:absolute; inset:0;
-    background:linear-gradient(to bottom, 
-      rgba(0,0,0,.20) 0%, 
-      rgba(0,0,0,.10) 50%, 
+    background:linear-gradient(to bottom,
+      rgba(0,0,0,.20) 0%,
+      rgba(0,0,0,.10) 50%,
       rgba(0,0,0,.60) 100%
     );
     pointer-events:none; z-index:1;
   }
 
-  #topbar{ position:relative; z-index:10; height:70px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-shrink: 0; }
-  .brand-wrap{ display:flex; flex-direction:column; gap:2px; cursor: pointer; }
+  #topbar{ position:relative; z-index:10; height:70px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
+  .brand-wrap{ display:flex; flex-direction:column; gap:2px; cursor:pointer; }
   .brand{ display:flex; align-items:center; gap:8px; font-size:20px; font-weight:900; letter-spacing:-.5px; color:#fff; }
   .brand i{ color:var(--primary); font-size:18px; } .brand span{ color:var(--primary); }
-  .brand-sub{ font-size:10px; font-weight:700; color:rgba(255,255,255,.7); letter-spacing: 0.5px; }
-  
-  .top-actions { display:flex; gap: 10px; }
+  .brand-sub{ font-size:10px; font-weight:700; color:rgba(255,255,255,.7); letter-spacing:0.5px; }
+
+  .top-actions { display:flex; gap:10px; }
   .menu-btn{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.1); color:#fff; cursor:pointer; }
   .menu-btn:active { transform: scale(0.95); background:rgba(255,255,255,.25); }
 
-  /* MAIN LAYOUT */
-  #main{ 
-    position:relative; z-index:8; flex:1; 
-    display:flex; flex-direction:column; 
-    overflow: hidden; 
+  #main{
+    position:relative; z-index:8; flex:1;
+    display:flex; flex-direction:column;
+    overflow:hidden;
   }
-  
-  /* Hero Content */
-  #heroContent{ 
-    position: absolute; 
-    pointer-events: none; 
-    padding: 0 24px;
-    z-index: 9;
-    transition: all 0.4s ease; 
-    width: 100%;
-    top: 100px; 
-    left: 0;
+
+  #heroContent{
+    position:absolute;
+    pointer-events:none;
+    padding:0 24px;
+    z-index:9;
+    transition:all 0.4s ease;
+    width:100%;
+    top:100px;
+    left:0;
   }
-  
+
   #heroTitle{ font-size:36px; font-weight:900; line-height:1.05; color:#fff; letter-spacing:-1.5px; text-shadow:0 10px 30px rgba(0,0,0,.6); }
   #heroDesc{ margin-top:12px; font-size:16px; font-weight:600; color:rgba(255,255,255,.95); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.5); }
 
-  #chatContainer{ 
-    display:none; width: 100%; height: 100%;
-    overflow-y: auto; 
-    -webkit-overflow-scrolling: touch; 
-    padding: 20px 20px 240px 20px; 
-    background: rgba(0, 0, 0, 0.4); 
-    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
-    border-radius: 24px 24px 0 0; border: 1px solid rgba(255, 255, 255, 0.1); 
-    scrollbar-width: none;
+  #chatContainer{
+    display:none; width:100%; height:100%;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    padding:20px 20px 240px 20px;
+    background:rgba(0,0,0,0.4);
+    backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px);
+    border-radius:24px 24px 0 0; border:1px solid rgba(255,255,255,0.1);
+    scrollbar-width:none;
   }
-  #chatContainer::-webkit-scrollbar { display: none; }
+  #chatContainer::-webkit-scrollbar { display:none; }
 
   .msg{ display:flex; margin-bottom:12px; animation: fadeIn 0.3s ease; flex-direction: column; }
-  .msg.user{ align-items: flex-end; } .msg.ai{ align-items: flex-start; }
+  .msg.user{ align-items:flex-end; } .msg.ai{ align-items:flex-start; }
   @keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
 
-  .bubble{ max-width:95%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.5; font-weight:600; position: relative; user-select:text; }
+  .bubble{ max-width:95%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.5; font-weight:600; position:relative; user-select:text; }
   .msg.user .bubble{ background:var(--primary); color:#fff; border-bottom-right-radius:4px; box-shadow:0 5px 15px rgba(0,0,0,.2); }
   .msg.ai .bubble{ background:#ffffff; color:#111; border-bottom-left-radius:4px; box-shadow:0 5px 15px rgba(0,0,0,.1); }
-  
-  .typing-cursor::after { content: '|'; animation: blink 1s infinite; margin-left: 2px; }
-  @keyframes blink { 50% { opacity: 0; } }
+
+  .typing-cursor::after { content:'|'; animation: blink 1s infinite; margin-left:2px; }
+  @keyframes blink { 50% { opacity:0; } }
 
   .audio-btn{
-    margin-top:6px; margin-left: 4px; display:inline-flex; align-items:center; gap:8px;
-    padding:8px 14px; border-radius:20px; background:#fff; color: var(--primary); 
-    font-size:12px; font-weight:800; cursor:pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transition: transform 0.2s; width: fit-content;
+    margin-top:6px; margin-left:4px; display:inline-flex; align-items:center; gap:8px;
+    padding:8px 14px; border-radius:20px; background:#fff; color:var(--primary);
+    font-size:12px; font-weight:800; cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.2s; width:fit-content;
   }
   .audio-btn.playing{ background:#ffebee; color:#d32f2f; border-color:#ffcdd2; }
   .audio-btn:active { transform: scale(0.95); }
 
-  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; width: 100%; padding-bottom: 10px; }
-  .card{ background:#fff; border-radius:12px; padding:8px; display:flex; flex-direction:column; box-shadow:0 5px 15px rgba(0,0,0,.08); position:relative; overflow:hidden; min-height: 200px; }
+  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; width:100%; padding-bottom:10px; }
+  .card{ background:#fff; border-radius:12px; padding:8px; display:flex; flex-direction:column; box-shadow:0 5px 15px rgba(0,0,0,.08); position:relative; overflow:hidden; min-height:200px; }
   .card-badge{ position:absolute; top:8px; left:0; padding:3px 8px; font-size:9px; font-weight:800; color:#fff; border-radius:0 8px 8px 0; z-index:2; }
   .card-badge.gold{ background:#FFA000; } .card-badge.silver{ background:#9E9E9E; }
-  .pimg{ width:100%; height:120px; object-fit:contain; margin-bottom:5px; background: #f9f9f9; border-radius: 8px;}
-  .title{ font-size:11px; font-weight:700; height:32px; overflow:hidden; margin-bottom:4px; color:#222; line-height: 1.3; }
+  .pimg{ width:100%; height:120px; object-fit:contain; margin-bottom:5px; background:#f9f9f9; border-radius:8px;}
+  .title{ font-size:11px; font-weight:700; height:32px; overflow:hidden; margin-bottom:4px; color:#222; line-height:1.3; }
   .price{ font-size:13px; font-weight:900; color:var(--primary); }
-  .btnLink{ margin-top:auto; padding:8px; text-align:center; font-size:11px; font-weight:800; color:#fff; background:var(--primary); border-radius:6px; text-decoration:none; display: block; cursor: pointer; }
+  .btnLink{ margin-top:auto; padding:8px; text-align:center; font-size:11px; font-weight:800; color:#fff; background:var(--primary); border-radius:6px; text-decoration:none; display:block; cursor:pointer; }
 
-  #bottom{ position:absolute; bottom:0; left:0; right:0; z-index:20; background:rgba(255,255,255,.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top-left-radius: 24px; border-top-right-radius: 24px; padding:15px 18px calc(env(safe-area-inset-bottom) + 20px) 18px; box-shadow:0 -10px 40px rgba(0,0,0,.15); }
-  
-  #suggestionText{ 
-    position: absolute; top: -15px; left:50%; transform:translateX(-50%); 
-    background:#fff; color:var(--primary); padding:6px 14px; border-radius:20px; 
-    font-size:12px; font-weight:800; box-shadow:0 -5px 15px rgba(0,0,0,.08); 
-    white-space:nowrap; z-index:25; opacity:0.98; transition: all 0.3s ease; pointer-events: none; 
+  #bottom{ position:absolute; bottom:0; left:0; right:0; z-index:20; background:rgba(255,255,255,.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top-left-radius:24px; border-top-right-radius:24px; padding:15px 18px calc(env(safe-area-inset-bottom) + 20px) 18px; box-shadow:0 -10px 40px rgba(0,0,0,.15); }
+
+  #suggestionText{
+    position:absolute; top:-15px; left:50%; transform:translateX(-50%);
+    background:#fff; color:var(--primary); padding:6px 14px; border-radius:20px;
+    font-size:12px; font-weight:800; box-shadow:0 -5px 15px rgba(0,0,0,.08);
+    white-space:nowrap; z-index:25; opacity:0.98; transition: all 0.3s ease; pointer-events:none;
   }
-  
+
   .input-wrapper{ display:flex; align-items:center; gap:8px; width:100%; }
-  
-  .search-bar{ 
-    flex:1; height:50px; background:#ffffff; border-radius:25px; 
-    display:flex; align-items:center; padding:0 5px 0 15px; 
-    border:1px solid #e0e0e0; transition:0.3s; min-width: 0; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  .search-bar{
+    flex:1; height:50px; background:#ffffff; border-radius:25px;
+    display:flex; align-items:center; padding:0 5px 0 15px;
+    border:1px solid #e0e0e0; transition:0.3s; min-width:0;
+    box-shadow:0 4px 10px rgba(0,0,0,0.05);
   }
   .search-bar:focus-within{ border-color:var(--primary); box-shadow:0 5px 15px rgba(0,0,0,.1); }
-  
-  #text{ flex:1; border:none; background:transparent; font-size:15px; color:#333; outline:none; min-width: 0; }
-  .tool-btn{ padding:8px; color:#999; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; } .tool-btn:active{ color:var(--primary); }
-  #sendBtn{ width:50px; height:50px; border-radius:50%; border:none; background:var(--primary); color:#fff; font-size:20px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.2); } #sendBtn:active{ transform:scale(0.95); }
+  #text{ flex:1; border:none; background:transparent; font-size:15px; color:#333; outline:none; min-width:0; }
+  .tool-btn{ padding:8px; color:#999; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .tool-btn:active{ color:var(--primary); }
+  #sendBtn{ width:50px; height:50px; border-radius:50%; border:none; background:var(--primary); color:#fff; font-size:20px; flex-shrink:0; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.2); }
+  #sendBtn:active{ transform:scale(0.95); }
 
-  #dock{ display:flex; gap:20px; overflow-x:auto; padding:15px 5px 10px 5px; scrollbar-width:none; cursor: grab; } #dock::-webkit-scrollbar{ display:none; }
-  .dock-item{ display:flex; flex-direction:column; align-items:center; gap:6px; opacity:0.5; transition:0.3s; min-width:55px; } .dock-item.active{ opacity:1; transform:translateY(-3px); }
+  #dock{ display:flex; gap:20px; overflow-x:auto; padding:15px 5px 10px 5px; scrollbar-width:none; cursor:grab; }
+  #dock::-webkit-scrollbar{ display:none; }
+  .dock-item{ display:flex; flex-direction:column; align-items:center; gap:6px; opacity:0.5; transition:0.3s; min-width:55px; }
+  .dock-item.active{ opacity:1; transform:translateY(-3px); }
   .icon-box{ width:42px; height:42px; border-radius:14px; background:#eee; color:#666; display:flex; align-items:center; justify-content:center; font-size:18px; transition:0.3s; }
-  .dock-item.active .icon-box{ background:var(--primary); color:#fff; box-shadow:0 5px 15px rgba(0,0,0,.2); } .dock-label{ font-size:10px; font-weight:800; color:#444; }
+  .dock-item.active .icon-box{ background:var(--primary); color:#fff; box-shadow:0 5px 15px rgba(0,0,0,.2); }
+  .dock-label{ font-size:10px; font-weight:800; color:#444; }
 
-  .brand-footer{ margin-top:12px; display:flex; flex-direction:column; align-items:center; gap:6px; width: fit-content; margin-left: auto; margin-right: auto; }
-  .footer-text-line1{ font-size:13px; font-weight:800; color:#36454F; letter-spacing:0.5px; white-space: nowrap; }
+  .brand-footer{ margin-top:12px; display:flex; flex-direction:column; align-items:center; gap:6px; width:fit-content; margin-left:auto; margin-right:auto; }
+  .footer-text-line1{ font-size:13px; font-weight:800; color:#36454F; letter-spacing:0.5px; white-space:nowrap; }
   .footer-text-line2{ font-size:12px; font-weight:600; color:#666; letter-spacing:0.5px; }
-  .oz-lines{ display:flex; gap:6px; height:5px; width: 100%; }
+  .oz-lines{ display:flex; gap:6px; height:5px; width:100%; }
   .oz-lines span{ height:100%; flex:1; border-radius:3px; }
-  .oz-l-dynamic { background: var(--primary); transition: background 0.3s ease; } 
-  .oz-l-red{ background:#D32F2F; } 
-  .oz-l-white{ background:#ffffff; border: 1px solid #eee; } 
+  .oz-l-dynamic{ background: var(--primary); transition: background 0.3s ease; }
+  .oz-l-red{ background:#D32F2F; }
+  .oz-l-white{ background:#ffffff; border:1px solid #eee; }
   .oz-l-black{ background:#222; }
 
-  #personaModal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 100; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-  #personaModal.show { display: flex; animation: fadeIn 0.2s ease; }
-  .persona-content { background: #fff; width: 85%; max-width: 320px; border-radius: 24px; padding: 25px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center; }
-  .persona-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; color: #333; }
-  .persona-opt { padding: 15px; border-radius: 16px; background: #f9f9f9; margin-bottom: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; border: 2px solid transparent; display: flex; align-items: center; justify-content: space-between; font-size: 14px; }
+  #personaModal { position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:100; display:none; align-items:center; justify-content:center; backdrop-filter: blur(8px); }
+  #personaModal.show { display:flex; animation: fadeIn 0.2s ease; }
+  .persona-content { background:#fff; width:85%; max-width:320px; border-radius:24px; padding:25px; box-shadow:0 10px 40px rgba(0,0,0,0.3); text-align:center; }
+  .persona-title { font-size:20px; font-weight:800; margin-bottom:20px; color:#333; }
+  .persona-opt { padding:15px; border-radius:16px; background:#f9f9f9; margin-bottom:12px; font-weight:700; cursor:pointer; transition: 0.2s; border:2px solid transparent; display:flex; align-items:center; justify-content:space-between; font-size:14px; }
   .persona-opt:active { transform: scale(0.98); }
-  .persona-opt.selected { border-color: var(--primary); background: #fff8e1; color: var(--primary); }
-  .persona-close { margin-top: 15px; color: #999; font-size: 13px; font-weight: 700; cursor: pointer; padding: 10px;}
+  .persona-opt.selected { border-color: var(--primary); background:#fff8e1; color:var(--primary); }
+  .persona-close { margin-top:15px; color:#999; font-size:13px; font-weight:700; cursor:pointer; padding:10px; }
 
   #drawerMask{ position:absolute; inset:0; background:rgba(0,0,0,.6); z-index:50; display:none; }
   #drawer{ position:absolute; top:0; right:0; height:100%; width:280px; background:#fff; z-index:60; padding:20px; transform:translateX(100%); transition:0.3s; }
-  #drawer.open{ transform:translateX(0); } #drawerMask.show{ display:block; }
+  #drawer.open{ transform:translateX(0); }
+  #drawerMask.show{ display:block; }
   #fileInput{ display:none; }
 
-  /* ✅ Fotoğraf önizleme modal */
   #photoModal{ position:absolute; inset:0; z-index:120; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.65); backdrop-filter: blur(8px); }
   .photoBox{ width:86%; max-width:340px; background:#fff; border-radius:22px; padding:16px; box-shadow:0 10px 40px rgba(0,0,0,.35); }
   .photoTitle{ font-weight:900; font-size:16px; margin-bottom:10px; color:#222; }
@@ -187,7 +187,8 @@
   #photoCancelBtn{ border:1px solid #e5e5e5; background:#fff; }
   #photoOkBtn{ border:none; background:var(--primary); color:#fff; }
 
-  .mic-active{ color:#D32F2F !important; animation:pulse 1s infinite; } @keyframes pulse{ 0%{transform:scale(1);} 50%{transform:scale(1.2);} 100%{transform:scale(1);} }
+  .mic-active{ color:#D32F2F !important; animation:pulse 1s infinite; }
+  @keyframes pulse{ 0%{transform:scale(1);} 50%{transform:scale(1.2);} 100%{transform:scale(1);} }
 </style>
 </head>
 
@@ -277,16 +278,16 @@
   let currentAudio = null;
   let pendingImage = null;
   let currentMode = "chat";
-  let currentPersona = "normal"; 
+  let currentPersona = "normal";
   let isSending = false;
-  const chatHistory = {};
 
   marked.setOptions({ mangle:false, headerIds:false });
+
   function basePath(){ const p = location.pathname; return p.endsWith("/") ? p : p.substring(0, p.lastIndexOf("/") + 1); }
   function asset(rel){ return basePath() + rel.replace(/^\/+/, ""); }
   function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
 
-  // ✅ Güvenli Resim Yükleme Fonksiyonu (YENİ EKLENDİ)
+  // ✅ Güvenli Resim
   function safeImg(u){
     u = (u || "").trim();
     if(!u) return "https://via.placeholder.com/300x300?text=Gorsel+Yok";
@@ -294,26 +295,30 @@
     return u;
   }
 
-  // ✅ Akıllı Scroll
+  // ✅ Scroll (kilitlenmesin diye “force”u daha çok kullanıyoruz)
   function scrollToBottom(force=false){
     const c = document.getElementById("chatContainer");
     if(!c) return;
-    const nearBottom = (c.scrollHeight - c.scrollTop - c.clientHeight) < 160;
-    if(!nearBottom && !force) return;
-    requestAnimationFrame(()=>{
-      c.scrollTop = c.scrollHeight;
+    if(force){
       requestAnimationFrame(()=>{ c.scrollTop = c.scrollHeight; });
-    });
+      return;
+    }
+    const nearBottom = (c.scrollHeight - c.scrollTop - c.clientHeight) < 220;
+    if(!nearBottom) return;
+    requestAnimationFrame(()=>{ c.scrollTop = c.scrollHeight; });
   }
   window.addEventListener("resize", ()=> scrollToBottom(true));
 
-  // ✅ Typewriter Efekti
-  function typeWriterEffect(element, text, speed=28) {
+  // ✅ Typewriter (yorum “tane tane” + auto scroll)
+  function typeWriterEffect(element, text, speed=26) {
     return new Promise((resolve) => {
-      let i = 0; element.innerHTML = ""; element.classList.add("typing-cursor");
+      let i = 0;
+      element.innerHTML = "";
+      element.classList.add("typing-cursor");
       function type() {
         if (i < text.length) {
-          element.textContent += text.charAt(i); i++;
+          element.textContent += text.charAt(i);
+          i++;
           scrollToBottom(true);
           setTimeout(type, speed);
         } else {
@@ -327,105 +332,288 @@
     });
   }
 
-  // ✅ Geliştirilmiş renderCards (YENİ EKLENDİ)
+  // ✅ Kart basma
   function renderCards(list){
-    const wrap = document.createElement("div"); wrap.className="cards";
+    const wrap = document.createElement("div");
+    wrap.className="cards";
+
     (list||[]).forEach((p, idx)=>{
       const badge = (idx===0) ? {k:"gold",t:"ALTIN"} : (idx===1) ? {k:"silver",t:"GÜMÜŞ"} : null;
       const bHtml = badge ? `<div class="card-badge ${badge.k}">${badge.t}</div>` : "";
-      
-      // Güvenli resim linki al
-      const imgSrc = safeImg(p.image);
 
-      const div = document.createElement("div"); div.className="card";
+      const imgSrc = safeImg(p.image);
+      const title = escapeHtml(p.title || "");
+      const price = escapeHtml(p.price || "Fiyat için tıkla");
+      const url = (p.url || "#");
+
+      const div = document.createElement("div");
+      div.className="card";
       div.innerHTML = `
         ${bHtml}
         <img class="pimg" src="${imgSrc}" onerror="this.onerror=null; this.src='https://via.placeholder.com/300x300?text=Gorsel+Yok';">
-        <div class="title">${escapeHtml(p.title||'')}</div>
-        <div class="price">${escapeHtml(p.price||'')}</div>
-        <a class="btnLink" href="${p.url||'#'}" target="_blank" rel="noopener">İNCELE</a>
+        <div class="title">${title}</div>
+        <div class="price">${price}</div>
+        <a class="btnLink" href="${url}" target="_blank" rel="noopener">İNCELE</a>
       `;
       wrap.appendChild(div);
     });
+
     document.getElementById("chatContainer").appendChild(wrap);
     scrollToBottom(true);
   }
 
-  // ✅ Balon Ekle
+  // ✅ Balon
   async function addBubble(role, text, isLoader=false, speech=null, imgData=null, id=null){
-    const div = document.createElement("div"); div.className = "msg " + role; if(id) div.id = id;
-    let content = ""; if(imgData) content += `<img src="${imgData}" style="max-width:100%; border-radius:12px; margin-bottom:8px;">`;
-    div.innerHTML = `<div class="bubble">${content}</div>`; 
-    const bubbleContent = div.querySelector(".bubble");
-    document.getElementById("chatContainer").appendChild(div);
+    const div = document.createElement("div");
+    div.className = "msg " + role;
+    if(id) div.id = id;
+
+    let content = "";
+    if(imgData){
+      content += `<img src="${imgData}" style="max-width:100%; border-radius:12px; margin-bottom:8px;">`;
+    }
+
+    div.innerHTML = `<div class="bubble">${content}</div>`;
+    const bubble = div.querySelector(".bubble");
+
+    const c = document.getElementById("chatContainer");
+    c.appendChild(div);
+
     document.getElementById("heroContent").style.display = "none";
-    document.getElementById("chatContainer").style.display = "block";
+    c.style.display = "block";
     scrollToBottom(true);
 
     if(role==="ai" && !isLoader){
-      await typeWriterEffect(bubbleContent, text);
+      await typeWriterEffect(bubble, text);
     } else {
-      let htmlContent = text; if(role==="user") htmlContent = escapeHtml(text);
-      bubbleContent.innerHTML += htmlContent;
+      if(role==="user"){
+        bubble.innerHTML += escapeHtml(text);
+      } else {
+        bubble.innerHTML += text; // loader html
+      }
       scrollToBottom(true);
     }
 
     if(speech && role==="ai"){
-      const btn = document.createElement("div"); btn.className="audio-btn"; btn.setAttribute("data-speech", speech);
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; 
-      div.appendChild(btn); scrollToBottom(true);
+      const btn = document.createElement("div");
+      btn.className="audio-btn";
+      btn.setAttribute("data-speech", speech);
+      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`;
+      div.appendChild(btn);
+      scrollToBottom(true);
     }
+
     return div;
   }
 
   // --- GÜVENLİK ---
   function localSecurityCheck(text){
-    const lower = text.toLowerCase();
-    const badWords = ["küfür", "hakaret", "aptal", "salak", "gerizekalı", "porno", "sex", "silah", "uyuşturucu", "bonzai", "metamfetamin", "bahis", "kumar", "terörist", "darbe"];
+    const lower = (text||"").toLowerCase();
+    const badWords = ["küfür","hakaret","aptal","salak","gerizekalı","porno","sex","silah","uyuşturucu","bonzai","metamfetamin","bahis","kumar","terörist","darbe"];
     if (badWords.some(w => lower.includes(w))) return "Terbiyem müsaade etmez evladım, düzgün konuşalım.";
     if (/(.)\1{4,}/.test(lower)) return "Kedi mi yürüdü klavyede evladım?";
-    return null; 
+    return null;
   }
 
+  // ✅ SEND (ÖNCE YORUM, SONRA ÜRÜN)
   async function send(){
-    if(isSending) return; const input = document.getElementById("text"); let val = input.value.trim();
-    if(pendingImage && val==="") val = "Bu resmi yorumla"; if(!val && !pendingImage) return;
+    if(isSending) return;
 
-    // GÜVENLİK
+    const input = document.getElementById("text");
+    let val = input.value.trim();
+    if(pendingImage && val==="") val = "Bu resmi yorumla";
+    if(!val && !pendingImage) return;
+
     const badCheck = localSecurityCheck(val);
-    if(badCheck){ addBubble("user", val); input.value = ""; setTimeout(()=> addBubble("ai", badCheck), 500); return; }
+    if(badCheck){
+      await addBubble("user", val, false, null, pendingImage);
+      input.value = "";
+      pendingImage = null;
+      setTimeout(()=> addBubble("ai", badCheck), 250);
+      return;
+    }
 
-    if(currentMode==="shopping") document.querySelectorAll(".cards").forEach(e=>e.remove());
-    isSending = true; document.getElementById("sendBtn").disabled = true;
-    document.getElementById("heroContent").style.display="none"; document.getElementById("chatContainer").style.display="block";
-    await addBubble("user", val, false, null, pendingImage); input.value = "";
-    
-    const loaderId = "ldr"+Date.now(); await addBubble("ai", "<i class='fa-solid fa-spinner fa-spin'></i>", true, null, null, loaderId);
-    
-    const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode, persona: currentPersona }; 
+    // Alışveriş modunda eski kartları temizle (çorbaya dönmesin)
+    if(currentMode==="shopping"){
+      document.querySelectorAll(".cards").forEach(e=>e.remove());
+    }
+
+    isSending = true;
+    document.getElementById("sendBtn").disabled = true;
+
+    document.getElementById("heroContent").style.display="none";
+    document.getElementById("chatContainer").style.display="block";
+
+    await addBubble("user", val, false, null, pendingImage);
+    input.value = "";
+
+    const loaderId = "ldr_" + Date.now();
+    await addBubble("ai", "<i class='fa-solid fa-spinner fa-spin'></i>", true, null, null, loaderId);
+
+    const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode, persona: currentPersona };
     pendingImage = null;
-    
+
     try{
-      const res = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
-      const data = await res.json(); document.getElementById(loaderId)?.remove();
-      await addBubble("ai", data.assistant_text, false, data.speech_text); 
-      if(data.data && data.data.length) renderCards(data.data);
-    } catch(e){ document.getElementById(loaderId).innerHTML = "Bağlantı hatası."; } finally{ isSending = false; document.getElementById("sendBtn").disabled = false; }
+      const res = await fetch(API_URL, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(payload)
+      });
+      const data = await res.json();
+
+      // loader kaldır
+      document.getElementById(loaderId)?.remove();
+
+      // ✅ 1) önce yorum yazılsın (typewriter bitince resolve oluyor)
+      await addBubble("ai", data.assistant_text || "Bir şey diyemedim evladım.", false, data.speech_text || "");
+
+      // ✅ 2) sonra ürünler gelsin
+      if(currentMode==="shopping" && data.data && data.data.length){
+        renderCards(data.data);
+      }
+
+      scrollToBottom(true);
+    } catch(e){
+      document.getElementById(loaderId)?.remove();
+      await addBubble("ai", "Bağlantı hatası oldu evladım. Bir daha dene.");
+    } finally{
+      isSending = false;
+      document.getElementById("sendBtn").disabled = false;
+    }
   }
 
-  // --- MODLAR ----
+  // --- MODLAR ---
   const MODES = {
-    chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", pos:"55% 15%", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
-    shopping:{ label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.", pos:"50% 18%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
-    fal:{ label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Fal eğlencedir evladım, ama bazen tutar.", img: asset("images/hero-fal.png"), ph:"Fincanı çektin mi?", sugg:"Kapat fincanı, fotoğrafını çek gönder.", pos:"55% 12%", heroStyle: { top:"100px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
-    health:{ label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444", title:"Caynana Sağlık'la<br>turp gibi ol.", desc:"Neren ağrıyor söyle bakayım?", img: asset("images/hero-health.png"), ph:"Şikayetin ne?", sugg:"Çay üstüne sakın soğuk su içme!", pos:"55% 12%", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
-    diet:{ label:"Diyet", icon:"fa-carrot", color:"#84CC16", title:"Sağlıklı beslen<br>zinde kal!", desc:"Açlıktan değil, keyiften yiyin.", img: asset("images/hero-diet.png"), ph:"Boy kilo kaç?", sugg:"Ekmek değil, yeşillik ye.", pos:"55% 12%", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"75%" } },
-    food:{ label:"Yemek", icon:"fa-utensils", color:"#F97316", title:"Bugün ne<br>pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.", img: asset("images/hero-food.png"), ph:"Dolapta ne var?", sugg:"Malzemeyi ziyan etme, bereket kaçar.", pos:"55% 12%", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"75%" } },
-    law:{ label:"Hukuk", icon:"fa-scale-balanced", color:"#3B82F6", title:"Hukuk işleri<br>şakaya gelmez.", desc:"Ben avukat değilim ama çok dava gördüm.", img: asset("images/hero-law.png"), ph:"Derdini anlat.", sugg:"Sözleşmeye bakmadan imza atma!", pos:"55% 12%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
-    astro:{ label:"Burç", icon:"fa-star", color:"#D946EF", title:"Yıldızlar senin için<br>ne diyor?", desc:"Merkür retrosu falan… dikkat et.", img: asset("images/hero-astro.png"), ph:"Burcun ne?", sugg:"Yıldıznameye baktım, yolun açık.", pos:"55% 12%", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
-    translate:{ label:"Çeviri", icon:"fa-language", color:"#64748B", title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır veya fotoğrafını çek.", img: asset("images/hero-translate.png"), ph:"Metni yaz.", sugg:"Bir lisan bir insan, iki lisan iki insan.", pos:"55% 12%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
-    dream:{ label:"Rüya", icon:"fa-cloud-moon", color:"#6366F1", title:"Rüyalar alemine<br>hoş geldin.", desc:"Hayırdır inşallah…", img: asset("images/hero-dream.png"), ph:"Ne gördün?", sugg:"Rüyalar tersine çıkar derler ama…", pos:"55% 12%", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } }
+    chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300",
+      title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?",
+      img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…",
+      heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" }
+    },
+    shopping:{ label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897",
+      title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.",
+      img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.",
+      heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" }
+    },
+    fal:{ label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6",
+      title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Fal eğlencedir evladım, ama bazen tutar.",
+      img: asset("images/hero-fal.png"), ph:"Fincanı çektin mi?", sugg:"Kapat fincanı, fotoğrafını çek gönder.",
+      heroStyle: { top:"100px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" }
+    },
+    health:{ label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444",
+      title:"Caynana Sağlık'la<br>turp gibi ol.", desc:"Neren ağrıyor söyle bakayım?",
+      img: asset("images/hero-health.png"), ph:"Şikayetin ne?", sugg:"Çay üstüne sakın soğuk su içme!",
+      heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" }
+    },
+    diet:{ label:"Diyet", icon:"fa-carrot", color:"#84CC16",
+      title:"Sağlıklı beslen<br>zinde kal!", desc:"Açlıktan değil, keyiften yiyin.",
+      img: asset("images/hero-diet.png"), ph:"Boy kilo kaç?", sugg:"Ekmek değil, yeşillik ye.",
+      heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"75%" }
+    },
+    food:{ label:"Yemek", icon:"fa-utensils", color:"#F97316",
+      title:"Bugün ne<br>pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.",
+      img: asset("images/hero-food.png"), ph:"Dolapta ne var?", sugg:"Malzemeyi ziyan etme, bereket kaçar.",
+      heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"75%" }
+    },
+    law:{ label:"Hukuk", icon:"fa-scale-balanced", color:"#3B82F6",
+      title:"Hukuk işleri<br>şakaya gelmez.", desc:"Ben avukat değilim ama çok dava gördüm.",
+      img: asset("images/hero-law.png"), ph:"Derdini anlat.", sugg:"Sözleşmeye bakmadan imza atma!",
+      heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" }
+    },
+    astro:{ label:"Burç", icon:"fa-star", color:"#D946EF",
+      title:"Yıldızlar senin için<br>ne diyor?", desc:"Merkür retrosu falan… dikkat et.",
+      img: asset("images/hero-astro.png"), ph:"Burcun ne?", sugg:"Yıldıznameye baktım, yolun açık.",
+      heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" }
+    },
+    translate:{ label:"Çeviri", icon:"fa-language", color:"#64748B",
+      title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır veya fotoğrafını çek.",
+      img: asset("images/hero-translate.png"), ph:"Metni yaz.", sugg:"Bir lisan bir insan, iki lisan iki insan.",
+      heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" }
+    },
+    dream:{ label:"Rüya", icon:"fa-cloud-moon", color:"#6366F1",
+      title:"Rüyalar alemine<br>hoş geldin.", desc:"Hayırdır inşallah…",
+      img: asset("images/hero-dream.png"), ph:"Ne gördün?", sugg:"Rüyalar tersine çıkar derler ama…",
+      heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" }
+    }
   };
+
+  function applyHero(modeKey){
+    const m = MODES[modeKey] || MODES.chat;
+
+    document.documentElement.style.setProperty("--primary", m.color);
+
+    const heroImg = document.getElementById("heroImage");
+    heroImg.src = m.img;
+    heroImg.style.objectPosition = m.pos || "50% 20%";
+
+    const ht = document.getElementById("heroTitle");
+    const hd = document.getElementById("heroDesc");
+    ht.innerHTML = m.title;
+    hd.innerHTML = m.desc;
+
+    const hc = document.getElementById("heroContent");
+    const hs = m.heroStyle || {};
+    hc.style.top = hs.top || "100px";
+    hc.style.left = hs.left || "24px";
+    hc.style.textAlign = hs.textAlign || "left";
+    hc.style.width = hs.width || "auto";
+    hc.style.maxWidth = hs.maxWidth || "70%";
+
+    document.getElementById("text").placeholder = m.ph || "Bir şey yaz...";
+    document.getElementById("suggestionText").textContent = m.sugg || "";
+    document.querySelector(".oz-l-dynamic").style.background = m.color;
+  }
+
+  function switchMode(modeKey){
+    currentMode = modeKey;
+
+    // dock active
+    document.querySelectorAll(".dock-item").forEach(el=>{
+      el.classList.toggle("active", el.getAttribute("data-mode") === modeKey);
+    });
+
+    // hero göster; chat varsa saklama (kullanıcı chat’teyse chat açık kalsın)
+    const c = document.getElementById("chatContainer");
+    const hc = document.getElementById("heroContent");
+
+    // Eğer hiç mesaj yoksa hero açık, chat kapalı
+    if(c.children.length === 0){
+      hc.style.display = "block";
+      c.style.display = "none";
+    } else {
+      hc.style.display = "none";
+      c.style.display = "block";
+    }
+
+    applyHero(modeKey);
+  }
+
+  function renderDock(){
+    const dock = document.getElementById("dock");
+    dock.innerHTML = "";
+
+    Object.keys(MODES).forEach(k=>{
+      const m = MODES[k];
+      const item = document.createElement("div");
+      item.className = "dock-item" + (k===currentMode ? " active" : "");
+      item.setAttribute("data-mode", k);
+      item.innerHTML = `
+        <div class="icon-box"><i class="fa-solid ${m.icon}"></i></div>
+        <div class="dock-label">${m.label}</div>
+      `;
+      item.onclick = ()=> switchMode(k);
+      dock.appendChild(item);
+    });
+
+    // dock drag (mouse)
+    let isDown=false, sx=0, sl=0;
+    dock.addEventListener("mousedown", (e)=>{ isDown=true; sx=e.pageX; sl=dock.scrollLeft; dock.style.cursor="grabbing"; });
+    window.addEventListener("mouseup", ()=>{ isDown=false; dock.style.cursor="grab"; });
+    window.addEventListener("mousemove", (e)=>{ if(!isDown) return; dock.scrollLeft = sl - (e.pageX - sx); });
+
+    // dock drag (touch)
+    dock.addEventListener("touchstart", ()=>{ dock.style.cursor="grabbing"; }, {passive:true});
+    dock.addEventListener("touchend", ()=>{ dock.style.cursor="grab"; }, {passive:true});
+  }
 
   // --- FOTOĞRAF ONAY MODALI ---
   const fileEl = document.getElementById("fileInput");
@@ -436,65 +624,133 @@
 
   function openCamera(){ fileEl.value=""; fileEl.click(); }
   fileEl.addEventListener("change", e=>{
-    const f = e.target.files[0]; if(!f) return;
+    const f = e.target.files[0];
+    if(!f) return;
     const r = new FileReader();
-    r.onload = ()=>{ pendingImage = r.result; photoPreview.src = pendingImage; photoModal.style.display = "flex"; };
+    r.onload = ()=>{
+      pendingImage = r.result;
+      photoPreview.src = pendingImage;
+      photoModal.style.display = "flex";
+    };
     r.readAsDataURL(f);
   });
-  photoCancelBtn.onclick = ()=>{ pendingImage = null; photoPreview.src = ""; photoModal.style.display = "none"; fileEl.value = ""; };
-  photoOkBtn.onclick = async ()=>{ photoModal.style.display = "none"; document.getElementById("text").value = ""; await send(); };
+  photoCancelBtn.onclick = ()=>{
+    pendingImage = null;
+    photoPreview.src = "";
+    photoModal.style.display = "none";
+    fileEl.value = "";
+  };
+  photoOkBtn.onclick = async ()=>{
+    photoModal.style.display = "none";
+    document.getElementById("text").value = "";
+    await send();
+  };
 
+  // --- SES ---
   async function playAudio(text, btn){
     if(currentAudio){ currentAudio.pause(); currentAudio=null; }
-    document.querySelectorAll(".audio-btn.playing").forEach(b=>{ b.classList.remove("playing"); b.innerHTML=`<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; });
-    const oldHtml = btn.innerHTML; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
+    document.querySelectorAll(".audio-btn.playing").forEach(b=>{
+      b.classList.remove("playing");
+      b.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`;
+    });
+
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
+
     try{
       const r = await fetch(SPEAK_URL, {
-          method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({text, persona: currentPersona})
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ text, persona: currentPersona })
       });
-      const blob = await r.blob(); currentAudio = new Audio(URL.createObjectURL(blob));
-      currentAudio.onended = ()=>{ btn.classList.remove("playing"); btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; };
-      await currentAudio.play(); btn.classList.add("playing"); btn.innerHTML = `<i class="fa-solid fa-stop"></i> Durdur`;
-    } catch(e){ btn.innerHTML = oldHtml; }
+      const blob = await r.blob();
+      currentAudio = new Audio(URL.createObjectURL(blob));
+      currentAudio.onended = ()=>{
+        btn.classList.remove("playing");
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`;
+      };
+      await currentAudio.play();
+      btn.classList.add("playing");
+      btn.innerHTML = `<i class="fa-solid fa-stop"></i> Durdur`;
+    } catch(e){
+      btn.innerHTML = oldHtml;
+    }
   }
-  document.getElementById("chatContainer").addEventListener("click", e=>{ const btn = e.target.closest(".audio-btn"); if(btn) playAudio(btn.getAttribute("data-speech"), btn); });
+  document.getElementById("chatContainer").addEventListener("click", e=>{
+    const btn = e.target.closest(".audio-btn");
+    if(btn) playAudio(btn.getAttribute("data-speech"), btn);
+  });
 
+  // --- MIC ---
   function startMic(){
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if(!SR) return alert("Tarayıcı desteklemiyor");
-    const r = new SR(); r.lang="tr-TR"; const mic = document.getElementById("micBtn"); mic.classList.add("mic-active");
-    r.onresult = e=>{ document.getElementById("text").value = e.results[0][0].transcript; mic.classList.remove("mic-active"); send(); };
-    r.onend = ()=> mic.classList.remove("mic-active"); r.start();
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR) return alert("Tarayıcı desteklemiyor");
+    const r = new SR();
+    r.lang="tr-TR";
+    const mic = document.getElementById("micBtn");
+    mic.classList.add("mic-active");
+    r.onresult = e=>{
+      document.getElementById("text").value = e.results[0][0].transcript;
+      mic.classList.remove("mic-active");
+      send();
+    };
+    r.onend = ()=> mic.classList.remove("mic-active");
+    r.start();
   }
-  const mask=document.getElementById("drawerMask"), drawer=document.getElementById("drawer");
-  document.getElementById("menuBtn").onclick=()=>{ mask.classList.add("show"); drawer.classList.add("open"); };
-  mask.onclick=()=>{ mask.classList.remove("show"); drawer.classList.remove("open"); };
 
+  // --- DRAWER ---
+  const mask=document.getElementById("drawerMask"), drawer=document.getElementById("drawer");
+  document.getElementById("menuBtn").onclick=()=>{
+    mask.classList.add("show");
+    drawer.classList.add("open");
+  };
+  mask.onclick=()=>{
+    mask.classList.remove("show");
+    drawer.classList.remove("open");
+  };
+
+  // --- PERSONA ---
   function openPersonaMenu(){ document.getElementById('personaModal').classList.add('show'); }
   function closePersonaMenu(e){ if(e.target.id === 'personaModal') document.getElementById('personaModal').classList.remove('show'); }
   function selectPersona(personaId, el){
     currentPersona = personaId;
-    document.querySelectorAll('.persona-opt').forEach(opt => { opt.classList.remove('selected'); opt.querySelector('i').style.display = 'none'; });
-    el.classList.add('selected'); el.querySelector('i').style.display = 'block';
+    document.querySelectorAll('.persona-opt').forEach(opt => {
+      opt.classList.remove('selected');
+      opt.querySelector('i').style.display = 'none';
+    });
+    el.classList.add('selected');
+    el.querySelector('i').style.display = 'block';
     setTimeout(()=> document.getElementById('personaModal').classList.remove('show'), 200);
   }
 
+  // --- MODE SWIPE / DBLCLICK ---
   const appContainer = document.getElementById("app");
   function cycleMode(direction){
-    const keys = Object.keys(MODES); let idx = keys.indexOf(currentMode);
-    idx = (idx + direction + keys.length) % keys.length; switchMode(keys[idx]);
+    const keys = Object.keys(MODES);
+    let idx = keys.indexOf(currentMode);
+    idx = (idx + direction + keys.length) % keys.length;
+    switchMode(keys[idx]);
   }
   appContainer.addEventListener("dblclick", (e) => {
     if(e.target.closest('#dock') || e.target.closest('.input-wrapper') || e.target.closest('#topbar') || e.target.closest('.msg')) return;
-    const heroVisible = document.getElementById("heroContent").style.display !== "none"; if(heroVisible) cycleMode(1);
+    const heroVisible = document.getElementById("heroContent").style.display !== "none";
+    if(heroVisible) cycleMode(1);
   });
   let startX = 0, startY = 0;
-  appContainer.addEventListener("touchstart", e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive:true});
+  appContainer.addEventListener("touchstart", e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, {passive:true});
   appContainer.addEventListener("touchend", e => {
-    if(e.target.closest('#dock') || e.target.closest('#chatContainer')) return; 
-    const diffX = e.changedTouches[0].clientX - startX; const diffY = e.changedTouches[0].clientY - startY;
-    if(Math.abs(diffX) > Math.abs(diffY)) { if(Math.abs(diffX) > 50) cycleMode(diffX > 0 ? -1 : 1); }
+    if(e.target.closest('#dock') || e.target.closest('#chatContainer')) return;
+    const diffX = e.changedTouches[0].clientX - startX;
+    const diffY = e.changedTouches[0].clientY - startY;
+    if(Math.abs(diffX) > Math.abs(diffY)){
+      if(Math.abs(diffX) > 50) cycleMode(diffX > 0 ? -1 : 1);
+    }
   }, {passive:true});
 
+  // INIT
   renderDock();
   switchMode("chat");
 </script>
