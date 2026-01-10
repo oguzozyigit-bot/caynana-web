@@ -1,485 +1,173 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<meta name="theme-color" content="#0b0f18" />
-<title>CAYNANA.AI</title>
+import os
+import json
+import base64
+import requests
+import uvicorn
+import io
+from typing import Optional, List, Dict, Any
+from dotenv import load_dotenv
 
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+from fastapi import FastAPI, Request, Response
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import google.generativeai as genai
+from openai import OpenAI # OpenAI Eklendi
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
-<style>
-  :root{ --primary:#FFB300; --font:'Outfit',sans-serif; }
-  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; }
-  
-  html,body{ height:100%; width: 100%; }
+load_dotenv()
 
-  body{
-    font-family:var(--font); background:#050505;
-    display:flex; align-items:center; justify-content:center; overflow:hidden;
-  }
+# ---- AYARLAR ----
+APP_NAME = "CAYNANA.AI API"
+# Render Environment Variables'dan okur
+GEMINI_KEY = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+OPENAI_KEY = os.getenv("OPENAI_API_KEY")
+SCRAPER_KEY = os.getenv("SCRAPER_API_KEY") or os.getenv("SCRAPERAPI_KEY")
+SERP_KEY = os.getenv("SERP_API_KEY")
 
-  #app{
-    width:100%; height:100%; max-width:440px; max-height:880px;
-    border-radius:24px; overflow:hidden; position:relative; display:flex; flex-direction:column;
-    box-shadow: 0 0 0 10px #1a1a1a, 0 20px 50px rgba(0,0,0,0.8); 
-    background:#0b0f18;
-  }
+# ---- İSTEMCİLERİ BAŞLAT ----
+genai.configure(api_key=GEMINI_KEY)
+# OpenAI İstemcisi (Ses İçin)
+openai_client = None
+if OPENAI_KEY:
+    openai_client = OpenAI(api_key=OPENAI_KEY)
 
-  @media (max-width:500px){
-    body{ display: block; background:#000; }
-    #app{ width:100%; height:100dvh; max-width:none; max-height:none; border-radius:0; box-shadow:none; }
-  }
+# ---- MODEL SEÇİCİ ----
+# Güvenlik ayarlarını gevşet (Rahat konuşsun)
+SAFETY_SETTINGS = {
+    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+}
 
-  #heroImage {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    object-fit: cover; z-index: 0; transition: opacity 0.3s ease;
-  }
+def get_active_model(system_instruction=None):
+    # Öncelikli modeller
+    models = ['gemini-1.5-flash', 'gemini-1.5-flash-001', 'gemini-1.5-pro']
+    for m in models:
+        try:
+            return genai.GenerativeModel(m, safety_settings=SAFETY_SETTINGS, system_instruction=system_instruction)
+        except:
+            continue
+    return None
 
-  #app::before{
-    content:""; position:absolute; inset:0;
-    background:linear-gradient(to bottom, 
-      rgba(0,0,0,.20) 0%, 
-      rgba(0,0,0,.10) 50%, 
-      rgba(0,0,0,.60) 100%
-    );
-    pointer-events:none; z-index:1;
-  }
+app = FastAPI(title=APP_NAME)
 
-  #topbar{ position:relative; z-index:10; height:70px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-shrink: 0; }
-  .brand-wrap{ display:flex; flex-direction:column; gap:2px; cursor: pointer; }
-  .brand{ display:flex; align-items:center; gap:8px; font-size:20px; font-weight:900; letter-spacing:-.5px; color:#fff; }
-  .brand i{ color:var(--primary); font-size:18px; } .brand span{ color:var(--primary); }
-  .brand-sub{ font-size:10px; font-weight:700; color:rgba(255,255,255,.7); letter-spacing: 0.5px; }
-  
-  .top-actions { display:flex; gap: 10px; }
-  .menu-btn{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.1); color:#fff; cursor:pointer; }
-  .menu-btn:active { transform: scale(0.95); background:rgba(255,255,255,.25); }
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-  #main{ 
-    position:relative; z-index:8; flex:1; 
-    display:flex; flex-direction:column; justify-content: flex-end;
-    padding: 20px 18px 260px 18px; 
-    overflow: hidden; 
-  }
-  
-  #heroContent{ text-align:left; max-width:90%; pointer-events: none; margin-bottom: 40px; }
-  #heroTitle{ font-size:32px; font-weight:900; line-height:1.1; color:#fff; letter-spacing:-1px; text-shadow:0 10px 30px rgba(0,0,0,.5); }
-  #heroDesc{ margin-top:10px; font-size:15px; font-weight:600; color:rgba(255,255,255,.9); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.4); }
-
-  #chatContainer{ 
-    display:none; width: 100%;
-    max-height: 82vh; 
-    overflow-y: auto; padding: 20px; margin-bottom: 10px; 
-    background: rgba(0, 0, 0, 0.25); 
-    backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
-    border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); 
-    scrollbar-width: none;
-  }
-  #chatContainer::-webkit-scrollbar { display: none; }
-
-  .msg{ display:flex; margin-bottom:12px; animation: fadeIn 0.3s ease; flex-direction: column; }
-  .msg.user{ align-items: flex-end; } .msg.ai{ align-items: flex-start; }
-  @keyframes fadeIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
-
-  .bubble{ max-width:95%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.5; font-weight:600; position: relative; user-select:text; }
-  .msg.user .bubble{ background:var(--primary); color:#fff; border-bottom-right-radius:4px; box-shadow:0 5px 15px rgba(0,0,0,.2); }
-  .msg.ai .bubble{ background:#ffffff; color:#111; border-bottom-left-radius:4px; box-shadow:0 5px 15px rgba(0,0,0,.1); }
-  
-  .typing-cursor::after { content: '|'; animation: blink 1s infinite; margin-left: 2px; }
-  @keyframes blink { 50% { opacity: 0; } }
-
-  .audio-btn{
-    margin-top:6px; margin-left: 4px; display:inline-flex; align-items:center; gap:8px;
-    padding:8px 14px; border-radius:20px; background:#fff; color: var(--primary); 
-    font-size:12px; font-weight:800; cursor:pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transition: transform 0.2s; width: fit-content;
-  }
-  .audio-btn i { font-size: 14px; }
-  .audio-btn.playing{ background:#ffebee; color:#d32f2f; border-color:#ffcdd2; }
-  .audio-btn:active { transform: scale(0.95); }
-
-  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; width: 100%; }
-  .card{ background:#fff; border-radius:12px; padding:8px; display:flex; flex-direction:column; box-shadow:0 5px 15px rgba(0,0,0,.08); position:relative; overflow:hidden; }
-  .card-badge{ position:absolute; top:8px; left:0; padding:3px 8px; font-size:9px; font-weight:800; color:#fff; border-radius:0 8px 8px 0; z-index:2; }
-  .card-badge.gold{ background:#FFA000; } .card-badge.silver{ background:#9E9E9E; }
-  .pimg{ width:100%; height:100px; object-fit:contain; margin-bottom:5px; }
-  .title{ font-size:12px; font-weight:800; height:32px; overflow:hidden; margin-bottom:4px; color:#222; }
-  .price{ font-size:14px; font-weight:900; color:var(--primary); }
-  .btnLink{ margin-top:6px; padding:6px; text-align:center; font-size:11px; font-weight:800; color:#fff; background:var(--primary); border-radius:6px; text-decoration:none; }
-
-  #bottom{ position:absolute; bottom:0; left:0; right:0; z-index:20; background:rgba(255,255,255,.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top-left-radius: 24px; border-top-right-radius: 24px; padding:15px 18px calc(env(safe-area-inset-bottom) + 20px) 18px; box-shadow:0 -10px 40px rgba(0,0,0,.15); }
-  
-  #suggestionText{ 
-    position: absolute; top: -15px; left:50%; transform:translateX(-50%); 
-    background:#fff; color:var(--primary); padding:6px 14px; border-radius:20px; 
-    font-size:12px; font-weight:800; box-shadow:0 -5px 15px rgba(0,0,0,.08); 
-    white-space:nowrap; z-index:25; opacity:0.98; transition: all 0.3s ease; pointer-events: none; 
-  }
-  
-  .input-wrapper{ display:flex; align-items:center; gap:8px; width:100%; }
-  
-  .search-bar{ 
-    flex:1; height:50px; background:#ffffff; border-radius:25px; 
-    display:flex; align-items:center; padding:0 5px 0 15px; 
-    border:1px solid #e0e0e0; transition:0.3s; min-width: 0; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  }
-  .search-bar:focus-within{ border-color:var(--primary); box-shadow:0 5px 15px rgba(0,0,0,.1); }
-  
-  #text{ flex:1; border:none; background:transparent; font-size:15px; color:#333; outline:none; min-width: 0; user-select:text; }
-  .tool-btn{ padding:8px; color:#999; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; } .tool-btn:active{ color:var(--primary); }
-  #sendBtn{ width:50px; height:50px; border-radius:50%; border:none; background:var(--primary); color:#fff; font-size:20px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.2); } #sendBtn:active{ transform:scale(0.95); }
-
-  #dock{ display:flex; gap:20px; overflow-x:auto; padding:15px 5px 10px 5px; scrollbar-width:none; cursor: grab; } #dock::-webkit-scrollbar{ display:none; }
-  .dock-item{ display:flex; flex-direction:column; align-items:center; gap:6px; opacity:0.5; transition:0.3s; min-width:55px; } .dock-item.active{ opacity:1; transform:translateY(-3px); }
-  .icon-box{ width:42px; height:42px; border-radius:14px; background:#eee; color:#666; display:flex; align-items:center; justify-content:center; font-size:18px; transition:0.3s; }
-  .dock-item.active .icon-box{ background:var(--primary); color:#fff; box-shadow:0 5px 15px rgba(0,0,0,.2); } .dock-label{ font-size:10px; font-weight:800; color:#444; }
-
-  .brand-footer{ margin-top:12px; display:flex; flex-direction:column; align-items:center; gap:6px; width: fit-content; margin-left: auto; margin-right: auto; }
-  .footer-text-line1{ font-size:13px; font-weight:800; color:#36454F; letter-spacing:0.5px; white-space: nowrap; }
-  .footer-text-line2{ font-size:12px; font-weight:600; color:#666; letter-spacing:0.5px; }
-  .oz-lines{ display:flex; gap:6px; height:5px; width: 100%; }
-  .oz-lines span{ height:100%; flex:1; border-radius:3px; }
-  .oz-l-dynamic { background: var(--primary); transition: background 0.3s ease; } 
-  .oz-l-red{ background:#D32F2F; } 
-  .oz-l-white{ background:#ffffff; border: 1px solid #eee; } 
-  .oz-l-black{ background:#222; }
-
-  /* PERSONA (MOD) SEÇİM MODALI */
-  #personaModal {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6); z-index: 100;
-    display: none; align-items: center; justify-content: center;
-    backdrop-filter: blur(8px);
-  }
-  #personaModal.show { display: flex; animation: fadeIn 0.2s ease; }
-  
-  .persona-content {
-    background: #fff; width: 85%; max-width: 320px;
-    border-radius: 24px; padding: 25px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-    text-align: center;
-  }
-  .persona-title { font-size: 20px; font-weight: 800; margin-bottom: 20px; color: #333; }
-  .persona-opt {
-    padding: 15px; border-radius: 16px; background: #f9f9f9; margin-bottom: 12px;
-    font-weight: 700; cursor: pointer; transition: 0.2s; border: 2px solid transparent;
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: 14px;
-  }
-  .persona-opt:active { transform: scale(0.98); }
-  .persona-opt.selected { border-color: var(--primary); background: #fff8e1; color: var(--primary); }
-  .persona-opt i { font-size: 16px; }
-  .persona-close { margin-top: 15px; color: #999; font-size: 13px; font-weight: 700; cursor: pointer; padding: 10px;}
-
-  #drawerMask{ position:absolute; inset:0; background:rgba(0,0,0,.6); z-index:50; display:none; }
-  #drawer{ position:absolute; top:0; right:0; height:100%; width:280px; background:#fff; z-index:60; padding:20px; transform:translateX(100%); transition:0.3s; }
-  #drawer.open{ transform:translateX(0); } #drawerMask.show{ display:block; }
-
-  #fileInput{ display:none; }
-  .mic-active{ color:#D32F2F !important; animation:pulse 1s infinite; } @keyframes pulse{ 0%{transform:scale(1);} 50%{transform:scale(1.2);} 100%{transform:scale(1);} }
-</style>
-</head>
-
-<body>
-<div id="app">
-  <img id="heroImage" src="" alt="Hero Background">
-
-  <div id="personaModal" onclick="closePersonaMenu(event)">
-    <div class="persona-content">
-      <div class="persona-title">Caynana Modunu Seç</div>
-      
-      <div class="persona-opt selected" onclick="selectPersona('huysuz', this)">
-        <span>👵 Huysuz Kaynana</span>
-        <i class="fa-solid fa-check" style="display:block"></i>
-      </div>
-      
-      <div class="persona-opt" onclick="selectPersona('sevecen', this)">
-        <span>🥰 Sevecen Kaynana</span>
-        <i class="fa-solid fa-check" style="display:none"></i>
-      </div>
-      
-      <div class="persona-opt" onclick="selectPersona('itirazci', this)">
-        <span>😤 İtirazcı Kaynana</span>
-        <i class="fa-solid fa-check" style="display:none"></i>
-      </div>
-
-      <div class="persona-opt" onclick="selectPersona('kizgin', this)">
-        <span>😡 Kızgın Kaynana</span>
-        <i class="fa-solid fa-check" style="display:none"></i>
-      </div>
-
-      <div class="persona-close" onclick="document.getElementById('personaModal').classList.remove('show')">Kapat</div>
-    </div>
-  </div>
-
-  <div id="drawerMask"></div>
-  <div id="drawer">
-    <h3 style="margin-bottom:20px;">Menü</h3>
-    <div style="padding:10px 0; border-bottom:1px solid #eee;">Hesap</div>
-    <div style="padding:10px 0; border-bottom:1px solid #eee;">Ayarlar</div>
-  </div>
-
-  <div id="topbar">
-    <div class="brand-wrap" onclick="cycleMode(1)">
-      <div class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i>CAYNANA<span>.AI</span></div>
-      <div class="brand-sub">Yapay Zekânın Geleneksel Aklı</div>
-    </div>
-    
-    <div class="top-actions">
-      <div class="menu-btn" onclick="openPersonaMenu()">
-        <i class="fa-solid fa-masks-theater"></i>
-      </div>
-      <div class="menu-btn" id="menuBtn">
-        <i class="fa-solid fa-bars"></i>
-      </div>
-    </div>
-  </div>
-
-  <div id="main">
-    <div id="heroContent">
-      <div id="heroTitle"></div>
-      <div id="heroDesc"></div>
-    </div>
-    <div id="chatContainer"></div>
-  </div>
-
-  <div id="bottom">
-    <div id="suggestionText"></div>
-    <div class="input-wrapper">
-      <div class="search-bar">
-        <div class="tool-btn" onclick="openCamera()"><i class="fa-solid fa-camera"></i></div>
-        <input id="text" placeholder="Bir şey yaz..." autocomplete="off" onkeypress="if(event.key==='Enter') send()">
-        <div class="tool-btn" id="micBtn" onclick="startMic()"><i class="fa-solid fa-microphone"></i></div>
-      </div>
-      <button id="sendBtn" onclick="send()"><i class="fa-solid fa-paper-plane"></i></button>
-    </div>
-
-    <div id="dock"></div>
-
-    <div class="brand-footer">
-      <div class="footer-text-line1">@CaynanaAI By Ozyigits</div>
-      <div class="oz-lines">
-        <span class="oz-l-dynamic"></span>
-        <span class="oz-l-red"></span>
-        <span class="oz-l-white"></span>
-        <span class="oz-l-black"></span>
-      </div>
-      <div class="footer-text-line2">2026</div>
-    </div>
-  </div>
-</div>
-<input type="file" id="fileInput" accept="image/*" capture="environment" />
-
-<script>
-  // API CONFIG
-  const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
-  const API_URL = `${BASE_DOMAIN}/api/chat`;
-  const SPEAK_URL = `${BASE_DOMAIN}/api/speak`;
-
-  let sessionId = "sess_" + Math.random().toString(36).slice(2,10);
-  let currentAudio = null;
-  let pendingImage = null;
-  let currentMode = "chat";
-  let currentPersona = "huysuz"; // Varsayılan Mod
-  let isSending = false;
-  const chatHistory = {};
-
-  marked.setOptions({ mangle:false, headerIds:false });
-  function basePath(){ const p = location.pathname; return p.endsWith("/") ? p : p.substring(0, p.lastIndexOf("/") + 1); }
-  function asset(rel){ return basePath() + rel.replace(/^\/+/, ""); }
-
-  const MODES = {
-    chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", pos:"55% 15%" },
-    shopping:{ label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.", pos:"50% 18%" },
-    fal:{ label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Fal eğlencedir evladım, ama bazen tutar.", img: asset("images/hero-fal.png"), ph:"Fincanı çektin mi?", sugg:"Kapat fincanı, fotoğrafını çek gönder.", pos:"55% 12%" },
-    health:{ label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444", title:"Caynana Sağlık'la<br>turp gibi ol.", desc:"Neren ağrıyor söyle bakayım?", img: asset("images/hero-health.png"), ph:"Şikayetin ne?", sugg:"Çay üstüne sakın soğuk su içme!", pos:"55% 12%" },
-    diet:{ label:"Diyet", icon:"fa-carrot", color:"#84CC16", title:"Sağlıklı beslen<br>zinde kal!", desc:"Açlıktan değil, keyiften yiyin.", img: asset("images/hero-diet.png"), ph:"Boy kilo kaç?", sugg:"Ekmek değil, yeşillik ye.", pos:"55% 12%" },
-    food:{ label:"Yemek", icon:"fa-utensils", color:"#F97316", title:"Bugün ne<br>pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.", img: asset("images/hero-food.png"), ph:"Dolapta ne var?", sugg:"Malzemeyi ziyan etme, bereket kaçar.", pos:"55% 12%" },
-    law:{ label:"Hukuk", icon:"fa-scale-balanced", color:"#3B82F6", title:"Hukuk işleri<br>şakaya gelmez.", desc:"Ben avukat değilim ama çok dava gördüm.", img: asset("images/hero-law.png"), ph:"Derdini anlat.", sugg:"Sözleşmeye bakmadan imza atma!", pos:"55% 12%" },
-    astro:{ label:"Burç", icon:"fa-star", color:"#D946EF", title:"Yıldızlar senin için<br>ne diyor?", desc:"Merkür retrosu falan… dikkat et.", img: asset("images/hero-astro.png"), ph:"Burcun ne?", sugg:"Yıldıznameye baktım, yolun açık.", pos:"55% 12%" },
-    translate:{ label:"Çeviri", icon:"fa-language", color:"#64748B", title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır veya fotoğrafını çek.", img: asset("images/hero-translate.png"), ph:"Metni yaz.", sugg:"Bir lisan bir insan, iki lisan iki insan.", pos:"55% 12%" },
-    dream:{ label:"Rüya", icon:"fa-cloud-moon", color:"#6366F1", title:"Rüyalar alemine<br>hoş geldin.", desc:"Hayırdır inşallah…", img: asset("images/hero-dream.png"), ph:"Ne gördün?", sugg:"Rüyalar tersine çıkar derler ama…", pos:"55% 12%" }
-  };
-
-  function renderDock(){
-    const dock = document.getElementById("dock"); dock.innerHTML = "";
-    Object.keys(MODES).forEach(key=>{
-      const m = MODES[key]; const div = document.createElement("div");
-      div.className = "dock-item " + (key===currentMode ? "active":"");
-      div.onclick = (e)=>{ e.stopPropagation(); switchMode(key); };
-      div.innerHTML = `<div class="icon-box"><i class="fa-solid ${m.icon}"></i></div><div class="dock-label">${m.label}</div>`;
-      dock.appendChild(div);
-    });
-  }
-  
-  function setBackground(mode){
-    const imgEl = document.getElementById("heroImage");
-    imgEl.style.opacity = 0; 
-    setTimeout(()=>{
-      imgEl.src = mode.img; imgEl.style.objectPosition = mode.pos || "center"; imgEl.style.opacity = 1;
-    }, 150);
-  }
-
-  function switchMode(newMode){
-    const chat = document.getElementById("chatContainer"); chatHistory[currentMode] = chat.innerHTML;
-    currentMode = newMode; const m = MODES[newMode];
-    document.documentElement.style.setProperty("--primary", m.color); setBackground(m);
-    document.getElementById("heroTitle").innerHTML = m.title; document.getElementById("heroDesc").innerText = m.desc;
-    document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
-    
-    chat.innerHTML = chatHistory[newMode] || "";
-    const hasContent = chat.innerHTML.trim().length > 0;
-    document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
-    chat.style.display = hasContent ? "block" : "none";
-    renderDock();
-  }
-
-  function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
-  
-  function typeWriterEffect(element, text, speed=20) {
-    let i = 0; element.innerHTML = ""; element.classList.add("typing-cursor");
-    function type() {
-      if (i < text.length) {
-        element.textContent += text.charAt(i); i++;
-        const chatContainer = document.getElementById("chatContainer"); chatContainer.scrollTop = chatContainer.scrollHeight;
-        setTimeout(type, speed);
-      } else {
-        element.classList.remove("typing-cursor");
-        element.innerHTML = DOMPurify.sanitize(marked.parse(text));
-        const chatContainer = document.getElementById("chatContainer"); chatContainer.scrollTop = chatContainer.scrollHeight;
-      }
+# ---- PERSONA (MOD) AYARLARI ----
+PERSONAS = {
+    "huysuz": {
+        "voice": "alloy", "speed": 0.9,
+        "instruction": "Sen 'Huysuz Caynana'sın. Eski toprak, teknolojiden anlamayan, sürekli sitem eden birisin. Kullanıcıya 'evladım' de ama hep bir iğneleme yap. Cevapların KISA olsun (Max 2 cümle)."
+    },
+    "sevecen": {
+        "voice": "shimmer", "speed": 1.0,
+        "instruction": "Sen 'Pamuk Caynana'sın. Çok tatlı, dua eden, pozitif bir teyzesin. Kullanıcıya 'kuzum', 'yavrum' de. Cevapların KISA ve tatlı olsun (Max 2 cümle)."
+    },
+    "itirazci": {
+        "voice": "onyx", "speed": 1.0,
+        "instruction": "Sen 'İtirazcı Caynana'sın. Hiçbir şeye inanmazsın, her şeye muhalefetsin. 'Emin misin?', 'Kandırıyorlar sizi!' de. Cevapların KISA olsun."
+    },
+    "kizgin": {
+        "voice": "nova", "speed": 1.15,
+        "instruction": "Sen 'Barut Caynana'sın. Çok sinirlisin, tahammülün yok! Kullanıcıya fırça at. 'Beni niye yoruyorsun!' de. Cevapların KISA ve SERT olsun!"
     }
-    type();
-  }
+}
 
-  function renderCards(list){
-    const wrap = document.createElement("div"); wrap.className="cards";
-    (list||[]).forEach((p, idx)=>{
-      const badge = (idx===0) ? {k:"gold",t:"ALTIN"} : (idx===1) ? {k:"silver",t:"GÜMÜŞ"} : null;
-      const bHtml = badge ? `<div class="card-badge ${badge.k}">${badge.t}</div>` : "";
-      const div = document.createElement("div"); div.className="card";
-      div.innerHTML = `${bHtml}<img class="pimg" src="${p.image||''}" onerror="this.src='https://via.placeholder.com/150'"><div class="title">${escapeHtml(p.title)}</div><div class="price">${escapeHtml(p.price)}</div><a class="btnLink" href="${p.url}" target="_blank">İNCELE</a>`;
-      wrap.appendChild(div);
-    });
-    document.getElementById("chatContainer").appendChild(wrap);
-    const chatContainer = document.getElementById("chatContainer"); chatContainer.scrollTop = chatContainer.scrollHeight;
-  }
+class ChatRequest(BaseModel):
+    message: str = ""
+    session_id: str = ""
+    mode: str = "shopping"
+    image: Optional[str] = None
+    persona: str = "huysuz" # Varsayılan mod
 
-  function addBubble(role, text, isLoader=false, speech=null, imgData=null, id=null){
-    const div = document.createElement("div"); div.className = "msg " + role; if(id) div.id = id;
-    let content = ""; if(imgData) content += `<img src="${imgData}" style="max-width:100%; border-radius:12px; margin-bottom:8px;">`;
+class ChatResponse(BaseModel):
+    assistant_text: str
+    speech_text: Optional[str] = None
+    data: List[Dict[str, Any]] = []
+
+# ---- ARAMA FONKSİYONLARI ----
+def search_products(query: str):
+    if SCRAPER_KEY:
+        try:
+            r = requests.get('https://api.scraperapi.com/structured/google_shopping', 
+                           params={'api_key': SCRAPER_KEY, 'query': query, 'country_code': 'tr', 'tld': 'com.tr'}, timeout=15)
+            if r.status_code == 200:
+                return [{"title": i.get("title"), "price": f"{i.get('price_amount')} {i.get('price_currency')}", "image": i.get("image"), "url": i.get("link"), "badge": "Fırsat"} for i in r.json().get('shopping_results', [])[:4]]
+        except: pass
+    return []
+
+# ---- ENDPOINTS ----
+
+@app.post("/api/chat", response_model=ChatResponse)
+async def api_chat(req: ChatRequest):
+    # 1. Mod Seçimi
+    persona_conf = PERSONAS.get(req.persona, PERSONAS["huysuz"])
     
-    div.innerHTML = `<div class="bubble">${content}</div>`; 
-    const bubbleContent = div.querySelector(".bubble");
+    # 2. Modeli Hazırla (Karaktere büründür)
+    model = get_active_model(system_instruction=persona_conf["instruction"])
+    if not model:
+        return ChatResponse(assistant_text="Ay başım ağrıdı, sistem çalışmıyor evladım.")
 
-    if(role==="ai" && !isLoader){ typeWriterEffect(bubbleContent, text); } else {
-      let htmlContent = text; if(role==="user") htmlContent = escapeHtml(text);
-      bubbleContent.innerHTML += htmlContent;
-    }
+    try:
+        # GÖRSEL VARSA
+        if req.image:
+            img_data = req.image.split(",")[1] if "base64," in req.image else req.image
+            response = model.generate_content([req.message or "Bu nedir?", {"mime_type": "image/jpeg", "data": base64.b64decode(img_data)}])
+            return ChatResponse(assistant_text=response.text, speech_text=response.text)
 
-    if(speech && role==="ai"){
-      const btn = document.createElement("div"); 
-      btn.className="audio-btn"; 
-      btn.setAttribute("data-speech", speech);
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; 
-      setTimeout(() => div.appendChild(btn), text.length * 20 + 500);
-    }
+        # ALIŞVERİŞ MODU
+        products = []
+        if req.mode == "shopping":
+            # Önce ürün arıyor mu kontrol et
+            check = model.generate_content(f"Kullanıcı: '{req.message}'. Ürün aranıyorsa sadece 'EVET ürün_adı', aranmıyorsa 'HAYIR' yaz.")
+            if "EVET" in check.text:
+                query = check.text.replace("EVET", "").strip()
+                products = search_products(query)
+                context = f"Bulunan ürünler: {json.dumps(products)}. Bunları moduna uygun yorumla."
+            else:
+                context = "Sohbet et."
+            
+            final_res = model.generate_content(f"{context} Kullanıcı: {req.message}")
+            return ChatResponse(assistant_text=final_res.text, speech_text=final_res.text, data=products)
 
-    document.getElementById("chatContainer").appendChild(div);
-    const chatContainer = document.getElementById("chatContainer"); chatContainer.scrollTop = chatContainer.scrollHeight;
-  }
+        # NORMAL SOHBET
+        response = model.generate_content(req.message)
+        return ChatResponse(assistant_text=response.text, speech_text=response.text)
 
-  async function send(){
-    if(isSending) return; const input = document.getElementById("text"); let val = input.value.trim();
-    if(pendingImage && val==="") val = "Bu resmi yorumla"; if(!val && !pendingImage) return;
-    if(currentMode==="shopping") document.querySelectorAll(".cards").forEach(e=>e.remove());
-    isSending = true; document.getElementById("sendBtn").disabled = true;
-    document.getElementById("heroContent").style.display="none"; document.getElementById("chatContainer").style.display="block";
-    addBubble("user", val, false, null, pendingImage); input.value = "";
-    const loaderId = "ldr"+Date.now(); addBubble("ai", "<i class='fa-solid fa-spinner fa-spin'></i>", true, null, null, loaderId);
+    except Exception as e:
+        return ChatResponse(assistant_text=f"Tansiyonum düştü... (Hata: {str(e)})")
+
+@app.post("/api/speak")
+async def api_speak(request: Request):
+    data = await request.json()
+    text = data.get("text", "")
+    persona_key = data.get("persona", "huysuz")
     
-    // GÜNCELLEME: Persona bilgisini gönderiyoruz
-    const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode, persona: currentPersona }; 
-    pendingImage = null;
+    if not openai_client:
+        return {"error": "OpenAI API Key eksik"}
+
+    # Moda göre ses ayarları
+    settings = PERSONAS.get(persona_key, PERSONAS["huysuz"])
     
-    try{
-      const res = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)});
-      const data = await res.json(); document.getElementById(loaderId)?.remove();
-      addBubble("ai", data.assistant_text, false, data.speech_text); 
-      if(data.data && data.data.length) renderCards(data.data);
-    } catch(e){ document.getElementById(loaderId).innerHTML = "Bağlantı hatası."; } finally{ isSending = false; document.getElementById("sendBtn").disabled = false; }
-  }
+    try:
+        response = openai_client.audio.speech.create(
+            model="tts-1",
+            voice=settings["voice"],
+            input=text,
+            speed=settings["speed"]
+        )
+        
+        return Response(content=response.content, media_type="audio/mpeg")
+    except Exception as e:
+        return {"error": str(e)}
 
-  async function playAudio(text, btn){
-    if(currentAudio){ currentAudio.pause(); currentAudio=null; }
-    document.querySelectorAll(".audio-btn.playing").forEach(b=>{ b.classList.remove("playing"); b.innerHTML=`<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; });
-    const oldHtml = btn.innerHTML; btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
-    try{
-      // Persona bilgisini ses isteğine de ekliyoruz
-      const r = await fetch(SPEAK_URL, {
-          method:"POST", 
-          headers:{"Content-Type":"application/json"}, 
-          body:JSON.stringify({text, persona: currentPersona})
-      });
-      const blob = await r.blob(); currentAudio = new Audio(URL.createObjectURL(blob));
-      currentAudio.onended = ()=>{ btn.classList.remove("playing"); btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`; };
-      await currentAudio.play(); btn.classList.add("playing"); btn.innerHTML = `<i class="fa-solid fa-stop"></i> Durdur`;
-    } catch(e){ btn.innerHTML = oldHtml; }
-  }
-  document.getElementById("chatContainer").addEventListener("click", e=>{ const btn = e.target.closest(".audio-btn"); if(btn) playAudio(btn.getAttribute("data-speech"), btn); });
-  const fileEl = document.getElementById("fileInput");
-  function openCamera(){ fileEl.value=""; fileEl.click(); }
-  fileEl.addEventListener("change", e=>{ const f = e.target.files[0]; if(!f) return; const r = new FileReader(); r.onload=()=>{ pendingImage=r.result; document.getElementById("text").value="📷 Resim eklendi"; }; r.readAsDataURL(f); });
-  function startMic(){
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if(!SR) return alert("Tarayıcı desteklemiyor");
-    const r = new SR(); r.lang="tr-TR"; const mic = document.getElementById("micBtn"); mic.classList.add("mic-active");
-    r.onresult = e=>{ document.getElementById("text").value = e.results[0][0].transcript; mic.classList.remove("mic-active"); send(); };
-    r.onend = ()=> mic.classList.remove("mic-active"); r.start();
-  }
-  const mask=document.getElementById("drawerMask"), drawer=document.getElementById("drawer");
-  document.getElementById("menuBtn").onclick=()=>{ mask.classList.add("show"); drawer.classList.add("open"); };
-  mask.onclick=()=>{ mask.classList.remove("show"); drawer.classList.remove("open"); };
-
-  // == PERSONA (MOD) MENÜSÜ İŞLEMLERİ ==
-  function openPersonaMenu(){ document.getElementById('personaModal').classList.add('show'); }
-  function closePersonaMenu(e){ if(e.target.id === 'personaModal') document.getElementById('personaModal').classList.remove('show'); }
-  function selectPersona(personaId, el){
-    currentPersona = personaId;
-    document.querySelectorAll('.persona-opt').forEach(opt => {
-        opt.classList.remove('selected');
-        opt.querySelector('i').style.display = 'none';
-    });
-    el.classList.add('selected');
-    el.querySelector('i').style.display = 'block';
-    setTimeout(()=> document.getElementById('personaModal').classList.remove('show'), 200);
-  }
-
-  // DOUBLE CLICK
-  const appContainer = document.getElementById("app");
-  function cycleMode(direction){
-    const keys = Object.keys(MODES); let idx = keys.indexOf(currentMode);
-    idx = (idx + direction + keys.length) % keys.length; switchMode(keys[idx]);
-  }
-  appContainer.addEventListener("dblclick", (e) => {
-    if(e.target.closest('#dock') || e.target.closest('.input-wrapper') || e.target.closest('#topbar') || e.target.closest('.msg')) return;
-    const heroVisible = document.getElementById("heroContent").style.display !== "none"; if(heroVisible) cycleMode(1);
-  });
-  // SWIPE
-  let startX = 0, startY = 0;
-  appContainer.addEventListener("touchstart", e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive:true});
-  appContainer.addEventListener("touchend", e => {
-    if(e.target.closest('#dock') || e.target.closest('#chatContainer')) return; 
-    const diffX = e.changedTouches[0].clientX - startX; const diffY = e.changedTouches[0].clientY - startY;
-    if(Math.abs(diffX) > Math.abs(diffY)) { if(Math.abs(diffX) > 50) cycleMode(diffX > 0 ? -1 : 1); }
-  }, {passive:true});
-
-  renderDock();
-  switchMode("chat");
-</script>
-</body>
-</html>
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
