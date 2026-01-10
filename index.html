@@ -437,12 +437,10 @@
 <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
 <script>
-  // ===== API =====
-  // Prod: aynı domain altına reverse proxy yoksa aşağıdakileri tam URL yap:
-  // const API_URL = "https://bikonomi-api-2.onrender.com/api/chat";
-  // const SPEAK_URL = "https://bikonomi-api-2.onrender.com/api/speak";
-  const API_URL = "https://bikonomi-api-2.onrender.com/api/chat";
-  const SPEAK_URL = "https://bikonomi-api-2.onrender.com/api/speak";
+  // ===== API (Render Canlı Sunucu) =====
+  const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
+  const API_URL = `${BASE_DOMAIN}/api/chat`;
+  const SPEAK_URL = `${BASE_DOMAIN}/api/speak`;
 
   let sessionId = "sess_" + Math.random().toString(36).slice(2,10);
   let currentAudio = null;
