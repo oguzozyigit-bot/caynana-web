@@ -59,23 +59,25 @@
   .menu-btn{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.1); color:#fff; cursor:pointer; }
   .menu-btn:active { transform: scale(0.95); background:rgba(255,255,255,.25); }
 
-  /* --- DÜZELTİLEN ALAN: MAIN LAYOUT --- */
+  /* MAIN LAYOUT GÜNCELLENDİ */
   #main{ 
     position:relative; z-index:8; flex:1; 
     display:flex; flex-direction:column; 
     overflow: hidden; 
-    /* Karşılama ekranını dikeyde ORTALA */
-    justify-content: center; 
-    /* Chat açılınca bu ayar JS ile değişecek */
-    padding-bottom: 180px; /* Alt bara girmesin */
+    /* padding-bottom kaldırıldı, heroContent pozisyonlanacak */
   }
   
-  /* Hero Content - Ortada dursun, aşağı yapışmasın */
+  /* Hero Content - Artık Mutlak Pozisyonlu ve Dinamik */
   #heroContent{ 
-    text-align:left; max-width:90%; pointer-events: none; 
-    margin-bottom: 20px; 
-    /* margin-top: auto;  BU SATIR SİLİNDİ - AŞAĞI İTMESİN DİYE */
-    padding: 0 18px; 
+    position: absolute; /* Mutlak konumlandırma */
+    pointer-events: none; 
+    padding: 0 20px;
+    z-index: 9; /* Chat'in üstünde ama tıklanamaz */
+    transition: all 0.3s ease; /* Yumuşak geçiş */
+    /* Varsayılan değerler, JS ile ezilecek */
+    bottom: 180px; 
+    left: 0;
+    width: 100%;
   }
   
   #heroTitle{ font-size:32px; font-weight:900; line-height:1.1; color:#fff; letter-spacing:-1px; text-shadow:0 10px 30px rgba(0,0,0,.5); }
@@ -85,10 +87,10 @@
     display:none; width: 100%; height: 100%;
     overflow-y: auto; 
     -webkit-overflow-scrolling: touch; 
-    padding: 20px 20px 40px 20px; 
+    padding: 20px 20px 180px 20px; /* Alt bar boşluğu */
     background: rgba(0, 0, 0, 0.25); 
     backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
-    border-radius: 24px 24px 0 0; border: 1px solid rgba(255, 255, 255, 0.1); 
+    border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); 
     scrollbar-width: none;
   }
   #chatContainer::-webkit-scrollbar { display: none; }
@@ -256,17 +258,48 @@
   function basePath(){ const p = location.pathname; return p.endsWith("/") ? p : p.substring(0, p.lastIndexOf("/") + 1); }
   function asset(rel){ return basePath() + rel.replace(/^\/+/, ""); }
 
+  // ---- MODLARA ÖZEL DİNAMİK CSS EKLENDİ (heroCss) ----
   const MODES = {
-    chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", pos:"55% 15%" },
-    shopping:{ label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.", pos:"50% 18%" },
-    fal:{ label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Fal eğlencedir evladım, ama bazen tutar.", img: asset("images/hero-fal.png"), ph:"Fincanı çektin mi?", sugg:"Kapat fincanı, fotoğrafını çek gönder.", pos:"55% 12%" },
-    health:{ label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444", title:"Caynana Sağlık'la<br>turp gibi ol.", desc:"Neren ağrıyor söyle bakayım?", img: asset("images/hero-health.png"), ph:"Şikayetin ne?", sugg:"Çay üstüne sakın soğuk su içme!", pos:"55% 12%" },
-    diet:{ label:"Diyet", icon:"fa-carrot", color:"#84CC16", title:"Sağlıklı beslen<br>zinde kal!", desc:"Açlıktan değil, keyiften yiyin.", img: asset("images/hero-diet.png"), ph:"Boy kilo kaç?", sugg:"Ekmek değil, yeşillik ye.", pos:"55% 12%" },
-    food:{ label:"Yemek", icon:"fa-utensils", color:"#F97316", title:"Bugün ne<br>pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.", img: asset("images/hero-food.png"), ph:"Dolapta ne var?", sugg:"Malzemeyi ziyan etme, bereket kaçar.", pos:"55% 12%" },
-    law:{ label:"Hukuk", icon:"fa-scale-balanced", color:"#3B82F6", title:"Hukuk işleri<br>şakaya gelmez.", desc:"Ben avukat değilim ama çok dava gördüm.", img: asset("images/hero-law.png"), ph:"Derdini anlat.", sugg:"Sözleşmeye bakmadan imza atma!", pos:"55% 12%" },
-    astro:{ label:"Burç", icon:"fa-star", color:"#D946EF", title:"Yıldızlar senin için<br>ne diyor?", desc:"Merkür retrosu falan… dikkat et.", img: asset("images/hero-astro.png"), ph:"Burcun ne?", sugg:"Yıldıznameye baktım, yolun açık.", pos:"55% 12%" },
-    translate:{ label:"Çeviri", icon:"fa-language", color:"#64748B", title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır veya fotoğrafını çek.", img: asset("images/hero-translate.png"), ph:"Metni yaz.", sugg:"Bir lisan bir insan, iki lisan iki insan.", pos:"55% 12%" },
-    dream:{ label:"Rüya", icon:"fa-cloud-moon", color:"#6366F1", title:"Rüyalar alemine<br>hoş geldin.", desc:"Hayırdır inşallah…", img: asset("images/hero-dream.png"), ph:"Ne gördün?", sugg:"Rüyalar tersine çıkar derler ama…", pos:"55% 12%" }
+    chat:{ 
+      label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", pos:"55% 15%",
+      heroCss: "bottom: 180px; left: 0; text-align: left; max-width: 80%;" 
+    },
+    shopping:{ 
+      label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.", pos:"50% 18%",
+      heroCss: "top: 100px; left: 0; text-align: left; max-width: 70%;"
+    },
+    fal:{ 
+      label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Fal eğlencedir evladım, ama bazen tutar.", img: asset("images/hero-fal.png"), ph:"Fincanı çektin mi?", sugg:"Kapat fincanı, fotoğrafını çek gönder.", pos:"55% 12%",
+      heroCss: "top: 120px; left: 0; text-align: left; max-width: 60%;"
+    },
+    health:{ 
+      label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444", title:"Caynana Sağlık'la<br>turp gibi ol.", desc:"Neren ağrıyor söyle bakayım?", img: asset("images/hero-health.png"), ph:"Şikayetin ne?", sugg:"Çay üstüne sakın soğuk su içme!", pos:"55% 12%",
+      heroCss: "bottom: 180px; left: 0; text-align: left; max-width: 75%;"
+    },
+    diet:{ 
+      label:"Diyet", icon:"fa-carrot", color:"#84CC16", title:"Sağlıklı beslen<br>zinde kal!", desc:"Açlıktan değil, keyiften yiyin.", img: asset("images/hero-diet.png"), ph:"Boy kilo kaç?", sugg:"Ekmek değil, yeşillik ye.", pos:"55% 12%",
+      heroCss: "top: 100px; left: 0; text-align: left; max-width: 60%;"
+    },
+    food:{ 
+      label:"Yemek", icon:"fa-utensils", color:"#F97316", title:"Bugün ne<br>pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.", img: asset("images/hero-food.png"), ph:"Dolapta ne var?", sugg:"Malzemeyi ziyan etme, bereket kaçar.", pos:"55% 12%",
+      heroCss: "top: 140px; left: 0; text-align: left; max-width: 65%;"
+    },
+    law:{ 
+      label:"Hukuk", icon:"fa-scale-balanced", color:"#3B82F6", title:"Hukuk işleri<br>şakaya gelmez.", desc:"Ben avukat değilim ama çok dava gördüm.", img: asset("images/hero-law.png"), ph:"Derdini anlat.", sugg:"Sözleşmeye bakmadan imza atma!", pos:"55% 12%",
+      heroCss: "bottom: 220px; left: 0; text-align: left; max-width: 70%;"
+    },
+    astro:{ 
+      label:"Burç", icon:"fa-star", color:"#D946EF", title:"Yıldızlar senin için<br>ne diyor?", desc:"Merkür retrosu falan… dikkat et.", img: asset("images/hero-astro.png"), ph:"Burcun ne?", sugg:"Yıldıznameye baktım, yolun açık.", pos:"55% 12%",
+      heroCss: "top: 140px; left: 0; text-align: left; max-width: 60%;"
+    },
+    translate:{ 
+      label:"Çeviri", icon:"fa-language", color:"#64748B", title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır veya fotoğrafını çek.", img: asset("images/hero-translate.png"), ph:"Metni yaz.", sugg:"Bir lisan bir insan, iki lisan iki insan.", pos:"55% 12%",
+      heroCss: "top: 160px; left: 0; text-align: left; max-width: 65%;"
+    },
+    dream:{ 
+      label:"Rüya", icon:"fa-cloud-moon", color:"#6366F1", title:"Rüyalar alemine<br>hoş geldin.", desc:"Hayırdır inşallah…", img: asset("images/hero-dream.png"), ph:"Ne gördün?", sugg:"Rüyalar tersine çıkar derler ama…", pos:"55% 12%",
+      heroCss: "bottom: 200px; left: 0; text-align: left; max-width: 70%;"
+    }
   };
 
   function renderDock(){
@@ -295,21 +328,14 @@
     document.getElementById("heroTitle").innerHTML = m.title; document.getElementById("heroDesc").innerText = m.desc;
     document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
     
-    chat.innerHTML = chatHistory[newMode] || "";
-    // CHAT DOLUYSA HERO'YU GİZLE, CHAT'İ GÖSTER
-    const hasContent = chat.innerHTML.trim().length > 0;
-    
-    // Hero kısmının görünürlüğünü kontrol et
-    document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
-    
-    // Chat container görünürlüğü
-    chatContainer.style.display = hasContent ? "block" : "none";
-    
-    // DİKEY ORTALAMA AYARI
-    // Eğer chat boşsa (Hero görünüyor), main ortalasın (center).
-    // Eğer chat doluysa, main yukarıdan başlasın (flex-start) ki mesajlar düzgün aksın.
-    document.getElementById("main").style.justifyContent = hasContent ? "flex-start" : "center";
+    // ---- DİNAMİK CSS UYGULAMA ----
+    // Hero content'in pozisyonunu o modun heroCss'i ile değiştir
+    document.getElementById("heroContent").style.cssText = m.heroCss;
 
+    chat.innerHTML = chatHistory[newMode] || "";
+    const hasContent = chat.innerHTML.trim().length > 0;
+    document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
+    chat.style.display = hasContent ? "block" : "none";
     renderDock();
   }
 
@@ -362,12 +388,8 @@
       setTimeout(() => div.appendChild(btn), text.length * 20 + 500);
     }
     document.getElementById("chatContainer").appendChild(div);
-    
-    // Mesaj eklenince görünümü chat moduna geçir
     document.getElementById("heroContent").style.display = "none";
     document.getElementById("chatContainer").style.display = "block";
-    document.getElementById("main").style.justifyContent = "flex-start"; // Mesajlar yukarıdan başlasın
-
     const chatContainer = document.getElementById("chatContainer"); 
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
@@ -377,12 +399,7 @@
     if(pendingImage && val==="") val = "Bu resmi yorumla"; if(!val && !pendingImage) return;
     if(currentMode==="shopping") document.querySelectorAll(".cards").forEach(e=>e.remove());
     isSending = true; document.getElementById("sendBtn").disabled = true;
-    
-    // GÖNDERME BAŞLADIĞINDA HERO GİZLE, CHAT GÖSTER
-    document.getElementById("heroContent").style.display="none"; 
-    document.getElementById("chatContainer").style.display="block";
-    document.getElementById("main").style.justifyContent = "flex-start";
-
+    document.getElementById("heroContent").style.display="none"; document.getElementById("chatContainer").style.display="block";
     addBubble("user", val, false, null, pendingImage); input.value = "";
     const loaderId = "ldr"+Date.now(); addBubble("ai", "<i class='fa-solid fa-spinner fa-spin'></i>", true, null, null, loaderId);
     
