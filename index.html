@@ -59,17 +59,25 @@
   .menu-btn{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.1); color:#fff; cursor:pointer; }
   .menu-btn:active { transform: scale(0.95); background:rgba(255,255,255,.25); }
 
-  /* ANA İÇERİK ALANI - DÜZELTİLDİ */
+  /* --- DÜZELTİLEN ALAN: MAIN LAYOUT --- */
   #main{ 
     position:relative; z-index:8; flex:1; 
     display:flex; flex-direction:column; 
     overflow: hidden; 
-    /* justify-content: flex-end; SİLİNDİ - Ekranı aşağı itmemesi için */
-    padding-bottom: 160px;
+    /* Karşılama ekranını dikeyde ORTALA */
+    justify-content: center; 
+    /* Chat açılınca bu ayar JS ile değişecek */
+    padding-bottom: 180px; /* Alt bara girmesin */
   }
   
-  /* Hero Content - Ortada/Altta Durması İçin Margin Auto */
-  #heroContent{ text-align:left; max-width:90%; pointer-events: none; margin-bottom: 20px; margin-top: auto; padding: 0 18px; }
+  /* Hero Content - Ortada dursun, aşağı yapışmasın */
+  #heroContent{ 
+    text-align:left; max-width:90%; pointer-events: none; 
+    margin-bottom: 20px; 
+    /* margin-top: auto;  BU SATIR SİLİNDİ - AŞAĞI İTMESİN DİYE */
+    padding: 0 18px; 
+  }
+  
   #heroTitle{ font-size:32px; font-weight:900; line-height:1.1; color:#fff; letter-spacing:-1px; text-shadow:0 10px 30px rgba(0,0,0,.5); }
   #heroDesc{ margin-top:10px; font-size:15px; font-weight:600; color:rgba(255,255,255,.9); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.4); }
 
@@ -288,11 +296,20 @@
     document.getElementById("suggestionText").innerText = m.sugg; document.getElementById("text").placeholder = m.ph;
     
     chat.innerHTML = chatHistory[newMode] || "";
-    // Chat doluysa hero yazısını gizle
+    // CHAT DOLUYSA HERO'YU GİZLE, CHAT'İ GÖSTER
     const hasContent = chat.innerHTML.trim().length > 0;
-    document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
-    chat.style.display = hasContent ? "block" : "none";
     
+    // Hero kısmının görünürlüğünü kontrol et
+    document.getElementById("heroContent").style.display = hasContent ? "none" : "block"; 
+    
+    // Chat container görünürlüğü
+    chatContainer.style.display = hasContent ? "block" : "none";
+    
+    // DİKEY ORTALAMA AYARI
+    // Eğer chat boşsa (Hero görünüyor), main ortalasın (center).
+    // Eğer chat doluysa, main yukarıdan başlasın (flex-start) ki mesajlar düzgün aksın.
+    document.getElementById("main").style.justifyContent = hasContent ? "flex-start" : "center";
+
     renderDock();
   }
 
@@ -345,6 +362,12 @@
       setTimeout(() => div.appendChild(btn), text.length * 20 + 500);
     }
     document.getElementById("chatContainer").appendChild(div);
+    
+    // Mesaj eklenince görünümü chat moduna geçir
+    document.getElementById("heroContent").style.display = "none";
+    document.getElementById("chatContainer").style.display = "block";
+    document.getElementById("main").style.justifyContent = "flex-start"; // Mesajlar yukarıdan başlasın
+
     const chatContainer = document.getElementById("chatContainer"); 
     chatContainer.scrollTop = chatContainer.scrollHeight;
   }
@@ -354,7 +377,12 @@
     if(pendingImage && val==="") val = "Bu resmi yorumla"; if(!val && !pendingImage) return;
     if(currentMode==="shopping") document.querySelectorAll(".cards").forEach(e=>e.remove());
     isSending = true; document.getElementById("sendBtn").disabled = true;
-    document.getElementById("heroContent").style.display="none"; document.getElementById("chatContainer").style.display="block";
+    
+    // GÖNDERME BAŞLADIĞINDA HERO GİZLE, CHAT GÖSTER
+    document.getElementById("heroContent").style.display="none"; 
+    document.getElementById("chatContainer").style.display="block";
+    document.getElementById("main").style.justifyContent = "flex-start";
+
     addBubble("user", val, false, null, pendingImage); input.value = "";
     const loaderId = "ldr"+Date.now(); addBubble("ai", "<i class='fa-solid fa-spinner fa-spin'></i>", true, null, null, loaderId);
     
