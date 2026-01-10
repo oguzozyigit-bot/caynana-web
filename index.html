@@ -149,7 +149,7 @@
   .oz-l-white{ background:#ffffff; border: 1px solid #eee; } 
   .oz-l-black{ background:#222; }
 
-  /* PERSONA (MOD) SEÇİM MODALI - GÜNCELLENDİ */
+  /* PERSONA (MOD) SEÇİM MODALI */
   #personaModal {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.6); z-index: 100;
@@ -193,9 +193,14 @@
     <div class="persona-content">
       <div class="persona-title">Caynana Modunu Seç</div>
       
-      <div class="persona-opt selected" onclick="selectPersona('sevecen', this)">
-        <span>🥰 Anne Tadında Kaynana</span>
+      <div class="persona-opt selected" onclick="selectPersona('normal', this)">
+        <span>👵 Görmüş Geçirmiş Kaynana</span>
         <i class="fa-solid fa-check" style="display:block"></i>
+      </div>
+
+      <div class="persona-opt" onclick="selectPersona('sevecen', this)">
+        <span>🥰 Anne Tadında Kaynana</span>
+        <i class="fa-solid fa-check" style="display:none"></i>
       </div>
       
       <div class="persona-opt" onclick="selectPersona('kizgin', this)">
@@ -204,7 +209,7 @@
       </div>
       
       <div class="persona-opt" onclick="selectPersona('huysuz', this)">
-        <span>👵 Bir Ayağı Çukurda Kaynana</span>
+        <span>🤕 Bir Ayağı Çukurda Kaynana</span>
         <i class="fa-solid fa-check" style="display:none"></i>
       </div>
 
@@ -285,7 +290,7 @@
   let currentAudio = null;
   let pendingImage = null;
   let currentMode = "chat";
-  let currentPersona = "sevecen"; // VARSAYILAN MOD: SEVECEN
+  let currentPersona = "normal"; // VARSAYILAN ARTIK NORMAL
   let isSending = false;
   const chatHistory = {};
 
@@ -443,7 +448,7 @@
   document.getElementById("menuBtn").onclick=()=>{ mask.classList.add("show"); drawer.classList.add("open"); };
   mask.onclick=()=>{ mask.classList.remove("show"); drawer.classList.remove("open"); };
 
-  // == PERSONA (MOD) MENÜSÜ İŞLEMLERİ ==
+  // == PERSONA MENÜSÜ ==
   function openPersonaMenu(){ document.getElementById('personaModal').classList.add('show'); }
   function closePersonaMenu(e){ if(e.target.id === 'personaModal') document.getElementById('personaModal').classList.remove('show'); }
   function selectPersona(personaId, el){
@@ -457,7 +462,7 @@
     setTimeout(()=> document.getElementById('personaModal').classList.remove('show'), 200);
   }
 
-  // DOUBLE CLICK
+  // ETKİLEŞİM
   const appContainer = document.getElementById("app");
   function cycleMode(direction){
     const keys = Object.keys(MODES); let idx = keys.indexOf(currentMode);
@@ -467,7 +472,6 @@
     if(e.target.closest('#dock') || e.target.closest('.input-wrapper') || e.target.closest('#topbar') || e.target.closest('.msg')) return;
     const heroVisible = document.getElementById("heroContent").style.display !== "none"; if(heroVisible) cycleMode(1);
   });
-  // SWIPE
   let startX = 0, startY = 0;
   appContainer.addEventListener("touchstart", e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive:true});
   appContainer.addEventListener("touchend", e => {
