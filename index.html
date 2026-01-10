@@ -346,7 +346,8 @@
 
   function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
   
-  function typeWriterEffect(element, text, speed=20) {
+  // YAZI HIZI BURADAN AYARLANIYOR (speed=50 yapıldı)
+  function typeWriterEffect(element, text, speed=50) {
     let i = 0; element.innerHTML = ""; element.classList.add("typing-cursor");
     function type() {
       if (i < text.length) {
