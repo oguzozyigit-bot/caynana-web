@@ -37,13 +37,12 @@
     #app{ width:100%; height:100dvh; max-width:none; max-height:none; border-radius:0; box-shadow:none; }
   }
 
-  /* HERO RESMİ (Etkileşim Alanı) */
+  /* HERO RESMİ (En Arkada) */
   #heroImage {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     object-fit: cover;
     z-index: 0;
     transition: opacity 0.3s ease;
-    cursor: pointer; /* Tıklanabilir */
   }
 
   /* KARARTMA */
@@ -64,8 +63,7 @@
   /* MAIN CONTENT */
   #main{ position:relative; z-index:8; flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:0 18px 260px 18px; display:flex; flex-direction:column; }
   
-  /* Hero Content - Pointer Events None: Tıklamalar arkadaki resme geçsin */
-  #heroContent{ margin-top:40px; text-align:left; max-width:90%; pointer-events: none; }
+  #heroContent{ margin-top:40px; text-align:left; max-width:90%; pointer-events: none; /* Tıklamalar arkaya geçsin */ }
   #heroTitle{ font-size:32px; font-weight:900; line-height:1.1; color:#fff; letter-spacing:-1px; text-shadow:0 10px 30px rgba(0,0,0,.5); }
   #heroDesc{ margin-top:10px; font-size:15px; font-weight:600; color:rgba(255,255,255,.9); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.4); }
 
@@ -102,34 +100,13 @@
   .icon-box{ width:42px; height:42px; border-radius:14px; background:#eee; color:#666; display:flex; align-items:center; justify-content:center; font-size:18px; transition:0.3s; }
   .dock-item.active .icon-box{ background:var(--primary); color:#fff; box-shadow:0 5px 15px rgba(0,0,0,.2); } .dock-label{ font-size:10px; font-weight:800; color:#444; }
 
-  /* NEW FOOTER (Fit Content & Renk Düzeltmeleri) */
-  .brand-footer{
-    margin-top:12px;
-    display:flex; flex-direction:column; align-items:center; gap:6px;
-    /* KRİTİK: Genişliği içeriğe uydur ve ortala */
-    width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .footer-text-line1{
-    font-size:13px; font-weight:800;
-    color:#36454F; /* Antrasit */
-    letter-spacing:0.5px;
-    white-space: nowrap; /* Satır kırmayı engelle */
-  }
+  /* FOOTER */
+  .brand-footer{ margin-top:12px; display:flex; flex-direction:column; align-items:center; gap:6px; width: fit-content; margin-left: auto; margin-right: auto; }
+  .footer-text-line1{ font-size:13px; font-weight:800; color:#36454F; letter-spacing:0.5px; white-space: nowrap; }
   .footer-text-line2{ font-size:12px; font-weight:600; color:#666; letter-spacing:0.5px; }
-  
-  .oz-lines{
-    display:flex; gap:6px; height:5px;
-    width: 100%; /* Üstteki yazının genişliğini tam kapla */
-  }
+  .oz-lines{ display:flex; gap:6px; height:5px; width: 100%; }
   .oz-lines span{ height:100%; flex:1; border-radius:3px; }
-  
-  /* RENKLER */
-  .oz-l-green{ background:#84CC16; } /* Diyet Yeşili */
-  .oz-l-red{ background:#D32F2F; }
-  .oz-l-white{ background:#ffffff; border: 1px solid #eee; }
-  .oz-l-black{ background:#222; }
+  .oz-l-green{ background:#84CC16; } .oz-l-red{ background:#D32F2F; } .oz-l-white{ background:#ffffff; border: 1px solid #eee; } .oz-l-black{ background:#222; }
 
   /* DRAWER */
   #drawerMask{ position:absolute; inset:0; background:rgba(0,0,0,.6); z-index:50; display:none; }
@@ -153,7 +130,7 @@
   </div>
 
   <div id="topbar">
-    <div class="brand-wrap" onclick="switchMode('chat')">
+    <div class="brand-wrap" onclick="cycleMode(1)">
       <div class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i>CAYNANA<span>.AI</span></div>
       <div class="brand-sub">Yapay Zekânın Geleneksel Aklı</div>
     </div>
@@ -232,7 +209,7 @@
     Object.keys(MODES).forEach(key=>{
       const m = MODES[key]; const div = document.createElement("div");
       div.className = "dock-item " + (key===currentMode ? "active":"");
-      div.onclick = ()=> switchMode(key);
+      div.onclick = (e)=>{ e.stopPropagation(); switchMode(key); }; // Tıklama yayılmasını engelle
       div.innerHTML = `<div class="icon-box"><i class="fa-solid ${m.icon}"></i></div><div class="dock-label">${m.label}</div>`;
       dock.appendChild(div);
     });
@@ -325,8 +302,9 @@
   document.getElementById("menuBtn").onclick=()=>{ mask.classList.add("show"); drawer.classList.add("open"); };
   mask.onclick=()=>{ mask.classList.remove("show"); drawer.classList.remove("open"); };
 
-  // == HERO RESİM ETKİLEŞİMİ (Tıkla & Kaydır) ==
-  const heroImg = document.getElementById("heroImage");
+  // == GELİŞMİŞ ETKİLEŞİM (Swipe + Click) ==
+  // Not: Artık tüm ekranı (#app) dinliyoruz
+  const appContainer = document.getElementById("app");
 
   function cycleMode(direction){
     const keys = Object.keys(MODES);
@@ -335,17 +313,49 @@
     switchMode(keys[idx]);
   }
 
-  // Tıklama
-  heroImg.addEventListener("click", () => cycleMode(1));
+  // 1. DOKUNMA (Click) MANTIGI
+  // Sadece Hero alanına (üst kısma) tıklayınca çalışsın
+  // Butonlara veya Input'a tıklayınca çalışmasın
+  appContainer.addEventListener("click", (e) => {
+    // Eğer tıklanan yer Dock, Butonlar, Input veya Mesaj Balonu ise yoksay
+    if(e.target.closest('#dock') || 
+       e.target.closest('.input-wrapper') || 
+       e.target.closest('#topbar') || 
+       e.target.closest('.msg')) {
+      return;
+    }
+    
+    // Eğer Sohbet modu açıksa ve ekranda mesajlar varsa (Hero görünmüyorsa), 
+    // boşluğa tıklayınca değişmesin (kafa karıştırır). 
+    // Sadece "HeroContent" görünürken değişsin istiyorsak:
+    const heroVisible = document.getElementById("heroContent").style.display !== "none";
+    if(heroVisible) {
+       cycleMode(1);
+    }
+  });
 
-  // Kaydırma (Swipe)
-  let heroStartX = 0;
-  heroImg.addEventListener("touchstart", e => { heroStartX = e.touches[0].clientX; }, {passive:true});
-  heroImg.addEventListener("touchend", e => {
-      const diff = e.changedTouches[0].clientX - heroStartX;
-      if(Math.abs(diff) > 50) {
-           cycleMode(diff > 0 ? -1 : 1);
-      }
+  // 2. KAYDIRMA (Swipe) MANTIGI
+  let startX = 0;
+  let startY = 0;
+
+  appContainer.addEventListener("touchstart", e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+  }, {passive:true});
+
+  appContainer.addEventListener("touchend", e => {
+    // Dock üzerinde kaydırma yapılıyorsa engelleme (Dock kendi scrolluna sahip)
+    if(e.target.closest('#dock')) return;
+
+    const diffX = e.changedTouches[0].clientX - startX;
+    const diffY = e.changedTouches[0].clientY - startY;
+
+    // Yatay hareket dikeyden fazlaysa (Sohbeti aşağı kaydırırken değişmesin)
+    if(Math.abs(diffX) > Math.abs(diffY)) {
+        if(Math.abs(diffX) > 50) { // En az 50px kaydırıldıysa
+             cycleMode(diffX > 0 ? -1 : 1);
+        }
+    }
   }, {passive:true});
 
   // Init
