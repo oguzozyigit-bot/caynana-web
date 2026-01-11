@@ -18,11 +18,7 @@
   #text { user-select:text; -webkit-user-select:text; }
 
   html,body{ height:100%; width: 100%; overflow: hidden; }
-
-  body{
-    font-family:var(--font); background:#050505;
-    display:flex; align-items:center; justify-content:center;
-  }
+  body{ font-family:var(--font); background:#050505; display:flex; align-items:center; justify-content:center; }
 
   #app{
     width:100%; height:100%; max-width:440px; max-height:880px;
@@ -30,61 +26,35 @@
     box-shadow: 0 0 0 10px #1a1a1a, 0 20px 50px rgba(0,0,0,0.8);
     background:#0b0f18;
   }
-
   @media (max-width:500px){
     body{ display:block; background:#000; }
     #app{ width:100%; height:100dvh; max-width:none; max-height:none; border-radius:0; box-shadow:none; }
   }
 
-  #heroImage {
-    position:absolute; top:0; left:0; width:100%; height:100%;
-    object-fit:cover; z-index:0; transition: opacity 0.3s ease;
-  }
-
-  #app::before{
-    content:""; position:absolute; inset:0;
-    background:linear-gradient(to bottom,
-      rgba(0,0,0,.20) 0%,
-      rgba(0,0,0,.10) 50%,
-      rgba(0,0,0,.60) 100%
-    );
-    pointer-events:none; z-index:1;
-  }
+  #heroImage{ position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0; transition: opacity 0.3s ease; }
+  #app::before{ content:""; position:absolute; inset:0; background:linear-gradient(to bottom, rgba(0,0,0,.20) 0%, rgba(0,0,0,.10) 50%, rgba(0,0,0,.60) 100%); pointer-events:none; z-index:1; }
 
   #topbar{ position:relative; z-index:10; height:70px; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
   .brand-wrap{ display:flex; flex-direction:column; gap:2px; cursor:pointer; }
   .brand{ display:flex; align-items:center; gap:8px; font-size:20px; font-weight:900; letter-spacing:-.5px; color:#fff; }
   .brand i{ color:var(--primary); font-size:18px; } .brand span{ color:var(--primary); }
   .brand-sub{ font-size:10px; font-weight:700; color:rgba(255,255,255,.7); letter-spacing:0.5px; }
-
   .top-actions { display:flex; gap:10px; }
   .menu-btn{ width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.1); color:#fff; cursor:pointer; }
   .menu-btn:active { transform: scale(0.95); background:rgba(255,255,255,.25); }
 
-  #main{
-    position:relative; z-index:8; flex:1;
-    display:flex; flex-direction:column;
-    overflow:hidden;
-  }
+  #main{ position:relative; z-index:8; flex:1; display:flex; flex-direction:column; overflow:hidden; }
 
   #heroContent{
-    position:absolute;
-    pointer-events:none;
-    padding:0 24px;
-    z-index:9;
-    transition:all 0.4s ease;
-    width:100%;
-    top:100px;
-    left:0;
+    position:absolute; pointer-events:none; padding:0 24px; z-index:9; transition:all 0.4s ease;
+    width:100%; top:100px; left:0;
   }
-
   #heroTitle{ font-size:36px; font-weight:900; line-height:1.05; color:#fff; letter-spacing:-1.5px; text-shadow:0 10px 30px rgba(0,0,0,.6); }
   #heroDesc{ margin-top:12px; font-size:16px; font-weight:600; color:rgba(255,255,255,.95); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.5); }
 
   #chatContainer{
     display:none; width:100%; height:100%;
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
     padding:20px 20px 240px 20px;
     background:rgba(0,0,0,0.4);
     backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px);
@@ -92,6 +62,11 @@
     scrollbar-width:none;
   }
   #chatContainer::-webkit-scrollbar { display:none; }
+
+  /* ✅ Fal modunda alttaki büyük panel chat'i örtmesin */
+  body.fal-mode #chatContainer{
+    padding-bottom: 420px;
+  }
 
   .msg{ display:flex; margin-bottom:12px; animation: fadeIn 0.3s ease; flex-direction: column; }
   .msg.user{ align-items:flex-end; } .msg.ai{ align-items:flex-start; }
@@ -113,18 +88,14 @@
   .audio-btn.playing{ background:#ffebee; color:#d32f2f; border-color:#ffcdd2; }
   .audio-btn:active { transform: scale(0.95); }
 
-  .cards{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; width:100%; padding-bottom:10px; }
-  .card{ background:#fff; border-radius:12px; padding:8px; display:flex; flex-direction:column; box-shadow:0 5px 15px rgba(0,0,0,.08); position:relative; overflow:hidden; min-height:214px; }
-  .card-badge{ position:absolute; top:8px; left:0; padding:3px 8px; font-size:9px; font-weight:800; color:#fff; border-radius:0 8px 8px 0; z-index:2; }
-  .card-badge.gold{ background:#FFA000; } .card-badge.silver{ background:#9E9E9E; }
-  .pimg{ width:100%; height:120px; object-fit:contain; margin-bottom:5px; background:#f9f9f9; border-radius:8px;}
-  .title{ font-size:11px; font-weight:700; height:32px; overflow:hidden; margin-bottom:4px; color:#222; line-height:1.3; }
-  .price{ font-size:13px; font-weight:900; color:var(--primary); }
-  .score{ margin-top:4px; font-size:11px; font-weight:900; color:#111; display:flex; align-items:center; justify-content:space-between; gap:6px; }
-  .score .pill{ padding:3px 8px; border-radius:999px; background:rgba(0,0,0,0.06); font-size:10px; font-weight:900; }
-  .btnLink{ margin-top:auto; padding:8px; text-align:center; font-size:11px; font-weight:800; color:#fff; background:var(--primary); border-radius:6px; text-decoration:none; display:block; cursor:pointer; }
-
-  #bottom{ position:absolute; bottom:0; left:0; right:0; z-index:20; background:rgba(255,255,255,.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border-top-left-radius:24px; border-top-right-radius:24px; padding:15px 18px calc(env(safe-area-inset-bottom) + 20px) 18px; box-shadow:0 -10px 40px rgba(0,0,0,.15); }
+  #bottom{
+    position:absolute; bottom:0; left:0; right:0; z-index:20;
+    background:rgba(255,255,255,.95);
+    backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border-top-left-radius:24px; border-top-right-radius:24px;
+    padding:15px 18px calc(env(safe-area-inset-bottom) + 20px) 18px;
+    box-shadow:0 -10px 40px rgba(0,0,0,.15);
+  }
 
   #suggestionText{
     position:absolute; top:-15px; left:50%; transform:translateX(-50%);
@@ -189,14 +160,11 @@
   #photoCancelBtn{ border:1px solid #e5e5e5; background:#fff; }
   #photoOkBtn{ border:none; background:var(--primary); color:#fff; }
 
-  .mic-active{ color:#D32F2F !important; animation:pulse 1s infinite; }
-  @keyframes pulse{ 0%{transform:scale(1);} 50%{transform:scale(1.2);} 100%{transform:scale(1);} }
-
   /* ✅ FAL MODE UI */
   .fal-only{ display:none; }
   body.fal-mode #bottom .input-wrapper{ display:none !important; }
   body.fal-mode .fal-only{ display:block; }
-  .fal-cam-wrap{ width:100%; display:flex; align-items:center; justify-content:center; padding: 14px 0 6px 0; }
+  .fal-cam-wrap{ width:100%; display:flex; align-items:center; justify-content:center; padding: 10px 0 6px 0; }
   .fal-cam-btn{ width:86px; height:86px; border-radius:28px; border:none; background: var(--primary); color:#fff; font-size:34px;
     display:flex; align-items:center; justify-content:center; box-shadow:0 14px 30px rgba(0,0,0,.25); cursor:pointer; }
   .fal-cam-btn:active{ transform: scale(0.96); }
@@ -264,7 +232,7 @@
   <div id="bottom">
     <div id="suggestionText"></div>
 
-    <!-- ✅ Fal Modu -->
+    <!-- ✅ Fal Modu: sadece fotoğraf -->
     <div class="fal-only">
       <div class="fal-cam-wrap">
         <button class="fal-cam-btn" onclick="openFalCamera()" aria-label="Fal fotoğraf çek">
@@ -300,6 +268,7 @@
   const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
   const API_URL = `${BASE_DOMAIN}/api/chat`;
   const SPEAK_URL = `${BASE_DOMAIN}/api/speak`;
+  const FAL_CHECK_URL = `${BASE_DOMAIN}/api/fal/check`;
 
   let sessionId = "sess_" + Math.random().toString(36).slice(2,10);
   let currentAudio = null;
@@ -316,15 +285,11 @@
 
   marked.setOptions({ mangle:false, headerIds:false });
 
-  function basePath(){ const p = location.pathname; return p.endsWith("/") ? p : p.substring(0, p.lastIndexOf("/") + 1); }
-  function asset(rel){ return basePath() + rel.replace(/^\/+/, ""); }
-  function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
-
   function scrollToBottom(force=false){
     const c = document.getElementById("chatContainer");
     if(!c) return;
     if(force){ requestAnimationFrame(()=>{ c.scrollTop = c.scrollHeight; }); return; }
-    const nearBottom = (c.scrollHeight - c.scrollTop - c.clientHeight) < 220;
+    const nearBottom = (c.scrollHeight - c.scrollTop - c.clientHeight) < 260;
     if(!nearBottom) return;
     requestAnimationFrame(()=>{ c.scrollTop = c.scrollHeight; });
   }
@@ -375,20 +340,25 @@
     if(role==="ai" && !isLoader){
       await typeWriterEffect(bubble, text);
     } else {
-      bubble.innerHTML += (role==="user") ? escapeHtml(text) : text;
+      bubble.innerHTML += (role==="user" ? escapeHtml(text) : text);
       scrollToBottom(true);
     }
 
-    if(speech && role==="ai"){
+    // ✅ Fal dahil her modda konuşsun (speech boşsa bile yine de buton koy)
+    if(role==="ai"){
+      const sp = (speech && speech.trim()) ? speech : (text || "").replace(/[*_`#>-]/g, "").slice(0, 280);
       const btn = document.createElement("div");
       btn.className="audio-btn";
-      btn.setAttribute("data-speech", speech);
-      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana'yı Konuştur`;
+      btn.setAttribute("data-speech", sp);
+      btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Kaynana Konuşuyor`;
       div.appendChild(btn);
       scrollToBottom(true);
     }
+
     return div;
   }
+
+  function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
 
   function saveCurrentModeChat(){
     const c = document.getElementById("chatContainer");
@@ -429,7 +399,7 @@
     if(isSending) return;
 
     const input = document.getElementById("text");
-    let val = input.value.trim();
+    let val = (input.value || "").trim();
     if(pendingImage && val==="") val = "Bu resmi yorumla";
     if(!val && !pendingImage) return;
 
@@ -459,31 +429,34 @@
       document.getElementById(loaderId)?.remove();
       await addBubble("ai", data.assistant_text || "Bir şey diyemedim evladım.", false, data.speech_text || "");
 
-      saveCurrentModeChat();
+      // Shopping kartlarını buraya dokunmuyorum (senin sisteminde renderCards vardı; istersen geri koyarız)
       scrollToBottom(true);
-    }catch(e){
-      document.getElementById(loaderId)?.remove();
-      await addBubble("ai", "Bağlantı hatası oldu evladım. Bir daha dene.");
       saveCurrentModeChat();
-    }finally{
+    } catch(e){
+      document.getElementById(loaderId)?.remove();
+      await addBubble("ai", "Bağlantı hatası oldu evladım. Bir daha dene.", false, "");
+      saveCurrentModeChat();
+    } finally{
       isSending = false;
       document.getElementById("sendBtn").disabled = false;
     }
   }
 
-  // ✅ TÜM MODLAR GERİ (bozulmayacak)
   const MODES = {
     chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
     shopping:{ label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
-    fal:{ label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", title:"Kahveni içtin mi?<br>Gel falına bakayım.", desc:"Fincan + tabak. 3 açı çek, ben bakayım.", img: asset("images/hero-fal.png"), ph:"", sugg:"Sadece fincan ve tabak kabul ederim.", heroStyle: { top:"100px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
+    fal:{ label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", title:"Fincanı kapat<br>tabakla gönder.", desc:"3 açı çek: üstten, yandan, diğer yandan.", img: asset("images/hero-fal.png"), ph:"", sugg:"Sadece fincan + tabak.", heroStyle: { top:"100px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
     health:{ label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444", title:"Caynana Sağlık'la<br>turp gibi ol.", desc:"Neren ağrıyor söyle bakayım?", img: asset("images/hero-health.png"), ph:"Şikayetin ne?", sugg:"Çay üstüne sakın soğuk su içme!", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
     diet:{ label:"Diyet", icon:"fa-carrot", color:"#84CC16", title:"Sağlıklı beslen<br>zinde kal!", desc:"Açlıktan değil, keyiften yiyin.", img: asset("images/hero-diet.png"), ph:"Boy kilo kaç?", sugg:"Ekmek değil, yeşillik ye.", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"75%" } },
     food:{ label:"Yemek", icon:"fa-utensils", color:"#F97316", title:"Bugün ne<br>pişirsem derdi biter.", desc:"Dolapta ne var söyle, tarif benden.", img: asset("images/hero-food.png"), ph:"Dolapta ne var?", sugg:"Malzemeyi ziyan etme, bereket kaçar.", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"75%" } },
     law:{ label:"Hukuk", icon:"fa-scale-balanced", color:"#3B82F6", title:"Hukuk işleri<br>şakaya gelmez.", desc:"Ben avukat değilim ama çok dava gördüm.", img: asset("images/hero-law.png"), ph:"Derdini anlat.", sugg:"Sözleşmeye bakmadan imza atma!", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
     astro:{ label:"Burç", icon:"fa-star", color:"#D946EF", title:"Yıldızlar senin için<br>ne diyor?", desc:"Merkür retrosu falan… dikkat et.", img: asset("images/hero-astro.png"), ph:"Burcun ne?", sugg:"Yıldıznameye baktım, yolun açık.", heroStyle: { top:"110px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
-    translate:{ label:"Çeviri", icon:"fa-language", color:"#64748B", title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır veya fotoğrafını çek.", img: asset("images/hero-translate.png"), ph:"Metni yaz.", sugg:"Bir lisan bir insan, iki lisan iki insan.", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
+    translate:{ label:"Çeviri", icon:"fa-language", color:"#64748B", title:"Çeviri lazım mı?<br>Söyle çevireyim.", desc:"Metni yapıştır veya fotoğrafını çek.", img: asset("images/hero-translate.png"), ph:"Metni yaz.", sugg:"Bir lisan bir insan.", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
     dream:{ label:"Rüya", icon:"fa-cloud-moon", color:"#6366F1", title:"Rüyalar alemine<br>hoş geldin.", desc:"Hayırdır inşallah…", img: asset("images/hero-dream.png"), ph:"Ne gördün?", sugg:"Rüyalar tersine çıkar derler ama…", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } }
   };
+
+  function basePath(){ const p = location.pathname; return p.endsWith("/") ? p : p.substring(0, p.lastIndexOf("/") + 1); }
+  function asset(rel){ return basePath() + rel.replace(/^\/+/, ""); }
 
   function applyHero(modeKey){
     const m = MODES[modeKey] || MODES.chat;
@@ -509,9 +482,11 @@
     if(modeKey === currentMode) return;
     saveCurrentModeChat();
     currentMode = modeKey;
+
     document.querySelectorAll(".dock-item").forEach(el=>{
       el.classList.toggle("active", el.getAttribute("data-mode") === modeKey);
     });
+
     applyHero(modeKey);
     loadModeChat(modeKey);
 
@@ -536,7 +511,7 @@
     });
   }
 
-  // CAMERA
+  // --- FOTO MODAL / FAL CHECK ---
   const fileEl = document.getElementById("fileInput");
   const photoModal = document.getElementById("photoModal");
   const photoPreview = document.getElementById("photoPreview");
@@ -548,26 +523,53 @@
   function openCamera(){ fileEl.value=""; fileEl.click(); }
   function openFalCamera(){ openCamera(); }
 
-  fileEl.addEventListener("change", e=>{
+  async function falCheckOneImage(dataUrl){
+    try{
+      const r = await fetch(FAL_CHECK_URL, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ image: dataUrl })
+      });
+      const j = await r.json();
+      return j;
+    }catch(e){
+      return { ok:false, reason:"Kontrol edemedim, tekrar dene." };
+    }
+  }
+
+  fileEl.addEventListener("change", async e=>{
     const f = e.target.files[0];
     if(!f) return;
+
     const r = new FileReader();
-    r.onload = ()=>{
+    r.onload = async ()=>{
       const imgData = r.result;
 
+      // ✅ Fal modunda: her foto anında doğrulanacak
       if(currentMode === "fal"){
+        const check = await falCheckOneImage(imgData);
+        if(!check.ok){
+          await addBubble("ai", check.reason || "Evladım bu fincan-tabak değil. Yeniden çek.", false, "");
+          // aynı adımda kal
+          resetModalOnly();
+          setTimeout(()=> openFalCamera(), 200);
+          return;
+        }
+
         falImages.push(imgData);
         setFalStepUI();
+
         pendingImage = imgData;
         photoPreview.src = pendingImage;
         photoTitle.textContent = "Fal fotoğrafı";
         photoHint.textContent = (falImages.length < 3)
-          ? `Tamam deyince ${FAL_STEPS[falImages.length] || "bir sonraki açıya"} geçeceğiz.`
-          : "Tamam deyince fala bakacağım.";
+          ? `Tamam deyince ${FAL_STEPS[falImages.length] || "bir sonraki açıya"} geçiyoruz.`
+          : "Tamam deyince fala bakıyorum.";
         photoModal.style.display = "flex";
         return;
       }
 
+      // diğer modlar
       pendingImage = imgData;
       photoPreview.src = pendingImage;
       photoTitle.textContent = "Fotoğraf hazır";
@@ -577,15 +579,20 @@
     r.readAsDataURL(f);
   });
 
-  photoCancelBtn.onclick = ()=>{
-    if(currentMode === "fal"){
-      falImages = falImages.slice(0, Math.max(0, falImages.length - 1));
-      setFalStepUI();
-    }
+  function resetModalOnly(){
     pendingImage = null;
     photoPreview.src = "";
     photoModal.style.display = "none";
     fileEl.value = "";
+  }
+
+  photoCancelBtn.onclick = ()=>{
+    if(currentMode === "fal"){
+      // son çekimi geri al
+      falImages = falImages.slice(0, Math.max(0, falImages.length - 1));
+      setFalStepUI();
+    }
+    resetModalOnly();
   };
 
   photoOkBtn.onclick = async ()=>{
@@ -596,11 +603,13 @@
         setTimeout(()=> openFalCamera(), 220);
         return;
       }
+
       const collage = await makeFalCollage(falImages);
       pendingImage = collage;
 
+      // Fal mesajını otomatik veriyoruz
       const input = document.getElementById("text");
-      if(input) input.value = "Fal bak: fincanı 3 açıdan gönderdim. Sadece fincan ve tabak üzerinden gerçekçi yorumla.";
+      if(input) input.value = "Fal bak: fincanı 3 açıdan gönderdim. Gerçekçi ve insani anlat.";
 
       await send();
       resetFalCapture();
@@ -639,6 +648,7 @@
       im.src = src;
     });
   }
+
   function drawContain(ctx, img, x, y, w, h){
     const iw = img.width, ih = img.height;
     const ir = iw/ih;
@@ -660,6 +670,7 @@
     roundRect(ctx, x, y, w, h, 16);
     ctx.stroke();
   }
+
   function roundRect(ctx, x, y, w, h, r){
     ctx.beginPath();
     ctx.moveTo(x+r, y);
@@ -670,6 +681,60 @@
     ctx.closePath();
   }
 
+  // --- SES ---
+  async function playAudio(text, btn){
+    if(currentAudio){ currentAudio.pause(); currentAudio=null; }
+    document.querySelectorAll(".audio-btn.playing").forEach(b=>{
+      b.classList.remove("playing");
+      b.innerHTML = `<i class="fa-solid fa-volume-high"></i> Kaynana Konuşuyor`;
+    });
+
+    const oldHtml = btn.innerHTML;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
+
+    try{
+      const r = await fetch(SPEAK_URL, {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ text, persona: currentPersona })
+      });
+      const blob = await r.blob();
+      currentAudio = new Audio(URL.createObjectURL(blob));
+      currentAudio.onended = ()=>{
+        btn.classList.remove("playing");
+        btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Kaynana Konuşuyor`;
+      };
+      await currentAudio.play();
+      btn.classList.add("playing");
+      btn.innerHTML = `<i class="fa-solid fa-stop"></i> Durdur`;
+    } catch(e){
+      btn.innerHTML = oldHtml;
+    }
+  }
+  document.getElementById("chatContainer").addEventListener("click", e=>{
+    const btn = e.target.closest(".audio-btn");
+    if(btn) playAudio(btn.getAttribute("data-speech"), btn);
+  });
+
+  // --- MIC ---
+  function startMic(){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR) return alert("Tarayıcı desteklemiyor");
+    const r = new SR();
+    r.lang="tr-TR";
+    r.onresult = e=>{
+      document.getElementById("text").value = e.results[0][0].transcript;
+      send();
+    };
+    r.start();
+  }
+
+  // --- DRAWER ---
+  const mask=document.getElementById("drawerMask"), drawer=document.getElementById("drawer");
+  document.getElementById("menuBtn").onclick=()=>{ mask.style.display="block"; drawer.classList.add("open"); };
+  mask.onclick=()=>{ mask.style.display="none"; drawer.classList.remove("open"); };
+
+  // --- PERSONA ---
   function openPersonaMenu(){ document.getElementById('personaModal').classList.add('show'); }
   function closePersonaMenu(e){ if(e.target.id === 'personaModal') document.getElementById('personaModal').classList.remove('show'); }
   function selectPersona(personaId, el){
@@ -681,22 +746,6 @@
     el.classList.add('selected');
     el.querySelector('i').style.display = 'block';
     setTimeout(()=> document.getElementById('personaModal').classList.remove('show'), 200);
-  }
-
-  function startMic(){
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(!SR) return alert("Tarayıcı desteklemiyor");
-    const r = new SR();
-    r.lang="tr-TR";
-    const mic = document.getElementById("micBtn");
-    mic.classList.add("mic-active");
-    r.onresult = e=>{
-      document.getElementById("text").value = e.results[0][0].transcript;
-      mic.classList.remove("mic-active");
-      send();
-    };
-    r.onend = ()=> mic.classList.remove("mic-active");
-    r.start();
   }
 
   // INIT
