@@ -11,7 +11,7 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 
-<!-- ✅ Google Identity Services (One Tap / Button) -->
+<!-- ✅ Google Identity Services -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <style>
@@ -65,7 +65,6 @@
     scrollbar-width:none;
   }
   #chatContainer::-webkit-scrollbar { display:none; }
-
   body.fal-mode #chatContainer{ padding-bottom: 420px; }
 
   .msg{ display:flex; margin-bottom:12px; animation: fadeIn 0.3s ease; flex-direction: column; }
@@ -88,11 +87,11 @@
   .audio-btn.playing{ background:#ffebee; color:#d32f2f; border-color:#ffcdd2; }
   .audio-btn:active { transform: scale(0.95); }
 
-  /* --- ALIŞVERİŞ KARTLARI --- */
+  /* ✅ ALIŞVERİŞ KARTLARI */
   .cards{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; padding-bottom:10px; width:100%; }
   .card{ background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,0.15); position:relative; display:flex; flex-direction:column; min-height:220px; }
   .card-badge{ position:absolute; top:8px; left:0; padding:4px 8px; font-size:10px; font-weight:800; color:#fff; border-radius:0 6px 6px 0; z-index:2; }
-  .card-badge.gold{ background:#FFA000; } 
+  .card-badge.gold{ background:#FFA000; }
   .card-badge.silver{ background:#9E9E9E; }
   .pimg{ width:100%; height:130px; object-fit:contain; background:#f9f9f9; padding:5px; border-bottom:1px solid #eee; }
   .card-body{ padding:10px; display:flex; flex-direction:column; flex:1; }
@@ -164,7 +163,6 @@
   #drawerMask{ position:absolute; inset:0; background:rgba(0,0,0,.6); z-index:50; display:none; }
   #drawer{ position:absolute; top:0; right:0; height:100%; width:280px; background:#fff; z-index:60; padding:20px; transform:translateX(100%); transition:0.3s; }
   #drawer.open{ transform:translateX(0); }
-  #drawerMask.show{ display:block; }
   #fileInput{ display:none; }
 
   #photoModal{ position:absolute; inset:0; z-index:120; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.65); backdrop-filter: blur(8px); }
@@ -186,7 +184,6 @@
   .fal-step-text{ margin-top:10px; text-align:center; font-weight:900; font-size:12px; color:#222; }
   .fal-step-sub{ margin-top:4px; text-align:center; font-weight:800; font-size:11px; color:#666; }
 
-  /* click/gesture guard */
   .chat-img{ touch-action:none; -webkit-user-drag:none; user-select:none; }
 </style>
 </head>
@@ -241,13 +238,11 @@
   <div id="drawer">
     <h3 style="margin-bottom:20px;">Menü</h3>
     <div id="accountBtn" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">Hesap</div>
-
     <div id="planBtn" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">Üyelik</div>
     <div id="aboutBtn" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">Hakkımızda</div>
     <div id="faqBtn" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">Sık Sorulan Sorular</div>
     <div id="contactBtn" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">İletişim</div>
     <div id="privacyBtn" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">Gizlilik</div>
-
     <div style="padding:10px 0; border-bottom:1px solid #eee;">Ayarlar</div>
   </div>
 
@@ -316,7 +311,6 @@
 
       <button id="authSubmit" style="width:100%; height:46px; border-radius:14px; border:none; background:#FFB300; color:#fff; font-weight:900; cursor:pointer;">Giriş Yap</button>
 
-      <!-- ✅ Google button container -->
       <div style="margin-top:10px;">
         <div style="font-size:12px; color:#666; font-weight:800; margin-bottom:6px;">Google ile giriş:</div>
         <div id="googleBtn"></div>
@@ -344,21 +338,75 @@
       <div id="pageBody" style="font-size:13px; line-height:1.55; color:#333; font-weight:700;"></div>
     </div>
   </div>
+
+  <!-- PAYWALL -->
+  <div id="paywallModal" style="position:absolute; inset:0; z-index:260; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.65); backdrop-filter: blur(8px);">
+    <div style="width:86%; max-width:360px; background:#fff; border-radius:22px; padding:16px; box-shadow:0 10px 40px rgba(0,0,0,.35);">
+      <div style="font-weight:900; font-size:16px; color:#222; margin-bottom:10px;">Caynana net konuşuyor</div>
+      <div id="paywallText" style="font-size:13px; line-height:1.55; color:#333; font-weight:800;">
+        Evladım… ben lafa devam ederim ama parayı veren düdüğü çalar. Devam için uygulamayı indir.
+      </div>
+      <div style="display:flex; gap:10px; margin-top:12px;">
+        <button id="btnGoPlay" class="photoBtn" style="flex:1; border:none; background:#FFB300; color:#fff;">Google Play’den İndir</button>
+        <button id="btnClosePaywall" class="photoBtn" style="flex:1; border:1px solid #eee; background:#fff;">Kapat</button>
+      </div>
+      <div style="margin-top:10px; font-size:12px; color:#666; font-weight:800;">
+        Ödemeler Google Play üzerinden yapılır.
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="profileModal" style="position:absolute; inset:0; z-index:270; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.65); backdrop-filter: blur(8px);">
+    <div style="width:86%; max-width:360px; background:#fff; border-radius:22px; padding:16px; box-shadow:0 10px 40px rgba(0,0,0,.35);">
+      <div style="font-weight:900; font-size:16px; color:#222; margin-bottom:10px;">Bir dakika evladım…</div>
+      <div style="font-size:13px; line-height:1.55; color:#333; font-weight:800;">
+        Üyelik tamam ama ben seni tanımadan konuşmam. Yaşını ve cinsiyetini gir, ücretsiz. Sonra devam.
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top:12px;">
+        <select id="pGender" style="flex:1; height:44px; border-radius:14px; border:1px solid #eee; padding:0 12px;">
+          <option value="">Cinsiyet seç</option>
+          <option value="male">Erkek</option>
+          <option value="female">Kadın</option>
+          <option value="other">Diğer</option>
+          <option value="prefer_not">Söylemek istemiyorum</option>
+        </select>
+        <input id="pAge" type="number" min="13" max="120" placeholder="Yaş" style="flex:1; height:44px; border-radius:14px; border:1px solid #eee; padding:0 12px;">
+      </div>
+
+      <div id="profileErr" style="margin-top:10px; font-size:12px; color:#b00020; font-weight:900; display:none;"></div>
+
+      <div style="display:flex; gap:10px; margin-top:12px;">
+        <button id="btnSaveProfile" class="photoBtn" style="flex:1; border:none; background:#111; color:#fff;">Kaydet</button>
+        <button id="btnLogoutHard" class="photoBtn" style="flex:1; border:1px solid #eee; background:#fff;">Çıkış</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
 <script>
-  // ✅ BURAYI KENDİ API DOMAIN'İNLE DEĞİŞTİR
+  // ✅ API DOMAIN
   const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
-
-  // ✅ BURAYA GOOGLE CLIENT ID
-  const GOOGLE_CLIENT_ID = "BURAYA_CLIENT_ID";
+  // ✅ GOOGLE CLIENT ID
+  const GOOGLE_CLIENT_ID = "BURAYA_CLIENT_ID_GELECEK";
 
   const API_URL = `${BASE_DOMAIN}/api/chat`;
   const SPEAK_URL = `${BASE_DOMAIN}/api/speak`;
   const FAL_CHECK_URL = `${BASE_DOMAIN}/api/fal/check`;
   const GOOGLE_AUTH_URL = `${BASE_DOMAIN}/api/auth/google`;
+
+  const AUTH_ME_URL = `${BASE_DOMAIN}/api/auth/me`;
+  const GUARD_URL = `${BASE_DOMAIN}/api/guard`;
+  const PROFILE_SET_URL = `${BASE_DOMAIN}/api/profile/set`;
+  const USAGE_START_URL = `${BASE_DOMAIN}/api/usage/start`;
+  const USAGE_HEARTBEAT_URL = `${BASE_DOMAIN}/api/usage/heartbeat`;
+  const USAGE_STOP_URL = `${BASE_DOMAIN}/api/usage/stop`;
+
+  const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.caynana.ai";
 
   // AUTH TOKEN
   const TOKEN_KEY = "caynana_token";
@@ -372,14 +420,15 @@
     return t ? {"Authorization":"Bearer " + t} : {};
   }
 
-  // Plan state
-  let currentPlan = "free"; // free | plus | pro
+  // UI state
+  let currentPlan = "free"; // free|plus|pro (tier->map ile dolduruyoruz)
   const PLAN_PERSONAS = {
     free: ["normal"],
     plus: ["normal","sevecen","kizgin"],
     pro:  ["normal","sevecen","kizgin","huysuz","itirazci"]
   };
 
+  let hbTimer = null;
   let sessionId = "sess_" + Math.random().toString(36).slice(2,10);
   let currentAudio = null;
   let pendingImage = null;
@@ -388,12 +437,61 @@
   let isSending = false;
 
   const modeChats = {};
-
-  // Fal: 3 foto
   let falImages = [];
   const FAL_STEPS = ["1/3: Üstten çek", "2/3: Yandan çek", "3/3: Diğer yandan çek"];
 
   marked.setOptions({ mangle:false, headerIds:false });
+
+  function showPaywall(msg){
+    document.getElementById("paywallText").textContent = msg || "Evladım… devam için uygulamayı indir.";
+    document.getElementById("paywallModal").style.display = "flex";
+  }
+  function hidePaywall(){ document.getElementById("paywallModal").style.display = "none"; }
+
+  function showProfile(){
+    document.getElementById("profileErr").style.display="none";
+    document.getElementById("profileModal").style.display="flex";
+  }
+  function hideProfile(){ document.getElementById("profileModal").style.display="none"; }
+
+  document.getElementById("btnGoPlay").onclick = ()=> window.open(PLAY_STORE_URL, "_blank");
+  document.getElementById("btnClosePaywall").onclick = ()=> hidePaywall();
+  document.getElementById("btnLogoutHard").onclick = ()=> hardLogout();
+
+  function hardLogout(){
+    stopHeartbeat();
+    setToken("");
+    currentPlan="free";
+    currentPersona="normal";
+    refreshPersonaLocks();
+    try{ document.getElementById("authStatus").textContent = "Çıkış yapıldı ❌"; }catch(e){}
+    location.reload();
+  }
+
+  document.getElementById("btnSaveProfile").onclick = async ()=>{
+    const g = (document.getElementById("pGender").value||"").trim();
+    const a = parseInt(document.getElementById("pAge").value||"0",10);
+    const err = document.getElementById("profileErr");
+    if(!g || !a){
+      err.textContent = "Evladım boş bırakma. Cinsiyet seç, yaş yaz.";
+      err.style.display="block";
+      return;
+    }
+    const r = await fetch(PROFILE_SET_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", ...authHeaders() },
+      body: JSON.stringify({ gender:g, age:a })
+    });
+    if(!r.ok){
+      const j = await r.json().catch(()=>({}));
+      err.textContent = (j.detail || "Kaydedemedim, tekrar dene.");
+      err.style.display="block";
+      return;
+    }
+    hideProfile();
+    await pullPlanFromBackend();
+    startHeartbeat();
+  };
 
   function scrollToBottom(force=false){
     const c = document.getElementById("chatContainer");
@@ -428,40 +526,6 @@
   }
 
   function escapeHtml(s){ return (s||"").replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
-
-  // ✅ KART BASMA
-  function renderCards(list){
-    const wrap = document.createElement("div");
-    wrap.className="cards";
-    (list||[]).forEach((p, idx)=>{
-      const badge = (idx===0) ? {k:"gold",t:"ALTIN"} : (idx===1) ? {k:"silver",t:"GÜMÜŞ"} : null;
-      const bHtml = badge ? `<div class="card-badge ${badge.k}">${badge.t}</div>` : "";
-      const score = p.caynana_score || 70;
-
-      const div = document.createElement("div");
-      div.className="card";
-      div.innerHTML = `
-        ${bHtml}
-        <img class="pimg" src="${p.image}"
-             onclick="event.stopPropagation();event.preventDefault();"
-             onpointerdown="event.stopPropagation();"
-             onerror="this.onerror=null;this.src='https://via.placeholder.com/300?text=Urun';">
-        <div class="card-body">
-          <div class="title">${escapeHtml(p.title||"")}</div>
-          <div class="price">${escapeHtml(p.price||"")}</div>
-          <div class="score-wrap">
-             <span>Caynana Puanı</span>
-             <span class="score-pill">${score}</span>
-          </div>
-          <a class="btnLink" href="${p.url}" target="_blank" onclick="event.stopPropagation();">İNCELE</a>
-        </div>
-      `;
-      wrap.appendChild(div);
-    });
-
-    document.getElementById("chatContainer").appendChild(wrap);
-    scrollToBottom(true);
-  }
 
   async function addBubble(role, text, isLoader=false, speech=null, imgData=null, id=null){
     const div = document.createElement("div");
@@ -537,9 +601,80 @@
   }
   function resetFalCapture(){ falImages = []; setFalStepUI(); }
 
-  // ===== PLAN + PERSONA =====
-  function allowedPersonas(){ return PLAN_PERSONAS[currentPlan] || ["normal"]; }
+  // Shopping cards
+  function renderCards(list){
+    const wrap = document.createElement("div");
+    wrap.className="cards";
+    (list||[]).forEach((p, idx)=>{
+      const badge = (idx===0) ? {k:"gold",t:"ALTIN"} : (idx===1) ? {k:"silver",t:"GÜMÜŞ"} : null;
+      const bHtml = badge ? `<div class="card-badge ${badge.k}">${badge.t}</div>` : "";
+      const score = p.caynana_score || 70;
 
+      const div = document.createElement("div");
+      div.className="card";
+      div.innerHTML = `
+        ${bHtml}
+        <img class="pimg" src="${p.image}"
+             onclick="event.stopPropagation();event.preventDefault();"
+             onpointerdown="event.stopPropagation();"
+             onerror="this.onerror=null;this.src='https://via.placeholder.com/300?text=Urun';">
+        <div class="card-body">
+          <div class="title">${escapeHtml(p.title||"")}</div>
+          <div class="price">${escapeHtml(p.price||"")}</div>
+          <div class="score-wrap">
+             <span>Caynana Puanı</span>
+             <span class="score-pill">${score}</span>
+          </div>
+          <!-- ekstra sağlam: bazı webview'larda target blank nazlanıyor -->
+          <a class="btnLink" href="${p.url}" target="_blank"
+             onclick="event.stopPropagation();event.preventDefault();window.open(this.href,'_blank');">İNCELE</a>
+        </div>
+      `;
+      wrap.appendChild(div);
+    });
+
+    document.getElementById("chatContainer").appendChild(wrap);
+    scrollToBottom(true);
+  }
+
+  // ---- GUARD / PLAN PULL ----
+  async function guard(action, mode="", persona=""){
+    const r = await fetch(GUARD_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", ...authHeaders() },
+      body: JSON.stringify({ action, mode, persona })
+    });
+
+    if(r.status === 401){
+      const j = await r.json().catch(()=>({}));
+      if((j.detail||"") === "SESSION_REPLACED"){
+        alert("Evladım aynı hesap iki cihazda olmaz. Başka cihazda açılmış, burada kapandı.");
+        hardLogout();
+        return { allowed:false, reason:"SESSION_REPLACED" };
+      }
+    }
+    return await r.json().catch(()=>({allowed:false, reason:"ERR"}));
+  }
+
+  async function pullPlanFromBackend(){
+    const t = getToken();
+    if(!t) { currentPlan="free"; refreshPersonaLocks(); return; }
+    try{
+      const r = await fetch(`${BASE_DOMAIN}/api/auth/me`, { method:"GET", headers:{...authHeaders()} });
+      const j = await r.json();
+
+      // tier -> plan map (UI eski plan isimleriyle çalışıyor)
+      const tier = ((j.tier || "baslangic")+"").toLowerCase();
+      currentPlan = (tier==="altin") ? "pro" : (tier==="gumus") ? "plus" : "free";
+
+    }catch(e){
+      currentPlan="free";
+    }
+    refreshPersonaLocks();
+  }
+
+  // Persona lock UI
+  function allowedPersonas(){ return PLAN_PERSONAS[currentPlan] || ["normal"]; }
   function refreshPersonaLocks(){
     const allow = new Set(allowedPersonas());
     document.querySelectorAll("#personaModal .persona-opt").forEach(opt=>{
@@ -564,22 +699,60 @@
     });
   }
 
-  async function pullPlanFromBackend(){
-    const t = getToken();
-    if(!t){ currentPlan="free"; refreshPersonaLocks(); return; }
+  // ---- HEARTBEAT ----
+  async function startHeartbeat(){
+    if(!getToken()) return;
+
+    // profile check
     try{
-      const r = await fetch(`${BASE_DOMAIN}/api/auth/me`, { method:"GET", headers:{...authHeaders()} });
-      const j = await r.json();
-      const plan = ((j.plan||"free")+"").toLowerCase();
-      currentPlan = (plan==="plus"||plan==="pro") ? plan : "free";
-    }catch(e){
-      currentPlan="free";
-    }
-    refreshPersonaLocks();
+      const me = await fetch(AUTH_ME_URL, { method:"GET", headers:{...authHeaders()} });
+      if(me.ok){
+        const mj = await me.json().catch(()=>({}));
+        if(mj.profile_complete === false){
+          showProfile();
+          return;
+        }
+      }
+    }catch(e){}
+
+    await fetch(USAGE_START_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", ...authHeaders() },
+      body: JSON.stringify({ session_id: "chat_" + Math.random().toString(16).slice(2) })
+    }).catch(()=>{});
+
+    if(hbTimer) clearInterval(hbTimer);
+    hbTimer = setInterval(async ()=>{
+      const rr = await fetch(USAGE_HEARTBEAT_URL, { method:"POST", headers:{...authHeaders()} });
+      const jj = await rr.json().catch(()=>null);
+      if(jj && jj.expired){
+        stopHeartbeat();
+        showPaywall("Evladım süre bitti… ben konuşurum da parayı veren düdüğü çalar. Devam için uygulamayı indir.");
+      }
+    }, 10000);
   }
 
-  // ===== SEND =====
+  async function stopHeartbeat(){
+    if(hbTimer){ clearInterval(hbTimer); hbTimer=null; }
+    if(!getToken()) return;
+    await fetch(USAGE_STOP_URL, { method:"POST", headers:{...authHeaders()} }).catch(()=>{});
+  }
+
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.hidden) stopHeartbeat();
+  });
+
+  // ---- SEND ----
   async function send(){
+    const gg = await guard(currentMode, currentMode, currentPersona);
+    if(!gg.allowed){
+      if(gg.reason === "NEED_SIGNUP"){ openAuth(); return; }
+      if(gg.reason === "PROFILE_INCOMPLETE"){ showProfile(); return; }
+      if(gg.paywall){ showPaywall("Evladım limit doldu… devam için uygulamayı indir."); return; }
+      showPaywall("Evladım bu işlem şu an kapalı. Devam için uygulamayı indir.");
+      return;
+    }
+
     if(isSending) return;
 
     const input = document.getElementById("text");
@@ -629,7 +802,7 @@
     }
   }
 
-  // ===== MODES =====
+  // ---- MODES ----
   const MODES = {
     chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
     shopping:{ label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
@@ -666,8 +839,20 @@
     document.querySelector(".oz-l-dynamic").style.background = m.color;
   }
 
-  function switchMode(modeKey){
+  async function switchMode(modeKey){
     if(modeKey === currentMode) return;
+
+    if(["diet","health","food"].includes(modeKey)){
+      const g = await guard(`module:${modeKey}`, "", "");
+      if(!g.allowed){
+        if(g.reason === "NEED_SIGNUP"){ openAuth(); return; }
+        if(g.reason === "PROFILE_INCOMPLETE"){ showProfile(); return; }
+        if(g.paywall){ showPaywall("Evladım bu mod bu seviyede kapalı. Devam için uygulamayı indir."); return; }
+        showPaywall("Evladım bu mod şu an kapalı. Devam için uygulamayı indir.");
+        return;
+      }
+    }
+
     saveCurrentModeChat();
     currentMode = modeKey;
 
@@ -699,26 +884,58 @@
     });
   }
 
-  // Dock: drag ile click ayrımı
+  function cycleMode(dir){
+    const keys = Object.keys(MODES);
+    let idx = keys.indexOf(currentMode);
+    idx = (idx + dir + keys.length) % keys.length;
+    switchMode(keys[idx]);
+  }
+
+  // Dock drag guard
   (function dockDragClickGuard(){
     const dock = document.getElementById("dock");
     if(!dock) return;
-
     let downX=0, downY=0, moved=false;
     dock.addEventListener("pointerdown", (e)=>{ downX=e.clientX; downY=e.clientY; moved=false; }, {passive:true});
     dock.addEventListener("pointermove", (e)=>{
       if(Math.abs(e.clientX-downX)>10 || Math.abs(e.clientY-downY)>10) moved=true;
     }, {passive:true});
-
     dock.addEventListener("click", (e)=>{
-      if(moved){
-        e.preventDefault();
-        e.stopPropagation();
-      }
+      if(moved){ e.preventDefault(); e.stopPropagation(); }
     }, true);
   })();
 
-  // FOTO/FAL
+  // Drawer
+  const mask=document.getElementById("drawerMask"), drawer=document.getElementById("drawer");
+  document.getElementById("menuBtn").onclick=()=>{ mask.style.display="block"; drawer.classList.add("open"); };
+  mask.onclick=()=>{ mask.style.display="none"; drawer.classList.remove("open"); };
+
+  // Persona modal
+  function openPersonaMenu(){ refreshPersonaLocks(); document.getElementById('personaModal').classList.add('show'); }
+  function closePersonaMenu(e){ if(e.target.id === 'personaModal') document.getElementById('personaModal').classList.remove('show'); }
+
+  async function selectPersona(personaId, el){
+    const g = await guard(`persona:${personaId}`, "", personaId);
+    if(!g.allowed){
+      document.getElementById('personaModal').classList.remove('show');
+      if(g.reason === "NEED_SIGNUP"){ openAuth(); return; }
+      if(g.reason === "PROFILE_INCOMPLETE"){ showProfile(); return; }
+      showPaywall("Evladım o kaynana modu bu seviyede kapalı. Devam için uygulamayı indir.");
+      return;
+    }
+
+    const allow = new Set(allowedPersonas());
+    if(!allow.has(personaId)){
+      document.getElementById('personaModal').classList.remove('show');
+      showPage("Paket Yükselt", planHtml());
+      return;
+    }
+    currentPersona = personaId;
+    refreshPersonaLocks();
+    setTimeout(()=> document.getElementById('personaModal').classList.remove('show'), 200);
+  }
+
+  // Camera / Fal
   const fileEl = document.getElementById("fileInput");
   const photoModal = document.getElementById("photoModal");
   const photoPreview = document.getElementById("photoPreview");
@@ -746,6 +963,15 @@
   fileEl.addEventListener("change", async e=>{
     const f = e.target.files[0];
     if(!f) return;
+
+    if(currentMode === "fal"){
+      const gg = await guard("fal","fal",currentPersona);
+      if(!gg.allowed){
+        if(gg.reason === "NEED_SIGNUP"){ openAuth(); return; }
+        if(gg.reason === "PROFILE_INCOMPLETE"){ showProfile(); return; }
+        if(gg.paywall){ showPaywall("Evladım fal hakkın doldu… devam için uygulamayı indir."); return; }
+      }
+    }
 
     const r = new FileReader();
     r.onload = async ()=>{
@@ -805,11 +1031,13 @@
         setTimeout(()=> openFalCamera(), 220);
         return;
       }
+
       const collage = await makeFalCollage(falImages);
       pendingImage = collage;
 
       const input = document.getElementById("text");
       if(input) input.value = "Fal bak: fincanı 3 açıdan gönderdim. Gerçekçi ve insani anlat.";
+
       await send();
       resetFalCapture();
       return;
@@ -880,8 +1108,16 @@
     ctx.closePath();
   }
 
-  // SES
+  // Audio / TTS
   async function playAudio(text, btn){
+    const gg = await guard("tts","tts",currentPersona);
+    if(!gg.allowed){
+      if(gg.reason === "NEED_SIGNUP"){ openAuth(); return; }
+      if(gg.reason === "PROFILE_INCOMPLETE"){ showProfile(); return; }
+      if(gg.paywall){ showPaywall("Evladım sesli mod limitinde takıldın. Devam için uygulamayı indir."); return; }
+      return;
+    }
+
     if(currentAudio){ currentAudio.pause(); currentAudio=null; }
     document.querySelectorAll(".audio-btn.playing").forEach(b=>{
       b.classList.remove("playing");
@@ -897,6 +1133,15 @@
         headers:{ "Content-Type":"application/json", ...authHeaders() },
         body:JSON.stringify({ text, persona: currentPersona })
       });
+
+      const ct = (r.headers.get("content-type")||"").toLowerCase();
+      if(ct.includes("application/json")){
+        const j = await r.json().catch(()=>({}));
+        btn.innerHTML = oldHtml;
+        if(j && j.error) showPaywall(j.error);
+        return;
+      }
+
       const blob = await r.blob();
       currentAudio = new Audio(URL.createObjectURL(blob));
       currentAudio.onended = ()=>{
@@ -910,12 +1155,13 @@
       btn.innerHTML = oldHtml;
     }
   }
+
   document.getElementById("chatContainer").addEventListener("click", e=>{
     const btn = e.target.closest(".audio-btn");
     if(btn) playAudio(btn.getAttribute("data-speech"), btn);
   });
 
-  // MIC
+  // Mic
   function startMic(){
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!SR) return alert("Tarayıcı desteklemiyor");
@@ -928,28 +1174,7 @@
     r.start();
   }
 
-  // DRAWER
-  const mask=document.getElementById("drawerMask"), drawer=document.getElementById("drawer");
-  document.getElementById("menuBtn").onclick=()=>{ mask.style.display="block"; drawer.classList.add("open"); };
-  mask.onclick=()=>{ mask.style.display="none"; drawer.classList.remove("open"); };
-
-  // PERSONA
-  function openPersonaMenu(){ refreshPersonaLocks(); document.getElementById('personaModal').classList.add('show'); }
-  function closePersonaMenu(e){ if(e.target.id === 'personaModal') document.getElementById('personaModal').classList.remove('show'); }
-
-  function selectPersona(personaId, el){
-    const allow = new Set(allowedPersonas());
-    if(!allow.has(personaId)){
-      document.getElementById('personaModal').classList.remove('show');
-      showPage("Caynana Premium", planHtml());
-      return;
-    }
-    currentPersona = personaId;
-    refreshPersonaLocks();
-    setTimeout(()=> document.getElementById('personaModal').classList.remove('show'), 200);
-  }
-
-  // AUTH MODAL
+  // Auth modal
   let authMode = "login";
   function openAuth(){
     document.getElementById("authModal").style.display = "flex";
@@ -996,26 +1221,30 @@
 
       setToken(j.token);
       out.textContent = `Bağlandı ✅`;
+
       await pullPlanFromBackend();
+
+      try{
+        const me = await fetch(AUTH_ME_URL, { method:"GET", headers:{...authHeaders()} });
+        if(me.ok){
+          const mj = await me.json().catch(()=>({}));
+          if(mj.profile_complete === false) showProfile();
+          else startHeartbeat();
+        }
+      }catch(e){}
+
       setTimeout(closeAuth, 500);
     }catch(e){
       out.textContent = "Hata: " + (e.message || "Bilinmeyen");
     }
   };
 
-  document.getElementById("authLogout").onclick = async ()=>{
-    setToken("");
-    currentPlan="free";
-    currentPersona="normal";
-    refreshPersonaLocks();
-    document.getElementById("authStatus").textContent = "Çıkış yapıldı ❌";
-  };
+  document.getElementById("authLogout").onclick = async ()=> hardLogout();
 
-  // ✅ GOOGLE LOGIN FLOW
+  // Google login
   function initGoogleButton(){
     try{
       if(!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("BURAYA")) return;
-
       const el = document.getElementById("googleBtn");
       if(!el) return;
       el.innerHTML = "";
@@ -1036,6 +1265,16 @@
             setToken(j.token);
             out.textContent = "Bağlandı ✅";
             await pullPlanFromBackend();
+
+            try{
+              const me = await fetch(AUTH_ME_URL, { method:"GET", headers:{...authHeaders()} });
+              if(me.ok){
+                const mj = await me.json().catch(()=>({}));
+                if(mj.profile_complete === false) showProfile();
+                else startHeartbeat();
+              }
+            }catch(e){}
+
             setTimeout(closeAuth, 500);
           }catch(e){
             out.textContent = "Hata: " + (e.message || "Google giriş olmadı");
@@ -1050,12 +1289,10 @@
         text: "continue_with",
         shape: "pill"
       });
-    }catch(e){
-      // sessiz geç
-    }
+    }catch(e){}
   }
 
-  // PAGE MODAL
+  // Page modal
   function showPage(title, html){
     document.getElementById("pageTitle").textContent = title;
     document.getElementById("pageBody").innerHTML = html;
@@ -1066,25 +1303,25 @@
   document.getElementById("pageClose").onclick = hidePage;
   document.getElementById("pageModal").addEventListener("click",(e)=>{ if(e.target.id==="pageModal") hidePage(); });
 
-  // ✅ Premium (görsel kartlı) HTML
   function planHtml(){
     return `
       <div style="font-weight:900;font-size:14px;color:#111;margin-bottom:10px;">
         Caynana Premium (Google Play)
       </div>
-
       <div style="display:flex; flex-direction:column; gap:10px;">
-        ${planCard("FREE", "Ücretsiz", "Günde 2 fal • ~30 dk sohbet • Sadece Normal Kaynana", "#f5f5f5", "Normal Kaynana")}
-        ${planCard("PLUS", "79,99 TL / ay", "Günde 5 fal • ~120 dk sohbet • Sevecen + Kızgın", "#fff8e1", "Sevecen • Kızgın")}
-        ${planCard("PRO", "119,99 TL / ay", "Sınırsız fal/sohbet • Tüm kaynana modları", "#111", "Huysuz • İtirazcı + Hepsi", true)}
+        ${planCard("BAŞLANGIÇ", "Ücretsiz", "Günlük limitli kullanım", "#f5f5f5", "Normal Kaynana")}
+        ${planCard("BRONZ", "49,90 TL", "Daha fazla hak + Sevecen", "#fff8e1", "Normal • Sevecen")}
+        ${planCard("GÜMÜŞ", "79,99 TL", "Daha da fazla + Kızgın", "#e0f7fa", "Kızgın • Diyet • Sağlık")}
+        ${planCard("ALTIN", "119,99 TL", "Sınırsız + Tüm modlar", "#111", "Huysuz • İtirazcı • Yemek", true)}
       </div>
-
       <div style="margin-top:12px; padding:10px; border-radius:14px; background:#f7f7f7; font-size:12px; color:#444; font-weight:700;">
-        Ödemeler uygulama içinden <b>Google Play</b> ile yapılır. Kart bilgisi bizde tutulmaz.
+        Ödemeler uygulama içinden <b>Google Play</b> ile yapılır.
       </div>
-
-      <div style="margin-top:10px; font-size:12px; color:#666; font-weight:700;">
-        İptal: Google Play → Abonelikler → Caynana Premium
+      <div style="margin-top:10px;">
+        <a href="${PLAY_STORE_URL}" target="_blank"
+           style="display:block;text-align:center;background:#FFB300;color:#fff;padding:10px;border-radius:14px;font-weight:900;text-decoration:none;">
+           Google Play’den İndir
+        </a>
       </div>
     `;
   }
@@ -1109,36 +1346,33 @@
     `;
   }
 
-  const ABOUT_HTML = `
-    <p><b>Caynana</b>, “Yapay zekânın geleneksel aklı”. Sohbet, fal ve yorum içerikleri eğlence ve rehberlik amaçlıdır.</p>
-    <p>Üyelik ile limitler genişler ve kaynana modları açılır.</p>
-  `;
-  const FAQ_HTML = `
-    <p><b>1) Üyelik nasıl iptal edilir?</b><br>Google Play → Abonelikler kısmından.</p>
-    <p><b>2) Ücretsiz kullanım var mı?</b><br>Var: Günlük limit bulunur.</p>
-    <p><b>3) Alışveriş modülü ücretli mi?</b><br>Hayır, alışveriş sınırsızdır.</p>
-    <p><b>4) Fal kesin mi?</b><br>Fal eğlencedir, kesin hüküm içermez.</p>
-  `;
-  const CONTACT_HTML = `<p>Destek: <b>support@caynana.ai</b></p><p>Geri bildirim: Uygulama içinden veya e-posta ile.</p>`;
-  const PRIVACY_HTML = `
-    <p><b>Gizlilik</b><br>Minimum veri prensibiyle çalışırız. Hesap için e-posta saklanır.</p>
-    <p>Ödeme işlemleri uygulama mağazası (Google Play) üzerinden yürür. Kart bilgisi uygulama tarafından tutulmaz.</p>
-  `;
+  const ABOUT_HTML = `<p><b>Caynana</b>, yapay zekânın geleneksel aklı. Sohbet, fal ve alışveriş rehberi.</p>`;
+  const FAQ_HTML = `<p><b>1) Ödeme?</b><br>Google Play üzerinden.</p><p><b>2) Ücretsiz?</b><br>Başlangıç paketi ücretsizdir.</p>`;
+  const CONTACT_HTML = `<p>Destek: <b>support@caynana.ai</b></p>`;
+  const PRIVACY_HTML = `<p><b>Gizlilik</b><br>Verileriniz güvendedir. Kart bilgisi tutulmaz.</p>`;
 
   document.getElementById("aboutBtn").onclick = ()=> showPage("Hakkımızda", ABOUT_HTML);
   document.getElementById("faqBtn").onclick = ()=> showPage("Sık Sorulan Sorular", FAQ_HTML);
   document.getElementById("contactBtn").onclick = ()=> showPage("İletişim", CONTACT_HTML);
   document.getElementById("privacyBtn").onclick = ()=> showPage("Gizlilik", PRIVACY_HTML);
-  document.getElementById("planBtn").onclick = ()=> showPage("Caynana Premium", planHtml());
+  document.getElementById("planBtn").onclick = ()=> showPage("Üyelik Paketleri", planHtml());
 
-  // INIT
-  function cycleMode(){ /* eski davranışı koru: istersen sonra kapatırız */ }
-
+  // Init
   renderDock();
   applyHero("chat");
   loadModeChat("chat");
   document.body.classList.remove("fal-mode");
   pullPlanFromBackend();
+
+  window.addEventListener("load", ()=>{
+    if(getToken()){
+      startHeartbeat();
+      fetch(AUTH_ME_URL, { method:"GET", headers:{...authHeaders()} })
+        .then(r=>r.ok ? r.json() : null)
+        .then(j=>{ if(j && j.profile_complete === false) showProfile(); })
+        .catch(()=>{});
+    }
+  });
 </script>
 </body>
 </html>
