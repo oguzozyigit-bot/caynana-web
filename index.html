@@ -13,7 +13,7 @@
 
 <style>
   :root{ --primary:#FFB300; --font:'Outfit',sans-serif; }
-  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; touch-action: manipulation; }
   input, textarea { user-select:text; -webkit-user-select:text; }
   #text { user-select:text; -webkit-user-select:text; }
 
@@ -140,6 +140,7 @@
   .persona-opt { padding:15px; border-radius:16px; background:#f9f9f9; margin-bottom:12px; font-weight:700; cursor:pointer; transition: 0.2s; border:2px solid transparent; display:flex; align-items:center; justify-content:space-between; font-size:14px; }
   .persona-opt:active { transform: scale(0.98); }
   .persona-opt.selected { border-color: var(--primary); background:#fff8e1; color:var(--primary); }
+  .persona-opt.locked { opacity:0.5; cursor:not-allowed; }
   .persona-close { margin-top:15px; color:#999; font-size:13px; font-weight:700; cursor:pointer; padding:10px; }
 
   #drawerMask{ position:absolute; inset:0; background:rgba(0,0,0,.6); z-index:50; display:none; }
@@ -166,6 +167,9 @@
   .fal-cam-btn:active{ transform: scale(0.96); }
   .fal-step-text{ margin-top:10px; text-align:center; font-weight:900; font-size:12px; color:#222; }
   .fal-step-sub{ margin-top:4px; text-align:center; font-weight:700; font-size:11px; color:#666; }
+
+  /* Chat içindeki görsel tıklaması mod/başka click tetiklemesin */
+  .chat-img{ touch-action:none; -webkit-user-drag:none; user-select:none; }
 </style>
 </head>
 
@@ -176,11 +180,27 @@
   <div id="personaModal" onclick="closePersonaMenu(event)">
     <div class="persona-content">
       <div class="persona-title">Caynana Modunu Seç</div>
-      <div class="persona-opt selected" onclick="selectPersona('normal', this)"><span>👵 Görmüş Geçirmiş Kaynana</span><i class="fa-solid fa-check"></i></div>
-      <div class="persona-opt" onclick="selectPersona('sevecen', this)"><span>🥰 Anne Tadında Kaynana</span><i class="fa-solid fa-check" style="display:none"></i></div>
-      <div class="persona-opt" onclick="selectPersona('kizgin', this)"><span>😠 Kaynana Gibi Kaynana</span><i class="fa-solid fa-check" style="display:none"></i></div>
-      <div class="persona-opt" onclick="selectPersona('huysuz', this)"><span>🤕 Bir Ayağı Çukurda Kaynana</span><i class="fa-solid fa-check" style="display:none"></i></div>
-      <div class="persona-opt" onclick="selectPersona('itirazci', this)"><span>😤 Herşeye Muhalif Kaynana</span><i class="fa-solid fa-check" style="display:none"></i></div>
+
+      <div class="persona-opt selected" data-persona="normal" onclick="selectPersona('normal', this)">
+        <span>👵 Görmüş Geçirmiş Kaynana</span><i class="fa-solid fa-check"></i>
+      </div>
+
+      <div class="persona-opt" data-persona="sevecen" onclick="selectPersona('sevecen', this)">
+        <span>🥰 Anne Tadında Kaynana</span><i class="fa-solid fa-lock" style="display:none"></i>
+      </div>
+
+      <div class="persona-opt" data-persona="kizgin" onclick="selectPersona('kizgin', this)">
+        <span>😠 Kaynana Gibi Kaynana</span><i class="fa-solid fa-lock" style="display:none"></i>
+      </div>
+
+      <div class="persona-opt" data-persona="huysuz" onclick="selectPersona('huysuz', this)">
+        <span>🤕 Bir Ayağı Çukurda Kaynana</span><i class="fa-solid fa-lock" style="display:none"></i>
+      </div>
+
+      <div class="persona-opt" data-persona="itirazci" onclick="selectPersona('itirazci', this)">
+        <span>😤 Herşeye Muhalif Kaynana</span><i class="fa-solid fa-lock" style="display:none"></i>
+      </div>
+
       <div class="persona-close" onclick="document.getElementById('personaModal').classList.remove('show')">Kapat</div>
     </div>
   </div>
@@ -203,6 +223,13 @@
   <div id="drawer">
     <h3 style="margin-bottom:20px;">Menü</h3>
     <div id="accountBtn" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">Hesap</div>
+
+    <div id="planBtn" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">Üyelik</div>
+    <div id="aboutBtn" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">Hakkımızda</div>
+    <div id="faqBtn" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">Sık Sorulan Sorular</div>
+    <div id="contactBtn" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">İletişim</div>
+    <div id="privacyBtn" style="padding:10px 0; border-bottom:1px solid #eee; cursor:pointer;">Gizlilik</div>
+
     <div style="padding:10px 0; border-bottom:1px solid #eee;">Ayarlar</div>
   </div>
 
@@ -256,7 +283,7 @@
     </div>
   </div>
 
-  <!-- ✅ AUTH MODAL -->
+  <!-- AUTH MODAL -->
   <div id="authModal" style="position:absolute; inset:0; z-index:200; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.65); backdrop-filter: blur(8px);">
     <div style="width:86%; max-width:360px; background:#fff; border-radius:22px; padding:16px; box-shadow:0 10px 40px rgba(0,0,0,.35);">
       <div style="font-weight:900; font-size:16px; color:#222; margin-bottom:10px;">Hesap</div>
@@ -274,9 +301,20 @@
       <div id="authStatus" style="margin-top:10px; font-size:12px; color:#666; font-weight:700;"></div>
 
       <div style="display:flex; gap:10px; margin-top:12px;">
-        <button id="authLogout" style="flex:1; height:42px; border-radius:14px; border:1px solid #eee; background:#fff; font-weight:900; cursor:pointer;">Çıkış</button>
-        <button id="authClose" style="flex:1; height:42px; border-radius:14px; border:none; background:#111; color:#fff; font-weight:900; cursor:pointer;">Kapat</button>
+        <button class="photoBtn" id="authLogout" style="flex:1; border:1px solid #eee; background:#fff;">Çıkış</button>
+        <button class="photoBtn" id="authClose" style="flex:1; border:none; background:#111; color:#fff;">Kapat</button>
       </div>
+    </div>
+  </div>
+
+  <!-- PAGE MODAL -->
+  <div id="pageModal" style="position:absolute; inset:0; z-index:210; display:none; background:rgba(0,0,0,.65); backdrop-filter: blur(8px);">
+    <div style="position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:90%; max-width:380px; max-height:78%; overflow:auto; background:#fff; border-radius:22px; padding:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px;">
+        <div id="pageTitle" style="font-weight:900; font-size:16px; color:#222;"></div>
+        <div id="pageClose" style="cursor:pointer; font-weight:900; color:#111;">Kapat ✕</div>
+      </div>
+      <div id="pageBody" style="font-size:13px; line-height:1.55; color:#333; font-weight:600;"></div>
     </div>
   </div>
 </div>
@@ -289,7 +327,7 @@
   const SPEAK_URL = `${BASE_DOMAIN}/api/speak`;
   const FAL_CHECK_URL = `${BASE_DOMAIN}/api/fal/check`;
 
-  // ✅ AUTH TOKEN
+  // AUTH TOKEN
   const TOKEN_KEY = "caynana_token";
   function getToken(){ return localStorage.getItem(TOKEN_KEY) || ""; }
   function setToken(t){
@@ -301,6 +339,14 @@
     return t ? {"Authorization":"Bearer " + t} : {};
   }
 
+  // Plan state (backend memory.profile.plan)
+  let currentPlan = "free"; // free | plus | pro
+  const PLAN_PERSONAS = {
+    free: ["normal"],
+    plus: ["normal","sevecen","kizgin"],
+    pro:  ["normal","sevecen","kizgin","huysuz","itirazci"]
+  };
+
   let sessionId = "sess_" + Math.random().toString(36).slice(2,10);
   let currentAudio = null;
   let pendingImage = null;
@@ -310,6 +356,7 @@
 
   const modeChats = {};
 
+  // Fal: 3 foto
   let falImages = [];
   const FAL_STEPS = ["1/3: Üstten çek", "2/3: Yandan çek", "3/3: Diğer yandan çek"];
 
@@ -354,7 +401,7 @@
 
     let content = "";
     if(imgData){
-      content += `<img src="${imgData}" style="max-width:100%; border-radius:12px; margin-bottom:8px;">`;
+      content += `<img class="chat-img" src="${imgData}" style="max-width:100%; border-radius:12px; margin-bottom:8px;" onclick="event.stopPropagation()">`;
     }
 
     div.innerHTML = `<div class="bubble">${content}</div>`;
@@ -424,6 +471,49 @@
     setFalStepUI();
   }
 
+  // ====== PLAN + PERSONA UI ======
+  function allowedPersonas(){
+    return PLAN_PERSONAS[currentPlan] || ["normal"];
+  }
+  function refreshPersonaLocks(){
+    const allow = new Set(allowedPersonas());
+    document.querySelectorAll("#personaModal .persona-opt").forEach(opt=>{
+      const id = opt.getAttribute("data-persona");
+      const icon = opt.querySelector("i");
+      if(id === currentPersona){
+        opt.classList.add("selected");
+        if(icon) { icon.className="fa-solid fa-check"; icon.style.display="block"; }
+        return;
+      }
+      opt.classList.remove("selected");
+      if(!allow.has(id)){
+        opt.classList.add("locked");
+        if(icon) { icon.className="fa-solid fa-lock"; icon.style.display="block"; }
+      } else {
+        opt.classList.remove("locked");
+        if(icon) icon.style.display="none";
+      }
+    });
+  }
+
+  async function pullPlanFromBackend(){
+    const t = getToken();
+    if(!t) { currentPlan="free"; refreshPersonaLocks(); return; }
+    try{
+      const r = await fetch(`${BASE_DOMAIN}/api/memory/get`, {
+        method:"GET",
+        headers: { ...authHeaders() }
+      });
+      const j = await r.json();
+      const plan = ((j.profile||{}).plan || "free").toLowerCase();
+      currentPlan = (plan==="plus"||plan==="pro") ? plan : "free";
+    }catch(e){
+      currentPlan="free";
+    }
+    refreshPersonaLocks();
+  }
+
+  // ====== SEND ======
   async function send(){
     if(isSending) return;
 
@@ -469,6 +559,7 @@
     }
   }
 
+  // ===== MODES =====
   const MODES = {
     chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img: asset("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…", heroStyle: { top:"100px", left:"24px", textAlign:"left", width:"auto", maxWidth:"70%" } },
     shopping:{ label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img: asset("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder.", heroStyle: { top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
@@ -538,6 +629,27 @@
     });
   }
 
+  // Dock: drag ile click'i ayır
+  (function dockDragClickGuard(){
+    const dock = document.getElementById("dock");
+    if(!dock) return;
+
+    let downX=0, downY=0, moved=false;
+
+    dock.addEventListener("pointerdown", (e)=>{ downX=e.clientX; downY=e.clientY; moved=false; }, {passive:true});
+    dock.addEventListener("pointermove", (e)=>{
+      if(Math.abs(e.clientX-downX)>10 || Math.abs(e.clientY-downY)>10) moved=true;
+    }, {passive:true});
+
+    dock.addEventListener("click", (e)=>{
+      if(moved){
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
+  })();
+
+  // FOTO / FAL
   const fileEl = document.getElementById("fileInput");
   const photoModal = document.getElementById("photoModal");
   const photoPreview = document.getElementById("photoPreview");
@@ -702,6 +814,7 @@
     ctx.closePath();
   }
 
+  // SES
   async function playAudio(text, btn){
     if(currentAudio){ currentAudio.pause(); currentAudio=null; }
     document.querySelectorAll(".audio-btn.playing").forEach(b=>{
@@ -722,6 +835,7 @@
       currentAudio = new Audio(URL.createObjectURL(blob));
       currentAudio.onended = ()=>{
         btn.classList.remove("playing");
+        btn.inner_toggle = false;
         btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Kaynana Konuşuyor`;
       };
       await currentAudio.play();
@@ -736,6 +850,7 @@
     if(btn) playAudio(btn.getAttribute("data-speech"), btn);
   });
 
+  // MIC
   function startMic(){
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(!SR) return alert("Tarayıcı desteklemiyor");
@@ -748,25 +863,35 @@
     r.start();
   }
 
+  // DRAWER
   const mask=document.getElementById("drawerMask"), drawer=document.getElementById("drawer");
   document.getElementById("menuBtn").onclick=()=>{ mask.style.display="block"; drawer.classList.add("open"); };
   mask.onclick=()=>{ mask.style.display="none"; drawer.classList.remove("open"); };
 
-  function openPersonaMenu(){ document.getElementById('personaModal').classList.add('show'); }
+  // PERSONA
+  function openPersonaMenu(){ refreshPersonaLocks(); document.getElementById('personaModal').classList.add('show'); }
   function closePersonaMenu(e){ if(e.target.id === 'personaModal') document.getElementById('personaModal').classList.remove('show'); }
+
   function selectPersona(personaId, el){
+    const allow = new Set(allowedPersonas());
+    if(!allow.has(personaId)){
+      document.getElementById('personaModal').classList.remove('show');
+      showPage("Üyelik", `
+        <p><b>Bu mod ücretli evladım.</b></p>
+        <p>Plus (79,99 TL): Sevecen + Kızgın açılır.</p>
+        <p>Pro (119,99 TL): Huysuz + İtirazcı dahil tüm modlar.</p>
+        <p style="margin-top:10px;color:#666"><i>Ödemeler Google Play üzerinden yapılır.</i></p>
+      `);
+      return;
+    }
+
     currentPersona = personaId;
-    document.querySelectorAll('.persona-opt').forEach(opt => {
-      opt.classList.remove('selected');
-      opt.querySelector('i').style.display = 'none';
-    });
-    el.classList.add('selected');
-    el.querySelector('i').style.display = 'block';
+    refreshPersonaLocks();
     setTimeout(()=> document.getElementById('personaModal').classList.remove('show'), 200);
   }
 
-  // ✅ AUTH MODAL JS
-  let authMode = "login"; // login | register
+  // AUTH MODAL
+  let authMode = "login";
   function openAuth(){
     document.getElementById("authModal").style.display = "flex";
     const t = getToken();
@@ -813,22 +938,66 @@
 
       setToken(j.token);
       out.textContent = `Bağlandı ✅ (${j.email})`;
+
+      await pullPlanFromBackend();
       setTimeout(closeAuth, 500);
     }catch(e){
       out.textContent = "Hata: " + (e.message || "Bilinmeyen");
     }
   };
 
-  document.getElementById("authLogout").onclick = ()=>{
+  document.getElementById("authLogout").onclick = async ()=>{
     setToken("");
+    currentPlan="free";
+    currentPersona="normal";
+    refreshPersonaLocks();
     document.getElementById("authStatus").textContent = "Çıkış yapıldı ❌";
   };
+
+  // PAGE MODAL
+  function showPage(title, html){
+    document.getElementById("pageTitle").textContent = title;
+    document.getElementById("pageBody").innerHTML = html;
+    document.getElementById("pageModal").style.display = "block";
+    mask.style.display="none"; drawer.classList.remove("open");
+  }
+  function hidePage(){ document.getElementById("pageModal").style.display = "none"; }
+  document.getElementById("pageClose").onclick = hidePage;
+  document.getElementById("pageModal").addEventListener("click",(e)=>{ if(e.target.id==="pageModal") hidePage(); });
+
+  const ABOUT_HTML = `
+    <p><b>Caynana</b>, “Yapay zekânın geleneksel aklı”. Sohbet, fal ve yorum içerikleri eğlence ve rehberlik amaçlıdır.</p>
+    <p>Üyelik ile limitler genişler ve kaynana modları açılır.</p>
+  `;
+  const FAQ_HTML = `
+    <p><b>1) Üyelik nasıl iptal edilir?</b><br>Google Play → Abonelikler kısmından.</p>
+    <p><b>2) Ücretsiz kullanım var mı?</b><br>Var: Günlük limit bulunur.</p>
+    <p><b>3) Alışveriş modülü ücretli mi?</b><br>Hayır, alışveriş sınırsızdır.</p>
+    <p><b>4) Fal kesin mi?</b><br>Fal eğlencedir, kesin hüküm içermez.</p>
+  `;
+  const CONTACT_HTML = `<p>Destek: <b>support@caynana.ai</b></p><p>Geri bildirim: Uygulama içinden veya e-posta ile.</p>`;
+  const PRIVACY_HTML = `
+    <p><b>Gizlilik</b><br>Minimum veri prensibiyle çalışırız. Hesap için e-posta saklanır.</p>
+    <p>Ödeme işlemleri Google Play üzerinden yürür. Kart bilgisi uygulama tarafından tutulmaz.</p>
+  `;
+
+  document.getElementById("aboutBtn").onclick = ()=> showPage("Hakkımızda", ABOUT_HTML);
+  document.getElementById("faqBtn").onclick = ()=> showPage("Sık Sorulan Sorular", FAQ_HTML);
+  document.getElementById("contactBtn").onclick = ()=> showPage("İletişim", CONTACT_HTML);
+  document.getElementById("privacyBtn").onclick = ()=> showPage("Gizlilik", PRIVACY_HTML);
+  document.getElementById("planBtn").onclick = ()=> showPage("Üyelik", `
+    <p><b>Free</b> — Günde 2 fal, ~30 dk sohbet, sadece Normal Kaynana</p>
+    <p><b>Plus (79,99 TL)</b> — Günde 5 fal, ~120 dk sohbet, Sevecen + Kızgın</p>
+    <p><b>Pro (119,99 TL)</b> — Sınırsız fal/sohbet, Huysuz + İtirazcı dahil tüm modlar</p>
+    <p style="margin-top:10px;color:#666"><i>Ödemeler Google Play üzerinden yapılır.</i></p>
+  `);
 
   // INIT
   renderDock();
   applyHero("chat");
   loadModeChat("chat");
   document.body.classList.remove("fal-mode");
+  pullPlanFromBackend();
 </script>
 </body>
 </html>
