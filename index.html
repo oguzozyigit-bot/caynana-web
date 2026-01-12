@@ -1,172 +1,199 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<meta name="theme-color" content="#0b0f18" />
-<title>CAYNANA.AI</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f18" />
+  <title>CAYNANA.AI</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 
-<!-- Google Identity -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Google Identity -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-<link rel="stylesheet" href="./css/app.css" />
+  <link rel="stylesheet" href="./css/app.css" />
 </head>
 
 <body>
-<div id="app">
-  <img id="heroImage" src="" alt="Hero Background">
+  <div id="app">
+    <img id="heroImage" src="" alt="Hero Background">
 
-  <!-- Persona Modal -->
-  <div id="personaModal">
-    <div class="persona-content">
-      <div class="persona-title">Caynana Modunu Seç</div>
+    <!-- Persona Modal -->
+    <div id="personaModal" class="modalMask">
+      <div class="persona-content">
+        <div class="persona-title">Caynana Modunu Seç</div>
 
-      <div class="persona-opt selected" data-persona="normal">
-        <span>👵 Görmüş Geçirmiş Kaynana</span><i class="fa-solid fa-check"></i>
-      </div>
-      <div class="persona-opt" data-persona="sevecen">
-        <span>🥰 Anne Tadında Kaynana</span><i class="fa-solid fa-lock" style="display:none"></i>
-      </div>
-      <div class="persona-opt" data-persona="kizgin">
-        <span>😠 Kaynana Gibi Kaynana</span><i class="fa-solid fa-lock" style="display:none"></i>
-      </div>
-      <div class="persona-opt" data-persona="huysuz">
-        <span>🤕 Bir Ayağı Çukurda Kaynana</span><i class="fa-solid fa-lock" style="display:none"></i>
-      </div>
-      <div class="persona-opt" data-persona="itirazci">
-        <span>😤 Herşeye Muhalif Kaynana</span><i class="fa-solid fa-lock" style="display:none"></i>
-      </div>
+        <div class="persona-opt selected" data-persona="normal">
+          <span>👵 Görmüş Geçirmiş Kaynana</span><i class="fa-solid fa-check"></i>
+        </div>
+        <div class="persona-opt" data-persona="sevecen">
+          <span>🥰 Anne Tadında Kaynana</span><i class="fa-solid fa-lock" style="display:none"></i>
+        </div>
+        <div class="persona-opt" data-persona="kizgin">
+          <span>😠 Kaynana Gibi Kaynana</span><i class="fa-solid fa-lock" style="display:none"></i>
+        </div>
+        <div class="persona-opt" data-persona="huysuz">
+          <span>🤕 Bir Ayağı Çukurda Kaynana</span><i class="fa-solid fa-lock" style="display:none"></i>
+        </div>
+        <div class="persona-opt" data-persona="itirazci">
+          <span>😤 Herşeye Muhalif Kaynana</span><i class="fa-solid fa-lock" style="display:none"></i>
+        </div>
 
-      <div class="persona-close" id="personaClose">Kapat</div>
+        <div class="persona-close" id="personaClose">Kapat</div>
+      </div>
     </div>
+
+    <!-- Photo Modal -->
+    <div id="photoModal" class="modalMask">
+      <div class="photoBox">
+        <div class="photoTitle" id="photoTitle">Fotoğraf hazır</div>
+        <img id="photoPreview" src="" alt="preview">
+        <div class="photoActions">
+          <button class="photoBtn" id="photoCancelBtn">Vazgeç</button>
+          <button class="photoBtn primary" id="photoOkBtn">Tamam</button>
+        </div>
+        <div id="photoHint" class="photoHint">Tamam deyince Caynana hemen yoruma başlayacak.</div>
+      </div>
+    </div>
+
+    <!-- Drawer -->
+    <div id="drawerMask" class="drawerMask"></div>
+    <div id="drawer" class="drawer">
+      <div class="drawerTop">
+        <div class="drawerTitle">Menü</div>
+        <div class="drawerClose" id="drawerClose">✕</div>
+      </div>
+
+      <div class="drawerItem" id="accountBtn"><i class="fa-solid fa-user"></i> Hesap</div>
+      <div class="drawerItem" id="planBtn"><i class="fa-solid fa-crown"></i> Üyelik</div>
+      <div class="drawerItem" id="aboutBtn"><i class="fa-solid fa-circle-info"></i> Hakkımızda</div>
+      <div class="drawerItem" id="faqBtn"><i class="fa-solid fa-circle-question"></i> Sık Sorulan Sorular</div>
+      <div class="drawerItem" id="contactBtn"><i class="fa-solid fa-envelope"></i> İletişim</div>
+      <div class="drawerItem" id="privacyBtn"><i class="fa-solid fa-shield-halved"></i> Gizlilik</div>
+
+      <div class="drawerSep"></div>
+
+      <div class="drawerMuted">Ayarlar (yakında)</div>
+    </div>
+
+    <!-- Topbar -->
+    <div id="topbar">
+      <div class="brand-wrap" id="brandTap" title="Mod değiştir">
+        <div class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i>CAYNANA<span>.AI</span></div>
+        <div class="brand-sub">Yapay Zekânın Geleneksel Aklı</div>
+      </div>
+      <div class="top-actions">
+        <div class="menu-btn" id="personaBtn"><i class="fa-solid fa-masks-theater"></i></div>
+        <div class="menu-btn" id="menuBtn"><i class="fa-solid fa-bars"></i></div>
+      </div>
+    </div>
+
+    <div id="main">
+      <div id="heroContent">
+        <div id="heroTitle"></div>
+        <div id="heroDesc"></div>
+      </div>
+      <div id="chatContainer"></div>
+    </div>
+
+    <div id="bottom">
+      <div id="suggestionText"></div>
+
+      <div class="fal-only">
+        <div class="fal-cam-wrap">
+          <button class="fal-cam-btn" id="falCamBtn" aria-label="Fal fotoğraf çek">
+            <i class="fa-solid fa-camera"></i>
+          </button>
+        </div>
+        <div class="fal-step-text" id="falStepText">Fal için 3 fotoğraf çek</div>
+        <div class="fal-step-sub" id="falStepSub">1/3: Üstten çek</div>
+      </div>
+
+      <div class="input-wrapper">
+        <div class="search-bar">
+          <div class="tool-btn" id="camBtn"><i class="fa-solid fa-camera"></i></div>
+          <input id="text" placeholder="Bir şey yaz..." autocomplete="off">
+          <div class="tool-btn" id="micBtn"><i class="fa-solid fa-microphone"></i></div>
+        </div>
+        <button id="sendBtn" aria-label="Gönder"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+
+      <div id="dock"></div>
+
+      <div class="brand-footer">
+        <div class="footer-text-line1">@CaynanaAI By Ozyigits</div>
+        <div class="oz-lines"><span class="oz-l-dynamic"></span><span class="oz-l-red"></span><span class="oz-l-white"></span><span class="oz-l-black"></span></div>
+        <div class="footer-text-line2">2026</div>
+      </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modalMask">
+      <div class="authBox">
+        <div class="authTop">
+          <div class="authTitle">Hesap</div>
+          <div class="authClose" id="authCloseX">✕</div>
+        </div>
+
+        <div class="authTabs">
+          <button id="btnLoginTab" class="tab tabActive">Giriş</button>
+          <button id="btnRegTab" class="tab">Kayıt</button>
+        </div>
+
+        <input id="authEmail" placeholder="E-posta" class="authInput">
+        <input id="authPass" type="password" placeholder="Şifre (min 6)" class="authInput">
+
+        <button id="authSubmit" class="authSubmit">Giriş Yap</button>
+
+        <div class="googleArea">
+          <div class="googleLabel">Google ile giriş:</div>
+          <div id="googleBtn"></div>
+          <div class="googleHint">Google ile giriş yapınca hesap otomatik açılır.</div>
+        </div>
+
+        <div id="authStatus" class="authStatus"></div>
+
+        <div class="authActions">
+          <button id="authLogout" class="authMini">Çıkış</button>
+          <button id="authClose" class="authMini dark">Kapat</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Modal -->
+    <div id="pageModal" class="modalMask">
+      <div class="pageBox">
+        <div class="pageTop">
+          <div id="pageTitle" class="pageTitle"></div>
+          <div id="pageClose" class="pageClose">Kapat ✕</div>
+        </div>
+        <div id="pageBody" class="pageBody"></div>
+      </div>
+    </div>
+
+    <!-- Web Lock (Siteyi webde kilitle) -->
+    <div id="webLock" class="modalMask">
+      <div class="lockBox">
+        <div class="lockTitle">Caynana sadece uygulamada 👵</div>
+        <div class="lockText">
+          Evladım, webden olmaz. Uygulamayı indir, kapıyı ben açarım.
+        </div>
+        <div class="lockBtns">
+          <a class="lockBtn primary" id="lockAndroidBtn" href="#" target="_blank">Android (Google Play)</a>
+          <a class="lockBtn" id="lockApkBtn" href="#" target="_blank">APK indir</a>
+        </div>
+        <div class="lockHint">Not: Bu ekranı kaldırmak için <b>js/main.js</b> içindeki WEB_LOCK ayarını kapatabilirsin.</div>
+      </div>
+    </div>
+
   </div>
 
-  <!-- Photo Modal -->
-  <div id="photoModal">
-    <div class="photoBox">
-      <div class="photoTitle" id="photoTitle">Fotoğraf hazır</div>
-      <img id="photoPreview" src="" alt="preview">
-      <div class="photoActions">
-        <button class="photoBtn" id="photoCancelBtn">Vazgeç</button>
-        <button class="photoBtn" id="photoOkBtn">Tamam</button>
-      </div>
-      <div id="photoHint" class="photoHint">Tamam deyince Caynana hemen yoruma başlayacak.</div>
-    </div>
-  </div>
+  <input type="file" id="fileInput" accept="image/*" capture="environment" />
 
-  <!-- Drawer -->
-  <div id="drawerMask"></div>
-  <div id="drawer">
-    <h3 style="margin-bottom:20px;">Menü</h3>
-    <div class="drawerItem" id="accountBtn">Hesap</div>
-    <div class="drawerItem" id="planBtn">Üyelik</div>
-    <div class="drawerItem" id="aboutBtn">Hakkımızda</div>
-    <div class="drawerItem" id="faqBtn">Sık Sorulan Sorular</div>
-    <div class="drawerItem" id="contactBtn">İletişim</div>
-    <div class="drawerItem" id="privacyBtn">Gizlilik</div>
-    <div class="drawerItem">Ayarlar</div>
-  </div>
-
-  <!-- Topbar -->
-  <div id="topbar">
-    <div class="brand-wrap" id="brandTap">
-      <div class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i>CAYNANA<span>.AI</span></div>
-      <div class="brand-sub">Yapay Zekânın Geleneksel Aklı</div>
-    </div>
-    <div class="top-actions">
-      <div class="menu-btn" id="personaBtn"><i class="fa-solid fa-masks-theater"></i></div>
-      <div class="menu-btn" id="menuBtn"><i class="fa-solid fa-bars"></i></div>
-    </div>
-  </div>
-
-  <div id="main">
-    <div id="heroContent">
-      <div id="heroTitle"></div>
-      <div id="heroDesc"></div>
-    </div>
-    <div id="chatContainer"></div>
-  </div>
-
-  <div id="bottom">
-    <div id="suggestionText"></div>
-
-    <div class="fal-only">
-      <div class="fal-cam-wrap">
-        <button class="fal-cam-btn" id="falCamBtn" aria-label="Fal fotoğraf çek">
-          <i class="fa-solid fa-camera"></i>
-        </button>
-      </div>
-      <div class="fal-step-text" id="falStepText">Fal için 3 fotoğraf çek</div>
-      <div class="fal-step-sub" id="falStepSub">1/3: Üstten çek</div>
-    </div>
-
-    <div class="input-wrapper">
-      <div class="search-bar">
-        <div class="tool-btn" id="camBtn"><i class="fa-solid fa-camera"></i></div>
-        <input id="text" placeholder="Bir şey yaz..." autocomplete="off">
-        <div class="tool-btn" id="micBtn"><i class="fa-solid fa-microphone"></i></div>
-      </div>
-      <button id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
-    </div>
-
-    <div id="dock"></div>
-
-    <div class="brand-footer">
-      <div class="footer-text-line1">@CaynanaAI By Ozyigits</div>
-      <div class="oz-lines"><span class="oz-l-dynamic"></span><span class="oz-l-red"></span><span class="oz-l-white"></span><span class="oz-l-black"></span></div>
-      <div class="footer-text-line2">2026</div>
-    </div>
-  </div>
-
-  <!-- Auth Modal -->
-  <div id="authModal">
-    <div class="authBox">
-      <div class="authTitle">Hesap</div>
-
-      <div class="authTabs">
-        <button id="btnLoginTab" class="tab tabActive">Giriş</button>
-        <button id="btnRegTab" class="tab">Kayıt</button>
-      </div>
-
-      <input id="authEmail" placeholder="E-posta" class="authInput">
-      <input id="authPass" type="password" placeholder="Şifre (min 6)" class="authInput">
-
-      <button id="authSubmit" class="authSubmit">Giriş Yap</button>
-
-      <div class="googleArea">
-        <div class="googleLabel">Google ile giriş:</div>
-        <div id="googleBtn"></div>
-      </div>
-
-      <div id="authStatus" class="authStatus"></div>
-
-      <div class="authActions">
-        <button id="authLogout" class="authMini">Çıkış</button>
-        <button id="authClose" class="authMini dark">Kapat</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Page Modal -->
-  <div id="pageModal">
-    <div class="pageBox">
-      <div class="pageTop">
-        <div id="pageTitle" class="pageTitle"></div>
-        <div id="pageClose" class="pageClose">Kapat ✕</div>
-      </div>
-      <div id="pageBody" class="pageBody"></div>
-    </div>
-  </div>
-</div>
-
-<input type="file" id="fileInput" accept="image/*" capture="environment" />
-
-<script type="module" src="./js/main.js"></script>
+  <script type="module" src="./js/main.js"></script>
 </body>
 </html>
