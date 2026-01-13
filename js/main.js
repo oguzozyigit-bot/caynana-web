@@ -1,80 +1,19 @@
 // =============================
-// CAYNANA WEB APP (FINAL)
+// CAYNANA WEB APP (FINAL - SAFE)
 // =============================
 
 /** ====== AYARLAR ====== */
-// Backend (Render) API
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
 const SPEAK_URL = `${BASE_DOMAIN}/api/speak`;
 const FAL_CHECK_URL = `${BASE_DOMAIN}/api/fal/check`;
 
-// Google OAuth Client ID (senin verdiğin)
 const GOOGLE_CLIENT_ID = "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com";
 
-function showAuthError(err){
-  const out = document.getElementById("authStatus");
-  if(!out) return;
-  if(typeof err === "string") out.textContent = "Hata: " + err;
-  else if(err?.message) out.textContent = "Hata: " + err.message;
-  else out.textContent = "Hata: " + JSON.stringify(err);
-}
-
-async function googleLoginWithCredential(credential){
-  const r = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
-    method:"POST",
-    headers: { "Content-Type":"application/json" },
-    body: JSON.stringify({ credential })
-  });
-  const j = await r.json().catch(()=> ({}));
-  if(!r.ok) throw new Error(j.detail || "Google giriş başarısız");
-  setToken(j.token);
-  document.getElementById("authStatus").textContent = `Bağlandı ✅ (${j.email || "Google"})`;
-  await pullPlanFromBackend();
-  setTimeout(()=> document.getElementById("authModal").style.display="none", 500);
-}
-
-function initGoogleButton(){
-  const el = document.getElementById("googleBtn");
-  if(!el) return;
-
-  if(!window.google || !google.accounts || !google.accounts.id){
-    showAuthError("Google script yüklenmedi (WebView/Chrome güncel mi?)");
-    return;
-  }
-
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: async (resp) => {
-      try{
-        await googleLoginWithCredential(resp.credential);
-      }catch(e){
-        showAuthError(e);
-      }
-    }
-  });
-
-  google.accounts.id.renderButton(el, {
-    theme: "outline",
-    size: "large",
-    shape: "pill",
-    text: "continue_with"
-  });
-}
-
-// Auth modal açılınca butonu bas
-function openAuth(){
-  document.getElementById("authModal").style.display = "flex";
-  document.getElementById("authStatus").textContent = getToken() ? "Bağlı ✅" : "Bağlı değil ❌";
-  setTimeout(initGoogleButton, 50);
-}
-
 // Web kilidi (webden kullanım istemiyorsan true bırak)
-const WEB_LOCK = false; // true yaparsan webde açılmaz, sadece uygulama
-
-// Web kilit linkleri
+const WEB_LOCK = false; // true => masaüstünde kilit ekranı
 const PLAY_URL = "https://play.google.com/store/apps/details?id=ai.caynana.app";
-const APK_URL  = "#"; // istersen direkt apk linki koy (örn: https://caynana.ai/apk/caynana.apk)
+const APK_URL  = "#";
 
 /** ====== STATE ====== */
 const TOKEN_KEY = "caynana_token";
@@ -93,14 +32,14 @@ let currentPlan = "free"; // free | plus | pro
 const PLAN_PERSONAS = {
   free: ["normal"],
   plus: ["normal", "sevecen", "kizgin"],
-  pro: ["normal", "sevecen", "kizgin", "huysuz", "itirazci"]
+  pro:  ["normal", "sevecen", "kizgin", "huysuz", "itirazci"]
 };
 
 // Fal: 3 foto
 let falImages = [];
 const FAL_STEPS = ["1/3: Üstten çek", "2/3: Yandan çek", "3/3: Diğer yandan çek"];
 
-marked.setOptions({ mangle: false, headerIds: false });
+if (window.marked) marked.setOptions({ mangle: false, headerIds: false });
 
 /** ====== DOM ====== */
 const $ = (id) => document.getElementById(id);
@@ -132,12 +71,12 @@ const personaClose = $("personaClose");
 const drawer = $("drawer");
 const drawerMask = $("drawerMask");
 const menuBtn = $("menuBtn");
-const drawerClose = $("drawerClose");
+const drawerClose = $("drawerClose"); // HTML'de yoksa sorun değil
 
 const authModal = $("authModal");
 const accountBtn = $("accountBtn");
 const authClose = $("authClose");
-const authCloseX = $("authCloseX");
+const authCloseX = $("authCloseX"); // HTML'de yoksa sorun değil
 const authLogout = $("authLogout");
 
 const btnLoginTab = $("btnLoginTab");
@@ -171,6 +110,20 @@ const lockAndroidBtn = $("lockAndroidBtn");
 const lockApkBtn = $("lockApkBtn");
 
 /** ====== HELPERS ====== */
+function setAuthStatus(msg){
+  if (authStatus) authStatus.textContent = msg;
+}
+
+function showAuthError(err){
+  if (!authStatus) return;
+  if (typeof err === "string") authStatus.textContent = "Hata: " + err;
+  else if (err?.message) authStatus.textContent = "Hata: " + err.message;
+  else {
+    try { authStatus.textContent = "Hata: " + JSON.stringify(err); }
+    catch { authStatus.textContent = "Hata: (bilinmeyen)"; }
+  }
+}
+
 function isMobile() {
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
 }
@@ -206,7 +159,11 @@ async function typeWriterEffect(element, text, speed = 26) {
         setTimeout(tick, speed);
       } else {
         element.classList.remove("typing-cursor");
-        element.innerHTML = DOMPurify.sanitize(marked.parse(text));
+        if (window.DOMPurify && window.marked) {
+          element.innerHTML = DOMPurify.sanitize(marked.parse(text));
+        } else {
+          element.textContent = text;
+        }
         scrollToBottom(true);
         resolve();
       }
@@ -215,21 +172,21 @@ async function typeWriterEffect(element, text, speed = 26) {
   });
 }
 
-function showModal(el) { el.classList.add("show"); }
-function hideModal(el) { el.classList.remove("show"); }
+function showModal(el) { if (el) el.classList.add("show"); }
+function hideModal(el) { if (el) el.classList.remove("show"); }
 
 function showPage(title, html) {
+  if (!pageModal || !pageTitleEl || !pageBodyEl) return;
   pageTitleEl.textContent = title;
   pageBodyEl.innerHTML = html;
   showModal(pageModal);
-  drawerMask.classList.remove("show");
-  drawer.classList.remove("open");
+  if (drawerMask) drawerMask.classList.remove("show");
+  if (drawer) drawer.classList.remove("open");
 }
 function hidePage() { hideModal(pageModal); }
 
 /** ====== ASSET URLS ====== */
 function assetUrl(relPath) {
-  // module ortamında doğru resolve
   return new URL(`../${relPath}`, import.meta.url).href;
 }
 
@@ -330,25 +287,30 @@ const MODES = {
 function applyHero(modeKey) {
   const m = MODES[modeKey] || MODES.chat;
   document.documentElement.style.setProperty("--primary", m.color);
-  heroImage.src = m.img;
-  heroTitle.innerHTML = m.title;
-  heroDesc.innerHTML = m.desc;
+  if (heroImage) heroImage.src = m.img;
+  if (heroTitle) heroTitle.innerHTML = m.title;
+  if (heroDesc) heroDesc.innerHTML = m.desc;
 
   const hs = m.heroStyle || {};
-  heroContent.style.top = hs.top || "100px";
-  heroContent.style.left = hs.left || "24px";
-  heroContent.style.textAlign = hs.textAlign || "left";
-  heroContent.style.width = hs.width || "auto";
-  heroContent.style.maxWidth = hs.maxWidth || "70%";
+  if (heroContent) {
+    heroContent.style.top = hs.top || "100px";
+    heroContent.style.left = hs.left || "24px";
+    heroContent.style.textAlign = hs.textAlign || "left";
+    heroContent.style.width = hs.width || "auto";
+    heroContent.style.maxWidth = hs.maxWidth || "70%";
+  }
 
-  textInput.placeholder = m.ph || "Bir şey yaz...";
-  suggestionText.textContent = m.sugg || "";
-  document.querySelector(".oz-l-dynamic").style.background = m.color;
+  if (textInput) textInput.placeholder = m.ph || "Bir şey yaz...";
+  if (suggestionText) suggestionText.textContent = m.sugg || "";
+
+  const dyn = document.querySelector(".oz-l-dynamic");
+  if (dyn) dyn.style.background = m.color;
 }
 
 const modeChats = {};
-function saveCurrentModeChat() { modeChats[currentMode] = chatContainer.innerHTML || ""; }
+function saveCurrentModeChat() { if (chatContainer) modeChats[currentMode] = chatContainer.innerHTML || ""; }
 function loadModeChat(modeKey) {
+  if (!chatContainer || !heroContent) return;
   chatContainer.innerHTML = modeChats[modeKey] || "";
   if (!chatContainer.innerHTML.trim()) {
     heroContent.style.display = "block";
@@ -378,6 +340,7 @@ function switchMode(modeKey) {
 
 /** ====== DOCK ====== */
 function renderDock() {
+  if (!dock) return;
   dock.innerHTML = "";
   Object.keys(MODES).forEach(k => {
     const m = MODES[k];
@@ -393,8 +356,8 @@ function renderDock() {
   });
 }
 
-// drag-click guard: sürüklerken click tetiklenmesin
 (function dockDragClickGuard() {
+  if (!dock) return;
   let downX = 0, downY = 0, moved = false;
   dock.addEventListener("pointerdown", (e) => { downX = e.clientX; downY = e.clientY; moved = false; }, { passive: true });
   dock.addEventListener("pointermove", (e) => {
@@ -440,98 +403,98 @@ async function pullPlanFromBackend() {
     const j = await r.json();
     const plan = ((j.profile || {}).plan || "free").toLowerCase();
     currentPlan = (plan === "plus" || plan === "pro") ? plan : "free";
-  } catch { currentPlan = "free"; }
+  } catch {
+    currentPlan = "free";
+  }
   refreshPersonaLocks();
 }
 
-/** ====== UI EVENTS ====== */
-personaBtn.onclick = () => { refreshPersonaLocks(); showModal(personaModal); };
-personaClose.onclick = () => hideModal(personaModal);
-personaModal.addEventListener("click", (e) => { if (e.target === personaModal) hideModal(personaModal); });
+/** ====== GOOGLE SIGN-IN (GSI) ====== */
+// Not: Google, gsi/client yüklü değilse WebView'de gözükmez.
+// Bu fonksiyon auth modal açıldığında tekrar render eder.
+function ensureGoogleButton() {
+  if (!googleBtn) return;
 
-document.querySelectorAll("#personaModal .persona-opt").forEach(opt => {
-  opt.addEventListener("click", () => {
-    const id = opt.getAttribute("data-persona");
-    const allow = new Set(allowedPersonas());
-    if (!allow.has(id)) {
-      hideModal(personaModal);
-      showPage("Üyelik", planHtml());
-      return;
-    }
-    currentPersona = id;
-    refreshPersonaLocks();
-    setTimeout(() => hideModal(personaModal), 150);
-  });
-});
+  // temizle (webview bazen ikinci renderda bozuluyor)
+  googleBtn.innerHTML = "";
 
-menuBtn.onclick = () => { drawerMask.classList.add("show"); drawer.classList.add("open"); };
-drawerClose.onclick = () => { drawerMask.classList.remove("show"); drawer.classList.remove("open"); };
-drawerMask.onclick = () => { drawerMask.classList.remove("show"); drawer.classList.remove("open"); };
+  if (!window.google?.accounts?.id) {
+    showAuthError("Google bileşeni yüklenmedi. (Android System WebView/Chrome güncel mi?)");
+    return;
+  }
 
-pageClose.onclick = hidePage;
-pageModal.addEventListener("click", (e) => { if (e.target === pageModal) hidePage(); });
+  try {
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: async (resp) => {
+        try {
+          setAuthStatus("Google ile giriş yapılıyor…");
 
-accountBtn.onclick = () => showModal(authModal);
-authClose.onclick = () => hideModal(authModal);
-authCloseX.onclick = () => hideModal(authModal);
-authModal.addEventListener("click", (e) => { if (e.target === authModal) hideModal(authModal); });
+          // ✅ Backend’in beklediği alan: id_token
+          const r = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id_token: resp.credential })
+          });
 
+          const j = await r.json().catch(() => ({}));
+          if (!r.ok) throw new Error(j.detail || "Google giriş hatası");
+
+          setToken(j.token);
+          setAuthStatus(`Bağlandı ✅ (${j.email || "Google"})`);
+          await pullPlanFromBackend();
+          setTimeout(() => hideModal(authModal), 450);
+        } catch (e) {
+          showAuthError(e);
+        }
+      }
+    });
+
+    google.accounts.id.renderButton(googleBtn, {
+      theme: "outline",
+      size: "large",
+      text: "continue_with",
+      shape: "pill",
+      width: 280
+    });
+  } catch (e) {
+    showAuthError(e);
+  }
+}
+
+/** ====== EMAIL LOGIN/REGISTER ====== */
 let authMode = "login";
-btnLoginTab.onclick = () => {
-  authMode = "login";
-  btnLoginTab.classList.add("tabActive");
-  btnRegTab.classList.remove("tabActive");
-  authSubmit.textContent = "Giriş Yap";
-};
-btnRegTab.onclick = () => {
-  authMode = "register";
-  btnRegTab.classList.add("tabActive");
-  btnLoginTab.classList.remove("tabActive");
-  authSubmit.textContent = "Kayıt Ol";
-};
+async function handleAuthSubmit(){
+  const email = (authEmail?.value || "").trim();
+  const password = (authPass?.value || "").trim();
+  setAuthStatus("İşlem yapıyorum…");
 
-authLogout.onclick = async () => {
-  setToken("");
-  currentPlan = "free";
-  currentPersona = "normal";
-  refreshPersonaLocks();
-  authStatus.textContent = "Çıkış yapıldı ❌";
-};
+  try {
+    const endpoint = authMode === "register" ? "/api/auth/register" : "/api/auth/login";
+    const r = await fetch(`${BASE_DOMAIN}${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password })
+    });
 
-planBtn.onclick = () => showPage("Üyelik", planHtml());
-aboutBtn.onclick = () => showPage("Hakkımızda", aboutHtml());
-faqBtn.onclick = () => showPage("Sık Sorulan Sorular", faqHtml());
-contactBtn.onclick = () => showPage("İletişim", contactHtml());
-privacyBtn.onclick = () => showPage("Gizlilik", privacyHtml());
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.detail || "Hata");
 
-brandTap.onclick = () => cycleMode(1);
-
-camBtn.onclick = () => openCamera();
-falCamBtn.onclick = () => openFalCamera();
-
-textInput.addEventListener("keypress", (e) => { if (e.key === "Enter") send(); });
-sendBtn.onclick = () => send();
-
-/** ====== MIC ====== */
-micBtn.onclick = () => startMic();
-
-function startMic() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) return alert("Tarayıcı desteklemiyor");
-  const r = new SR();
-  r.lang = "tr-TR";
-  r.onresult = (e) => {
-    textInput.value = e.results[0][0].transcript;
-    send();
-  };
-  r.start();
+    setToken(j.token);
+    setAuthStatus(`Bağlandı ✅ (${j.email || email})`);
+    await pullPlanFromBackend();
+    setTimeout(() => hideModal(authModal), 450);
+  } catch (e) {
+    showAuthError(e);
+  }
 }
 
 /** ====== PHOTO / FAL ====== */
-function openCamera() { fileEl.value = ""; fileEl.click(); }
+function openCamera() { if (fileEl) { fileEl.value = ""; fileEl.click(); } }
 function openFalCamera() { openCamera(); }
 
 function setFalStepUI() {
+  if (!falStepText || !falStepSub) return;
   if (falImages.length < 3) {
     falStepText.textContent = "Fal için 3 fotoğraf çek";
     falStepSub.textContent = FAL_STEPS[falImages.length] || "1/3: Üstten çek";
@@ -555,79 +518,87 @@ async function falCheckOneImage(dataUrl) {
   }
 }
 
-fileEl.addEventListener("change", async (e) => {
-  const f = e.target.files?.[0];
-  if (!f) return;
+function resetModalOnly() {
+  pendingImage = null;
+  if (photoPreview) photoPreview.src = "";
+  hideModal(photoModal);
+  if (fileEl) fileEl.value = "";
+}
 
-  const reader = new FileReader();
-  reader.onload = async () => {
-    const imgData = reader.result;
+if (fileEl) {
+  fileEl.addEventListener("change", async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
 
-    if (currentMode === "fal") {
-      const check = await falCheckOneImage(imgData);
-      if (!check.ok) {
-        await addBubble("ai", check.reason || "Evladım bu fincan-tabak değil. Yeniden çek.", false, "");
-        resetModalOnly();
-        setTimeout(() => openFalCamera(), 200);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const imgData = reader.result;
+
+      if (currentMode === "fal") {
+        const check = await falCheckOneImage(imgData);
+        if (!check.ok) {
+          await addBubble("ai", check.reason || "Evladım bu fincan-tabak değil. Yeniden çek.", false, "");
+          resetModalOnly();
+          setTimeout(() => openFalCamera(), 200);
+          return;
+        }
+
+        falImages.push(imgData);
+        setFalStepUI();
+
+        pendingImage = imgData;
+        if (photoPreview) photoPreview.src = pendingImage;
+        if (photoTitle) photoTitle.textContent = "Fal fotoğrafı";
+        if (photoHint) {
+          photoHint.textContent = (falImages.length < 3)
+            ? `Tamam deyince ${FAL_STEPS[falImages.length] || "bir sonraki açıya"} geçiyoruz.`
+            : "Tamam deyince fala bakıyorum.";
+        }
+        showModal(photoModal);
         return;
       }
 
-      falImages.push(imgData);
-      setFalStepUI();
-
       pendingImage = imgData;
-      photoPreview.src = pendingImage;
-      photoTitle.textContent = "Fal fotoğrafı";
-      photoHint.textContent = (falImages.length < 3)
-        ? `Tamam deyince ${FAL_STEPS[falImages.length] || "bir sonraki açıya"} geçiyoruz.`
-        : "Tamam deyince fala bakıyorum.";
+      if (photoPreview) photoPreview.src = pendingImage;
+      if (photoTitle) photoTitle.textContent = "Fotoğraf hazır";
+      if (photoHint) photoHint.textContent = "Tamam deyince Caynana hemen yoruma başlayacak.";
       showModal(photoModal);
-      return;
-    }
-
-    pendingImage = imgData;
-    photoPreview.src = pendingImage;
-    photoTitle.textContent = "Fotoğraf hazır";
-    photoHint.textContent = "Tamam deyince Caynana hemen yoruma başlayacak.";
-    showModal(photoModal);
-  };
-  reader.readAsDataURL(f);
-});
-
-function resetModalOnly() {
-  pendingImage = null;
-  photoPreview.src = "";
-  hideModal(photoModal);
-  fileEl.value = "";
+    };
+    reader.readAsDataURL(f);
+  });
 }
 
-photoCancelBtn.onclick = () => {
-  if (currentMode === "fal") {
-    falImages = falImages.slice(0, Math.max(0, falImages.length - 1));
-    setFalStepUI();
-  }
-  resetModalOnly();
-};
+if (photoCancelBtn) {
+  photoCancelBtn.onclick = () => {
+    if (currentMode === "fal") {
+      falImages = falImages.slice(0, Math.max(0, falImages.length - 1));
+      setFalStepUI();
+    }
+    resetModalOnly();
+  };
+}
 
-photoOkBtn.onclick = async () => {
-  hideModal(photoModal);
+if (photoOkBtn) {
+  photoOkBtn.onclick = async () => {
+    hideModal(photoModal);
 
-  if (currentMode === "fal") {
-    if (falImages.length < 3) {
-      setTimeout(() => openFalCamera(), 220);
+    if (currentMode === "fal") {
+      if (falImages.length < 3) {
+        setTimeout(() => openFalCamera(), 220);
+        return;
+      }
+      const collage = await makeFalCollage(falImages);
+      pendingImage = collage;
+      if (textInput) textInput.value = "Fal bak: fincanı 3 açıdan gönderdim. Gerçekçi ve insani anlat.";
+      await send();
+      resetFalCapture();
       return;
     }
-    const collage = await makeFalCollage(falImages);
-    pendingImage = collage;
-    textInput.value = "Fal bak: fincanı 3 açıdan gönderdim. Gerçekçi ve insani anlat.";
-    await send();
-    resetFalCapture();
-    return;
-  }
 
-  textInput.value = "";
-  await send();
-};
+    if (textInput) textInput.value = "";
+    await send();
+  };
+}
 
 async function makeFalCollage(imgList) {
   const imgs = await Promise.all(imgList.map(loadImage));
@@ -692,6 +663,8 @@ function drawContain(ctx, img, x, y, w, h) {
 
 /** ====== CHAT BUBBLES + CARDS ====== */
 async function addBubble(role, text, isLoader = false, speech = "", imgData = null, id = null) {
+  if (!chatContainer || !heroContent) return null;
+
   const div = document.createElement("div");
   div.className = "msg " + role;
   if (id) div.id = id;
@@ -730,6 +703,7 @@ async function addBubble(role, text, isLoader = false, speech = "", imgData = nu
 }
 
 function renderCards(list) {
+  if (!chatContainer) return;
   const wrap = document.createElement("div");
   wrap.className = "cards";
 
@@ -761,11 +735,13 @@ function renderCards(list) {
 }
 
 /** ====== AUDIO (TTS) ====== */
-chatContainer.addEventListener("click", async (e) => {
-  const btn = e.target.closest(".audio-btn");
-  if (!btn) return;
-  await playAudio(btn.dataset.speech, btn);
-});
+if (chatContainer) {
+  chatContainer.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".audio-btn");
+    if (!btn) return;
+    await playAudio(btn.dataset.speech, btn);
+  });
+}
 
 async function playAudio(text, btn) {
   if (currentAudio) { currentAudio.pause(); currentAudio = null; }
@@ -802,6 +778,7 @@ async function playAudio(text, btn) {
 /** ====== SEND ====== */
 async function send() {
   if (isSending) return;
+  if (!textInput || !sendBtn || !chatContainer || !heroContent) return;
 
   let val = (textInput.value || "").trim();
   if (pendingImage && val === "") val = "Bu resmi yorumla";
@@ -852,7 +829,7 @@ async function send() {
   }
 }
 
-/** ====== PAGES (Hakkımızda / Üyelik / vb.) ====== */
+/** ====== PAGES ====== */
 function planHtml() {
   return `
     <div style="display:grid; gap:10px;">
@@ -862,7 +839,6 @@ function planHtml() {
           Günlük <b>2 fal</b> • Sınırlı sohbet • Sadece <b>Normal</b> Kaynana
         </div>
       </div>
-
       <div style="padding:12px;border:2px solid var(--primary);border-radius:16px;background:#fff8e1;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div style="font-weight:1000;color:#111;">Plus</div>
@@ -872,7 +848,6 @@ function planHtml() {
           Günlük <b>5 fal</b> • Daha fazla sohbet • <b>Sevecen</b> + <b>Kızgın</b> mod açılır
         </div>
       </div>
-
       <div style="padding:12px;border:1px solid #eee;border-radius:16px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div style="font-weight:1000;color:#111;">Pro</div>
@@ -882,7 +857,6 @@ function planHtml() {
           <b>Sınırsız</b> fal/sohbet • <b>Huysuz</b> + <b>İtirazcı</b> dahil tüm modlar
         </div>
       </div>
-
       <div style="font-size:12px;color:#666;font-weight:800;line-height:1.5;">
         Ödemeler <b>Google Play</b> üzerinden yapılır. Kart bilgisi uygulamada tutulmaz.
         Abonelik iptali: Google Play → Abonelikler.
@@ -890,100 +864,12 @@ function planHtml() {
     </div>
   `;
 }
+function aboutHtml() { return `<p><b>Caynana</b>, “Yapay zekânın geleneksel aklı”. Sohbet, fal ve yorum içerikleri eğlence ve rehberlik amaçlıdır.</p><p style="margin-top:8px;">Üyelik ile limitler genişler ve kaynana modları açılır.</p>`; }
+function faqHtml() { return `<p><b>1) Üyelik nasıl iptal edilir?</b><br>Google Play → Abonelikler kısmından.</p><p style="margin-top:8px;"><b>2) Ücretsiz kullanım var mı?</b><br>Var: Günlük limit bulunur.</p><p style="margin-top:8px;"><b>3) Alışveriş modülü ücretli mi?</b><br>Hayır, alışveriş sınırsızdır.</p><p style="margin-top:8px;"><b>4) Fal kesin mi?</b><br>Fal eğlencedir, kesin hüküm içermez.</p>`; }
+function contactHtml() { return `<p>Destek: <b>support@caynana.ai</b></p><p style="margin-top:8px;">Geri bildirim: Uygulama içinden veya e-posta ile.</p>`; }
+function privacyHtml() { return `<p><b>Gizlilik</b><br>Minimum veri prensibiyle çalışırız. Hesap için e-posta saklanır.</p><p style="margin-top:8px;">Ödeme işlemleri Google Play üzerinden yürür. Kart bilgisi uygulama tarafından tutulmaz.</p>`; }
 
-function aboutHtml() {
-  return `
-    <p><b>Caynana</b>, “Yapay zekânın geleneksel aklı”. Sohbet, fal ve yorum içerikleri eğlence ve rehberlik amaçlıdır.</p>
-    <p style="margin-top:8px;">Üyelik ile limitler genişler ve kaynana modları açılır.</p>
-  `;
-}
-
-function faqHtml() {
-  return `
-    <p><b>1) Üyelik nasıl iptal edilir?</b><br>Google Play → Abonelikler kısmından.</p>
-    <p style="margin-top:8px;"><b>2) Ücretsiz kullanım var mı?</b><br>Var: Günlük limit bulunur.</p>
-    <p style="margin-top:8px;"><b>3) Alışveriş modülü ücretli mi?</b><br>Hayır, alışveriş sınırsızdır.</p>
-    <p style="margin-top:8px;"><b>4) Fal kesin mi?</b><br>Fal eğlencedir, kesin hüküm içermez.</p>
-  `;
-}
-
-function contactHtml() {
-  return `<p>Destek: <b>support@caynana.ai</b></p><p style="margin-top:8px;">Geri bildirim: Uygulama içinden veya e-posta ile.</p>`;
-}
-
-function privacyHtml() {
-  return `
-    <p><b>Gizlilik</b><br>Minimum veri prensibiyle çalışırız. Hesap için e-posta saklanır.</p>
-    <p style="margin-top:8px;">Ödeme işlemleri Google Play üzerinden yürür. Kart bilgisi uygulama tarafından tutulmaz.</p>
-  `;
-}
-
-/** ====== GOOGLE SIGN-IN (GSI) ====== */
-function initGoogle() {
-  if (!window.google || !google?.accounts?.id) return;
-
-  google.accounts.id.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: async (resp) => {
-      try {
-        authStatus.textContent = "Google ile giriş yapılıyor…";
-
-        // Backend tarafında bunu karşılayacak endpoint olmalı:
-        // POST /api/auth/google  { credential: "<JWT>" }
-        const r = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ credential: resp.credential })
-        });
-
-        const j = await r.json();
-        if (!r.ok) throw new Error(j.detail || "Google giriş hatası");
-
-        setToken(j.token);
-        authStatus.textContent = `Bağlandı ✅ (${j.email || "Google"})`;
-        await pullPlanFromBackend();
-        setTimeout(() => hideModal(authModal), 450);
-      } catch (e) {
-        authStatus.textContent = "Hata: " + (e?.message || "Google giriş olmadı");
-      }
-    }
-  });
-
-  google.accounts.id.renderButton(googleBtn, {
-    theme: "outline",
-    size: "large",
-    text: "continue_with",
-    shape: "pill",
-    width: 280
-  });
-}
-
-/** ====== EMAIL LOGIN/REGISTER ====== */
-authSubmit.onclick = async () => {
-  const email = (authEmail.value || "").trim();
-  const password = (authPass.value || "").trim();
-  authStatus.textContent = "İşlem yapıyorum…";
-
-  try {
-    const endpoint = authMode === "register" ? "/api/auth/register" : "/api/auth/login";
-    const r = await fetch(`${BASE_DOMAIN}${endpoint}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
-    const j = await r.json();
-    if (!r.ok) throw new Error(j.detail || "Hata");
-
-    setToken(j.token);
-    authStatus.textContent = `Bağlandı ✅ (${j.email || email})`;
-    await pullPlanFromBackend();
-    setTimeout(() => hideModal(authModal), 450);
-  } catch (e) {
-    authStatus.textContent = "Hata: " + (e?.message || "Bilinmeyen");
-  }
-};
-
-/** ====== MODE CYCLE (brand tap) ====== */
+/** ====== MODE CYCLE ====== */
 const modeKeys = Object.keys(MODES);
 function cycleMode(step = 1) {
   const idx = modeKeys.indexOf(currentMode);
@@ -994,38 +880,132 @@ function cycleMode(step = 1) {
 /** ====== WEB LOCK ====== */
 function applyWebLock() {
   if (!WEB_LOCK) return;
-  if (isMobile()) return; // mobilde webden de açılabilir istersen kaldır
-  lockAndroidBtn.href = PLAY_URL;
-  lockApkBtn.href = APK_URL;
+  if (isMobile()) return;
+
+  if (lockAndroidBtn) lockAndroidBtn.href = PLAY_URL;
+  if (lockApkBtn) lockApkBtn.href = APK_URL;
   showModal(webLock);
+}
+
+/** ====== EVENTS SAFE BIND ====== */
+function bindEvents(){
+  if (personaBtn && personaModal) {
+    personaBtn.onclick = () => { refreshPersonaLocks(); showModal(personaModal); };
+  }
+  if (personaClose && personaModal) personaClose.onclick = () => hideModal(personaModal);
+  if (personaModal) personaModal.addEventListener("click", (e) => { if (e.target === personaModal) hideModal(personaModal); });
+
+  document.querySelectorAll("#personaModal .persona-opt").forEach(opt => {
+    opt.addEventListener("click", () => {
+      const id = opt.getAttribute("data-persona");
+      const allow = new Set(allowedPersonas());
+      if (!allow.has(id)) {
+        hideModal(personaModal);
+        showPage("Üyelik", planHtml());
+        return;
+      }
+      currentPersona = id;
+      refreshPersonaLocks();
+      setTimeout(() => hideModal(personaModal), 150);
+    });
+  });
+
+  if (menuBtn && drawer && drawerMask) {
+    menuBtn.onclick = () => { drawerMask.classList.add("show"); drawer.classList.add("open"); };
+  }
+  if (drawerClose && drawer && drawerMask) {
+    drawerClose.onclick = () => { drawerMask.classList.remove("show"); drawer.classList.remove("open"); };
+  }
+  if (drawerMask && drawer) {
+    drawerMask.onclick = () => { drawerMask.classList.remove("show"); drawer.classList.remove("open"); };
+  }
+
+  if (pageClose) pageClose.onclick = hidePage;
+  if (pageModal) pageModal.addEventListener("click", (e) => { if (e.target === pageModal) hidePage(); });
+
+  if (accountBtn && authModal) {
+    accountBtn.onclick = () => {
+      showModal(authModal);
+      setAuthStatus(getToken() ? "Bağlı ✅" : "Bağlı değil ❌");
+      // ✅ Auth açılınca google butonu render et
+      setTimeout(ensureGoogleButton, 120);
+    };
+  }
+  if (authClose && authModal) authClose.onclick = () => hideModal(authModal);
+  if (authCloseX && authModal) authCloseX.onclick = () => hideModal(authModal);
+  if (authModal) authModal.addEventListener("click", (e) => { if (e.target === authModal) hideModal(authModal); });
+
+  if (btnLoginTab && btnRegTab && authSubmit) {
+    btnLoginTab.onclick = () => {
+      authMode = "login";
+      btnLoginTab.classList.add("tabActive");
+      btnRegTab.classList.remove("tabActive");
+      authSubmit.textContent = "Giriş Yap";
+    };
+    btnRegTab.onclick = () => {
+      authMode = "register";
+      btnRegTab.classList.add("tabActive");
+      btnLoginTab.classList.remove("tabActive");
+      authSubmit.textContent = "Kayıt Ol";
+    };
+  }
+
+  if (authSubmit) authSubmit.onclick = handleAuthSubmit;
+
+  if (authLogout) {
+    authLogout.onclick = async () => {
+      setToken("");
+      currentPlan = "free";
+      currentPersona = "normal";
+      refreshPersonaLocks();
+      setAuthStatus("Çıkış yapıldı ❌");
+    };
+  }
+
+  if (planBtn) planBtn.onclick = () => showPage("Üyelik", planHtml());
+  if (aboutBtn) aboutBtn.onclick = () => showPage("Hakkımızda", aboutHtml());
+  if (faqBtn) faqBtn.onclick = () => showPage("Sık Sorulan Sorular", faqHtml());
+  if (contactBtn) contactBtn.onclick = () => showPage("İletişim", contactHtml());
+  if (privacyBtn) privacyBtn.onclick = () => showPage("Gizlilik", privacyHtml());
+
+  if (brandTap) brandTap.onclick = () => cycleMode(1);
+
+  if (camBtn) camBtn.onclick = () => openCamera();
+  if (falCamBtn) falCamBtn.onclick = () => openFalCamera();
+
+  if (textInput) textInput.addEventListener("keypress", (e) => { if (e.key === "Enter") send(); });
+  if (sendBtn) sendBtn.onclick = () => send();
+
+  if (micBtn) micBtn.onclick = () => startMic();
 }
 
 /** ====== INIT ====== */
 function init() {
-  // web lock
   applyWebLock();
 
-  // drawer safe
-  lockAndroidBtn.href = PLAY_URL;
-  lockApkBtn.href = APK_URL;
+  if (lockAndroidBtn) lockAndroidBtn.href = PLAY_URL;
+  if (lockApkBtn) lockApkBtn.href = APK_URL;
 
-  // dock + hero
   renderDock();
   applyHero("chat");
   loadModeChat("chat");
+
   document.body.classList.remove("fal-mode");
   setFalStepUI();
 
-  // google
+  // plan
+  pullPlanFromBackend();
+
+  // events
+  bindEvents();
+
+  // Google script gelince hazırla (modal açılınca da render ediyoruz)
   const waitGoogle = setInterval(() => {
     if (window.google?.accounts?.id) {
       clearInterval(waitGoogle);
-      initGoogle();
+      // burada direkt render etmiyoruz, auth açılınca render daha sağlam
     }
-  }, 120);
-
-  // plan
-  pullPlanFromBackend();
+  }, 150);
 }
 
 init();
