@@ -871,3 +871,99 @@ body{
     right:10px !important;
   }
 }
+/* ===============================
+   TOPBAR – KESİN DÜZELTME
+   =============================== */
+
+/* Topbar taşmasın ama içindekiler görünsün */
+#topbar{
+  overflow: visible !important;
+  padding-right: 8px;
+}
+
+/* Sağ üst kullanıcı alanı */
+#topbar .topUser{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Misafir / Free chip */
+#userChip{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 180px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.35);
+  flex-shrink: 0;
+}
+
+/* Avatar */
+#chipAvatar{
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Yazılar ALT ALTA */
+#userChip .chipText{
+  display: flex;
+  flex-direction: column;   /* 🔑 kritik */
+  line-height: 1.1;
+  min-width: 0;
+}
+
+/* Misafir */
+#chipName{
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Free */
+#chipPlan{
+  font-size: 10px;
+  font-weight: 700;
+  color: #ffcc66;
+}
+
+/* Sağ üst ikonlar (bildirim, maske, hamburger) */
+#topbar .top-actions,
+#topbar .menu-btn,
+#menuBtn{
+  flex-shrink: 0 !important;
+  z-index: 1200;
+}
+
+/* Hamburger her zaman görünür */
+#menuBtn{
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ===============================
+   MOBİL DÜZEN
+   =============================== */
+@media (max-width: 480px){
+  #userChip{
+    max-width: 140px;
+    padding: 4px 8px;
+  }
+
+  #chipName{
+    font-size: 11px;
+  }
+
+  #chipPlan{
+    font-size: 9px;
+  }
+}
