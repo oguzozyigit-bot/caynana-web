@@ -1,11 +1,10 @@
 // =========================================
-// CAYNANA WEB APP - main.js (CLEAN + SAFE)
-// İSTEKLER:
-// - Profil bilgisi TOPBAR'da değil, drawer içinde
-// - Topbar: bildirim + kaynana modu + hamburger yan yana
-// - Hero: çift tık / swipe ile mod değişsin
-// - Alt çizgiler: aktif + sonraki 3 modül rengi
-// - Sayfalar ayrı dosya: ./pages/*.js
+// CAYNANA WEB APP - main.js (STABLE)
+// Topbar: notif + persona + menu
+// Profile: drawer içinde
+// Pages: /pages/*.html dosyalarından fetch edilir
+// Swipe / double-tap: mod değiştirir
+// Footer çizgileri: aktif + sonraki 3 mod rengi
 // =========================================
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
@@ -13,85 +12,66 @@ const API_URL = `${BASE_DOMAIN}/api/chat`;
 const SPEAK_URL = `${BASE_DOMAIN}/api/speak`;
 const FAL_CHECK_URL = `${BASE_DOMAIN}/api/fal/check`;
 
-const GOOGLE_CLIENT_ID =
-  "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com";
 
 const WEB_LOCK = false;
 const PLAY_URL = "https://play.google.com/store/apps/details?id=ai.caynana.app";
 const APK_URL = "#";
 
-// -------------------- TOKEN --------------------
 const TOKEN_KEY = "caynana_token";
-export function getToken() {
-  return localStorage.getItem(TOKEN_KEY) || "";
-}
-function setToken(t) {
-  if (t) localStorage.setItem(TOKEN_KEY, t);
-  else localStorage.removeItem(TOKEN_KEY);
-}
-export function authHeaders() {
-  const t = getToken();
-  return t ? { Authorization: "Bearer " + t } : {};
-}
+export function getToken(){ return localStorage.getItem(TOKEN_KEY) || ""; }
+function setToken(t){ t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY); }
+export function authHeaders(){ const t=getToken(); return t ? { Authorization:"Bearer "+t } : {}; }
 
-// -------------------- STATE --------------------
-let sessionId = "sess_" + Math.random().toString(36).slice(2, 10);
-let currentAudio = null;
-let pendingImage = null;
-let currentMode = "chat";
-let currentPersona = "normal";
-let isSending = false;
+const $ = (id)=>document.getElementById(id);
 
-let currentPlan = "free"; // free|plus|pro
-const PLAN_PERSONAS = {
-  free: ["normal"],
-  plus: ["normal", "sevecen", "kizgin"],
-  pro: ["normal", "sevecen", "kizgin", "huysuz", "itirazci"],
-};
-export const IS_ALTIN = () => (currentPlan || "free").toLowerCase() === "pro";
-
-// Fal
-let falImages = [];
-const FAL_STEPS = ["1/3: Üstten çek", "2/3: Yandan çek", "3/3: Diğer yandan çek"];
-
-// -------------------- DOM --------------------
-const $ = (id) => document.getElementById(id);
-
+// DOM
 const heroImage = $("heroImage");
 const heroContent = $("heroContent");
 const heroTitle = $("heroTitle");
 const heroDesc = $("heroDesc");
-
 const chatContainer = $("chatContainer");
-const suggestionText = $("suggestionText");
+
 const textInput = $("text");
 const sendBtn = $("sendBtn");
+const camBtn = $("camBtn");
+const micBtn = $("micBtn");
 
 const dock = $("dock");
-const fileEl = $("fileInput");
 
-const photoModal = $("photoModal");
-const photoPreview = $("photoPreview");
-const photoTitle = $("photoTitle");
-const photoHint = $("photoHint");
-const photoCancelBtn = $("photoCancelBtn");
-const photoOkBtn = $("photoOkBtn");
+const topbar = $("topbar");
+const brandTap = $("brandTap");
 
-const personaModal = $("personaModal");
+const menuBtn = $("menuBtn");
+const notifIconBtn = $("notifIconBtn");
+const notifBadge = $("notifBadge");
 const personaBtn = $("personaBtn");
-const personaClose = $("personaClose");
 
 const drawer = $("drawer");
 const drawerMask = $("drawerMask");
-const menuBtn = $("menuBtn");
 const drawerClose = $("drawerClose");
 
-const authModal = $("authModal");
 const accountBtn = $("accountBtn");
-const authClose = $("authClose");
-const authCloseX = $("authCloseX");
-const authLogout = $("authLogout");
+const planBtn = $("planBtn");
+const aboutBtn = $("aboutBtn");
+const faqBtn = $("faqBtn");
+const contactBtn = $("contactBtn");
+const privacyBtn = $("privacyBtn");
 
+const notifBtn = $("notifBtn");
+const notifPill = $("notifPill");
+const safeLogoutBtn = $("safeLogoutBtn");
+
+const dpAvatar = $("dpAvatar");
+const dpName = $("dpName");
+const dpPlan = $("dpPlan");
+const dpCN = $("dpCN");
+const openProfileBtn = $("openProfileBtn");
+
+const authModal = $("authModal");
+const authCloseX = $("authCloseX");
+const authClose = $("authClose");
+const authLogout = $("authLogout");
 const btnLoginTab = $("btnLoginTab");
 const btnRegTab = $("btnRegTab");
 const authEmail = $("authEmail");
@@ -100,41 +80,15 @@ const authSubmit = $("authSubmit");
 const authStatus = $("authStatus");
 const googleBtn = $("googleBtn");
 
-const pageModal = $("pageModal");
-const pageTitleEl = $("pageTitle");
-const pageBodyEl = $("pageBody");
-const pageClose = $("pageClose");
-
-const planBtn = $("planBtn");
-const aboutBtn = $("aboutBtn");
-const faqBtn = $("faqBtn");
-const contactBtn = $("contactBtn");
-const privacyBtn = $("privacyBtn");
-
-const brandTap = $("brandTap");
-const camBtn = $("camBtn");
-const micBtn = $("micBtn");
-const falCamBtn = $("falCamBtn");
-const falStepText = $("falStepText");
-const falStepSub = $("falStepSub");
-
-const webLock = $("webLock");
-const lockAndroidBtn = $("lockAndroidBtn");
-const lockApkBtn = $("lockApkBtn");
-
-// Drawer profile
-const dpAvatar = $("dpAvatar");
-const dpName = $("dpName");
-const dpPlan = $("dpPlan");
-const dpCN = $("dpCN");
-const openProfileBtn = $("openProfileBtn");
-
-// profile modal
 const profileModal = $("profileModal");
 const profileClose = $("profileClose");
 const pfCloseBtn = $("pfCloseBtn");
 const pfSave = $("pfSave");
 const pfStatus = $("pfStatus");
+const profileAvatarPreview = $("profileAvatarPreview");
+const profileMainName = $("profileMainName");
+const profilePlanTag = $("profilePlanTag");
+const profileCNTag = $("profileCNTag");
 const pfNick = $("pfNick");
 const pfName = $("pfName");
 const pfAge = $("pfAge");
@@ -142,60 +96,89 @@ const pfGender = $("pfGender");
 const pfHeight = $("pfHeight");
 const pfWeight = $("pfWeight");
 const pfAvatar = $("pfAvatar");
-const profileAvatarPreview = $("profileAvatarPreview");
-const profileMainName = $("profileMainName");
-const profilePlanTag = $("profilePlanTag");
-const profileCNTag = $("profileCNTag");
+const pfAvatarFile = $("pfAvatarFile");
 
-// notif
-const notifIconBtn = $("notifIconBtn");
-const notifBadge = $("notifBadge");
-const notifBtn = $("notifBtn");
-const notifPill = $("notifPill");
 const notifModal = $("notifModal");
 const notifClose = $("notifClose");
 const notifList = $("notifList");
 
-// dedikodu drawer butonu (var ama sen dedin “yan bardan kaldır”)
-const dedikoduBtn = $("dedikoduBtn");
+const personaModal = $("personaModal");
+const personaClose = $("personaClose");
 
-// -------------------- UI helpers --------------------
-function showModal(el) { if (el) el.classList.add("show"); }
-function hideModal(el) { if (el) el.classList.remove("show"); }
+const photoModal = $("photoModal");
+const photoPreview = $("photoPreview");
+const photoTitle = $("photoTitle");
+const photoHint = $("photoHint");
+const photoCancelBtn = $("photoCancelBtn");
+const photoOkBtn = $("photoOkBtn");
+const fileEl = $("fileInput");
 
-function setAuthStatus(msg) { if (authStatus) authStatus.textContent = msg; }
+const pageModal = $("pageModal");
+const pageTitleEl = $("pageTitle");
+const pageBodyEl = $("pageBody");
+const pageClose = $("pageClose");
 
-function showAuthError(err) {
-  if (!authStatus) return;
-  if (typeof err === "string") authStatus.textContent = "Hata: " + err;
-  else if (err?.message) authStatus.textContent = "Hata: " + err.message;
-  else {
-    try { authStatus.textContent = "Hata: " + JSON.stringify(err); }
-    catch { authStatus.textContent = "Hata: (bilinmeyen)"; }
-  }
+const webLock = $("webLock");
+const lockAndroidBtn = $("lockAndroidBtn");
+const lockApkBtn = $("lockApkBtn");
+
+// footer lines
+const ozLine0 = $("ozLine0");
+const ozLine1 = $("ozLine1");
+const ozLine2 = $("ozLine2");
+const ozLine3 = $("ozLine3");
+
+// State
+let sessionId = "sess_" + Math.random().toString(36).slice(2,10);
+let currentAudio = null;
+let pendingImage = null;
+let currentMode = "chat";
+let currentPersona = "normal";
+let isSending = false;
+
+// plan
+let currentPlan = "free"; // free|plus|pro
+export const IS_ALTIN = () => (currentPlan || "free").toLowerCase() === "pro";
+
+const PLAN_PERSONAS = {
+  free: ["normal"],
+  plus: ["normal","sevecen","kizgin"],
+  pro:  ["normal","sevecen","kizgin","huysuz","itirazci"],
+};
+
+// Fal: 3 foto
+let falImages = [];
+const FAL_STEPS = ["1/3: Üstten çek","2/3: Yandan çek","3/3: Diğer yandan çek"];
+
+if (window.marked) marked.setOptions({ mangle:false, headerIds:false });
+
+function showModal(el){ if(el) el.classList.add("show"); }
+function hideModal(el){ if(el) el.classList.remove("show"); }
+
+function closeDrawer(){
+  if(drawerMask) drawerMask.classList.remove("show");
+  if(drawer) drawer.classList.remove("open");
 }
 
-export function escapeHtml(s) {
-  return (s || "").replace(/[&<>"']/g, (m) => ({
+function showPage(title, html){
+  if(!pageModal || !pageTitleEl || !pageBodyEl) return;
+  pageTitleEl.textContent = title;
+  pageBodyEl.innerHTML = html;
+  showModal(pageModal);
+  closeDrawer();
+}
+function hidePage(){ hideModal(pageModal); }
+
+function setAuthStatus(msg){ if(authStatus) authStatus.textContent = msg || ""; }
+function escapeHtml(s){
+  return (s||"").replace(/[&<>"']/g, m => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[m]));
 }
 
-// pages ve diğer modüller için
-function showPage(title, html) {
-  if (!pageModal || !pageTitleEl || !pageBodyEl) return;
-  pageTitleEl.textContent = title;
-  pageBodyEl.innerHTML = html;
-  showModal(pageModal);
-  if (drawerMask) drawerMask.classList.remove("show");
-  if (drawer) drawer.classList.remove("open");
-}
-function hidePage() { hideModal(pageModal); }
-
-// dedikodu.js vs kullanır diye:
+// Dedikodu.js gibi şeyler kaldıysa kırılmasın diye:
 window.App = { escapeHtml, showPage };
 
-// -------------------- scroll --------------------
 function scrollToBottom(force=false){
   if(!chatContainer) return;
   if(force){ requestAnimationFrame(()=> chatContainer.scrollTop = chatContainer.scrollHeight); return; }
@@ -205,12 +188,38 @@ function scrollToBottom(force=false){
 }
 window.addEventListener("resize", ()=> scrollToBottom(true));
 
-// -------------------- assets --------------------
+async function typeWriterEffect(element, text, speed=26){
+  return new Promise(resolve=>{
+    let i=0;
+    element.innerHTML="";
+    element.classList.add("typing-cursor");
+    function tick(){
+      if(i<text.length){
+        element.textContent += text.charAt(i++);
+        scrollToBottom(true);
+        setTimeout(tick, speed);
+      }else{
+        element.classList.remove("typing-cursor");
+        if(window.DOMPurify && window.marked){
+          element.innerHTML = DOMPurify.sanitize(marked.parse(text));
+        }else{
+          element.textContent = text;
+        }
+        scrollToBottom(true);
+        resolve();
+      }
+    }
+    tick();
+  });
+}
+
 function assetUrl(relPath){
   return new URL(`../${relPath}`, import.meta.url).href;
 }
 
-// -------------------- modes --------------------
+/** =============================
+ *  MODES
+ *  ============================= */
 const MODES = {
   chat:{ label:"Sohbet", icon:"fa-comments", color:"#FFB300",
     title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?",
@@ -263,31 +272,7 @@ const MODES = {
     heroStyle:{ top:"110px", left:"0", textAlign:"center", width:"100%", maxWidth:"100%" } },
 };
 
-const modeKeys = Object.keys(MODES);
-
-// alt çizgiler: aktif + sonraki 3
-function paintFooterLines(activeKey){
-  const spans = document.querySelectorAll(".oz-lines span");
-  if(!spans || spans.length < 4) return;
-
-  const idx = modeKeys.indexOf(activeKey);
-  const keys = [
-    modeKeys[idx],
-    modeKeys[(idx+1) % modeKeys.length],
-    modeKeys[(idx+2) % modeKeys.length],
-    modeKeys[(idx+3) % modeKeys.length],
-  ];
-
-  keys.forEach((k, i)=>{
-    const color = (MODES[k]?.color) || "#999";
-    spans[i].style.background = color;
-    if(color.toLowerCase()==="#ffffff"){
-      spans[i].style.border = "1px solid #eee";
-    }else{
-      spans[i].style.border = "none";
-    }
-  });
-}
+const DOCK_ORDER = Object.keys(MODES);
 
 function applyHero(modeKey){
   const m = MODES[modeKey] || MODES.chat;
@@ -307,9 +292,41 @@ function applyHero(modeKey){
   }
 
   if(textInput) textInput.placeholder = m.ph || "Bir şey yaz...";
-  if(suggestionText) suggestionText.textContent = m.sugg || "";
+  const sugg = $("suggestionText");
+  if(sugg) sugg.textContent = m.sugg || "";
 
   paintFooterLines(modeKey);
+}
+
+function paintFooterLines(modeKey){
+  const idx = DOCK_ORDER.indexOf(modeKey);
+  const m0 = MODES[DOCK_ORDER[idx]];
+
+  const m1 = MODES[DOCK_ORDER[(idx+1) % DOCK_ORDER.length]];
+  const m2 = MODES[DOCK_ORDER[(idx+2) % DOCK_ORDER.length]];
+  const m3 = MODES[DOCK_ORDER[(idx+3) % DOCK_ORDER.length]];
+
+  if(ozLine0) ozLine0.style.background = m0?.color || "#ddd";
+  if(ozLine1) ozLine1.style.background = m1?.color || "#ddd";
+  if(ozLine2) ozLine2.style.background = m2?.color || "#ddd";
+  if(ozLine3) ozLine3.style.background = m3?.color || "#ddd";
+}
+
+function renderDock(){
+  if(!dock) return;
+  dock.innerHTML = "";
+  DOCK_ORDER.forEach(k=>{
+    const m = MODES[k];
+    const item = document.createElement("div");
+    item.className = "dock-item" + (k===currentMode ? " active" : "");
+    item.setAttribute("data-mode", k);
+    item.innerHTML = `
+      <div class="icon-box"><i class="fa-solid ${m.icon}"></i></div>
+      <div class="dock-label">${m.label}</div>
+    `;
+    item.onclick = ()=> switchMode(k);
+    dock.appendChild(item);
+  });
 }
 
 const modeChats = {};
@@ -329,6 +346,7 @@ function loadModeChat(modeKey){
 
 function switchMode(modeKey){
   if(modeKey === currentMode) return;
+
   saveCurrentModeChat();
   currentMode = modeKey;
 
@@ -343,244 +361,115 @@ function switchMode(modeKey){
   if(modeKey === "fal") resetFalCapture();
 }
 
-function renderDock(){
-  if(!dock) return;
-  dock.innerHTML="";
-  modeKeys.forEach(k=>{
-    const m = MODES[k];
-    const item = document.createElement("div");
-    item.className="dock-item" + (k===currentMode ? " active":"");
-    item.setAttribute("data-mode", k);
-    item.innerHTML = `
-      <div class="icon-box"><i class="fa-solid ${m.icon}"></i></div>
-      <div class="dock-label">${m.label}</div>
-    `;
-    item.onclick = ()=> switchMode(k);
-    dock.appendChild(item);
-  });
+function cycleMode(step=1){
+  const idx = DOCK_ORDER.indexOf(currentMode);
+  const next = DOCK_ORDER[(idx + step + DOCK_ORDER.length) % DOCK_ORDER.length];
+  switchMode(next);
 }
 
-// -------------------- HERO gesture: çift tık + swipe --------------------
-function nextMode(){ switchMode(modeKeys[(modeKeys.indexOf(currentMode)+1)%modeKeys.length]); }
-function prevMode(){ switchMode(modeKeys[(modeKeys.indexOf(currentMode)-1+modeKeys.length)%modeKeys.length]); }
-
-function bindHeroGestures(){
-  const target = heroImage || heroContent;
-  if(!target) return;
-
-  // double click / double tap
-  let lastTap = 0;
-  target.addEventListener("click", ()=>{
-    const now = Date.now();
-    if(now - lastTap < 330) nextMode();
-    lastTap = now;
-  });
-
-  // swipe
-  let sx=0, sy=0, moved=false;
-  target.addEventListener("touchstart",(e)=>{
-    const t=e.touches[0]; sx=t.clientX; sy=t.clientY; moved=false;
-  }, {passive:true});
-
-  target.addEventListener("touchmove",(e)=>{
-    const t=e.touches[0];
-    if(Math.abs(t.clientX-sx)>12 || Math.abs(t.clientY-sy)>12) moved=true;
-  }, {passive:true});
-
-  target.addEventListener("touchend",(e)=>{
-    if(!moved) return;
-    const t=e.changedTouches[0];
-    const dx=t.clientX-sx;
-    const dy=t.clientY-sy;
-    if(Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40){
-      if(dx<0) nextMode();
-      else prevMode();
-    }
-  }, {passive:true});
+/** =============================
+ *  Pages from files
+ *  ============================= */
+async function showPageFromFile(title, path){
+  try{
+    const res = await fetch(path, { cache:"no-store" });
+    const html = await res.text();
+    showPage(title, html);
+  }catch{
+    showPage(title, `<div style="font-weight:1000;color:#111;">Dosya okunamadı</div><div style="margin-top:8px;color:#444;font-weight:900;">${escapeHtml(path)}</div>`);
+  }
 }
 
-// -------------------- PLAN --------------------
-export async function pullPlanFromBackend(){
-  if(!getToken()){
-    currentPlan="free";
-    refreshPersonaLocks();
-    fillUserCardsFallback();
+/** =============================
+ *  Auth UI + Profile
+ *  ============================= */
+function isLoggedIn(){ return !!getToken(); }
+
+function setProfileUI(profile){
+  // display name: nick > name > email > Misafir
+  const nick = (profile?.nick || "").trim();
+  const name = (profile?.name || "").trim();
+  const email = (profile?.email || "").trim();
+
+  const display = nick || name || email || "Misafir";
+  const plan = (profile?.plan || "free").toString().toUpperCase();
+  const cn = (profile?.caynana_no || "CN-????").toString();
+  const avatar = (profile?.avatar || profile?.picture || "").trim() || "https://via.placeholder.com/80";
+
+  if(dpName) dpName.textContent = display;
+  if(dpPlan) dpPlan.textContent = plan;
+  if(dpCN) dpCN.textContent = cn;
+  if(dpAvatar) dpAvatar.src = avatar;
+
+  if(profileAvatarPreview) profileAvatarPreview.src = avatar;
+  if(profileMainName) profileMainName.textContent = display;
+  if(profilePlanTag) profilePlanTag.textContent = plan;
+  if(profileCNTag) profileCNTag.textContent = cn;
+
+  if(pfNick) pfNick.value = nick;
+  if(pfName) pfName.value = name;
+  if(pfAge) pfAge.value = profile?.age ?? "";
+  if(pfGender) pfGender.value = profile?.gender ?? "";
+  if(pfHeight) pfHeight.value = profile?.height ?? "";
+  if(pfWeight) pfWeight.value = profile?.weight ?? "";
+  if(pfAvatar) pfAvatar.value = (profile?.avatar || profile?.picture || "") || "";
+}
+
+async function pullPlanFromBackend(){
+  if(!isLoggedIn()){
+    currentPlan = "free";
     return;
   }
   try{
     const r = await fetch(`${BASE_DOMAIN}/api/memory/get`, { method:"GET", headers:{...authHeaders()} });
     const j = await r.json().catch(()=> ({}));
     const plan = ((j.profile||{}).plan || "free").toLowerCase();
-    currentPlan = (plan==="plus" || plan==="pro") ? plan : "free";
-    refreshPersonaLocks();
-    await fillUserCardsFromBackend();
-  }catch{
-    currentPlan="free";
-    refreshPersonaLocks();
-    fillUserCardsFallback();
-  }
-}
+    currentPlan = (plan==="plus"||plan==="pro") ? plan : "free";
 
-function allowedPersonas(){ return PLAN_PERSONAS[currentPlan] || ["normal"]; }
+    // profile
+    const prof = (j.profile||{});
+    // status endpoint varsa cn+avatar için
+    try{
+      const rs = await fetch(`${BASE_DOMAIN}/api/dedikodu/status`, { method:"GET", headers:{...authHeaders()} });
+      const js = await rs.json().catch(()=> ({}));
+      if(rs.ok){
+        prof.caynana_no = js.caynana_no;
+        prof.display_name = js.display_name;
+        prof.avatar = js.avatar;
+      }
+    }catch{}
+    prof.plan = currentPlan;
 
-function refreshPersonaLocks(){
-  const allow = new Set(allowedPersonas());
-  document.querySelectorAll("#personaModal .persona-opt").forEach(opt=>{
-    const id = opt.getAttribute("data-persona");
-    const icon = opt.querySelector("i");
-
-    if(id === currentPersona){
-      opt.classList.add("selected");
-      opt.classList.remove("locked");
-      if(icon){ icon.className="fa-solid fa-check"; icon.style.display="block"; }
-      return;
-    }
-    opt.classList.remove("selected");
-
-    if(!allow.has(id)){
-      opt.classList.add("locked");
-      if(icon){ icon.className="fa-solid fa-lock"; icon.style.display="block"; }
-    }else{
-      opt.classList.remove("locked");
-      if(icon) icon.style.display="none";
-    }
-  });
-}
-
-// -------------------- USER CARDS (drawer içi) --------------------
-function fillUserCardsFallback(){
-  if(dpName) dpName.textContent = getToken() ? "Kullanıcı" : "Misafir";
-  if(dpPlan) dpPlan.textContent = (currentPlan||"free").toUpperCase();
-  if(dpCN) dpCN.textContent = "CN-????";
-  if(dpAvatar) dpAvatar.src = "https://via.placeholder.com/80";
-  if(profileMainName) profileMainName.textContent = dpName?.textContent || "Misafir";
-  if(profilePlanTag) profilePlanTag.textContent = dpPlan?.textContent || "Free";
-  if(profileCNTag) profileCNTag.textContent = dpCN?.textContent || "CN-????";
-  if(profileAvatarPreview) profileAvatarPreview.src = dpAvatar?.src || "https://via.placeholder.com/80";
-}
-
-// backend’de /api/dedikodu/status varsa çeker, yoksa memory’den basic devam
-async function fillUserCardsFromBackend(){
-  // 1) dedikodu/status varsa oradan CN + avatar + display al (çok iyi)
-  try{
-    const r = await fetch(`${BASE_DOMAIN}/api/dedikodu/status`, { headers:{...authHeaders()} });
-    if(r.ok){
-      const j = await r.json().catch(()=> ({}));
-      const name = j.display_name || "Misafir";
-      const cn = j.caynana_no || "CN-????";
-      const avatar = j.avatar || "https://via.placeholder.com/80";
-      const planLabel = (j.plan || currentPlan || "free").toUpperCase();
-
-      if(dpName) dpName.textContent = name;
-      if(dpPlan) dpPlan.textContent = planLabel;
-      if(dpCN) dpCN.textContent = cn;
-      if(dpAvatar) dpAvatar.src = avatar;
-
-      if(profileMainName) profileMainName.textContent = name;
-      if(profilePlanTag) profilePlanTag.textContent = planLabel;
-      if(profileCNTag) profileCNTag.textContent = cn;
-      if(profileAvatarPreview) profileAvatarPreview.src = avatar;
-
-      // notif count
-      const unread = Number(j.unread_notifications || 0);
-      setNotifCount(unread);
-      return;
-    }
-  }catch{ /* ignore */ }
-
-  // 2) yoksa memory/get ile nick/name/avatar dene
-  try{
-    const r = await fetch(`${BASE_DOMAIN}/api/memory/get`, { headers:{...authHeaders()} });
-    const j = await r.json().catch(()=> ({}));
-    const prof = j.profile || {};
-    const name = (prof.nick || prof.name || "Misafir");
-    const avatar = (prof.avatar || prof.picture || "https://via.placeholder.com/80");
-    const planLabel = (prof.plan || currentPlan || "free").toUpperCase();
-
-    if(dpName) dpName.textContent = name;
-    if(dpPlan) dpPlan.textContent = planLabel;
-    if(dpAvatar) dpAvatar.src = avatar;
-
-    if(profileMainName) profileMainName.textContent = name;
-    if(profilePlanTag) profilePlanTag.textContent = planLabel;
-    if(profileAvatarPreview) profileAvatarPreview.src = avatar;
-
-  }catch{
-    fillUserCardsFallback();
-  }
-}
-
-// -------------------- NOTIFICATIONS --------------------
-function setNotifCount(n){
-  const val = Math.max(0, Number(n||0));
-  if(notifBadge){
-    if(val>0){ notifBadge.style.display="flex"; notifBadge.textContent = val>99 ? "99+" : String(val); }
-    else { notifBadge.style.display="none"; }
-  }
-  if(notifPill){
-    if(val>0){ notifPill.style.display="inline-flex"; notifPill.textContent = val>99 ? "99+" : String(val); }
-    else { notifPill.style.display="none"; }
-  }
-}
-
-async function openNotifications(){
-  if(!getToken()){
-    showPage("Bildirimler", `<div style="font-weight:900;color:#111;">Evladım önce giriş yap.</div>`);
-    return;
-  }
-  showModal(notifModal);
-  if(notifList) notifList.innerHTML = `<div style="font-weight:900;color:#666;">Yükleniyor…</div>`;
-
-  try{
-    const r = await fetch(`${BASE_DOMAIN}/api/notifications`, { headers:{...authHeaders()} });
-    const j = await r.json().catch(()=> ({}));
-    const items = j.items || [];
-    if(!notifList) return;
-
-    notifList.innerHTML = "";
-    if(!items.length){
-      notifList.innerHTML = `<div style="font-weight:900;color:#666;">Bildirim yok.</div>`;
-      setNotifCount(0);
-      return;
-    }
-
-    let unread = 0;
-
-    items.forEach(it=>{
-      if(!it.is_read) unread++;
-      const div = document.createElement("div");
-      div.className = "notifItem" + (!it.is_read ? " unread":"");
-      div.innerHTML = `
-        <div class="notifItemTitle">${escapeHtml(it.title || "Bildirim")}</div>
-        <div class="notifItemBody">${escapeHtml(it.body || "")}</div>
-      `;
-      div.onclick = async ()=>{
-        if(it.is_read) return;
-        try{
-          await fetch(`${BASE_DOMAIN}/api/notifications/read`,{
-            method:"POST",
-            headers:{ "Content-Type":"application/json", ...authHeaders() },
-            body: JSON.stringify({ id: it.id })
-          });
-        }catch{}
-        openNotifications(); // refresh
-      };
-      notifList.appendChild(div);
+    // normalize
+    setProfileUI({
+      nick: prof.nick || "",
+      name: prof.name || prof.display_name || "",
+      email: prof.email || "",
+      plan: currentPlan,
+      caynana_no: prof.caynana_no || "CN-????",
+      avatar: prof.avatar || prof.picture || "",
+      gender: prof.gender || "",
+      age: prof.age || "",
+      height: prof.height || "",
+      weight: prof.weight || ""
     });
 
-    setNotifCount(unread);
-  }catch(e){
-    if(notifList) notifList.innerHTML = `<div style="font-weight:900;color:#111;">Hata</div><div style="margin-top:6px;font-weight:800;color:#444;">${escapeHtml(e?.message||"")}</div>`;
+  }catch{
+    currentPlan = "free";
   }
 }
 
-// -------------------- GOOGLE SIGN-IN --------------------
+function applyAuthUI(){
+  const on = isLoggedIn();
+  if(safeLogoutBtn) safeLogoutBtn.style.display = on ? "flex" : "none";
+}
+
 function ensureGoogleButton(){
   if(!googleBtn) return;
   googleBtn.innerHTML = "";
 
   if(!window.google?.accounts?.id){
-    showAuthError("Google bileşeni yüklenmedi. (Android System WebView/Chrome güncel mi?)");
+    setAuthStatus("Google bileşeni yüklenmedi (Chrome/WebView güncel mi?)");
     return;
   }
 
@@ -599,10 +488,12 @@ function ensureGoogleButton(){
           if(!r.ok) throw new Error(j.detail || "Google giriş hatası");
           setToken(j.token);
           setAuthStatus(`Bağlandı ✅ (${j.email || "Google"})`);
+          applyAuthUI();
           await pullPlanFromBackend();
-          setTimeout(()=> hideModal(authModal), 450);
+          await refreshNotifications();
+          setTimeout(()=> hideModal(authModal), 350);
         }catch(e){
-          showAuthError(e);
+          setAuthStatus("Hata: " + (e?.message || "Google giriş olmadı"));
         }
       }
     });
@@ -615,19 +506,17 @@ function ensureGoogleButton(){
       width: 280
     });
   }catch(e){
-    showAuthError(e);
+    setAuthStatus("Hata: " + (e?.message || "Google UI hata"));
   }
 }
 
-// -------------------- EMAIL AUTH --------------------
 let authMode = "login";
 async function handleAuthSubmit(){
-  const email = (authEmail?.value || "").trim();
-  const password = (authPass?.value || "").trim();
+  const email = (authEmail?.value||"").trim();
+  const password = (authPass?.value||"").trim();
   setAuthStatus("İşlem yapıyorum…");
-
   try{
-    const endpoint = authMode === "register" ? "/api/auth/register" : "/api/auth/login";
+    const endpoint = authMode==="register" ? "/api/auth/register" : "/api/auth/login";
     const r = await fetch(`${BASE_DOMAIN}${endpoint}`,{
       method:"POST",
       headers:{ "Content-Type":"application/json" },
@@ -637,35 +526,144 @@ async function handleAuthSubmit(){
     if(!r.ok) throw new Error(j.detail || "Hata");
     setToken(j.token);
     setAuthStatus(`Bağlandı ✅ (${j.email || email})`);
+    applyAuthUI();
     await pullPlanFromBackend();
-    setTimeout(()=> hideModal(authModal), 450);
+    await refreshNotifications();
+    setTimeout(()=> hideModal(authModal), 350);
   }catch(e){
-    showAuthError(e);
+    setAuthStatus("Hata: " + (e?.message || "Bilinmeyen"));
   }
 }
 
-// -------------------- MIC --------------------
-function startMic(){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR) return alert("Tarayıcı desteklemiyor");
-  const r = new SR();
-  r.lang="tr-TR";
-  r.onresult = (e)=>{ if(textInput) textInput.value = e.results[0][0].transcript; send(); };
-  r.start();
+/** =============================
+ *  Notifications
+ *  ============================= */
+async function refreshNotifications(){
+  // badge + drawer pill
+  if(!isLoggedIn()){
+    if(notifBadge) notifBadge.style.display="none";
+    if(notifPill) notifPill.style.display="none";
+    return;
+  }
+  try{
+    const r = await fetch(`${BASE_DOMAIN}/api/notifications`, { method:"GET", headers:{...authHeaders()} });
+    const j = await r.json().catch(()=> ({}));
+    const items = j.items || [];
+    const unread = items.filter(x=> !x.is_read).length;
+
+    if(notifBadge){
+      if(unread>0){ notifBadge.style.display="flex"; notifBadge.textContent = String(unread>99?"99+":unread); }
+      else notifBadge.style.display="none";
+    }
+    if(notifPill){
+      if(unread>0){ notifPill.style.display="inline-block"; notifPill.textContent = String(unread>99?"99+":unread); }
+      else notifPill.style.display="none";
+    }
+  }catch{
+    // ignore
+  }
 }
 
-// -------------------- PHOTO / FAL --------------------
+async function openNotifications(){
+  if(!isLoggedIn()){
+    showModal(authModal);
+    setAuthStatus("Bildirimler için giriş yap.");
+    setTimeout(ensureGoogleButton, 120);
+    return;
+  }
+  showModal(notifModal);
+  if(notifList) notifList.innerHTML = `<div style="font-weight:1000;color:#666;">Yükleniyor…</div>`;
+
+  try{
+    const r = await fetch(`${BASE_DOMAIN}/api/notifications`, { method:"GET", headers:{...authHeaders()} });
+    const j = await r.json().catch(()=> ({}));
+    const items = j.items || [];
+
+    if(!notifList) return;
+    notifList.innerHTML = "";
+    if(!items.length){
+      notifList.innerHTML = `<div style="font-weight:1000;color:#666;">Bildirim yok.</div>`;
+    }else{
+      items.slice(0,30).forEach(it=>{
+        const div = document.createElement("div");
+        div.className = "notifItem" + (it.is_read ? "" : " unread");
+        div.innerHTML = `
+          <div class="notifItemTitle">${escapeHtml(it.title || "Bildirim")}</div>
+          <div class="notifItemBody">${escapeHtml(it.body || "")}</div>
+        `;
+        div.onclick = async ()=>{
+          if(it.is_read) return;
+          try{
+            await fetch(`${BASE_DOMAIN}/api/notifications/read`,{
+              method:"POST",
+              headers:{ "Content-Type":"application/json", ...authHeaders() },
+              body: JSON.stringify({ id: it.id })
+            });
+            div.classList.remove("unread");
+            await refreshNotifications();
+          }catch{}
+        };
+        notifList.appendChild(div);
+      });
+    }
+
+    await refreshNotifications();
+  }catch{
+    if(notifList) notifList.innerHTML = `<div style="font-weight:1000;color:#666;">Bildirimler alınamadı.</div>`;
+  }
+}
+
+/** =============================
+ *  Profile save
+ *  ============================= */
+async function saveProfile(){
+  if(!isLoggedIn()){
+    if(pfStatus) pfStatus.textContent = "Önce giriş yap.";
+    return;
+  }
+  const prof = {
+    nick: (pfNick?.value||"").trim(),
+    name: (pfName?.value||"").trim(),
+    age: pfAge?.value ? Number(pfAge.value) : "",
+    gender: (pfGender?.value||"").trim(),
+    height: pfHeight?.value ? Number(pfHeight.value) : "",
+    weight: pfWeight?.value ? Number(pfWeight.value) : "",
+    avatar: (pfAvatar?.value||"").trim()
+  };
+
+  if(pfStatus) pfStatus.textContent = "Kaydediyorum…";
+  try{
+    const r = await fetch(`${BASE_DOMAIN}/api/memory/upsert`,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json", ...authHeaders() },
+      body: JSON.stringify({ profile: prof })
+    });
+    const j = await r.json().catch(()=> ({}));
+    if(!r.ok) throw new Error(j.detail || "Kaydedilemedi");
+
+    if(pfStatus) pfStatus.textContent = "Kaydedildi ✅";
+    await pullPlanFromBackend();
+    setTimeout(()=> hideModal(profileModal), 450);
+  }catch(e){
+    if(pfStatus) pfStatus.textContent = "Hata: " + (e?.message || "Kaydedilemedi");
+  }
+}
+
+/** =============================
+ *  Camera / Fal / Chat
+ *  ============================= */
 function openCamera(){ if(fileEl){ fileEl.value=""; fileEl.click(); } }
-function openFalCamera(){ openCamera(); }
 
 function setFalStepUI(){
-  if(!falStepText || !falStepSub) return;
+  const t = $("falStepText");
+  const s = $("falStepSub");
+  if(!t||!s) return;
   if(falImages.length < 3){
-    falStepText.textContent = "Fal için 3 fotoğraf çek";
-    falStepSub.textContent = FAL_STEPS[falImages.length] || "1/3: Üstten çek";
+    t.textContent = "Fal için 3 fotoğraf çek";
+    s.textContent = FAL_STEPS[falImages.length] || "1/3: Üstten çek";
   }else{
-    falStepText.textContent = "Fal hazır…";
-    falStepSub.textContent = "Yorum hazırlanıyor";
+    t.textContent = "Fal hazır…";
+    s.textContent = "Yorum hazırlanıyor";
   }
 }
 function resetFalCapture(){ falImages=[]; setFalStepUI(); }
@@ -684,7 +682,7 @@ async function falCheckOneImage(dataUrl){
 }
 
 function resetModalOnly(){
-  pendingImage = null;
+  pendingImage=null;
   if(photoPreview) photoPreview.src="";
   hideModal(photoModal);
   if(fileEl) fileEl.value="";
@@ -703,28 +701,21 @@ if(fileEl){
         if(!check.ok){
           await addBubble("ai", check.reason || "Evladım bu fincan-tabak değil. Yeniden çek.", false, "");
           resetModalOnly();
-          setTimeout(()=> openFalCamera(), 200);
+          setTimeout(()=> openCamera(), 200);
           return;
         }
         falImages.push(imgData);
         setFalStepUI();
-
-        pendingImage = imgData;
-        if(photoPreview) photoPreview.src = pendingImage;
-        if(photoTitle) photoTitle.textContent = "Fal fotoğrafı";
-        if(photoHint){
-          photoHint.textContent = (falImages.length < 3)
-            ? `Tamam deyince ${FAL_STEPS[falImages.length] || "sonraki açı"} geçiyoruz.`
-            : "Tamam deyince fala bakıyorum.";
-        }
-        showModal(photoModal);
-        return;
       }
 
       pendingImage = imgData;
       if(photoPreview) photoPreview.src = pendingImage;
-      if(photoTitle) photoTitle.textContent = "Fotoğraf hazır";
-      if(photoHint) photoHint.textContent = "Tamam deyince Caynana hemen yoruma başlayacak.";
+      if(photoTitle) photoTitle.textContent = currentMode==="fal" ? "Fal fotoğrafı" : "Fotoğraf hazır";
+      if(photoHint){
+        photoHint.textContent = (currentMode==="fal")
+          ? (falImages.length<3 ? `Tamam deyince ${FAL_STEPS[falImages.length] || "sonraki açı"} geçiyoruz.` : "Tamam deyince fala bakıyorum.")
+          : "Tamam deyince Caynana hemen yoruma başlayacak.";
+      }
       showModal(photoModal);
     };
     reader.readAsDataURL(f);
@@ -733,8 +724,8 @@ if(fileEl){
 
 if(photoCancelBtn){
   photoCancelBtn.onclick = ()=>{
-    if(currentMode === "fal"){
-      falImages = falImages.slice(0, Math.max(0, falImages.length - 1));
+    if(currentMode==="fal"){
+      falImages = falImages.slice(0, Math.max(0, falImages.length-1));
       setFalStepUI();
     }
     resetModalOnly();
@@ -744,46 +735,22 @@ if(photoOkBtn){
   photoOkBtn.onclick = async ()=>{
     hideModal(photoModal);
 
-    if(currentMode === "fal"){
+    if(currentMode==="fal"){
       if(falImages.length < 3){
-        setTimeout(()=> openFalCamera(), 220);
+        setTimeout(()=> openCamera(), 220);
         return;
       }
+      // şimdilik son foto
       pendingImage = falImages[falImages.length-1];
       if(textInput) textInput.value = "Fal bak: fincanı 3 açıdan gönderdim. Gerçekçi ve insani anlat.";
       await send();
       resetFalCapture();
       return;
     }
+
     if(textInput) textInput.value = "";
     await send();
   };
-}
-
-// -------------------- BUBBLES --------------------
-async function typeWriterEffect(el, text, speed=26){
-  return new Promise(resolve=>{
-    let i=0;
-    el.innerHTML="";
-    el.classList.add("typing-cursor");
-    function tick(){
-      if(i<text.length){
-        el.textContent += text.charAt(i++);
-        scrollToBottom(true);
-        setTimeout(tick, speed);
-      }else{
-        el.classList.remove("typing-cursor");
-        if(window.DOMPurify && window.marked){
-          el.innerHTML = DOMPurify.sanitize(marked.parse(text));
-        }else{
-          el.textContent = text;
-        }
-        scrollToBottom(true);
-        resolve();
-      }
-    }
-    tick();
-  });
 }
 
 async function addBubble(role, text, isLoader=false, speech="", imgData=null, id=null){
@@ -801,9 +768,9 @@ async function addBubble(role, text, isLoader=false, speech="", imgData=null, id
   div.innerHTML = `<div class="bubble">${content}</div>`;
   const bubble = div.querySelector(".bubble");
 
-  chatContainer.appendChild(div);
   heroContent.style.display="none";
   chatContainer.style.display="block";
+  chatContainer.appendChild(div);
   scrollToBottom(true);
 
   if(role==="ai" && !isLoader){
@@ -813,7 +780,7 @@ async function addBubble(role, text, isLoader=false, speech="", imgData=null, id
   }
 
   if(role==="ai"){
-    const sp = (speech && speech.trim()) ? speech : (text||"").replace(/[*_`#>-]/g,"").slice(0,280);
+    const sp = (speech && speech.trim()) ? speech : (text || "").replace(/[*_`#>-]/g,"").slice(0,280);
     const btn = document.createElement("div");
     btn.className="audio-btn";
     btn.dataset.speech = sp;
@@ -825,7 +792,7 @@ async function addBubble(role, text, isLoader=false, speech="", imgData=null, id
   return div;
 }
 
-// TTS
+// audio
 if(chatContainer){
   chatContainer.addEventListener("click", async (e)=>{
     const btn = e.target.closest(".audio-btn");
@@ -833,7 +800,6 @@ if(chatContainer){
     await playAudio(btn.dataset.speech, btn);
   });
 }
-
 async function playAudio(text, btn){
   if(currentAudio){ currentAudio.pause(); currentAudio=null; }
 
@@ -865,31 +831,24 @@ async function playAudio(text, btn){
   }
 }
 
-// -------------------- SEND --------------------
 async function send(){
   if(isSending) return;
   if(!textInput || !sendBtn) return;
 
   let val = (textInput.value || "").trim();
-  if(pendingImage && val==="") val = "Bu resmi yorumla";
+  if(pendingImage && val==="") val="Bu resmi yorumla";
   if(!val && !pendingImage) return;
 
   isSending = true;
   sendBtn.disabled = true;
 
   await addBubble("user", val, false, "", pendingImage);
-  textInput.value = "";
+  textInput.value="";
 
   const loaderId = "ldr_" + Date.now();
   await addBubble("ai", "<i class='fa-solid fa-spinner fa-spin'></i>", true, "", null, loaderId);
 
-  const payload = {
-    message: val,
-    session_id: sessionId,
-    image: pendingImage,
-    mode: currentMode,
-    persona: currentPersona,
-  };
+  const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode, persona: currentPersona };
   pendingImage = null;
 
   try{
@@ -900,30 +859,36 @@ async function send(){
     });
     const data = await res.json().catch(()=> ({}));
 
-    document.getElementById(loaderId)?.remove();
+    const loader = document.getElementById(loaderId);
+    if(loader) loader.remove();
+
     await addBubble("ai", data.assistant_text || "Bir şey diyemedim evladım.", false, data.speech_text || "");
   }catch{
-    document.getElementById(loaderId)?.remove();
-    await addBubble("ai", "Bağlantı hatası oldu evladım. Bir daha dene.", false, "");
+    const loader = document.getElementById(loaderId);
+    if(loader) loader.remove();
+    await addBubble("ai","Bağlantı hatası oldu evladım. Bir daha dene.", false, "");
   }finally{
-    isSending = false;
-    sendBtn.disabled = false;
+    isSending=false;
+    sendBtn.disabled=false;
   }
 }
 
-// -------------------- PAGES (ayrı dosyalar) --------------------
-async function openPageFromModule(title, path){
-  try{
-    const mod = await import(path);
-    const html = mod?.default || mod?.HTML || "<div>Boş</div>";
-    showPage(title, html);
-  }catch(e){
-    showPage(title, `<div style="font-weight:1000;color:#111;">Hata</div><div style="margin-top:6px;color:#444;font-weight:800;">${escapeHtml(e?.message||"")}</div>`);
-  }
+/** =============================
+ *  Mic
+ *  ============================= */
+function startMic(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) return alert("Tarayıcı desteklemiyor");
+  const r = new SR();
+  r.lang="tr-TR";
+  r.onresult = e => { if(textInput) textInput.value = e.results[0][0].transcript; send(); };
+  r.start();
 }
 
-// -------------------- WEB LOCK --------------------
-function isMobile(){ return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || ""); }
+/** =============================
+ *  Web lock
+ *  ============================= */
+function isMobile(){ return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent||""); }
 function applyWebLock(){
   if(!WEB_LOCK) return;
   if(isMobile()) return;
@@ -932,20 +897,64 @@ function applyWebLock(){
   showModal(webLock);
 }
 
-// -------------------- EVENTS --------------------
+/** =============================
+ *  Swipe + double tap (hero)
+ *  ============================= */
+function bindHeroGestures(){
+  if(!heroImage || !brandTap) return;
+
+  // double click desktop
+  brandTap.addEventListener("dblclick", ()=> cycleMode(1));
+
+  // swipe mobile: sadece chat yokken (hero görünürken) mod değişsin
+  let sx=0, sy=0, st=0;
+  const target = heroImage;
+  target.addEventListener("touchstart",(e)=>{
+    if(chatContainer && chatContainer.style.display==="block") return;
+    const t = e.touches[0];
+    sx=t.clientX; sy=t.clientY; st=Date.now();
+  }, {passive:true});
+
+  target.addEventListener("touchend",(e)=>{
+    if(chatContainer && chatContainer.style.display==="block") return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx;
+    const dy = t.clientY - sy;
+    const dt = Date.now() - st;
+    if(dt>650) return;
+    if(Math.abs(dx) < 50) return;
+    if(Math.abs(dy) > 80) return;
+
+    if(dx < 0) cycleMode(1);   // swipe left next
+    else cycleMode(-1);        // swipe right prev
+  }, {passive:true});
+}
+
+/** =============================
+ *  Events
+ *  ============================= */
 function bindEvents(){
-  // Persona modal
-  if(personaBtn && personaModal) personaBtn.onclick = ()=>{ refreshPersonaLocks(); showModal(personaModal); };
+  // menu
+  if(menuBtn && drawer && drawerMask){
+    menuBtn.onclick = ()=>{ drawerMask.classList.add("show"); drawer.classList.add("open"); };
+  }
+  if(drawerClose) drawerClose.onclick = closeDrawer;
+  if(drawerMask) drawerMask.onclick = closeDrawer;
+
+  // persona
+  if(personaBtn && personaModal){
+    personaBtn.onclick = ()=>{ refreshPersonaLocks(); showModal(personaModal); };
+  }
   if(personaClose && personaModal) personaClose.onclick = ()=> hideModal(personaModal);
   if(personaModal) personaModal.addEventListener("click",(e)=>{ if(e.target===personaModal) hideModal(personaModal); });
 
   document.querySelectorAll("#personaModal .persona-opt").forEach(opt=>{
     opt.addEventListener("click", ()=>{
       const id = opt.getAttribute("data-persona");
-      const allow = new Set(allowedPersonas());
+      const allow = new Set(PLAN_PERSONAS[currentPlan] || ["normal"]);
       if(!allow.has(id)){
         hideModal(personaModal);
-        openPageFromModule("Üyelik", "./pages/plan.js");
+        showPageFromFile("Üyelik", "./pages/plan.html");
         return;
       }
       currentPersona = id;
@@ -954,28 +963,23 @@ function bindEvents(){
     });
   });
 
-  // Drawer open/close
-  if(menuBtn && drawer && drawerMask) menuBtn.onclick = ()=>{ drawerMask.classList.add("show"); drawer.classList.add("open"); };
-  if(drawerClose && drawer && drawerMask) drawerClose.onclick = ()=>{ drawerMask.classList.remove("show"); drawer.classList.remove("open"); };
-  if(drawerMask && drawer) drawerMask.onclick = ()=>{ drawerMask.classList.remove("show"); drawer.classList.remove("open"); };
+  // notifications
+  if(notifIconBtn) notifIconBtn.onclick = openNotifications;
+  if(notifBtn) notifBtn.onclick = ()=>{ closeDrawer(); openNotifications(); };
+  if(notifClose) notifClose.onclick = ()=> hideModal(notifModal);
+  if(notifModal) notifModal.addEventListener("click",(e)=>{ if(e.target===notifModal) hideModal(notifModal); });
 
-  // Page modal close
-  if(pageClose) pageClose.onclick = hidePage;
-  if(pageModal) pageModal.addEventListener("click",(e)=>{ if(e.target===pageModal) hidePage(); });
-
-  // Auth modal open/close
-  if(accountBtn && authModal){
-    accountBtn.onclick = ()=>{
-      showModal(authModal);
-      setAuthStatus(getToken() ? "Bağlı ✅" : "Bağlı değil ❌");
-      setTimeout(ensureGoogleButton, 120);
-    };
-  }
-  if(authClose) authClose.onclick = ()=> hideModal(authModal);
+  // account/auth
+  if(accountBtn) accountBtn.onclick = ()=>{
+    closeDrawer();
+    showModal(authModal);
+    setAuthStatus(isLoggedIn() ? "Bağlı ✅" : "Bağlı değil ❌");
+    setTimeout(ensureGoogleButton, 120);
+  };
   if(authCloseX) authCloseX.onclick = ()=> hideModal(authModal);
+  if(authClose) authClose.onclick = ()=> hideModal(authModal);
   if(authModal) authModal.addEventListener("click",(e)=>{ if(e.target===authModal) hideModal(authModal); });
 
-  // Auth tabs
   if(btnLoginTab && btnRegTab && authSubmit){
     btnLoginTab.onclick = ()=>{
       authMode="login";
@@ -997,130 +1001,122 @@ function bindEvents(){
       setToken("");
       currentPlan="free";
       currentPersona="normal";
-      refreshPersonaLocks();
+      applyAuthUI();
       setAuthStatus("Çıkış yapıldı ❌");
-      fillUserCardsFallback();
-      setNotifCount(0);
+      refreshNotifications();
+      pullPlanFromBackend(); // UI reset
     };
   }
 
-  // Drawer pages -> ayrı dosyalar
-  if(planBtn) planBtn.onclick = ()=> openPageFromModule("Üyelik", "./pages/plan.js");
-  if(aboutBtn) aboutBtn.onclick = ()=> openPageFromModule("Hakkımızda", "./pages/about.js");
-  if(faqBtn) faqBtn.onclick = ()=> openPageFromModule("Sık Sorulan Sorular", "./pages/faq.js");
-  if(contactBtn) contactBtn.onclick = ()=> openPageFromModule("İletişim", "./pages/contact.js");
-  if(privacyBtn) privacyBtn.onclick = ()=> openPageFromModule("Gizlilik", "./pages/privacy.js");
-
-  // Dedikodu: drawer’dan kalkacak dedin -> gizle + tıklama iptal
-  if(dedikoduBtn){
-    dedikoduBtn.style.display = "none";
-    dedikoduBtn.onclick = null;
-  }
-
-  // Notif
-  if(notifIconBtn) notifIconBtn.onclick = openNotifications;
-  if(notifBtn) notifBtn.onclick = openNotifications;
-  if(notifClose) notifClose.onclick = ()=> hideModal(notifModal);
-  if(notifModal) notifModal.addEventListener("click",(e)=>{ if(e.target===notifModal) hideModal(notifModal); });
-
-  // Profile modal open/close
-  if(openProfileBtn && profileModal){
-    openProfileBtn.onclick = ()=>{
-      showModal(profileModal);
-      // mevcut değerleri inputlara doldur
-      pfNick.value = dpName?.textContent || "";
-      pfName.value = dpName?.textContent || "";
-      pfAge.value = "";
-      pfGender.value = "";
-      pfHeight.value = "";
-      pfWeight.value = "";
-      pfAvatar.value = dpAvatar?.src || "";
-      if(profileAvatarPreview) profileAvatarPreview.src = dpAvatar?.src || "https://via.placeholder.com/80";
-      if(pfStatus) pfStatus.textContent = "";
+  if(safeLogoutBtn){
+    safeLogoutBtn.onclick = ()=>{
+      setToken("");
+      currentPlan="free";
+      currentPersona="normal";
+      applyAuthUI();
+      closeDrawer();
+      refreshNotifications();
+      pullPlanFromBackend();
     };
   }
+
+  // pages from files
+  if(planBtn) planBtn.onclick = ()=> showPageFromFile("Üyelik", "./pages/plan.html");
+  if(aboutBtn) aboutBtn.onclick = ()=> showPageFromFile("Hakkımızda", "./pages/about.html");
+  if(faqBtn) faqBtn.onclick = ()=> showPageFromFile("Sık Sorulan Sorular", "./pages/faq.html");
+  if(contactBtn) contactBtn.onclick = ()=> showPageFromFile("İletişim", "./pages/contact.html");
+  if(privacyBtn) privacyBtn.onclick = ()=> showPageFromFile("Gizlilik", "./pages/privacy.html");
+
+  if(pageClose) pageClose.onclick = hidePage;
+  if(pageModal) pageModal.addEventListener("click",(e)=>{ if(e.target===pageModal) hidePage(); });
+
+  // profile modal
+  if(openProfileBtn) openProfileBtn.onclick = ()=>{
+    closeDrawer();
+    showModal(profileModal);
+    if(pfStatus) pfStatus.textContent = "";
+  };
   if(profileClose) profileClose.onclick = ()=> hideModal(profileModal);
   if(pfCloseBtn) pfCloseBtn.onclick = ()=> hideModal(profileModal);
   if(profileModal) profileModal.addEventListener("click",(e)=>{ if(e.target===profileModal) hideModal(profileModal); });
+  if(pfSave) pfSave.onclick = saveProfile;
 
-  if(pfAvatar){
-    pfAvatar.addEventListener("input", ()=>{
-      if(profileAvatarPreview) profileAvatarPreview.src = pfAvatar.value || "https://via.placeholder.com/80";
-    });
-  }
-
-  if(pfSave){
-    pfSave.onclick = async ()=>{
-      if(!getToken()){
-        pfStatus.textContent = "Önce giriş yap evladım.";
-        return;
-      }
-      const payload = {
-        nick: (pfNick.value||"").trim(),
-        name: (pfName.value||"").trim(),
-        age: Number(pfAge.value||0) || null,
-        gender: (pfGender.value||"").trim(),
-        height_cm: Number(pfHeight.value||0) || null,
-        weight_kg: Number(pfWeight.value||0) || null,
-        avatar: (pfAvatar.value||"").trim(),
+  // avatar file -> dataurl
+  if(pfAvatarFile){
+    pfAvatarFile.onchange = (e)=>{
+      const f = e.target.files?.[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        const dataUrl = reader.result;
+        if(pfAvatar) pfAvatar.value = dataUrl;
+        if(profileAvatarPreview) profileAvatarPreview.src = dataUrl;
       };
-
-      try{
-        // memory upsert (backend mevcutsa)
-        const r = await fetch(`${BASE_DOMAIN}/api/memory/upsert`,{
-          method:"POST",
-          headers:{ "Content-Type":"application/json", ...authHeaders() },
-          body: JSON.stringify({ profile: payload })
-        });
-        const j = await r.json().catch(()=> ({}));
-        if(!r.ok) throw new Error(j.detail || "Kaydedemedim");
-        pfStatus.textContent = "Kaydedildi ✅";
-        await pullPlanFromBackend();
-      }catch(e){
-        pfStatus.textContent = "Hata: " + (e?.message||"");
-      }
+      reader.readAsDataURL(f);
     };
   }
 
-  // Brand tap => next mode
-  if(brandTap) brandTap.onclick = ()=> cycleMode(1);
+  // dock
+  if(dock){
+    // click guard drag
+    let downX=0, downY=0, moved=false;
+    dock.addEventListener("pointerdown",(e)=>{ downX=e.clientX; downY=e.clientY; moved=false; }, {passive:true});
+    dock.addEventListener("pointermove",(e)=>{ if(Math.abs(e.clientX-downX)>10 || Math.abs(e.clientY-downY)>10) moved=true; }, {passive:true});
+    dock.addEventListener("click",(e)=>{ if(moved){ e.preventDefault(); e.stopPropagation(); } }, true);
+  }
 
-  // Camera/Mic/Send
+  // camera/mic/send
   if(camBtn) camBtn.onclick = ()=> openCamera();
-  if(falCamBtn) falCamBtn.onclick = ()=> openFalCamera();
   if(micBtn) micBtn.onclick = ()=> startMic();
   if(textInput) textInput.addEventListener("keypress",(e)=>{ if(e.key==="Enter") send(); });
   if(sendBtn) sendBtn.onclick = ()=> send();
 }
 
-// -------------------- INIT --------------------
+/** =============================
+ *  persona locks
+ *  ============================= */
+function refreshPersonaLocks(){
+  const allow = new Set(PLAN_PERSONAS[currentPlan] || ["normal"]);
+  document.querySelectorAll("#personaModal .persona-opt").forEach(opt=>{
+    const id = opt.getAttribute("data-persona");
+    const icon = opt.querySelector("i");
+    if(id === currentPersona){
+      opt.classList.add("selected");
+      opt.classList.remove("locked");
+      if(icon){ icon.className="fa-solid fa-check"; icon.style.display="block"; }
+      return;
+    }
+    opt.classList.remove("selected");
+    if(!allow.has(id)){
+      opt.classList.add("locked");
+      if(icon){ icon.className="fa-solid fa-lock"; icon.style.display="block"; }
+    }else{
+      opt.classList.remove("locked");
+      if(icon) icon.style.display="none";
+    }
+  });
+}
+
+/** =============================
+ *  INIT
+ *  ============================= */
 async function init(){
   applyWebLock();
-
   if(lockAndroidBtn) lockAndroidBtn.href = PLAY_URL;
   if(lockApkBtn) lockApkBtn.href = APK_URL;
 
   renderDock();
   applyHero("chat");
   loadModeChat("chat");
-  document.body.classList.remove("fal-mode");
-  setFalStepUI();
 
   bindHeroGestures();
   bindEvents();
 
+  applyAuthUI();
   await pullPlanFromBackend();
-
-  // sayfa açılmadan bildirim sayısını çek (opsiyonel)
-  if(getToken()){
-    try{
-      const r = await fetch(`${BASE_DOMAIN}/api/dedikodu/status`, { headers:{...authHeaders()} });
-      if(r.ok){
-        const j = await r.json().catch(()=> ({}));
-        setNotifCount(Number(j.unread_notifications||0));
-      }
-    }catch{}
-  }
+  refreshPersonaLocks();
+  await refreshNotifications();
+  setFalStepUI();
 }
 
 init();
