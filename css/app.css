@@ -1,143 +1,434 @@
+/* ===============================
+   CAYNANA WEB — app.css (CLEAN + FIXED)
+   - Tek topbar kuralı
+   - Misafir/Free mini kart: zil + hamburgerin altına
+   - Hamburger taşma / logo kırpılma yok
+   - "Dosya seç" asla görünmez
+   =============================== */
+
 :root{ --primary:#FFB300; --font:'Outfit',sans-serif; }
-*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; user-select:none; }
-input, textarea, select { user-select:text; -webkit-user-select:text; }
+
+*{
+  box-sizing:border-box;
+  margin:0; padding:0;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+input, textarea, select{ user-select:text; -webkit-user-select:text; }
 
 html,body{ height:100%; width:100%; overflow:hidden; }
-body{ font-family:var(--font); background:#050505; display:flex; align-items:center; justify-content:center; }
+body{
+  font-family:var(--font);
+  background:#050505;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 
+/* ===== App frame ===== */
 #app{
-  width:100%; height:100%; max-width:440px; max-height:880px;
-  border-radius:24px; overflow:hidden; position:relative; display:flex; flex-direction:column;
+  width:100%;
+  height:100%;
+  max-width:440px;
+  max-height:880px;
+  border-radius:24px;
+  overflow:hidden;
+  position:relative;
+  display:flex;
+  flex-direction:column;
   box-shadow: 0 0 0 10px #1a1a1a, 0 20px 50px rgba(0,0,0,0.8);
   background:#0b0f18;
 }
+
+/* Mobile full screen */
 @media (max-width:500px){
   body{ display:block; background:#000; }
-  #app{ width:100%; height:100dvh; max-width:none; max-height:none; border-radius:0; box-shadow:none; }
+  #app{
+    width:100%;
+    height:100dvh;
+    max-width:none;
+    max-height:none;
+    border-radius:0;
+    box-shadow:none;
+  }
 }
 
-#heroImage{ position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0; }
-#app::before{ content:""; position:absolute; inset:0; background:linear-gradient(to bottom, rgba(0,0,0,.20) 0%, rgba(0,0,0,.10) 50%, rgba(0,0,0,.60) 100%); pointer-events:none; z-index:1; }
+/* Desktop: merkez + siyah boşluk hissi azalsın */
+@media (min-width:501px){
+  body{ background:#0b0f18; }
+  #app{ margin:12px auto; }
+}
 
+/* ===== Background ===== */
+#heroImage{
+  position:absolute; top:0; left:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  z-index:0;
+}
+#app::before{
+  content:"";
+  position:absolute; inset:0;
+  background:linear-gradient(to bottom, rgba(0,0,0,.20) 0%, rgba(0,0,0,.10) 50%, rgba(0,0,0,.60) 100%);
+  pointer-events:none;
+  z-index:1;
+}
+
+/* ===============================
+   TOPBAR — TEK ve NET
+   =============================== */
 #topbar{
-  position:relative; z-index:10; height:74px; padding:12px 14px;
-  display:flex; justify-content:space-between; align-items:center; flex-shrink:0;
+  position:absolute;
+  top:0; left:0; right:0;
+  z-index:120;
+  height:74px;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:linear-gradient(to bottom, rgba(0,0,0,.40), rgba(0,0,0,0));
 }
-.brand-wrap{ display:flex; flex-direction:column; gap:2px; cursor:pointer; }
-.brand{ display:flex; align-items:center; gap:8px; font-size:20px; font-weight:900; letter-spacing:-.5px; color:#fff; }
+
+.brand-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  cursor:pointer;
+  min-width:0;
+  max-width: calc(100% - 170px);
+}
+.brand{
+  display:flex; align-items:center; gap:8px;
+  font-size:20px; font-weight:900;
+  letter-spacing:-.5px;
+  color:#fff;
+  white-space:nowrap;
+}
 .brand i{ color:var(--primary); font-size:18px; }
 .brand span{ color:var(--primary); }
-.brand-sub{ font-size:10px; font-weight:700; color:rgba(255,255,255,.7); letter-spacing:.5px; }
+.brand-sub{
+  font-size:10px;
+  font-weight:700;
+  color:rgba(255,255,255,.7);
+  letter-spacing:.5px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-.topUser{ display:flex; align-items:center; gap:10px; }
-.menu-btn{
-  width:40px; height:40px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  background:rgba(255,255,255,.15); backdrop-filter:blur(8px);
-  border:1px solid rgba(255,255,255,.1); color:#fff; cursor:pointer;
+/* Sağ taraf */
+.topUser{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-shrink:0;
   position:relative;
 }
-.menu-btn:active{ transform:scale(.95); background:rgba(255,255,255,.25); }
 
-.userChip{
-  height:40px; padding:6px 10px; border-radius:999px;
-  display:flex; align-items:center; gap:8px;
-  background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.14);
+/* İkon butonları */
+.menu-btn{
+  width:40px; height:40px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,.40);
+  border:1px solid rgba(255,255,255,.18);
+  color:#fff;
   cursor:pointer;
+  position:relative;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
 }
-.chipAvatar{ width:28px; height:28px; border-radius:50%; object-fit:cover; background:rgba(255,255,255,.25); }
-.chipText{ display:flex; flex-direction:column; line-height:1.05; min-width:90px; }
-.chipName{ font-size:12px; font-weight:900; color:#fff; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.chipPlan{ font-size:10px; font-weight:800; color:rgba(255,255,255,.75); }
+.menu-btn i{ color:#fff; font-size:18px; }
+.menu-btn:active{ transform:scale(.95); background:rgba(0,0,0,.55); }
 
+/* Bildirim rozeti */
 .notifBadge{
-  position:absolute; top:-6px; right:-6px;
-  min-width:18px; height:18px; padding:0 5px;
-  border-radius:999px; background:#EF4444; color:#fff;
-  font-size:11px; font-weight:900; display:flex; align-items:center; justify-content:center;
+  position:absolute;
+  top:-6px; right:-6px;
+  min-width:18px; height:18px;
+  padding:0 5px;
+  border-radius:999px;
+  background:#EF4444;
+  color:#fff;
+  font-size:11px;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   border:2px solid rgba(0,0,0,.35);
 }
 
-#main{ position:relative; z-index:8; flex:1; display:flex; flex-direction:column; overflow:hidden; }
-#heroContent{ position:absolute; pointer-events:none; padding:0 24px; z-index:9; width:100%; top:100px; left:0; }
-#heroTitle{ font-size:36px; font-weight:900; line-height:1.05; color:#fff; letter-spacing:-1.5px; text-shadow:0 10px 30px rgba(0,0,0,.6); }
-#heroDesc{ margin-top:12px; font-size:16px; font-weight:600; color:rgba(255,255,255,.95); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.5); }
+/* ✅ Misafir / Free mini kart (zil + hamburger altı) */
+.userMiniCard{
+  position:absolute;
+  top:64px;
+  right:0;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 12px;
+  border-radius:16px;
+  background:rgba(0,0,0,.45);
+  border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  z-index:110;
+  max-width:220px;
+}
+.miniAvatar{
+  width:30px; height:30px;
+  border-radius:50%;
+  object-fit:cover;
+  background:rgba(255,255,255,.12);
+  flex:0 0 auto;
+}
+.miniText{ min-width:0; }
+.miniName{
+  font-weight:900;
+  font-size:12px;
+  color:#fff;
+  line-height:1.1;
+  max-width:150px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.miniPlan{
+  margin-top:2px;
+  font-weight:900;
+  font-size:11px;
+  color:rgba(255,255,255,.75);
+  line-height:1.1;
+}
+@media (max-width:500px){
+  #topbar{ height:72px; padding:10px 12px; }
+  .brand{ font-size:18px; }
+  .brand-sub{ font-size:9px; }
+  .userMiniCard{ top:60px; }
+}
 
+/* ===============================
+   MAIN / HERO / CHAT
+   =============================== */
+#main{
+  position:relative;
+  z-index:8;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  padding-top:74px; /* topbar alanı */
+}
+
+#heroContent{
+  position:absolute;
+  pointer-events:none;
+  padding:0 24px;
+  z-index:9;
+  width:100%;
+  top:100px;
+  left:0;
+}
+#heroTitle{
+  font-size:36px;
+  font-weight:900;
+  line-height:1.05;
+  color:#fff;
+  letter-spacing:-1.5px;
+  text-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+#heroDesc{
+  margin-top:12px;
+  font-size:16px;
+  font-weight:600;
+  color:rgba(255,255,255,.95);
+  line-height:1.4;
+  text-shadow:0 5px 15px rgba(0,0,0,.5);
+}
+
+/* Chat container */
 #chatContainer{
-  display:none; width:100%; height:100%;
-  overflow-y:auto; -webkit-overflow-scrolling:touch;
+  display:none;
+  width:100%;
+  height:100%;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
   padding:20px 20px 240px 20px;
-  background:rgba(0,0,0,0.4);
-  backdrop-filter:blur(15px); -webkit-backdrop-filter:blur(15px);
-  border-radius:24px 24px 0 0; border:1px solid rgba(255,255,255,0.1);
+  background:rgba(0,0,0,0.40);
+  backdrop-filter:blur(15px);
+  -webkit-backdrop-filter:blur(15px);
+  border-radius:24px 24px 0 0;
+  border:1px solid rgba(255,255,255,0.10);
   scrollbar-width:none;
 }
 #chatContainer::-webkit-scrollbar{ display:none; }
 body.fal-mode #chatContainer{ padding-bottom:420px; }
 
-.msg{ display:flex; margin-bottom:12px; animation: fadeIn .3s ease; flex-direction:column; }
-.msg.user{ align-items:flex-end; } .msg.ai{ align-items:flex-start; }
+.msg{ display:flex; margin-bottom:12px; animation:fadeIn .3s ease; flex-direction:column; }
+.msg.user{ align-items:flex-end; }
+.msg.ai{ align-items:flex-start; }
 @keyframes fadeIn{ from{opacity:0; transform:translateY(18px);} to{opacity:1; transform:translateY(0);} }
 
-.bubble{ max-width:95%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.5; font-weight:700; user-select:text; }
+.bubble{
+  max-width:95%;
+  padding:12px 16px;
+  border-radius:18px;
+  font-size:15px;
+  line-height:1.5;
+  font-weight:700;
+  user-select:text;
+}
 .msg.user .bubble{ background:var(--primary); color:#fff; border-bottom-right-radius:4px; }
 .msg.ai .bubble{ background:#fff; color:#111; border-bottom-left-radius:4px; }
 
-.typing-cursor::after{ content:'|'; animation: blink 1s infinite; margin-left:2px; }
+.typing-cursor::after{ content:'|'; animation:blink 1s infinite; margin-left:2px; }
 @keyframes blink{ 50%{ opacity:0; } }
 
 .chat-img{ max-width:100%; border-radius:12px; margin-bottom:8px; }
 
 .audio-btn{
-  margin-top:6px; margin-left:4px; display:inline-flex; align-items:center; gap:8px;
-  padding:8px 14px; border-radius:20px; background:#fff; color:var(--primary);
-  font-size:12px; font-weight:900; cursor:pointer; width:fit-content;
+  margin-top:6px;
+  margin-left:4px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 14px;
+  border-radius:20px;
+  background:#fff;
+  color:var(--primary);
+  font-size:12px;
+  font-weight:900;
+  cursor:pointer;
+  width:fit-content;
 }
 .audio-btn.playing{ background:#ffebee; color:#d32f2f; }
 .audio-btn:active{ transform:scale(.97); }
 
+/* Shopping cards */
 .cards{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; padding-bottom:10px; }
-.card{ background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 4px 15px rgba(0,0,0,.15); position:relative; display:flex; flex-direction:column; min-height:220px; }
-.card-badge{ position:absolute; top:8px; left:0; padding:4px 8px; font-size:10px; font-weight:900; color:#fff; border-radius:0 6px 6px 0; z-index:2; }
-.card-badge.gold{ background:#FFA000; } .card-badge.silver{ background:#9E9E9E; }
-.pimg{ width:100%; height:130px; object-fit:contain; background:#f9f9f9; padding:6px; border-bottom:1px solid #eee; }
+.card{
+  background:#fff;
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 15px rgba(0,0,0,.15);
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  min-height:220px;
+}
+.card-badge{
+  position:absolute; top:8px; left:0;
+  padding:4px 8px;
+  font-size:10px;
+  font-weight:900;
+  color:#fff;
+  border-radius:0 6px 6px 0;
+  z-index:2;
+}
+.card-badge.gold{ background:#FFA000; }
+.card-badge.silver{ background:#9E9E9E; }
+.pimg{
+  width:100%;
+  height:130px;
+  object-fit:contain;
+  background:#f9f9f9;
+  padding:6px;
+  border-bottom:1px solid #eee;
+}
 .card-body{ padding:10px; display:flex; flex-direction:column; flex:1; }
 .card .title{ font-size:11px; font-weight:800; color:#333; line-height:1.3; height:28px; overflow:hidden; margin-bottom:4px; }
 .card .price{ font-size:14px; font-weight:900; color:var(--primary); margin-bottom:6px; }
 .score-wrap{ display:flex; justify-content:space-between; align-items:center; font-size:10px; font-weight:800; color:#666; margin-bottom:8px; }
 .score-pill{ background:#eee; padding:2px 6px; border-radius:8px; color:#111; font-weight:900; }
-.btnLink{ margin-top:auto; display:block; text-align:center; background:#111; color:#fff; padding:8px; border-radius:8px; text-decoration:none; font-size:11px; font-weight:900; }
+.btnLink{
+  margin-top:auto;
+  display:block;
+  text-align:center;
+  background:#111;
+  color:#fff;
+  padding:8px;
+  border-radius:8px;
+  text-decoration:none;
+  font-size:11px;
+  font-weight:900;
+}
 .btnLink:active{ transform:scale(.97); }
 
+/* ===============================
+   BOTTOM / INPUT / DOCK
+   =============================== */
 #bottom{
-  position:absolute; bottom:0; left:0; right:0; z-index:20;
+  position:absolute;
+  bottom:0; left:0; right:0;
+  z-index:20;
   background:rgba(255,255,255,.95);
-  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-  border-top-left-radius:24px; border-top-right-radius:24px;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border-top-left-radius:24px;
+  border-top-right-radius:24px;
   padding:15px 18px calc(env(safe-area-inset-bottom) + 20px) 18px;
   box-shadow:0 -10px 40px rgba(0,0,0,.15);
 }
+
 #suggestionText{
-  position:absolute; top:-15px; left:50%; transform:translateX(-50%);
-  background:#fff; color:var(--primary); padding:6px 14px; border-radius:20px;
-  font-size:12px; font-weight:900; white-space:nowrap;
+  position:absolute;
+  top:-15px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#fff;
+  color:var(--primary);
+  padding:6px 14px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
   box-shadow:0 -5px 15px rgba(0,0,0,.08);
 }
 
 .input-wrapper{ display:flex; align-items:center; gap:8px; width:100%; }
 .search-bar{
-  flex:1; height:50px; background:#fff; border-radius:25px;
-  display:flex; align-items:center; padding:0 5px 0 15px;
-  border:1px solid #e0e0e0; box-shadow:0 4px 10px rgba(0,0,0,.05);
+  flex:1;
+  height:50px;
+  background:#fff;
+  border-radius:25px;
+  display:flex;
+  align-items:center;
+  padding:0 5px 0 15px;
+  border:1px solid #e0e0e0;
+  box-shadow:0 4px 10px rgba(0,0,0,.05);
 }
 .search-bar:focus-within{ border-color:var(--primary); }
-#text{ flex:1; border:none; background:transparent; font-size:15px; color:#333; outline:none; }
+#text{
+  flex:1;
+  border:none;
+  background:transparent;
+  font-size:15px;
+  color:#333;
+  outline:none;
+  min-width:0;
+}
 .tool-btn{ padding:8px; color:#999; font-size:18px; cursor:pointer; }
 .tool-btn:active{ color:var(--primary); }
-#sendBtn{ width:50px; height:50px; border-radius:50%; border:none; background:var(--primary); color:#fff; font-size:20px; cursor:pointer; box-shadow:0 8px 20px rgba(0,0,0,.2); }
+#sendBtn{
+  width:50px; height:50px;
+  border-radius:50%;
+  border:none;
+  background:var(--primary);
+  color:#fff;
+  font-size:20px;
+  cursor:pointer;
+  box-shadow:0 8px 20px rgba(0,0,0,.2);
+}
 #sendBtn:active{ transform:scale(.95); }
 
-#dock{ display:flex; gap:20px; overflow-x:auto; padding:15px 5px 10px 5px; scrollbar-width:none; cursor:grab; }
+#dock{
+  display:flex;
+  gap:20px;
+  overflow-x:auto;
+  padding:15px 5px 10px 5px;
+  scrollbar-width:none;
+  cursor:grab;
+}
 #dock::-webkit-scrollbar{ display:none; }
 .dock-item{ display:flex; flex-direction:column; align-items:center; gap:6px; opacity:.55; transition:.25s; min-width:55px; }
 .dock-item.active{ opacity:1; transform:translateY(-3px); }
@@ -145,6 +436,7 @@ body.fal-mode #chatContainer{ padding-bottom:420px; }
 .dock-item.active .icon-box{ background:var(--primary); color:#fff; box-shadow:0 5px 15px rgba(0,0,0,.2); }
 .dock-label{ font-size:10px; font-weight:900; color:#444; }
 
+/* Footer */
 .brand-footer{ margin-top:12px; display:flex; flex-direction:column; align-items:center; gap:6px; }
 .footer-text-line1{ font-size:13px; font-weight:900; color:#36454F; letter-spacing:.5px; }
 .footer-text-line2{ font-size:12px; font-weight:700; color:#666; letter-spacing:.5px; }
@@ -155,17 +447,32 @@ body.fal-mode #chatContainer{ padding-bottom:420px; }
 .oz-l-white{ background:#fff; border:1px solid #eee; }
 .oz-l-black{ background:#222; }
 
-/* ===== Modals generic ===== */
+/* ===============================
+   MODALS (generic)
+   =============================== */
 .modalMask{
-  position:absolute; inset:0; z-index:200; display:none;
-  align-items:center; justify-content:center;
-  background:rgba(0,0,0,.65); backdrop-filter:blur(8px);
+  position:absolute;
+  inset:0;
+  z-index:300;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.65);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
 }
 .modalMask.show{ display:flex; }
+
 .photoBox, .authBox, .pageBox, .profileBox, .notifBox, .lockBox{
-  width:86%; max-width:380px; background:#fff; border-radius:22px; padding:16px;
+  width:86%;
+  max-width:380px;
+  background:#fff;
+  border-radius:22px;
+  padding:16px;
   box-shadow:0 10px 40px rgba(0,0,0,.35);
 }
+
+/* Photo */
 .photoTitle{ font-weight:900; font-size:16px; margin-bottom:10px; color:#222; }
 #photoPreview{ width:100%; height:220px; object-fit:cover; border-radius:16px; background:#f2f2f2; }
 .photoActions{ display:flex; gap:10px; margin-top:12px; }
@@ -177,36 +484,76 @@ body.fal-mode #chatContainer{ padding-bottom:420px; }
 .persona-content{ width:85%; max-width:320px; }
 .persona-title{ font-size:18px; font-weight:900; margin-bottom:12px; color:#222; }
 .persona-opt{
-  padding:14px; border-radius:16px; background:#f7f7f7; margin-bottom:10px;
-  font-weight:800; cursor:pointer; border:2px solid transparent; display:flex; justify-content:space-between; align-items:center;
+  padding:14px;
+  border-radius:16px;
+  background:#f7f7f7;
+  margin-bottom:10px;
+  font-weight:800;
+  cursor:pointer;
+  border:2px solid transparent;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 .persona-opt.selected{ border-color:var(--primary); background:#fff8e1; color:#111; }
 .persona-opt.locked{ opacity:.55; cursor:not-allowed; }
 .persona-close{ margin-top:10px; text-align:center; color:#777; font-weight:900; cursor:pointer; }
 
-/* Drawer */
-.drawerMask{ position:absolute; inset:0; background:rgba(0,0,0,.6); z-index:150; display:none; }
+/* ===============================
+   DRAWER
+   - App içinde açılır (absolute)
+   =============================== */
+.drawerMask{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.60);
+  z-index:220;
+  display:none;
+}
 .drawerMask.show{ display:block; }
+
 .drawer{
-  position:absolute; top:0; right:0; height:100%; width:290px; background:#fff; z-index:160;
-  padding:14px; transform:translateX(100%); transition:.25s;
+  position:absolute;
+  top:0;
+  right:0;
+  height:100%;
+  width:290px;
+  background:#fff;
+  z-index:230;
+  padding:14px;
+  transform:translateX(100%);
+  transition:.25s;
 }
 .drawer.open{ transform:translateX(0); }
+
 .drawerTop{ display:flex; align-items:center; justify-content:space-between; padding:6px 4px 12px 4px; }
 .drawerTitle{ font-weight:900; color:#111; }
 .drawerClose{ font-weight:900; cursor:pointer; padding:6px 10px; border-radius:10px; background:#f3f3f3; }
+
 .drawerItem{
-  padding:12px 10px; border-radius:14px; cursor:pointer; font-weight:900; color:#111;
-  display:flex; align-items:center; gap:10px;
+  padding:12px 10px;
+  border-radius:14px;
+  cursor:pointer;
+  font-weight:900;
+  color:#111;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 .drawerItem:active{ transform:scale(.98); background:#f3f3f3; }
+
 .drawerSep{ height:1px; background:#eee; margin:10px 0; }
 .drawerMuted{ padding:10px; color:#888; font-weight:800; }
 
-/* Drawer Profile Card */
+/* Drawer profile card */
 .drawerProfile{
-  display:flex; gap:10px; align-items:center;
-  padding:12px; border-radius:16px; background:#f7f7f7; border:1px solid #eee;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  padding:12px;
+  border-radius:16px;
+  background:#f7f7f7;
+  border:1px solid #eee;
   margin:8px 0 10px 0;
 }
 .dpAvatar{ width:44px; height:44px; border-radius:50%; object-fit:cover; background:#ddd; }
@@ -221,12 +568,17 @@ body.fal-mode #chatContainer{ padding-bottom:420px; }
 /* Pill */
 .pill{
   margin-left:auto;
-  background:#EF4444; color:#fff;
-  font-size:11px; font-weight:1000;
-  padding:3px 8px; border-radius:999px;
+  background:#EF4444;
+  color:#fff;
+  font-size:11px;
+  font-weight:1000;
+  padding:3px 8px;
+  border-radius:999px;
 }
 
-/* Auth */
+/* ===============================
+   AUTH
+   =============================== */
 .authTop{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 .authTitle{ font-weight:1000; color:#111; }
 .authClose{ cursor:pointer; font-weight:1000; padding:6px 10px; border-radius:10px; background:#f3f3f3; }
@@ -243,13 +595,17 @@ body.fal-mode #chatContainer{ padding-bottom:420px; }
 .authMini{ flex:1; height:42px; border-radius:14px; border:1px solid #eee; background:#fff; font-weight:1000; cursor:pointer; }
 .authMini.dark{ border:none; background:#111; color:#fff; }
 
-/* Page modal */
+/* ===============================
+   PAGE MODAL
+   =============================== */
 .pageTop{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px; }
 .pageTitle{ font-weight:1000; color:#111; }
 .pageClose{ cursor:pointer; font-weight:1000; }
 .pageBody{ font-size:13px; line-height:1.55; color:#333; font-weight:700; }
 
-/* Profile modal */
+/* ===============================
+   PROFILE MODAL
+   =============================== */
 .profileTop{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 .profileTitle{ font-weight:1000; color:#111; }
 .profileClose{ cursor:pointer; font-weight:1000; padding:6px 10px; border-radius:10px; background:#f3f3f3; }
@@ -267,14 +623,14 @@ body.fal-mode #chatContainer{ padding-bottom:420px; }
 .profileBtn.primary{ border:none; background:var(--primary); color:#fff; }
 .profileNote{ margin-top:10px; font-size:12px; font-weight:900; color:#666; min-height:18px; }
 
-/* Notif modal */
+/* ===============================
+   NOTIF MODAL
+   =============================== */
 .notifTop{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
 .notifTitle{ font-weight:1000; color:#111; }
 .notifClose{ cursor:pointer; font-weight:1000; padding:6px 10px; border-radius:10px; background:#f3f3f3; }
 .notifList{ max-height:62vh; overflow:auto; display:grid; gap:10px; }
-.notifItem{
-  border:1px solid #eee; border-radius:16px; padding:12px; background:#fff;
-}
+.notifItem{ border:1px solid #eee; border-radius:16px; padding:12px; background:#fff; }
 .notifItem.unread{ background:#fff8e1; border-color:#ffe0a3; }
 .notifItemTitle{ font-weight:1000; color:#111; }
 .notifItemBody{ margin-top:6px; font-weight:800; color:#444; font-size:13px; line-height:1.4; }
@@ -282,56 +638,45 @@ body.fal-mode #chatContainer{ padding-bottom:420px; }
 .nBtn{ flex:1; height:38px; border-radius:12px; font-weight:1000; cursor:pointer; border:1px solid #eee; background:#fff; }
 .nBtn.primary{ border:none; background:var(--primary); color:#fff; }
 
-/* Fal-only */
+/* ===============================
+   FAL UI
+   =============================== */
 .fal-only{ display:none; }
 body.fal-mode #bottom .input-wrapper{ display:none !important; }
 body.fal-mode .fal-only{ display:block; }
 .fal-cam-wrap{ width:100%; display:flex; align-items:center; justify-content:center; padding:10px 0 6px 0; }
-.fal-cam-btn{ width:86px; height:86px; border-radius:28px; border:none; background:var(--primary); color:#fff; font-size:34px; display:flex; align-items:center; justify-content:center; box-shadow:0 14px 30px rgba(0,0,0,.25); cursor:pointer; }
+.fal-cam-btn{
+  width:86px; height:86px;
+  border-radius:28px;
+  border:none;
+  background:var(--primary);
+  color:#fff;
+  font-size:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 14px 30px rgba(0,0,0,.25);
+  cursor:pointer;
+}
 .fal-step-text{ margin-top:10px; text-align:center; font-weight:1000; font-size:12px; color:#222; }
 .fal-step-sub{ margin-top:4px; text-align:center; font-weight:900; font-size:11px; color:#666; }
 
-/* Web lock */
+/* ===============================
+   WEB LOCK
+   =============================== */
 .lockTitle{ font-weight:1000; color:#111; font-size:16px; }
 .lockText{ margin-top:8px; font-weight:900; color:#444; line-height:1.45; }
 .lockBtns{ display:grid; gap:10px; margin-top:12px; }
 .lockBtn{ display:block; text-align:center; padding:12px; border-radius:14px; text-decoration:none; font-weight:1000; color:#111; background:#fff; border:1px solid #eee; }
 .lockBtn.primary{ background:var(--primary); color:#fff; border:none; }
 .lockHint{ margin-top:10px; font-size:12px; color:#666; font-weight:900; }
-/* ===== HOTFIX: Topbar & file input visibility ===== */
 
-/* Topbar her şeyin üstünde kalsın */
-#topbar{
-  position: relative !important;
-  z-index: 9999 !important;
-}
-
-/* Topbar içindeki ikonlar kesin görünsün */
-#topbar .menu-btn{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-
-  width:40px !important;
-  height:40px !important;
-  border-radius:999px !important;
-
-  color:#fff !important;
-  background:rgba(0,0,0,.35) !important;   /* hero üstünde kaybolmasın */
-  border:1px solid rgba(255,255,255,.18) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-
-  cursor:pointer !important;
-}
-
-/* Menü butonu tıklanabilir olsun */
-#menuBtn, #personaBtn{
-  pointer-events:auto !important;
-}
-
-/* File input kesinlikle görünmesin ("Dosya Seç" buradan geliyor) */
-#fileInput{
+/* ===============================
+   FILE INPUT — KESİN GİZLİ
+   ("Dosya seç" yazısı buradan geliyor)
+   =============================== */
+#fileInput,
+input[type="file"]{
   display:none !important;
   visibility:hidden !important;
   width:0 !important;
@@ -339,687 +684,5 @@ body.fal-mode .fal-only{ display:block; }
   opacity:0 !important;
   position:absolute !important;
   left:-9999px !important;
-}
-
-/* Bazı tarayıcılar input'u wrapper gibi basıyor: onu da bastıralım */
-input[type="file"]{
-  display:none !important;
-}
-/* ===== TOPBAR FINAL FIX (PC + Mobil) ===== */
-
-/* Uygulama gövdesi PC'de ortalı ve düzgün dursun */
-html, body{
-  height:100%;
-  background:#000 !important;
-}
-
-#app{
-  position: relative !important;
-  z-index: 1;
-}
-
-/* Topbar kesin üstte + daha rahat boşluk */
-#topbar{
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  z-index: 99999 !important;
-
-  height: 74px !important;
-  padding: 14px 14px !important;
-
-  display:flex !important;
-  align-items:center !important;
-  justify-content:space-between !important;
-
-  /* ikonlar hero üstünde kaybolmasın */
-  background: linear-gradient(to bottom, rgba(0,0,0,.45), rgba(0,0,0,0)) !important;
-}
-
-/* Sağdaki ikon grubu kesin görünür olsun */
-#topbar .top-actions{
-  display:flex !important;
-  gap:10px !important;
-  align-items:center !important;
-}
-
-/* İkon butonları büyüt, kenardan içeri al */
-#topbar .menu-btn{
-  width:44px !important;
-  height:44px !important;
-  border-radius:999px !important;
-
-  background: rgba(0,0,0,.45) !important;
-  border: 1px solid rgba(255,255,255,.22) !important;
-  color: #fff !important;
-
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-
-  box-shadow: 0 8px 20px rgba(0,0,0,.35) !important;
-}
-
-/* İkonların kendi rengi */
-#topbar .menu-btn i{
-  color:#fff !important;
-  font-size:18px !important;
-}
-
-/* Hero görüntüsü topbarın altından başlasın (üstte taşma olmasın) */
-#main{
-  padding-top: 74px !important;
-}
-
-/* Menü açılırken topbar üstte kalsın */
-#drawerMask, #drawer, .modalMask{
-  z-index: 99998 !important;
-}
-/* ===== TOPBAR HARD FIX (Hamburger kesin görünür) ===== */
-
-#app{
-  position: relative !important;
-}
-
-/* topbar her şeyin üstünde ve tıklanır */
-#topbar{
-  position: absolute !important;
-  top: 8px !important;
-  left: 8px !important;
-  right: 8px !important;
-
-  z-index: 999999 !important;
-  pointer-events: auto !important;
-
-  display:flex !important;
-  align-items:center !important;
-  justify-content:space-between !important;
-
-  /* hero üstünde kaybolmasın */
-  background: rgba(0,0,0,.28) !important;
-  border: 1px solid rgba(255,255,255,.14) !important;
-  border-radius: 18px !important;
-  padding: 10px 10px !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-}
-
-/* Sağdaki ikonların bulunduğu alan */
-#topbar .top-actions{
-  display:flex !important;
-  align-items:center !important;
-  gap:10px !important;
-}
-
-/* Tüm ikon butonları net */
-#topbar .menu-btn{
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 999px !important;
-
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-
-  background: rgba(0,0,0,.55) !important;
-  border: 1px solid rgba(255,255,255,.22) !important;
-  color:#fff !important;
-
-  box-shadow: 0 10px 22px rgba(0,0,0,.35) !important;
-}
-
-/* Hamburger BUTONU: özel zorla görünür */
-#menuBtn{
-  display:flex !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-  z-index: 999999 !important;
-}
-
-/* İkon rengi */
-#topbar .menu-btn i{
-  color:#fff !important;
-  font-size: 18px !important;
-}
-
-/* Main içerik topbara çarpmasın */
-#main{
-  padding-top: 88px !important;
-}
-/* Desktop'ta altta kalan siyah boşluğu bitir */
-@media (min-width: 501px){
-  body{
-    background:#0b0f18 !important; /* app ile aynı ton */
-  }
-
-  #app{
-    height: calc(100vh - 24px) !important;   /* ekrana sığ */
-    max-height: none !important;             /* 880px sınırını kaldır */
-    margin: 12px auto !important;            /* üst-alt nefes */
-  }
-}
-/* === DESKTOP FIX: siyah boşluk + kayma === */
-@media (min-width: 768px) {
-  body {
-    background: #0b0f18;
-
-  }
-
-  #app {
-  min-height: 100vh;
-  height: auto !important;
-  margin: 0 auto;
-  border-radius: 24px;
-  overflow: visible;
-}
-/* ==== FIX: Drawer & Hamburger görünmüyor ==== */
-
-#topbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-}
-
-.menu-btn {
-  z-index: 1100;
-  position: relative;
-}
-
-/* Drawer her şeyin üstünde */
-#drawer {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 280px;
-  height: 100vh;
-  background: #fff;
-  z-index: 2000;
-  transform: translateX(100%);
-  transition: transform 0.3s ease;
-}
-
-/* Açılınca */
-#drawer.open {
-  transform: translateX(0);
-}
-
-/* Mask */
-#drawerMask {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  z-index: 1900;
-  display: none;
-}
-
-#drawerMask.show {
-  display: block;
-}
-
-/* File input asla overlay olmasın */
-#fileInput {
-  position: fixed;
-  left: -9999px;
-  top: -9999px;
-}
-/* ===== HOTFIX: Topbar sağa taşma + hamburger dışarı kayma ===== */
-
-/* Sayfa genelinde yatay taşmayı sıfırla */
-html, body {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden !important;
-}
-
-/* App çerçevesi her koşulda viewport dışına taşmasın */
-#app {
-  width: 100%;
-  max-width: 440px;
-  margin: 0 auto;
-  overflow: hidden;
-  position: relative;
-}
-
-/* Topbar mutlaka app içinde kalsın */
-#topbar {
-  position: absolute !important;   /* fixed -> absolute (app içinde) */
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  max-width: 100%;
-  padding-right: 14px !important;  /* sağa pay */
-  box-sizing: border-box;
-  z-index: 1200;
-}
-
-/* Üst sağ ikon grubu asla dışarı taşmasın */
-#topbar .top-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-  margin-left: auto;
-  max-width: 52%;
-}
-
-/* Menü butonu (hamburger) her zaman görünür + içeride */
-#menuBtn,
-#topbar #menuBtn,
-#topbar .menu-btn {
-  position: relative;
-  z-index: 1300;
-}
-
-/* Bazı cihazlarda yuvarlak butonlar sağdan kırpılmasın */
-#topbar .menu-btn {
-  flex: 0 0 auto;
-}
-
-/* Hero alanı topbar'ı ezmesin */
-#main {
-  padding-top: 70px;
-}
-
-/* Drawer mask & drawer her şeyin üstüne çıksın */
-#drawerMask {
-  position: fixed !important;
-  inset: 0;
-  z-index: 2000 !important;
-}
-#drawer {
-  position: fixed !important;
-  top: 0;
-  right: 0;
-  height: 100vh;
-  z-index: 2100 !important;
-}
-  /* file input asla görünmesin */
-#fileInput { 
-  display: none !important; 
-}/* ===== FIX-2: Hamburger kesin görünür + topbar taşma bitir ===== */
-
-html, body{
-  width:100%;
-  max-width:100%;
-  overflow-x:hidden !important;
-}
-
-#app{
-  position:relative;
-  overflow:hidden;
-}
-
-/* Topbar her zaman app içinde */
-#topbar{
-  position:absolute !important;
-  top:0; left:0; right:0;
-  width:100%;
-  z-index:5000;
-  box-sizing:border-box;
-}
-
-/* Marka alanı sağdaki butonları itmesin */
-#topbar .brand-wrap{
-  max-width: calc(100% - 170px);
-  overflow:hidden;
-}
-
-/* Sağ butonlar sabit sağa */
-#topbar .top-actions{
-  position:absolute;
-  right:12px;
-  top:12px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  z-index:6000;
-}
-
-/* Persona + Menu butonları kesin görünür */
-#personaBtn, #menuBtn{
-  display:flex !important;
-  align-items:center;
-  justify-content:center;
-  width:40px;
-  height:40px;
-  border-radius:50%;
-}
-
-/* Menü butonu (hamburger) ekstra garanti */
-#menuBtn{
-  opacity:1 !important;
-  visibility:visible !important;
-}
-
-/* File input asla görünmesin (Dosya seç yazısı) */
-#fileInput{
-  display:none !important;
-}
-/* ===== FINAL FIX: Drawer + Topbar tamamen #app içinde ===== */
-
-html, body{
-  width:100%;
-  height:100%;
-  overflow-x:hidden !important;
-}
-
-body{
-  margin:0;
-}
-
-/* Telefon frame */
-#app{
-  position:relative !important;
-  width:min(440px, 100vw) !important;
-  height:min(880px, 100vh) !important;
-  overflow:hidden !important;
-}
-
-/* Mobilde tam ekran */
-@media (max-width: 500px){
-  #app{
-    width:100vw !important;
-    height:100vh !important;
-    border-radius:0 !important;
-  }
-}
-
-/* Topbar APP içinde kalsın */
-#topbar{
-  position:absolute !important;
-  top:0; left:0; right:0;
-  z-index:5000 !important;
-}
-
-/* Sağ butonlar app içinde sabit sağ üst */
-#topbar .top-actions{
-  position:absolute !important;
-  top:12px !important;
-  right:12px !important;
-  display:flex !important;
-  gap:10px !important;
-  z-index:6000 !important;
-}
-
-/* Menü butonu kesin görünsün */
-#menuBtn{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  width:40px !important;
-  height:40px !important;
-  border-radius:50% !important;
-}
-
-/* Drawer mask APP içinde */
-#drawerMask{
-  position:absolute !important;
-  inset:0 !important;
-  z-index:7000 !important;
-  display:none !important;
-}
-
-/* JS show ekliyorsa */
-#drawerMask.show{
-  display:block !important;
-}
-
-/* Drawer APP içinde sağdan aç */
-#drawer{
-  position:absolute !important;
-  top:0 !important;
-  right:0 !important;
-  height:100% !important;
-  width:280px !important;
-  z-index:8000 !important;
-  transform:translateX(100%) !important;
-  transition:transform .25s ease !important;
-}
-
-/* JS open ekliyorsa */
-#drawer.open{
-  transform:translateX(0) !important;
-}
-
-/* File input yazısı “Dosya seç” gözükmesin */
-#fileInput{
-  display:none !important;
-}
-/* ===== TOPBAR FIX (logo + user pill + icons) ===== */
-#topbar{
-  position:absolute !important;
-  top:0; left:0; right:0;
-  z-index:6000 !important;
-  padding:10px 12px !important;
-}
-
-/* Sol taraf taşınca kesmesin */
-#topbar .brand-wrap{
-  min-width: 0 !important;
-  overflow: visible !important;
-}
-
-/* Logo kırpılmasın */
-#topbar .brand{
-  white-space: nowrap !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
-}
-
-/* Sağ ikonlar her zaman görünsün */
-#topbar .top-actions{
-  display:flex !important;
-  align-items:center !important;
-  gap:10px !important;
-  flex-shrink:0 !important;
-}
-
-/* Menü butonu kesin görünür */
-#menuBtn, #personaBtn, #notifBtn{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-}
-
-/* --- Mobilde sığdırma --- */
-@media (max-width: 500px){
-  #topbar{
-    padding:8px 10px !important;
-  }
-
-  /* Logo biraz küçülsün, kırpılmasın */
-  #topbar .brand{
-    font-size:18px !important;
-  }
-  #topbar .brand-sub{
-    font-size:9px !important;
-  }
-
-  /* Eğer üstteki “Misafir / Free” pill çok genişse sığdır */
-  .user-pill, .userPill, #userPill{
-    max-width: 150px !important;
-    padding:6px 10px !important;
-    font-size:12px !important;
-    overflow:hidden !important;
-    white-space:nowrap !important;
-    text-overflow: ellipsis !important;
-  }
-}
-
-/* ===== Misafir/Free’yi ikonların altına al (CSS ile) =====
-   NOT: class/id sende hangisiyse çalışır: .user-pill / .userPill / #userPill
-*/
-.user-pill, .userPill, #userPill{
-  position:absolute !important;
-  right:12px !important;
-  top:54px !important;   /* ikonların altına */
-  z-index:6500 !important;
-}
-
-/* Mobilde biraz aşağı */
-@media (max-width: 500px){
-  .user-pill, .userPill, #userPill{
-    top:50px !important;
-    right:10px !important;
-  }
-}
-/* ===============================
-   TOPBAR – KESİN DÜZELTME
-   =============================== */
-
-/* Topbar taşmasın ama içindekiler görünsün */
-#topbar{
-  overflow: visible !important;
-  padding-right: 8px;
-}
-
-/* Sağ üst kullanıcı alanı */
-#topbar .topUser{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-/* Misafir / Free chip */
-#userChip{
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  max-width: 180px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(0,0,0,0.35);
-  flex-shrink: 0;
-}
-
-/* Avatar */
-#chipAvatar{
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-/* Yazılar ALT ALTA */
-#userChip .chipText{
-  display: flex;
-  flex-direction: column;   /* 🔑 kritik */
-  line-height: 1.1;
-  min-width: 0;
-}
-
-/* Misafir */
-#chipName{
-  font-size: 12px;
-  font-weight: 900;
-  color: #fff;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Free */
-#chipPlan{
-  font-size: 10px;
-  font-weight: 700;
-  color: #ffcc66;
-}
-
-/* Sağ üst ikonlar (bildirim, maske, hamburger) */
-#topbar .top-actions,
-#topbar .menu-btn,
-#menuBtn{
-  flex-shrink: 0 !important;
-  z-index: 1200;
-}
-
-/* Hamburger her zaman görünür */
-#menuBtn{
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ===============================
-   MOBİL DÜZEN
-   =============================== */
-@media (max-width: 480px){
-  #userChip{
-    max-width: 140px;
-    padding: 4px 8px;
-  }
-
-  #chipName{
-    font-size: 11px;
-  }
-
-  #chipPlan{
-    font-size: 9px;
-  }
-}
-/* ===== Mini User Card (bell + hamburger altı) ===== */
-.userMiniCard{
-  position: absolute;
-  top: 58px; /* topbar altı */
-  right: calc(14px + env(safe-area-inset-right));
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  padding: 10px 12px;
-  border-radius: 16px;
-
-  background: rgba(20,20,20,0.45);
-  border: 1px solid rgba(255,255,255,0.14);
-  backdrop-filter: blur(10px);
-
-  z-index: 1200;
-  max-width: 220px;
-}
-
-.miniAvatar{
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  object-fit: cover;
-  background: rgba(255,255,255,0.12);
-  flex: 0 0 auto;
-}
-
-.miniText{ min-width: 0; }
-.miniName{
-  font-weight: 900;
-  font-size: 12px;
-  color: #fff;
-  line-height: 1.1;
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.miniPlan{
-  margin-top: 2px;
-  font-weight: 900;
-  font-size: 11px;
-  color: rgba(255,255,255,0.75);
-  line-height: 1.1;
-}
-
-/* Mobilde biraz daha dar */
-@media (max-width:500px){
-  .userMiniCard{
-    right: calc(10px + env(safe-area-inset-right));
-    top: 56px;
-    max-width: 200px;
-  }
+  top:-9999px !important;
 }
