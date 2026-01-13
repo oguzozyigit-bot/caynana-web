@@ -569,3 +569,79 @@ html, body{
   left: -9999px;
   top: -9999px;
 }
+/* ===== HOTFIX: Topbar sağa taşma + hamburger dışarı kayma ===== */
+
+/* Sayfa genelinde yatay taşmayı sıfırla */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden !important;
+}
+
+/* App çerçevesi her koşulda viewport dışına taşmasın */
+#app {
+  width: 100%;
+  max-width: 440px;
+  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Topbar mutlaka app içinde kalsın */
+#topbar {
+  position: absolute !important;   /* fixed -> absolute (app içinde) */
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-width: 100%;
+  padding-right: 14px !important;  /* sağa pay */
+  box-sizing: border-box;
+  z-index: 1200;
+}
+
+/* Üst sağ ikon grubu asla dışarı taşmasın */
+#topbar .top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin-left: auto;
+  max-width: 52%;
+}
+
+/* Menü butonu (hamburger) her zaman görünür + içeride */
+#menuBtn,
+#topbar #menuBtn,
+#topbar .menu-btn {
+  position: relative;
+  z-index: 1300;
+}
+
+/* Bazı cihazlarda yuvarlak butonlar sağdan kırpılmasın */
+#topbar .menu-btn {
+  flex: 0 0 auto;
+}
+
+/* Hero alanı topbar'ı ezmesin */
+#main {
+  padding-top: 70px;
+}
+
+/* Drawer mask & drawer her şeyin üstüne çıksın */
+#drawerMask {
+  position: fixed !important;
+  inset: 0;
+  z-index: 2000 !important;
+}
+#drawer {
+  position: fixed !important;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  z-index: 2100 !important;
+}
+  /* file input asla görünmesin */
+#fileInput { 
+  display: none !important; 
+}
