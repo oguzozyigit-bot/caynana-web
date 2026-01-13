@@ -967,3 +967,59 @@ body{
     font-size: 9px;
   }
 }
+/* ===== Mini User Card (bell + hamburger altı) ===== */
+.userMiniCard{
+  position: absolute;
+  top: 58px; /* topbar altı */
+  right: calc(14px + env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border-radius: 16px;
+
+  background: rgba(20,20,20,0.45);
+  border: 1px solid rgba(255,255,255,0.14);
+  backdrop-filter: blur(10px);
+
+  z-index: 1200;
+  max-width: 220px;
+}
+
+.miniAvatar{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: rgba(255,255,255,0.12);
+  flex: 0 0 auto;
+}
+
+.miniText{ min-width: 0; }
+.miniName{
+  font-weight: 900;
+  font-size: 12px;
+  color: #fff;
+  line-height: 1.1;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.miniPlan{
+  margin-top: 2px;
+  font-weight: 900;
+  font-size: 11px;
+  color: rgba(255,255,255,0.75);
+  line-height: 1.1;
+}
+
+/* Mobilde biraz daha dar */
+@media (max-width:500px){
+  .userMiniCard{
+    right: calc(10px + env(safe-area-inset-right));
+    top: 56px;
+    max-width: 200px;
+  }
+}
