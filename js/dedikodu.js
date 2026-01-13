@@ -1,4 +1,4 @@
-import { BASE_DOMAIN, getToken, authHeaders, IS_ALTIN, pullPlanFromBackend } from "./main.js";
+import { BASE_DOMAIN, authHeaders, IS_ALTIN, pullPlanFromBackend } from "./main.js";
 
 const NOTIFS_URL = `${BASE_DOMAIN}/api/notifications`;
 const NOTIF_READ_URL = `${BASE_DOMAIN}/api/notifications/read`;
@@ -6,7 +6,7 @@ const INVITE_URL = `${BASE_DOMAIN}/api/dedikodu/invite`;
 const ACCEPT_URL = `${BASE_DOMAIN}/api/dedikodu/accept`;
 const REJECT_URL = `${BASE_DOMAIN}/api/dedikodu/reject`;
 
-let inbox = []; // notifications mapped
+let inbox = [];
 
 async function apiGET(url){
   const r = await fetch(url, { headers:{ ...authHeaders() } });
@@ -64,12 +64,21 @@ function panelHtml(){
 }
 
 function US(msg){
-  return `
-    <div style="font-weight:1000;color:#111;">Hata</div>
-    <div style="margin-top:8px;color:#444;font-weight:900;">
-      ${window.App.escapeHtml(msg || "")}
-    </div>
-  `;
+  return `<div style="font-weight:1000;color:#111;">Hata</div>
+          <div style="margin-top:8px;color:#444;font-weight:900;">${window.App.escapeHtml(msg||"")}</div>`;
+}
+
+async function refreshInbox(){
+  const j = await apiGET(NOTIFS_URL);
+  const items = j.items || [];
+  inbox = items
+    .filter(x => x.payload && x.payload.kind === "dedikodu_invite" && !x.is_read)
+    .map(x => ({
+      id: x.id,
+      title: x.title,
+      body: x.body,
+      invite_id: x.payload.invite_id
+    }));
 }
 
 function renderInbox(){
@@ -101,48 +110,18 @@ function renderInbox(){
       const act = btn.dataset.act;
       const nid = Number(btn.dataset.id);
       const inviteId = Number(btn.dataset.invite);
-
       try{
         if(act==="accept") await apiPOST(ACCEPT_URL, { invite_id: inviteId });
         if(act==="reject") await apiPOST(REJECT_URL, { invite_id: inviteId });
-
         await apiPOST(NOTIF_READ_URL, { id: nid });
         await refreshInbox();
-        refreshBadge();
-
+        renderInbox();
         window.App.showPage("Dedikodu Odası", `<div style="font-weight:1000;color:#111;">İşlem tamam ✅</div>`);
       }catch(e){
-        // ✅ BURASI DÜZELTİLDİ
         window.App.showPage("Dedikodu Odası", US(e.message));
       }
     };
   });
-}
-
-async function refreshInbox(){
-  if(!getToken()) { inbox = []; return; }
-  const j = await apiGET(NOTIFS_URL);
-  const items = j.items || [];
-  inbox = items
-    .filter(x => x.payload && x.payload.kind === "dedikodu_invite" && !x.is_read)
-    .map(x => ({
-      id: x.id,
-      title: x.title,
-      body: x.body,
-      invite_id: x.payload.invite_id
-    }));
-}
-
-function refreshBadge(){
-  const badge = document.getElementById("dedikoduBadge");
-  if(!badge) return;
-  const n = inbox.length;
-  if(n>0){
-    badge.style.display="inline-block";
-    badge.textContent = String(n>99 ? "99+" : n);
-  } else {
-    badge.style.display="none";
-  }
 }
 
 function bindPanel(){
@@ -165,7 +144,7 @@ function bindPanel(){
   }
 }
 
-async function openPanel(){
+export async function openPanel(){
   await pullPlanFromBackend();
 
   if(!IS_ALTIN()){
@@ -174,21 +153,13 @@ async function openPanel(){
   }
 
   window.App.showPage("Dedikodu Odası", panelHtml());
-
   setTimeout(async ()=>{
     try{
       await refreshInbox();
       renderInbox();
-      refreshBadge();
       bindPanel();
     }catch(e){
       window.App.showPage("Dedikodu Odası", US(e.message));
     }
   }, 50);
 }
-
-window.Dedikodu = {
-  openPanel,
-  refreshInbox,
-  refreshBadge
-};
