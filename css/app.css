@@ -308,3 +308,49 @@ body.fal-mode .fal-only{ display:block; }
   #pageBody{ max-height: 72vh; }
   .pageBox{ max-height: 86vh; }
 }
+/* ============================
+   FINAL FIX: Page Modal SCROLL
+   ============================ */
+
+/* Modal açıkken kutu ekrana sığsın */
+#pageModal.show{
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+/* Kutu: yüksekliği sınırlı, içerik içerden kayar */
+#pageModal .pageBox{
+  max-height: 86vh !important;
+  height: auto !important;
+  overflow: hidden !important;      /* scroll dış kutuda değil */
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Üst bar sabit kalsın */
+#pageModal .pageTop{
+  flex: 0 0 auto !important;
+}
+
+/* SCROLL ASIL BURADA */
+#pageModal .pageBody,
+#pageBody{
+  flex: 1 1 auto !important;
+  min-height: 0 !important;         /* flex içinde scroll için kritik */
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;   /* мобilde sürükleyerek kaydır */
+  padding-right: 10px !important;
+}
+
+/* Mobilde biraz daha uzun */
+@media (max-width: 500px){
+  #pageModal .pageBox{ max-height: 90vh !important; }
+}
+
+/* Eğer page içeriği uzun metinse tıklama/drag sorununu azalt */
+#pageModal .pageBody *{
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
