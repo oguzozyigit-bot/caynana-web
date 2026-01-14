@@ -1,5 +1,5 @@
-// CAYNANA WEB - main.js (SAFE v5000)
-// Bu sürüm: aynı isimli fonksiyon/const tekrarını 0'a indirir. (openStaticPage çakışması biter)
+// CAYNANA WEB - main.js (SAFE v5000 - FIXED)
+// Tek dosya, çakışma yok. Fal UI sadece fal modunda görünür.
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
@@ -186,7 +186,7 @@ function assetUrl(relPath) {
   return new URL(`../${relPath}`, import.meta.url).href;
 }
 
-// ---- Pages (tek fonksiyon, ÇAKIŞMA YOK) ----
+// ---- Pages ----
 async function openPageFromFile(title, path) {
   try {
     const r = await fetch(path, { cache: "no-store" });
@@ -336,6 +336,7 @@ function loadModeChat(modeKey) {
 
 function switchMode(modeKey) {
   if (modeKey === currentMode) return;
+
   saveModeChat();
   currentMode = modeKey;
 
@@ -346,8 +347,14 @@ function switchMode(modeKey) {
   applyHero(modeKey);
   loadModeChat(modeKey);
 
+  // ✅ Fal UI sadece fal modunda
   document.body.classList.toggle("fal-mode", modeKey === "fal");
-  if (modeKey === "fal") resetFalCapture();
+  if (modeKey !== "fal") {
+    falImages = [];
+    setFalStepUI();
+  } else {
+    resetFalCapture();
+  }
 }
 
 // swipe + brand double tap
@@ -356,23 +363,31 @@ function bindSwipe() {
   if (!area) return;
   let sx = 0, sy = 0, active = false;
 
-  area.addEventListener("pointerdown", (e) => {
-    active = true;
-    sx = e.clientX;
-    sy = e.clientY;
-  }, { passive: true });
+  area.addEventListener(
+    "pointerdown",
+    (e) => {
+      active = true;
+      sx = e.clientX;
+      sy = e.clientY;
+    },
+    { passive: true }
+  );
 
-  area.addEventListener("pointerup", (e) => {
-    if (!active) return;
-    active = false;
-    const dx = e.clientX - sx;
-    const dy = e.clientY - sy;
-    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
-    const step = dx < 0 ? 1 : -1;
-    const idx = MODE_KEYS.indexOf(currentMode);
-    const next = MODE_KEYS[(idx + step + MODE_KEYS.length) % MODE_KEYS.length];
-    switchMode(next);
-  }, { passive: true });
+  area.addEventListener(
+    "pointerup",
+    (e) => {
+      if (!active) return;
+      active = false;
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+      const step = dx < 0 ? 1 : -1;
+      const idx = MODE_KEYS.indexOf(currentMode);
+      const next = MODE_KEYS[(idx + step + MODE_KEYS.length) % MODE_KEYS.length];
+      switchMode(next);
+    },
+    { passive: true }
+  );
 
   if (brandTap) {
     let last = 0;
@@ -400,13 +415,21 @@ function closeDrawer() {
 
 // ---- Plan + Drawer profile ----
 async function pullPlanFromBackend() {
-  if (!getToken()) { currentPlan = "free"; return; }
+  if (!getToken()) {
+    currentPlan = "free";
+    return;
+  }
   try {
-    const r = await fetch(`${BASE_DOMAIN}/api/memory/get`, { method: "GET", headers: { ...authHeaders() } });
+    const r = await fetch(`${BASE_DOMAIN}/api/memory/get`, {
+      method: "GET",
+      headers: { ...authHeaders() },
+    });
     const j = await r.json().catch(() => ({}));
     const plan = ((j.profile || {}).plan || "free").toLowerCase();
-    currentPlan = (plan === "plus" || plan === "pro") ? plan : "free";
-  } catch { currentPlan = "free"; }
+    currentPlan = plan === "plus" || plan === "pro" ? plan : "free";
+  } catch {
+    currentPlan = "free";
+  }
 }
 
 function setDrawerProfileUI() {
@@ -415,8 +438,10 @@ function setDrawerProfileUI() {
   if (dpPlan) dpPlan.textContent = (currentPlan || "free").toUpperCase();
   if (dpCN) dpCN.textContent = "CN-????";
   if (dpAvatar) {
-    dpAvatar.src = "https://via.placeholder.com/80";
-    dpAvatar.onerror = () => { dpAvatar.src = "https://via.placeholder.com/80"; };
+    dpAvatar.src = "https://placehold.co/80x80/png";
+    dpAvatar.onerror = () => {
+      dpAvatar.src = "https://placehold.co/80x80/png";
+    };
   }
 }
 function updateLoginUI() {
@@ -578,8 +603,15 @@ async function falCheckOneImage(dataUrl) {
     return { ok: false, reason: "Kontrol edemedim, tekrar dene." };
   }
 }
-function openCamera() { if (fileEl) { fileEl.value = ""; fileEl.click(); } }
-function openFalCamera() { openCamera(); }
+function openCamera() {
+  if (fileEl) {
+    fileEl.value = "";
+    fileEl.click();
+  }
+}
+function openFalCamera() {
+  openCamera();
+}
 
 function resetModalOnly() {
   pendingImage = null;
@@ -627,7 +659,8 @@ if (photoOkBtn) {
       setTimeout(() => openFalCamera(), 180);
       return;
     }
-    if (currentMode === "fal" && textInput) textInput.value = "Fal bak: fincanı 3 açıdan gönderdim. İnsani anlat.";
+    if (currentMode === "fal" && textInput)
+      textInput.value = "Fal bak: fincanı 3 açıdan gönderdim. İnsani anlat.";
     await send();
     if (currentMode === "fal") resetFalCapture();
   };
@@ -672,7 +705,10 @@ if (chatContainer) {
 }
 
 async function playAudio(text, btn) {
-  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
   const old = btn.innerHTML;
   btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
   try {
@@ -746,7 +782,10 @@ function bindEvents() {
   // persona
   if (personaBtn) personaBtn.onclick = () => showModal(personaModal);
   if (personaClose) personaClose.onclick = () => hideModal(personaModal);
-  if (personaModal) personaModal.addEventListener("click", (e) => { if (e.target === personaModal) hideModal(personaModal); });
+  if (personaModal)
+    personaModal.addEventListener("click", (e) => {
+      if (e.target === personaModal) hideModal(personaModal);
+    });
 
   document.querySelectorAll("#personaModal .persona-opt").forEach((opt) => {
     opt.addEventListener("click", () => {
@@ -815,12 +854,18 @@ function bindEvents() {
 
   // page close
   if (pageClose) pageClose.onclick = hidePage;
-  if (pageModal) pageModal.addEventListener("click", (e) => { if (e.target === pageModal) hidePage(); });
+  if (pageModal)
+    pageModal.addEventListener("click", (e) => {
+      if (e.target === pageModal) hidePage();
+    });
 
   // notifications
   if (notifIconBtn) notifIconBtn.onclick = openNotifications;
   if (notifClose) notifClose.onclick = () => hideModal(notifModal);
-  if (notifModal) notifModal.addEventListener("click", (e) => { if (e.target === notifModal) hideModal(notifModal); });
+  if (notifModal)
+    notifModal.addEventListener("click", (e) => {
+      if (e.target === notifModal) hideModal(notifModal);
+    });
 
   // chat actions
   if (camBtn) camBtn.onclick = openCamera;
@@ -832,12 +877,18 @@ function bindEvents() {
 
 // ---- Init ----
 async function init() {
+  // ✅ Fal UI asla her modda görünmesin
+  document.body.classList.remove("fal-mode");
+  falImages = [];
+  setFalStepUI();
+
   renderDock();
   applyHero("chat");
   loadModeChat("chat");
-  setFalStepUI();
+
   bindSwipe();
   bindEvents();
+
   await pullPlanFromBackend();
   setDrawerProfileUI();
   updateLoginUI();
