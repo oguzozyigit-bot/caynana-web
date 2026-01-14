@@ -1,9 +1,9 @@
-// CAYNANA WEB - main.js (FINAL v6000)
-// ✅ Tek dosya, çakışma yok, JS içine CSS YAZILMAZ.
+// CAYNANA WEB - main.js (FINAL v7000)
+// ✅ Tek dosya, çakışma yok, JS içine "ham CSS" yazılmaz.
 // ✅ Giriş yoksa: chat gönderme yok, mod yok, persona yok, kamera/mic yok.
-// ✅ Giriş varsa: tüm modlar + persona serbest (kilit yok).
-// ✅ Shopping: ürünleri TEK TEK, premium kart olarak basar. Fiyat yoksa fiyat/puan göstermez.
-// ✅ Swipe + çift tık: giriş varsa çalışır.
+// ✅ Giriş varsa: tüm modlar + persona serbest.
+// ✅ Shopping: TEK TEK premium kart + "Caynana Yıldızları" rozeti (puan/sıra yok).
+// ✅ Çift tık: native dblclick (sağlam). Swipe: giriş varsa çalışır.
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
@@ -13,7 +13,7 @@ const NOTIF_URL = `${BASE_DOMAIN}/api/notifications`;
 const PROFILE_ME_URL = `${BASE_DOMAIN}/api/profile/me`;
 
 const GOOGLE_CLIENT_ID =
-  "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com";
+  "1030744341756-bo7iqng4lftnmcm4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com";
 
 const TOKEN_KEY = "caynana_token";
 
@@ -30,7 +30,7 @@ export function authHeaders() {
 }
 
 // -------------------------
-// GLOBAL FAILSAFE (siyah ekranı bitirir)
+// GLOBAL FAILSAFE (JS patlarsa siyah ekran yerine hata kutusu)
 // -------------------------
 window.addEventListener("error", (e) => {
   try {
@@ -55,7 +55,6 @@ let isSending = false;
 
 let currentMode = "chat";
 let currentPersona = "normal";
-
 let currentPlan = "free";
 
 // fal
@@ -279,74 +278,77 @@ async function requireLogin(reasonText = "Evladım, önce giriş yapacaksın.") 
 }
 
 // -------------------------
-// CSS injection (JS içinde gerçek CSS olmaz, STYLE etiketi ile ekleriz)
+// STYLE injection (shopping kart stilleri)
 // -------------------------
-function ensurePremiumCardStyles() {
-  if (document.getElementById("premiumCardStyles")) return;
+function ensureShoppingStyles() {
+  if (document.getElementById("caynanaShopStyles")) return;
 
   const s = document.createElement("style");
-  s.id = "premiumCardStyles";
+  s.id = "caynanaShopStyles";
   s.textContent = `
   .shopWrap{ margin-top:12px; display:flex; flex-direction:column; gap:12px; }
   .shopCard{
-    background:#fff;
-    border:1px solid rgba(0,0,0,.08);
+    background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,1));
+    border:1px solid rgba(0,0,0,.06);
     border-radius:18px;
     overflow:hidden;
-    box-shadow:0 10px 28px rgba(0,0,0,.16);
+    box-shadow:0 14px 34px rgba(0,0,0,.18);
+    position:relative;
   }
-  .shopTop{
-    display:flex; gap:12px; align-items:stretch;
-    padding:12px;
+  .shopGlow{
+    position:absolute; inset:-40px -40px auto -40px;
+    height:140px;
+    filter:blur(28px);
+    opacity:.55;
+    pointer-events:none;
   }
+  .shopTop{ display:flex; gap:12px; align-items:flex-start; padding:12px; }
   .shopImgBox{
-    width:96px; min-width:96px; height:96px;
-    border-radius:16px;
-    background:linear-gradient(135deg, rgba(0,0,0,.04), rgba(0,0,0,.02));
-    border:1px solid rgba(0,0,0,.06);
+    width:106px; min-width:106px; height:106px;
+    border-radius:18px;
+    background:rgba(0,0,0,.04);
+    border:1px solid rgba(0,0,0,.08);
     display:flex; align-items:center; justify-content:center;
     overflow:hidden;
   }
-  .shopImgBox img{
-    width:100%; height:100%; object-fit:contain;
-  }
+  .shopImgBox img{ width:100%; height:100%; object-fit:contain; }
   .shopMeta{ flex:1; min-width:0; }
-  .shopBadges{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
-  .badge{
-    font-weight:1000;
-    font-size:11px;
-    padding:6px 10px;
-    border-radius:999px;
-    border:1px solid rgba(0,0,0,.10);
-    background:#f6f6f6;
-    color:#111;
-  }
-  .badge.gold{ background:rgba(255,179,0,.16); border-color:rgba(255,179,0,.35); }
-  .badge.silver{ background:rgba(160,160,160,.16); border-color:rgba(160,160,160,.35); }
-  .badge.bronze{ background:rgba(205,127,50,.16); border-color:rgba(205,127,50,.35); }
-  .badge.pick{ background:rgba(0,200,151,.14); border-color:rgba(0,200,151,.30); }
   .shopTitle{
     font-weight:1000;
     color:#111;
-    font-size:13px;
-    line-height:1.25;
-    max-height:34px;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  .shopPrice{
-    margin-top:6px;
-    font-weight:1000;
     font-size:14px;
-    color:var(--primary);
+    line-height:1.25;
+    max-height:38px;
+    overflow:hidden;
   }
+  .shopBadges{ display:flex; align-items:center; gap:8px; margin:8px 0 0 0; flex-wrap:wrap; }
+  .starBadge{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    font-weight:1000;
+    font-size:11px;
+    color:#111;
+    border:1px solid rgba(0,0,0,.10);
+    background:rgba(255,255,255,.9);
+    box-shadow:0 8px 22px rgba(0,0,0,.12);
+  }
+  .starPill{
+    width:30px; height:30px;
+    border-radius:999px;
+    display:flex; align-items:center; justify-content:center;
+    color:#fff;
+    font-size:14px;
+    box-shadow:0 10px 22px rgba(0,0,0,.18);
+  }
+  .stars{ letter-spacing:1px; font-size:11px; }
   .shopWhy{
     margin:0 12px 12px 12px;
     padding:10px 12px;
     border-radius:16px;
     background:#f7f7f8;
     border:1px solid rgba(0,0,0,.06);
-    font-weight:800;
+    font-weight:850;
     font-size:12px;
     line-height:1.35;
     color:#333;
@@ -356,11 +358,12 @@ function ensurePremiumCardStyles() {
     display:flex; align-items:center; justify-content:center;
     gap:8px;
     text-decoration:none;
-    height:44px;
+    height:46px;
     border-radius:14px;
     background:var(--primary);
     color:#fff;
     font-weight:1000;
+    box-shadow:0 12px 26px rgba(0,0,0,.18);
   }
   .shopBtn:active{ transform:scale(.98); }
   `;
@@ -395,66 +398,12 @@ window.App = { escapeHtml, showPage };
 // Modes
 // -------------------------
 const MODES = {
-  chat: {
-    label: "Sohbet",
-    icon: "fa-comments",
-    color: "#FFB300",
-    title: "Caynana ile<br>iki lafın belini kır.",
-    desc: "Biraz dur bakalım, neler anlatacaksın?",
-    img: assetUrl("images/hero-chat.png"),
-    ph: "Naber Caynana?",
-    sugg: "Benim zamanımda her şey daha güzeldi ah ah…",
-  },
-  dedikodu: {
-    label: "Dedikodu",
-    icon: "fa-people-group",
-    color: "#111111",
-    title: "Dedikodu Odası",
-    desc: "Evladım burada lafın ucu kaçar…",
-    img: assetUrl("images/hero-dedikodu.png"),
-    ph: "Bir şey yaz…",
-    sugg: "Dedikodu varsa ben buradayım…",
-  },
-  shopping: {
-    label: "Alışveriş",
-    icon: "fa-bag-shopping",
-    color: "#00C897",
-    title: "Almadan önce<br>Caynana’ya sor.",
-    desc: "Sonra “keşke” dememek için buradayım.",
-    img: assetUrl("images/hero-shopping.png"),
-    ph: "Ne arıyorsun evladım?",
-    sugg: "Her indirime atlayan sonunda pahalı öder.",
-  },
-  fal: {
-    label: "Fal",
-    icon: "fa-mug-hot",
-    color: "#8B5CF6",
-    title: "Fincanı kapat<br>tabakla gönder.",
-    desc: "3 açı çek: üstten, yandan, diğer yandan.",
-    img: assetUrl("images/hero-fal.png"),
-    ph: "",
-    sugg: "Sadece fincan + tabak.",
-  },
-  saglik: {
-    label: "Sağlık",
-    icon: "fa-heart-pulse",
-    color: "#EF4444",
-    title: "Caynana Sağlık'la<br>turp gibi ol.",
-    desc: "Neren ağrıyor söyle bakayım?",
-    img: assetUrl("images/hero-health.png"),
-    ph: "Şikayetin ne?",
-    sugg: "Çay üstüne sakın soğuk su içme!",
-  },
-  diyet: {
-    label: "Diyet",
-    icon: "fa-carrot",
-    color: "#84CC16",
-    title: "Sağlıklı beslen<br>zinde kal!",
-    desc: "Açlıktan değil, keyiften yiyin.",
-    img: assetUrl("images/hero-diet.png"),
-    ph: "Boy kilo kaç?",
-    sugg: "Ekmek değil, yeşillik ye.",
-  },
+  chat: { label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img:assetUrl("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…" },
+  dedikodu: { label:"Dedikodu", icon:"fa-people-group", color:"#111111", title:"Dedikodu Odası", desc:"Evladım burada lafın ucu kaçar…", img:assetUrl("images/hero-dedikodu.png"), ph:"Bir şey yaz…", sugg:"Dedikodu varsa ben buradayım…" },
+  shopping: { label:"Alışveriş", icon:"fa-bag-shopping", color:"#00C897", title:"Almadan önce<br>Caynana’ya sor.", desc:"Sonra “keşke” dememek için buradayım.", img:assetUrl("images/hero-shopping.png"), ph:"Ne arıyorsun evladım?", sugg:"Her indirime atlayan sonunda pahalı öder." },
+  fal: { label:"Fal", icon:"fa-mug-hot", color:"#8B5CF6", title:"Fincanı kapat<br>tabakla gönder.", desc:"3 açı çek: üstten, yandan, diğer yandan.", img:assetUrl("images/hero-fal.png"), ph:"", sugg:"Sadece fincan + tabak." },
+  saglik: { label:"Sağlık", icon:"fa-heart-pulse", color:"#EF4444", title:"Caynana Sağlık'la<br>turp gibi ol.", desc:"Neren ağrıyor söyle bakayım?", img:assetUrl("images/hero-health.png"), ph:"Şikayetin ne?", sugg:"Çay üstüne sakın soğuk su içme!" },
+  diyet: { label:"Diyet", icon:"fa-carrot", color:"#84CC16", title:"Sağlıklı beslen<br>zinde kal!", desc:"Açlıktan değil, keyiften yiyin.", img:assetUrl("images/hero-diet.png"), ph:"Boy kilo kaç?", sugg:"Ekmek değil, yeşillik ye." },
 };
 const MODE_KEYS = Object.keys(MODES);
 
@@ -497,27 +446,16 @@ function renderDock() {
 }
 
 const modeChats = {};
-function saveModeChat() {
-  if (chatContainer) modeChats[currentMode] = chatContainer.innerHTML || "";
-}
+function saveModeChat() { if (chatContainer) modeChats[currentMode] = chatContainer.innerHTML || ""; }
 function loadModeChat(modeKey) {
   if (!chatContainer || !heroContent) return;
   chatContainer.innerHTML = modeChats[modeKey] || "";
-  if (!chatContainer.innerHTML.trim()) {
-    heroContent.style.display = "block";
-    chatContainer.style.display = "none";
-  } else {
-    heroContent.style.display = "none";
-    chatContainer.style.display = "block";
-    scrollToBottom(true);
-  }
+  if (!chatContainer.innerHTML.trim()) { heroContent.style.display="block"; chatContainer.style.display="none"; }
+  else { heroContent.style.display="none"; chatContainer.style.display="block"; scrollToBottom(true); }
 }
 
 function switchMode(modeKey) {
-  if (!getToken()) {
-    requireLogin("Evladım, modlara geçmek için önce giriş yapman lazım.");
-    return;
-  }
+  if (!getToken()) { requireLogin("Evladım, modlara geçmek için önce giriş yapman lazım."); return; }
   if (modeKey === currentMode) return;
 
   saveModeChat();
@@ -531,31 +469,26 @@ function switchMode(modeKey) {
   loadModeChat(modeKey);
 
   document.body.classList.toggle("fal-mode", modeKey === "fal");
-  if (modeKey !== "fal") {
-    falImages = [];
-    setFalStepUI();
-  } else {
-    resetFalCapture();
-  }
+  if (modeKey !== "fal") { falImages = []; setFalStepUI(); }
+  else { resetFalCapture(); }
 }
 
 // -------------------------
-// Swipe + double tap (giriş şart)
+// Swipe + dblclick
 // -------------------------
-function bindSwipe() {
+function bindSwipeAndDoubleTap() {
   const area = mainEl || $("main");
   if (!area) return;
 
   let sx = 0, sy = 0, active = false;
 
   area.addEventListener("pointerdown", (e) => {
-    // chat açıkken scroll ile karışmasın
     const chatVisible = chatContainer && chatContainer.style.display === "block";
     if (chatVisible) return;
     active = true;
     sx = e.clientX;
     sy = e.clientY;
-  }, { passive: true });
+  }, { passive:true });
 
   area.addEventListener("pointerup", (e) => {
     if (!active) return;
@@ -570,19 +503,16 @@ function bindSwipe() {
     const idx = MODE_KEYS.indexOf(currentMode);
     const next = MODE_KEYS[(idx + step + MODE_KEYS.length) % MODE_KEYS.length];
     switchMode(next);
-  }, { passive: true });
+  }, { passive:true });
 
+  // ✅ gerçek çift tık
   if (brandTap) {
-    let last = 0;
-    brandTap.addEventListener("click", () => {
-      const now = Date.now();
-      if (now - last < 300) {
-        if (!getToken()) return;
-        const idx = MODE_KEYS.indexOf(currentMode);
-        const next = MODE_KEYS[(idx + 1) % MODE_KEYS.length];
-        switchMode(next);
-      }
-      last = now;
+    brandTap.addEventListener("dblclick", (e) => {
+      e.preventDefault();
+      if (!getToken()) { requireLogin("Evladım, modlara geçmek için önce giriş yapman lazım."); return; }
+      const idx = MODE_KEYS.indexOf(currentMode);
+      const next = MODE_KEYS[(idx + 1) % MODE_KEYS.length];
+      switchMode(next);
     });
   }
 }
@@ -590,14 +520,8 @@ function bindSwipe() {
 // -------------------------
 // Drawer
 // -------------------------
-function openDrawer() {
-  if (drawerMask) drawerMask.classList.add("show");
-  if (drawer) drawer.classList.add("open");
-}
-function closeDrawer() {
-  if (drawerMask) drawerMask.classList.remove("show");
-  if (drawer) drawer.classList.remove("open");
-}
+function openDrawer() { if (drawerMask) drawerMask.classList.add("show"); if (drawer) drawer.classList.add("open"); }
+function closeDrawer() { if (drawerMask) drawerMask.classList.remove("show"); if (drawer) drawer.classList.remove("open"); }
 
 // -------------------------
 // Profile/Plan
@@ -605,16 +529,11 @@ function closeDrawer() {
 async function pullPlanFromBackend() {
   if (!getToken()) { currentPlan = "free"; return; }
   try {
-    const r = await apiFetch(`${BASE_DOMAIN}/api/memory/get`, {
-      method: "GET",
-      headers: { ...authHeaders() },
-    });
+    const r = await apiFetch(`${BASE_DOMAIN}/api/memory/get`, { method:"GET", headers:{...authHeaders()} });
     const j = r.data || {};
     const plan = ((j.profile || {}).plan || "free").toLowerCase();
     currentPlan = (plan === "plus" || plan === "pro") ? plan : "free";
-  } catch {
-    currentPlan = "free";
-  }
+  } catch { currentPlan = "free"; }
 }
 
 const FALLBACK_AVATAR =
@@ -636,10 +555,7 @@ function updateLoginUI() {
 async function pullProfileToDrawer() {
   if (!getToken()) return;
   try {
-    const r = await apiFetch(PROFILE_ME_URL, {
-      method: "GET",
-      headers: { ...authHeaders() },
-    });
+    const r = await apiFetch(PROFILE_ME_URL, { method:"GET", headers:{...authHeaders()} });
     const me = r.data || {};
     const display = (me.display_name || me.email || "Üye").trim();
     const cn = me.caynana_id || "CN-????";
@@ -649,12 +565,23 @@ async function pullProfileToDrawer() {
     if (dpName) dpName.textContent = display;
     if (dpPlan) dpPlan.textContent = plan;
     if (dpCN) dpCN.textContent = cn;
-
     if (dpAvatar) {
       dpAvatar.src = avatar || FALLBACK_AVATAR;
       dpAvatar.onerror = () => (dpAvatar.src = FALLBACK_AVATAR);
     }
   } catch {}
+}
+
+// Persona UI (girişten sonra kilit kalksın)
+function lockPersonaUI() {
+  document.querySelectorAll("#personaModal .persona-opt").forEach((opt) => {
+    const k = opt.getAttribute("data-persona");
+    if (k === "normal") opt.classList.remove("locked");
+    else opt.classList.add("locked");
+  });
+}
+function unlockPersonaUI() {
+  document.querySelectorAll("#personaModal .persona-opt").forEach((opt) => opt.classList.remove("locked"));
 }
 
 // -------------------------
@@ -689,8 +616,6 @@ function ensureGoogleButton() {
         setDrawerProfileUI();
         updateLoginUI();
         await pullProfileToDrawer();
-
-        // giriş sonrası persona kilitleri UI’dan kalksın
         unlockPersonaUI();
 
         setTimeout(() => hideModal(authModal), 250);
@@ -708,8 +633,7 @@ function ensureGoogleButton() {
   });
 }
 
-// -------------------------
-// Email auth (opsiyonel)
+// email auth (opsiyonel)
 let authMode = "login";
 async function handleAuthSubmit() {
   const email = (authEmail?.value || "").trim();
@@ -741,27 +665,8 @@ async function handleAuthSubmit() {
 }
 
 // -------------------------
-// Persona UI: giriş yoksa kilitli görünür, giriş varsa kilit kalkar
-function lockPersonaUI() {
-  document.querySelectorAll("#personaModal .persona-opt").forEach((opt) => {
-    if (opt.getAttribute("data-persona") === "normal") {
-      opt.classList.remove("locked");
-      opt.querySelector("i")?.classList.add("fa-check");
-    } else {
-      opt.classList.add("locked");
-      // ikon lock ise kalsın
-    }
-  });
-}
-function unlockPersonaUI() {
-  document.querySelectorAll("#personaModal .persona-opt").forEach((opt) => {
-    opt.classList.remove("locked");
-    // lock ikonları varsa gizlemek yerine dokunma; seçilince check zaten oluyor
-  });
-}
-
-// -------------------------
 // Notifications
+// -------------------------
 async function openNotifications() {
   showModal(notifModal);
   if (!notifList) return;
@@ -804,6 +709,7 @@ async function openNotifications() {
 
 // -------------------------
 // Mic / Camera
+// -------------------------
 function startMic() {
   if (!getToken()) return requireLogin("Evladım, mikrofon için önce giriş yap.");
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -824,6 +730,7 @@ function openFalCamera() { openCamera(); }
 
 // -------------------------
 // Fal UI
+// -------------------------
 function setFalStepUI() {
   if (!falStepText || !falStepSub) return;
   if (currentMode !== "fal") { falStepText.textContent = ""; falStepSub.textContent = ""; return; }
@@ -850,7 +757,6 @@ async function falCheckOneImage(dataUrl) {
   }
 }
 
-// file input
 function resetModalOnly() {
   pendingImage = null;
   if (photoPreview) photoPreview.src = "";
@@ -891,16 +797,8 @@ if (photoCancelBtn) photoCancelBtn.onclick = resetModalOnly;
 if (photoOkBtn) {
   photoOkBtn.onclick = async () => {
     hideModal(photoModal);
-
-    if (currentMode === "fal" && falImages.length < 3) {
-      setTimeout(() => openFalCamera(), 180);
-      return;
-    }
-
-    if (currentMode === "fal" && textInput) {
-      textInput.value = "Fal bak: fincanı 3 açıdan gönderdim. İnsani anlat.";
-    }
-
+    if (currentMode === "fal" && falImages.length < 3) { setTimeout(() => openFalCamera(), 180); return; }
+    if (currentMode === "fal" && textInput) textInput.value = "Fal bak: fincanı 3 açıdan gönderdim. İnsani anlat.";
     await send();
     if (currentMode === "fal") resetFalCapture();
   };
@@ -908,6 +806,7 @@ if (photoOkBtn) {
 
 // -------------------------
 // Bubbles + audio
+// -------------------------
 async function addBubble(role, text, isLoader = false, speech = "") {
   if (!chatContainer || !heroContent) return null;
 
@@ -950,7 +849,6 @@ if (chatContainer) {
 
 async function playAudio(text, btn) {
   if (!getToken()) return requireLogin("Evladım, ses için önce giriş yap.");
-
   if (currentAudio) { currentAudio.pause(); currentAudio = null; }
 
   const old = btn.innerHTML;
@@ -974,57 +872,55 @@ async function playAudio(text, btn) {
 }
 
 // -------------------------
-// Shopping premium cards (TEK TEK)
+// SHOPPING: Caynana Yıldızları (puan/sıra yok)
+// -------------------------
 function normStr(x) { return (x == null ? "" : String(x)).trim(); }
-
-function pickUrl(p) {
-  return normStr(p.url || p.link || p.product_url || p.productUrl || p.href);
-}
-function pickTitle(p) {
-  return normStr(p.title || p.name || p.product_title || p.productTitle || "Ürün");
-}
-function pickImg(p) {
-  return normStr(p.image || p.image_url || p.imageUrl || p.img || p.thumbnail);
-}
+function pickUrl(p) { return normStr(p.url || p.link || p.product_url || p.productUrl || p.href); }
+function pickTitle(p) { return normStr(p.title || p.name || p.product_title || p.productTitle || "Ürün"); }
+function pickImg(p) { return normStr(p.image || p.image_url || p.imageUrl || p.img || p.thumbnail); }
 function pickPrice(p) {
   const raw = normStr(p.price || p.price_text || p.priceText || p.display_price || "");
-  // "Fiyat için tıkla" / "" gibi durumlarda boş kabul
   if (!raw) return "";
   if (/fiyat/i.test(raw) && /tıkla/i.test(raw)) return "";
   return raw;
 }
 
 function buildWhyText(p, idx) {
-  // Backend varsa: reason/why/bullet
   const c = normStr(p.reason || p.why || p.caynana_reason || p.note);
   if (c) return c;
 
-  // Yoksa dinamik üret
   const title = pickTitle(p).toLowerCase();
   const hints = [];
   if (/raf|dolap|kitap|ayakkabı/i.test(title)) hints.push("kurulum ve ölçü uyumu");
-  if (/ahşap|mdf|metal/i.test(title)) hints.push("malzeme dayanımı");
+  if (/ahşap|mdf|metal/i.test(title)) hints.push("malzeme/iskelet sağlamlığı");
   if (/banyo|mutfak/i.test(title)) hints.push("nem/temizlik uyumu");
   if (!hints.length) hints.push("fiyat/performans dengesi");
 
   const variants = [
-    `Bunu ${hints[0]} tarafı daha mantıklı durduğu için öne aldım; satıcı yorumlarını da bir kontrol et, sonra üzülmeyelim.`,
-    `Şuna “temiz tercih” derim: ${hints[0]} iyi görünüyor. Ölçünü söyleyebilirsen daha net nokta atışı yaparım.`,
-    `Evladım bu seçenek ${hints[0]} açısından daha dengeli duruyor; aşırı ucuzun peşine düşme, sonra iki kere alırsın.`,
+    `Evladım bunu öne aldım çünkü ${hints[0]} tarafı daha dengeli duruyor. Bir de satıcı yorumlarına göz at, sonra “keşke” demeyelim.`,
+    `Şuna “temiz tercih” derim: ${hints[0]} iyi görünüyor. Ölçünü ve kullanım yerini yazarsan daha da nokta atışı yaparım.`,
+    `Bu seçenek ${hints[0]} açısından daha güven veriyor. Aşırı ucuzun peşine düşme; dayanım önemli.`,
+    `Bunu alternatif diye koydum: ${hints[0]} fena değil. Ama karar vermeden önce ölçü ve kurulumu kontrol et.`,
   ];
   return variants[idx % variants.length];
 }
 
-function rankBadge(i) {
-  if (i === 0) return { text: "ALTIN ÖNERİ", cls: "gold" };
-  if (i === 1) return { text: "GÜMÜŞ", cls: "silver" };
-  if (i === 2) return { text: "BRONZ", cls: "bronze" };
-  return { text: "Caynana Öneriyor", cls: "pick" };
+function starPackByIndex(i) {
+  // 0->5 yıldız, 1->4, 2->3, 3->2, 4+->rozet yok
+  if (i === 0) return { stars: 5, label: "Caynana Yıldızları", grad: "linear-gradient(135deg,#FFB300,#FF6A00)" };
+  if (i === 1) return { stars: 4, label: "Caynana Yıldızları", grad: "linear-gradient(135deg,#00C897,#00B3FF)" };
+  if (i === 2) return { stars: 3, label: "Caynana Yıldızları", grad: "linear-gradient(135deg,#8B5CF6,#FF4FD8)" };
+  if (i === 3) return { stars: 2, label: "Caynana Yıldızları", grad: "linear-gradient(135deg,#111827,#6B7280)" };
+  return null;
+}
+
+function starsText(n) {
+  return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n);
 }
 
 function renderShoppingCards(products) {
   if (!chatContainer) return;
-  ensurePremiumCardStyles();
+  ensureShoppingStyles();
 
   const wrap = document.createElement("div");
   wrap.className = "shopWrap";
@@ -1033,51 +929,87 @@ function renderShoppingCards(products) {
     const url = pickUrl(p);
     const title = pickTitle(p);
     const img = pickImg(p);
-    const price = pickPrice(p);
+    const price = pickPrice(p); // fiyat yoksa göstermeyeceğiz
 
-    const b = rankBadge(i);
     const why = buildWhyText(p, i);
-
-    // fiyat yoksa: fiyat/puan hiçbir şey gösterme
-    const priceHtml = price ? `<div class="shopPrice">${escapeHtml(price)}</div>` : "";
-
-    const safeUrl = url || "#";
-    const btnDisabled = !url;
+    const badge = starPackByIndex(i);
 
     const card = document.createElement("div");
     card.className = "shopCard";
-    card.innerHTML = `
-      <div class="shopTop">
-        <div class="shopImgBox">
-          ${img ? `<img src="${escapeHtml(img)}" alt="img" onerror="this.style.display='none'">` : `<div style="font-weight:900;color:#777;">Görsel yok</div>`}
-        </div>
-        <div class="shopMeta">
-          <div class="shopBadges">
-            <span class="badge ${b.cls}">${escapeHtml(b.text)}</span>
-            <span class="badge">#${i + 1}</span>
-          </div>
-          <div class="shopTitle">${escapeHtml(title)}</div>
-          ${priceHtml}
-        </div>
-      </div>
-      <div class="shopWhy">👵 ${escapeHtml(why)}</div>
-      <a class="shopBtn" ${btnDisabled ? "" : `href="${escapeHtml(safeUrl)}"`} target="_blank" rel="noopener">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i>
-        Caynana Öneriyor — Ürüne Git
-      </a>
-    `;
 
-    // link yoksa butonu pasifleştir
-    if (btnDisabled) {
-      const a = card.querySelector(".shopBtn");
-      if (a) {
-        a.style.background = "#ddd";
-        a.style.color = "#666";
-        a.style.pointerEvents = "none";
-        a.textContent = "Link yok (kaynak gelmedi)";
-      }
+    // renkli glow
+    const glow = document.createElement("div");
+    glow.className = "shopGlow";
+    glow.style.background = badge ? badge.grad : "linear-gradient(135deg, rgba(0,200,151,.28), rgba(255,179,0,.18))";
+    card.appendChild(glow);
+
+    // görsel box
+    const imgBox = document.createElement("div");
+    imgBox.className = "shopImgBox";
+    if (img) {
+      const im = document.createElement("img");
+      im.src = img;
+      im.alt = "img";
+      im.onerror = () => {
+        imgBox.innerHTML = `<div style="font-weight:1000;color:#777;font-size:12px;">Görsel yok</div>`;
+      };
+      imgBox.appendChild(im);
+    } else {
+      imgBox.innerHTML = `<div style="font-weight:1000;color:#777;font-size:12px;">Görsel yok</div>`;
     }
 
+    const meta = document.createElement("div");
+    meta.className = "shopMeta";
+    meta.innerHTML = `
+      <div class="shopTitle">${escapeHtml(title)}</div>
+      ${price ? `<div class="shopPrice">${escapeHtml(price)}</div>` : ``}
+    `;
+
+    // rozet
+    const badges = document.createElement("div");
+    badges.className = "shopBadges";
+    if (badge) {
+      const b = document.createElement("div");
+      b.className = "starBadge";
+      b.innerHTML = `
+        <span class="starPill" style="background:${badge.grad}">★</span>
+        <span>${escapeHtml(badge.label)}</span>
+        <span class="stars">${escapeHtml(starsText(badge.stars))}</span>
+      `;
+      badges.appendChild(b);
+    } else {
+      // son kartlar: rozet yok
+    }
+    meta.appendChild(badges);
+
+    const top = document.createElement("div");
+    top.className = "shopTop";
+    top.appendChild(imgBox);
+    top.appendChild(meta);
+
+    const whyEl = document.createElement("div");
+    whyEl.className = "shopWhy";
+    whyEl.textContent = "👵 " + why;
+
+    const btn = document.createElement("a");
+    btn.className = "shopBtn";
+    btn.target = "_blank";
+    btn.rel = "noopener";
+
+    if (url) {
+      btn.href = url;
+      btn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> Caynana Öneriyor — Ürüne Git`;
+    } else {
+      btn.href = "#";
+      btn.style.background = "#ddd";
+      btn.style.color = "#666";
+      btn.style.pointerEvents = "none";
+      btn.textContent = "Link yok (kaynak gelmedi)";
+    }
+
+    card.appendChild(top);
+    card.appendChild(whyEl);
+    card.appendChild(btn);
     wrap.appendChild(card);
   });
 
@@ -1087,6 +1019,7 @@ function renderShoppingCards(products) {
 
 // -------------------------
 // SEND
+// -------------------------
 async function send() {
   if (isSending) return;
 
@@ -1113,13 +1046,7 @@ async function send() {
   chatContainer.appendChild(loader);
   scrollToBottom(true);
 
-  const payload = {
-    message: val,
-    session_id: sessionId,
-    image: pendingImage,
-    mode: currentMode,
-    persona: currentPersona,
-  };
+  const payload = { message: val, session_id: sessionId, image: pendingImage, mode: currentMode, persona: currentPersona };
   pendingImage = null;
 
   try {
@@ -1130,13 +1057,11 @@ async function send() {
     }, 25000);
 
     const data = r.data || {};
-
     const l = document.getElementById(loaderId);
     if (l) l.remove();
 
     await addBubble("ai", data.assistant_text || "Bir şey diyemedim evladım.", false, data.speech_text || "");
 
-    // shopping kartları
     if (currentMode === "shopping" && Array.isArray(data.data) && data.data.length) {
       renderShoppingCards(data.data);
     }
@@ -1153,6 +1078,7 @@ async function send() {
 
 // -------------------------
 // Events
+// -------------------------
 function bindEvents() {
   // drawer
   if (menuBtn) menuBtn.onclick = openDrawer;
@@ -1255,14 +1181,13 @@ function bindEvents() {
   if (falCamBtn) falCamBtn.onclick = openFalCamera;
   if (micBtn) micBtn.onclick = startMic;
 
-  if (textInput) textInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") send();
-  });
+  if (textInput) textInput.addEventListener("keypress", (e) => { if (e.key === "Enter") send(); });
   if (sendBtn) sendBtn.onclick = send;
 }
 
 // -------------------------
 // INIT
+// -------------------------
 async function init() {
   document.body.classList.remove("fal-mode");
   falImages = [];
@@ -1272,7 +1197,7 @@ async function init() {
   loadModeChat("chat");
   setFalStepUI();
 
-  bindSwipe();
+  bindSwipeAndDoubleTap();
   bindEvents();
 
   await pullPlanFromBackend();
