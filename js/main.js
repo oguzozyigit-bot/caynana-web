@@ -1,12 +1,10 @@
-// CAYNANA WEB - main.js (SAFE v5005 - PRO SHOPPING CARDS)
-// Tek dosya, çakışma yok.
+// CAYNANA WEB - main.js (SAFE v5006 - PRO SHOPPING CARDS - SINGLE COLUMN)
+// Tek dosya, çakışma yok. Fal UI sadece fal modunda görünür.
 // KURALLAR:
 // 1) Giriş yoksa: chat gönderme yok, mod değişimi yok, persona yok, kamera/mic yok.
 // 2) Giriş varsa: tüm modlar + persona serbest.
-// 3) Shopping: Kartlar PROFESYONEL (dark), TEK SÜTUN, tıklanır.
-//    - Fiyat YOKSA: fiyat + puan HİÇ gösterilmez.
-//    - Buton: "Ürüne Git" (kart üstünde “Caynana Öneriyor”).
-//    - “Neden önerdim” her kartta farklı ve kısa.
+// 3) Shopping: Tek sütun, 1.kart ALTIN "patlar" (altın çerçeve + büyük görsel), yorumlar daha uzun.
+// 4) Fiyat yoksa: fiyat/puan/sinyal yok. (Göstermiyoruz.)
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
@@ -41,6 +39,7 @@ let isSending = false;
 let currentMode = "chat";
 let currentPersona = "normal";
 
+// plan
 let currentPlan = "free";
 export const IS_ALTIN = () => (currentPlan || "free").toLowerCase() === "pro";
 
@@ -538,8 +537,6 @@ async function pullProfileToDrawer() {
       dpAvatar.src = avatar || FALLBACK_AVATAR;
       dpAvatar.onerror = () => (dpAvatar.src = FALLBACK_AVATAR);
     }
-
-    unlockAllPersonasUI(true);
   } catch {
     // sessiz
   }
@@ -555,19 +552,9 @@ function setDrawerProfileUI() {
     dpAvatar.onerror = () => (dpAvatar.src = FALLBACK_AVATAR);
   }
 }
-
 function updateLoginUI() {
   const logged = !!getToken();
   if (safeLogoutBtn) safeLogoutBtn.style.display = logged ? "flex" : "none";
-  unlockAllPersonasUI(logged);
-}
-
-function unlockAllPersonasUI(isLogged) {
-  const opts = document.querySelectorAll("#personaModal .persona-opt");
-  opts.forEach((opt) => {
-    if (isLogged) opt.classList.remove("locked");
-    else opt.classList.add("locked");
-  });
 }
 
 // ---- Google GSI ----
@@ -886,167 +873,242 @@ async function playAudio(text, btn) {
   }
 }
 
-// ---- SHOPPING CARDS (PRO + DARK + SINGLE COLUMN) ----
+// ---- SHOPPING CARDS (NEW PRO LOOK) ----
 function injectShoppingStyles() {
-  if (document.getElementById("caynanaShoppingStyleV2")) return;
+  if (document.getElementById("caynanaShoppingStyleV3")) return;
 
   const style = document.createElement("style");
-  style.id = "caynanaShoppingStyleV2";
+  style.id = "caynanaShoppingStyleV3";
   style.textContent = `
-    .cards{
+    .caynanaCards{
       display:grid;
       grid-template-columns:1fr;
-      gap:12px;
+      gap:14px;
       margin-top:14px;
-      padding-bottom:10px;
+      padding-bottom:12px;
     }
-    .cardPro{
+
+    .cCard{
       position:relative;
-      border-radius:18px;
+      border-radius:22px;
       overflow:hidden;
-      background: rgba(16,18,24,.78);
+      background: rgba(14,16,22,.78);
       border: 1px solid rgba(255,255,255,.10);
       box-shadow: 0 18px 42px rgba(0,0,0,.45);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
     }
-    .cardTopRow{
+
+    .cCard::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background: radial-gradient(80% 70% at 20% 10%, rgba(255,255,255,.10), rgba(0,0,0,0) 60%);
+      opacity:.9;
+    }
+
+    .cHead{
       display:flex;
-      gap:12px;
-      padding:12px;
       align-items:center;
+      justify-content:space-between;
+      padding:14px 14px 10px 14px;
+      position:relative;
+      z-index:2;
     }
-    .cardImgWrap{
-      width:92px;
-      height:92px;
-      border-radius:14px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      flex:0 0 auto;
-    }
-    .cardImgWrap img{
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      padding:8px;
-      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
-    }
-    .cardMeta{
-      min-width:0;
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-    .cardTitle{
-      color:#fff;
-      font-weight:1100;
-      font-size:13px;
-      line-height:1.25;
-      max-height:34px;
-      overflow:hidden;
-      opacity:.95;
-    }
-    .cardChips{
+
+    .cBadges{
       display:flex;
       gap:8px;
       flex-wrap:wrap;
       align-items:center;
     }
-    .chip{
+
+    .cBadge{
       font-size:11px;
-      font-weight:1000;
-      padding:6px 10px;
+      font-weight:1100;
+      padding:7px 11px;
       border-radius:999px;
       background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.12);
       color: rgba(255,255,255,.92);
       white-space:nowrap;
     }
-    .chipGold{ background: linear-gradient(90deg,#FFD54F,#FFB300); border:none; color:#111; }
-    .chipSilver{ background: linear-gradient(90deg,#E0E0E0,#BDBDBD); border:none; color:#111; }
-    .chipBronze{ background: linear-gradient(90deg,#E6B980,#C97A3A); border:none; color:#111; }
-    .chipCaynana{ background: rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.12); }
 
-    .cardWhy{
-      margin:0 12px 12px 12px;
+    .bGold{ background: linear-gradient(90deg,#FFD54F,#FFB300); border:none; color:#111; }
+    .bSilver{ background: linear-gradient(90deg,#EAEAEA,#BDBDBD); border:none; color:#111; }
+    .bBronze{ background: linear-gradient(90deg,#F2C48D,#C97A3A); border:none; color:#111; }
+    .bCaynana{ background: rgba(0,0,0,.52); color: rgba(255,255,255,.92); }
+
+    .cRank{
+      font-size:12px;
+      font-weight:1100;
+      color: rgba(255,255,255,.72);
+      padding:7px 10px;
+      border-radius:12px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+    }
+
+    .cBody{
+      display:flex;
+      gap:14px;
+      padding: 0 14px 14px 14px;
+      position:relative;
+      z-index:2;
+      align-items:flex-start;
+    }
+
+    .cImg{
+      width:120px;
+      height:120px;
+      border-radius:18px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      flex:0 0 auto;
+      box-shadow: 0 16px 32px rgba(0,0,0,.35);
+    }
+
+    .cImg img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      padding:10px;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.35));
+    }
+
+    .cInfo{
+      flex:1;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .cTitle{
+      color:#fff;
+      font-weight:1200;
+      font-size:13px;
+      line-height:1.25;
+      max-height:44px;
+      overflow:hidden;
+      opacity:.96;
+    }
+
+    .cWhy{
       padding:10px 12px;
-      border-radius:14px;
+      border-radius:16px;
       background: rgba(255,255,255,.07);
       border: 1px solid rgba(255,255,255,.10);
       color: rgba(255,255,255,.92);
       font-weight:900;
       font-size:12px;
-      line-height:1.35;
+      line-height:1.45;
     }
 
-    .cardActions{
-      padding: 0 12px 12px 12px;
+    .cActions{
+      padding: 0 14px 14px 14px;
       display:flex;
       gap:10px;
+      position:relative;
+      z-index:2;
     }
 
-    .btnGo{
+    .cBtn{
       flex:1;
       display:flex;
       align-items:center;
       justify-content:center;
       gap:10px;
-      padding:12px;
-      border-radius:14px;
+      padding:12px 14px;
+      border-radius:16px;
       background: var(--primary);
       color:#111;
-      font-weight:1100;
+      font-weight:1200;
       text-decoration:none;
-      border: none;
-      box-shadow: 0 10px 28px rgba(0,0,0,.35);
+      border:none;
+      box-shadow: 0 14px 34px rgba(0,0,0,.35);
     }
-    .btnGo:active{ transform:scale(.98); }
+    .cBtn:active{ transform:scale(.98); }
 
-    .subNote{
-      font-size:11px;
-      font-weight:900;
-      color: rgba(255,255,255,.62);
-      margin-top:2px;
+    /* ALTIN patlasın */
+    .cCard.gold{
+      border: 1px solid rgba(255,213,79,.45);
+      box-shadow: 0 20px 52px rgba(255,179,0,.12), 0 20px 44px rgba(0,0,0,.55);
+    }
+    .cCard.gold::after{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      border-radius:24px;
+      pointer-events:none;
+      background: linear-gradient(135deg, rgba(255,213,79,.55), rgba(255,179,0,0) 40%, rgba(255,255,255,.08));
+      opacity:.9;
+    }
+    .cCard.gold .cImg{
+      width:138px;
+      height:138px;
+      border: 1px solid rgba(255,213,79,.55);
+      box-shadow: 0 22px 54px rgba(255,179,0,.12), 0 18px 34px rgba(0,0,0,.45);
+    }
+
+    .cDisabled{
+      opacity:.65;
+      pointer-events:none;
     }
   `;
   document.head.appendChild(style);
 }
 
-function hasRealPrice(priceText) {
-  const p = (priceText || "").toLowerCase().trim();
-  if (!p) return false;
-  if (p.includes("fiyat için tıkla")) return false;
-  // rakam içeriyorsa "gerçek fiyat var" kabul
-  return /\d/.test(p);
+function normalizePriceText(p) {
+  const s = (p || "").toString().trim();
+  if (!s) return "";
+  const low = s.toLowerCase();
+  if (low.includes("fiyat için tıkla")) return "";
+  return s;
+}
+
+function hasRealPrice(p) {
+  const t = normalizePriceText(p);
+  if (!t) return false;
+  return /\d/.test(t);
 }
 
 function pickWhy(p, tierLabel, idx) {
-  const title = (p.title || p.name || "ürün").trim();
+  const title = (p.title || p.name || p.product_name || "ürün").trim();
   const seed = `${title}|${tierLabel}|${idx}`;
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 33 + seed.charCodeAt(i)) >>> 0;
-  const k = h % 6;
+  const k = h % 8;
 
   const tierLine =
-    tierLabel === "ALTIN" ? "bunu en mantıklı seçenek diye öne aldım" :
-    tierLabel === "GÜMÜŞ" ? "bunu sağlam alternatif diye koydum" :
-    tierLabel === "BRONZ" ? "bunu bütçe/alternatif diye ekledim" :
-    "bunu da kaçırma diye ekledim";
+    tierLabel === "ALTIN" ? "Bunu en mantıklı seçenek diye öne aldım" :
+    tierLabel === "GÜMÜŞ" ? "Bunu sağlam alternatif diye koydum" :
+    tierLabel === "BRONZ" ? "Bunu bütçe/alternatif diye ekledim" :
+    "Bunu da ‘gözden kaçmasın’ diye ekledim";
 
   const templates = [
-    `Evladım ${tierLine}; kalite/işçilik tarafı daha temiz duruyor.`,
-    `Bak ${tierLine}; kullanıcı yorumları genelde daha dengeli.`,
-    `${tierLine}; kullanım alanı geniş, sonra “niye küçük geldi” demiyorsun.`,
-    `${tierLine}; risk düşük, iade/uyum derdi daha az çıkar.`,
-    `${tierLine}; görüntüsü şık, kurulum/yerleşim derdi az.`,
-    `${tierLine}; ben olsam buna yakın bir şey alır geçerim.`,
+    `Evladım ${tierLine}. Görsel/işçilik tarafı daha toparlak duruyor; yerleşimde de “sırıtmaz”. Bir tık pahalı çıksa bile toplam tatmin daha yüksek olur.`,
+    `${tierLine}. Yorumlar dengeli gidiyor; “geldi kırık çıktı” gibi risk sinyali az. Evde kullanacaksan en az uğraştıran tip bu.`,
+    `${tierLine}. Ölçü/kurulum işi daha problemsiz görünüyor; sonradan “niye bu kadar sallandı” diye söylenmezsin. Ben olsam buna yakın bir şey alır geçerim.`,
+    `${tierLine}. Fiyat–performans çizgisi daha temiz; gereksiz süs yok, işini görür. Bir de iade/uyum derdi daha az çıkarma eğiliminde.`,
+    `${tierLine}. Malzeme görüntüsü daha ‘toplu’; iki ay sonra “esnedi, eğildi” diye ağlatma ihtimali düşük. Özellikle raf/ayakkabılık gibi işlerde önemli bu.`,
+    `${tierLine}. Ben burada güvenli yolu seçtim: hem kullanım alanı geniş, hem görüntüsü premium kaçıyor. Misafir gelince bile “iyiymiş” dedirtir.`,
+    `${tierLine}. Alternatiflere göre daha dengeli: ne aşırı pahalı, ne “ucuz diye aldım pişman oldum” sınıfı. Orta yolun kralı.`,
+    `${tierLine}. Parçalar/aksesuar tarafı daha düzgün paketlenmiş olma ihtimali yüksek; kurulumu daha az sinir eder. Benim gönlüm buna daha yakın.`,
   ];
   return templates[k];
+}
+
+function tierForIndex(idx) {
+  if (idx === 0) return { label: "ALTIN", cls: "bGold", card: "gold" , rank:"1. sıra" };
+  if (idx === 1) return { label: "GÜMÜŞ", cls: "bSilver", card: "" , rank:"2. sıra" };
+  if (idx === 2) return { label: "BRONZ", cls: "bBronze", card: "" , rank:"3. sıra" };
+  return { label: "ÖNERİ", cls: "", card: "" , rank:`${idx + 1}. sıra` };
 }
 
 function renderCards(items = []) {
@@ -1056,52 +1118,53 @@ function renderCards(items = []) {
   const list = items.slice(0, 6);
 
   const wrap = document.createElement("div");
-  wrap.className = "cards";
+  wrap.className = "caynanaCards";
 
   list.forEach((p, idx) => {
-    const title = (p.title || p.name || p.product_name || "Ürün").trim();
-    const img = (p.image || p.image_url || p.img || p.thumbnail || "").trim();
-    const link = (p.url || p.link || p.href || "#").trim();
+    const title = (p.title || p.name || p.product_name || "Ürün").toString().trim();
+    const img = (p.image || p.image_url || p.img || p.thumbnail || "").toString().trim();
+    const link = (p.url || p.link || p.href || "").toString().trim();
 
-    const priceText = (p.price_text || p.priceText || (p.price ? String(p.price) : "") || "").trim();
+    const priceText = normalizePriceText(p.price_text || p.priceText || (p.price ? String(p.price) : ""));
     const showPrice = hasRealPrice(priceText);
 
-    // Puan: fiyat yoksa HİÇ gösterme
+    // Fiyat yoksa: puan/price asla gösterme
     const scoreVal = (p.caynana_score ?? p.score ?? p.caynanaScore);
     const showScore = showPrice && !(scoreVal === undefined || scoreVal === null || scoreVal === "");
 
-    const tier =
-      idx === 0 ? { label: "ALTIN", cls: "chipGold" } :
-      idx === 1 ? { label: "GÜMÜŞ", cls: "chipSilver" } :
-      idx === 2 ? { label: "BRONZ", cls: "chipBronze" } :
-                 { label: "ÖNERİ", cls: "" };
-
+    const tier = tierForIndex(idx);
     const why = pickWhy(p, tier.label, idx);
 
     const card = document.createElement("div");
-    card.className = "cardPro";
+    card.className = `cCard ${tier.card}`.trim();
+
+    const safeLink = link || "#";
+    const linkDisabled = !link;
 
     card.innerHTML = `
-      <div class="cardTopRow">
-        <div class="cardImgWrap">
+      <div class="cHead">
+        <div class="cBadges">
+          <span class="cBadge ${tier.cls}">${tier.label}</span>
+          <span class="cBadge bCaynana">Caynana Öneriyor</span>
+          ${showPrice ? `<span class="cBadge">${escapeHtml(priceText)}</span>` : ``}
+          ${showScore ? `<span class="cBadge">Puan ${escapeHtml(String(scoreVal))}</span>` : ``}
+        </div>
+        <div class="cRank">${tier.rank}</div>
+      </div>
+
+      <div class="cBody">
+        <div class="cImg">
           ${img ? `<img src="${img}" alt="${escapeHtml(title)}">` : `<div style="color:rgba(255,255,255,.65);font-weight:900;">👵</div>`}
         </div>
-        <div class="cardMeta">
-          <div class="cardTitle">${escapeHtml(title)}</div>
-          <div class="cardChips">
-            <span class="chip ${tier.cls}">${tier.label}</span>
-            <span class="chip chipCaynana">Caynana Öneriyor</span>
-            ${showPrice ? `<span class="chip">${escapeHtml(priceText)}</span>` : ``}
-            ${showScore ? `<span class="chip">Puan ${escapeHtml(String(scoreVal))}</span>` : ``}
-          </div>
-          <div class="subNote">${showPrice ? "Fiyat canlıysa gösteriyorum evladım." : "Fiyat görünmüyor; puan da saklı."}</div>
+
+        <div class="cInfo">
+          <div class="cTitle">${escapeHtml(title)}</div>
+          <div class="cWhy">👵 ${escapeHtml(why)}</div>
         </div>
       </div>
 
-      <div class="cardWhy">👵 ${escapeHtml(why)}</div>
-
-      <div class="cardActions">
-        <a class="btnGo" href="${link}" target="_blank" rel="noopener">
+      <div class="cActions">
+        <a class="cBtn ${linkDisabled ? "cDisabled" : ""}" href="${safeLink}" target="_blank" rel="noopener">
           <i class="fa-solid fa-arrow-up-right-from-square"></i> Ürüne Git
         </a>
       </div>
@@ -1184,6 +1247,114 @@ async function send() {
   }
 }
 
+// ---- Fal helpers ----
+function setFalStepUI() {
+  if (!falStepText || !falStepSub) return;
+  if (currentMode !== "fal") {
+    falStepText.textContent = "";
+    falStepSub.textContent = "";
+    return;
+  }
+  if (falImages.length < 3) {
+    falStepText.textContent = "Fal için 3 fotoğraf çek";
+    falStepSub.textContent = FAL_STEPS[falImages.length] || "1/3: Üstten çek";
+  } else {
+    falStepText.textContent = "Fal hazır…";
+    falStepSub.textContent = "Yorum hazırlanıyor";
+  }
+}
+function resetFalCapture() {
+  falImages = [];
+  setFalStepUI();
+}
+
+// ---- Camera ----
+function openCamera() {
+  if (!getToken()) {
+    requireLogin("Evladım, fotoğraf göndermek için önce giriş yap.");
+    return;
+  }
+  if (fileEl) {
+    fileEl.value = "";
+    fileEl.click();
+  }
+}
+function openFalCamera() {
+  openCamera();
+}
+
+// ---- Drawer/Profile/Plan ----
+async function openNotifications() { /* aynı kalsın */ 
+  showModal(notifModal);
+  if (!notifList) return;
+
+  if (!getToken()) {
+    notifList.innerHTML = `<div style="font-weight:900;color:#666;">Önce giriş yap evladım.</div>`;
+    return;
+  }
+
+  notifList.innerHTML = `<div style="font-weight:900;color:#444;">Yükleniyor…</div>`;
+
+  try {
+    const r = await apiFetch(NOTIF_URL, { method: "GET", headers: { ...authHeaders() } });
+    const j = r.data || {};
+    const items = j.items || [];
+    const n = items.length;
+
+    if (notifBadge) {
+      notifBadge.style.display = n > 0 ? "flex" : "none";
+      notifBadge.textContent = String(n > 99 ? "99+" : n);
+    }
+
+    if (!items.length) {
+      notifList.innerHTML = `<div style="font-weight:900;color:#666;">Bildirim yok.</div>`;
+      return;
+    }
+
+    notifList.innerHTML = items
+      .map((it) => {
+        const title = it.title || "Bildirim";
+        const body = it.text || it.body || it.message || "";
+        return `
+          <div class="notifItem">
+            <div class="notifItemTitle">${escapeHtml(title)}</div>
+            <div class="notifItemBody">${escapeHtml(body)}</div>
+          </div>
+        `;
+      })
+      .join("");
+  } catch (e) {
+    notifList.innerHTML = `<div style="font-weight:900;color:#b00;">${escapeHtml(e.message || "Hata")}</div>`;
+  }
+}
+
+function openDrawer() {
+  if (drawerMask) drawerMask.classList.add("show");
+  if (drawer) drawer.classList.add("open");
+}
+function closeDrawer() {
+  if (drawerMask) drawerMask.classList.remove("show");
+  if (drawer) drawer.classList.remove("open");
+}
+
+// ---- Email auth tab ----
+function bindAuthTabs() {
+  if (btnLoginTab && btnRegTab && authSubmit) {
+    btnLoginTab.onclick = () => {
+      authMode = "login";
+      btnLoginTab.classList.add("tabActive");
+      btnRegTab.classList.remove("tabActive");
+      authSubmit.textContent = "Giriş Yap";
+    };
+    btnRegTab.onclick = () => {
+      authMode = "register";
+      btnRegTab.classList.add("tabActive");
+      btnLoginTab.classList.remove("tabActive");
+      authSubmit.textContent = "Kayıt Ol";
+    };
+  }
+}
+
 // ---- Events ----
 function bindEvents() {
   if (menuBtn) menuBtn.onclick = openDrawer;
@@ -1225,21 +1396,7 @@ function bindEvents() {
   }
   if (authCloseX) authCloseX.onclick = () => hideModal(authModal);
   if (authClose) authClose.onclick = () => hideModal(authModal);
-
-  if (btnLoginTab && btnRegTab && authSubmit) {
-    btnLoginTab.onclick = () => {
-      authMode = "login";
-      btnLoginTab.classList.add("tabActive");
-      btnRegTab.classList.remove("tabActive");
-      authSubmit.textContent = "Giriş Yap";
-    };
-    btnRegTab.onclick = () => {
-      authMode = "register";
-      btnRegTab.classList.add("tabActive");
-      btnLoginTab.classList.remove("tabActive");
-      authSubmit.textContent = "Kayıt Ol";
-    };
-  }
+  bindAuthTabs();
   if (authSubmit) authSubmit.onclick = handleAuthSubmit;
 
   if (authLogout) {
@@ -1281,7 +1438,7 @@ function bindEvents() {
   if (sendBtn) sendBtn.onclick = send;
 }
 
-// ---- Init ----
+// ---- INIT ----
 async function init() {
   document.body.classList.remove("fal-mode");
   falImages = [];
