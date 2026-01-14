@@ -250,48 +250,6 @@ async function apiFetch(url, opts = {}, timeoutMs = 20000) {
   }
 }
 
-// ---- SHOPPING CARDS ----
-/* === SHOPPING CARDS FIX (OKUNUR + TIKLANIR) === */
-.cards{
-  display:grid !important;
-  grid-template-columns:1fr 1fr !important;
-  gap:10px !important;
-  margin-top:12px !important;
-}
-
-.card{
-  background:#ffffff !important;
-  border:1px solid #eee !important;
-  border-radius:14px !important;
-  overflow:hidden !important;
-  box-shadow:0 6px 18px rgba(0,0,0,.15) !important;
-}
-
-.card .title{ color:#111 !important; }
-.card .price{ color:var(--primary) !important; }
-
-.card-why{
-  margin-top:6px;
-  font-size:11px;
-  font-weight:800;
-  color:#444;
-  line-height:1.35;
-  background:#f6f6f6;
-  padding:8px 10px;
-  border-radius:12px;
-}
-
-.btnLink{
-  pointer-events:auto !important;
-  opacity:1 !important;
-  background:#111 !important;
-  color:#fff !important;
-}
-
-.btnLink:visited{ color:#fff !important; }
-
-/* kartlar chatContainer içinde tıklanabilsin */
-#chatContainer{ pointer-events:auto !important; }
 
 // ---- LOGIN GATE ----
 async function requireLogin(reasonText = "Evladım, önce giriş yapacaksın.") {
