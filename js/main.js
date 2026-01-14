@@ -1,8 +1,8 @@
-// CAYNANA WEB - main.js (SAFE v5002 - FINAL)
+// CAYNANA WEB - main.js (SAFE v5003 - FINAL + SHOPPING CARDS + SWIPE)
 // Tek dosya, çakışma yok. Fal UI sadece fal modunda görünür.
 // KURALLAR:
 // 1) Giriş yoksa: chat gönderme yok, mod değişimi yok, persona yok, kamera/mic yok.
-// 2) Giriş varsa: tüm modlar + persona serbest (kilit yok).
+// 2) Giriş varsa: tüm modlar + persona serbest.
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
@@ -50,6 +50,9 @@ if (window.marked) marked.setOptions({ mangle: false, headerIds: false });
 const $ = (id) => document.getElementById(id);
 
 // ---- DOM ----
+const appEl = $("app");
+const mainEl = $("main");
+
 const heroImage = $("heroImage");
 const heroContent = $("heroContent");
 const heroTitle = $("heroTitle");
@@ -247,6 +250,43 @@ async function apiFetch(url, opts = {}, timeoutMs = 20000) {
   }
 }
 
+// ---- SHOPPING CARDS ----
+function renderCards(list) {
+  if (!chatContainer) return;
+  const items = Array.isArray(list) ? list : [];
+  if (!items.length) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "cards";
+
+  items.slice(0, 6).forEach((p, idx) => {
+    const badge = (idx === 0) ? { k: "gold", t: "ALTIN" } : (idx === 1) ? { k: "silver", t: "GÜMÜŞ" } : null;
+    const bHtml = badge ? `<div class="card-badge ${badge.k}">${badge.t}</div>` : "";
+    const score = (p.caynana_score ?? p.caynanaScore ?? 70);
+
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      ${bHtml}
+      <img class="pimg" src="${p.image || ""}"
+        onerror="this.onerror=null;this.src='https://via.placeholder.com/300?text=Urun';">
+      <div class="card-body">
+        <div class="title">${escapeHtml(p.title || "")}</div>
+        <div class="price">${escapeHtml(p.price || "")}</div>
+        <div class="score-wrap">
+          <span>Caynana Puanı</span>
+          <span class="score-pill">${score}</span>
+        </div>
+        <a class="btnLink" href="${p.url || "#"}" target="_blank" rel="noopener">İNCELE</a>
+      </div>
+    `;
+    wrap.appendChild(div);
+  });
+
+  chatContainer.appendChild(wrap);
+  scrollToBottom(true);
+}
+
 // ---- LOGIN GATE ----
 async function requireLogin(reasonText = "Evladım, önce giriş yapacaksın.") {
   await addBubble("ai", reasonText, false, "");
@@ -433,51 +473,47 @@ function switchMode(modeKey) {
 
 // swipe + brand double tap
 function bindSwipe() {
-  const area = $("main");
+  const area = mainEl || $("main");
   if (!area) return;
-  let sx = 0,
-    sy = 0,
+
+  let sx = 0, sy = 0, active = false;
+
+  area.addEventListener("pointerdown", (e) => {
+    // chat açıkken swipe yapma (scroll ile çakışmasın)
+    const chatVisible = chatContainer && chatContainer.style.display === "block";
+    if (chatVisible) { active = false; return; }
+
+    active = true;
+    sx = e.clientX;
+    sy = e.clientY;
+  }, { passive: true });
+
+  area.addEventListener("pointerup", (e) => {
+    if (!active) return;
     active = false;
 
-  area.addEventListener(
-    "pointerdown",
-    (e) => {
-      active = true;
-      sx = e.clientX;
-      sy = e.clientY;
-    },
-    { passive: true }
-  );
+    if (!getToken()) {
+      requireLogin("Evladım, modlara geçmek için önce giriş yapman lazım.");
+      return;
+    }
 
-  area.addEventListener(
-    "pointerup",
-    (e) => {
-      if (!active) return;
-      active = false;
+    const dx = e.clientX - sx;
+    const dy = e.clientY - sy;
 
-      // ⛔ GİRİŞ YOKSA SWIPE MOD YOK
-      if (!getToken()) {
-        requireLogin("Evladım, modlara geçmek için önce giriş yapman lazım.");
-        return;
-      }
+    // yatay swipe şart
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) return;
 
-      const dx = e.clientX - sx;
-      const dy = e.clientY - sy;
-      if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
-      const step = dx < 0 ? 1 : -1;
-      const idx = MODE_KEYS.indexOf(currentMode);
-      const next = MODE_KEYS[(idx + step + MODE_KEYS.length) % MODE_KEYS.length];
-      switchMode(next);
-    },
-    { passive: true }
-  );
+    const step = dx < 0 ? 1 : -1;
+    const idx = MODE_KEYS.indexOf(currentMode);
+    const next = MODE_KEYS[(idx + step + MODE_KEYS.length) % MODE_KEYS.length];
+    switchMode(next);
+  }, { passive: true });
 
   if (brandTap) {
     let last = 0;
     brandTap.addEventListener("click", () => {
       const now = Date.now();
       if (now - last < 300) {
-        // ⛔ GİRİŞ YOKSA TAP MOD YOK
         if (!getToken()) {
           requireLogin("Evladım, modlara geçmek için önce giriş yapman lazım.");
           return;
@@ -889,11 +925,10 @@ async function playAudio(text, btn) {
   }
 }
 
-// ---- Send (GİRİŞ KİLİDİ + NET HATA) ----
+// ---- Send (GİRİŞ KİLİDİ + NET HATA + SHOPPING CARD) ----
 async function send() {
   if (isSending) return;
 
-  // ⛔ GİRİŞ YOKSA CHAT YOK
   if (!getToken()) {
     if (sendBtn) sendBtn.disabled = false;
     isSending = false;
@@ -950,6 +985,11 @@ async function send() {
       false,
       data.speech_text || ""
     );
+
+    // ✅ Shopping: ürün kartlarını bas
+    if (currentMode === "shopping" && Array.isArray(data.data) && data.data.length) {
+      renderCards(data.data);
+    }
   } catch (e) {
     const l = document.getElementById(loaderId);
     if (l) l.remove();
@@ -969,7 +1009,7 @@ function bindEvents() {
   if (drawerClose) drawerClose.onclick = closeDrawer;
   if (drawerMask) drawerMask.onclick = closeDrawer;
 
-  // persona (⛔ giriş yoksa açılmaz)
+  // persona
   if (personaBtn) {
     personaBtn.onclick = () => {
       if (!getToken()) {
@@ -986,7 +1026,7 @@ function bindEvents() {
       if (e.target === personaModal) hideModal(personaModal);
     });
 
-  // ✅ Persona kilidi KALDIRILDI (locked kontrolü yok)
+  // Persona seçim: kilit yok (ama giriş şart)
   document.querySelectorAll("#personaModal .persona-opt").forEach((opt) => {
     opt.addEventListener("click", () => {
       if (!getToken()) {
@@ -1087,14 +1127,12 @@ function bindEvents() {
 
 // ---- Init ----
 async function init() {
-  // Fal UI düz: sadece fal’da
   document.body.classList.remove("fal-mode");
   falImages = [];
 
   renderDock();
   applyHero("chat");
   loadModeChat("chat");
-
   setFalStepUI();
 
   bindSwipe();
@@ -1103,10 +1141,6 @@ async function init() {
   await pullPlanFromBackend();
   setDrawerProfileUI();
   updateLoginUI();
-
   await pullProfileToDrawer();
-
-  // ⛔ giriş yoksa ilk açılışta modlar açık gibi görünmesin (UI var ama işlev yok)
-  // İstersen burada direkt login modal da açtırırız.
 }
 init();
