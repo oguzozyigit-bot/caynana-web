@@ -1,3 +1,9 @@
+/* CAYNANA WEB - app.css (FIXED + COMPLETE)
+   - index.html (topbarGlass + topActions) ile uyumlu
+   - Fal UI sadece fal modunda görünür
+   - “Dosya seç” asla görünmez
+*/
+
 :root{
   --primary:#FFB300;
   --font:'Outfit',sans-serif;
@@ -90,13 +96,15 @@ body{ display:flex; align-items:center; justify-content:center; padding:12px; }
   scrollbar-width:none;
 }
 #chatContainer::-webkit-scrollbar{ display:none; }
+
+/* Fal modunda chat padding (alttaki büyük fal panel için) */
 body.fal-mode #chatContainer{ padding-bottom:420px; }
 
 /* Messages */
 .msg{ display:flex; margin-bottom:12px; flex-direction:column; animation:fadeIn .25s ease; }
 .msg.user{ align-items:flex-end; } .msg.ai{ align-items:flex-start; }
 @keyframes fadeIn{ from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:translateY(0);} }
-.bubble{ max-width:95%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.55; font-weight:800; }
+.bubble{ max-width:95%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.55; font-weight:800; user-select:text; }
 .msg.user .bubble{ background:var(--primary); color:#fff; border-bottom-right-radius:6px; }
 .msg.ai .bubble{ background:#fff; color:#111; border-bottom-left-radius:6px; }
 .typing-cursor::after{ content:'|'; animation:blink 1s infinite; margin-left:2px; }
@@ -162,9 +170,14 @@ body.fal-mode #chatContainer{ padding-bottom:420px; }
 /* Dosya seç asla görünmez */
 #fileInput,
 input[type="file"]{
-  display:none !important; visibility:hidden !important;
-  width:0 !important; height:0 !important; opacity:0 !important;
-  position:absolute !important; left:-9999px !important; top:-9999px !important;
+  display:none !important;
+  visibility:hidden !important;
+  width:0 !important;
+  height:0 !important;
+  opacity:0 !important;
+  position:absolute !important;
+  left:-9999px !important;
+  top:-9999px !important;
 }
 
 /* Modals */
@@ -267,3 +280,12 @@ input[type="file"]{
 .notifItem{ border:1px solid #eee; border-radius:16px; padding:12px; background:#fff; }
 .notifItemTitle{ font-weight:1000; color:#111; }
 .notifItemBody{ margin-top:6px; font-weight:800; color:#444; font-size:13px; line-height:1.4; }
+
+/* Fal-only panel sadece fal modunda görünür */
+.fal-only{ display:none; }
+body.fal-mode #bottom .input-wrapper{ display:none !important; }
+body.fal-mode .fal-only{ display:block; }
+.fal-cam-wrap{ width:100%; display:flex; align-items:center; justify-content:center; padding:10px 0 6px 0; }
+.fal-cam-btn{ width:86px; height:86px; border-radius:28px; border:none; background:var(--primary); color:#fff; font-size:34px; display:flex; align-items:center; justify-content:center; box-shadow:0 14px 30px rgba(0,0,0,.25); cursor:pointer; }
+.fal-step-text{ margin-top:10px; text-align:center; font-weight:1000; font-size:12px; color:#222; }
+.fal-step-sub{ margin-top:4px; text-align:center; font-weight:900; font-size:11px; color:#666; }
