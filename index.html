@@ -1,314 +1,80 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b0f18" />
-  <title>CAYNANA.AI</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
-
-  <!-- Google Identity -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-  <link rel="stylesheet" href="./css/app.css?v=8000" />
-</head>
-
-<body>
-  <div id="app">
-    <img id="heroImage" src="" alt="Hero Background">
-
-    <!-- Persona Modal -->
-    <div id="personaModal" class="modalMask">
-      <div class="personaBox">
-        <div class="persona-title">Caynana Modunu Seç</div>
-
-        <div class="persona-opt selected" data-persona="normal">
-          <span>👵 Görmüş Geçirmiş Kaynana</span><i class="fa-solid fa-check"></i>
-        </div>
-        <div class="persona-opt" data-persona="sevecen">
-          <span>🥰 Anne Tadında Kaynana</span><i class="fa-solid fa-check" style="opacity:.15;"></i>
-        </div>
-        <div class="persona-opt" data-persona="kizgin">
-          <span>😠 Kaynana Gibi Kaynana</span><i class="fa-solid fa-check" style="opacity:.15;"></i>
-        </div>
-        <div class="persona-opt" data-persona="huysuz">
-          <span>🤕 Bir Ayağı Çukurda Kaynana</span><i class="fa-solid fa-check" style="opacity:.15;"></i>
-        </div>
-        <div class="persona-opt" data-persona="itirazci">
-          <span>😤 Herşeye Muhalif Kaynana</span><i class="fa-solid fa-check" style="opacity:.15;"></i>
-        </div>
-
-        <div class="persona-close" id="personaClose">Kapat</div>
-      </div>
+<!-- PROFILE Modal (ilk girişte zorunlu) -->
+<div id="profileModal" class="modalMask">
+  <div class="authBox profileBox">
+    <div class="authTop">
+      <div class="authTitle">Profil</div>
+      <div class="authClose" id="profileCloseX">✕</div>
     </div>
 
-    <!-- Photo Modal -->
-    <div id="photoModal" class="modalMask">
-      <div class="photoBox">
-        <div class="photoTitle" id="photoTitle">Fotoğraf hazır</div>
-        <img id="photoPreview" src="" alt="preview">
-        <div class="photoActions">
-          <button class="photoBtn" id="photoCancelBtn">Vazgeç</button>
-          <button class="photoBtn primary" id="photoOkBtn">Tamam</button>
+    <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
+      <img id="profileAvatar" src="" alt="avatar" style="width:54px;height:54px;border-radius:16px;object-fit:cover;background:#eee;">
+      <div style="min-width:0;">
+        <div style="font-weight:1000;color:#111; font-size:13px;" id="profileEmail">—</div>
+        <div style="margin-top:4px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <span class="dpCN" id="profileCN">CN-????</span>
+          <span class="dpPlan" id="profilePlan">FREE</span>
         </div>
-        <div id="photoHint" class="photoHint">Tamam deyince Caynana hemen yoruma başlayacak.</div>
-      </div>
-    </div>
-
-    <!-- Drawer -->
-    <div id="drawerMask" class="drawerMask"></div>
-    <div id="drawer" class="drawer">
-      <div class="drawerTop">
-        <div class="drawerTitle">Menü</div>
-        <div class="drawerClose" id="drawerClose">✕</div>
-      </div>
-
-      <!-- Profil kartı: sadece online iken görünür -->
-      <div class="drawerProfile" id="drawerProfileCard" style="display:none;">
-        <img id="dpAvatar" class="dpAvatar" alt="avatar" />
-        <div class="dpMid">
-          <div class="dpName" id="dpName">Üye</div>
-          <div class="dpPlanRow">
-            <span class="dpPlan" id="dpPlan">FREE</span>
-            <span class="dpCN" id="dpCN">CN-????</span>
-          </div>
-        </div>
-        <button class="dpEdit" id="openProfileBtn" title="Profil">Profil</button>
-      </div>
-
-      <!-- Giriş butonları: sadece offline iken görünür -->
-      <div id="drawerLoginBox" style="display:none;">
-        <div class="drawerItem" id="btnLoginGoogle">
-          <i class="fa-brands fa-google"></i> Google ile devam et
-        </div>
-        <div class="drawerItem" id="btnLoginApple">
-          <i class="fa-brands fa-apple"></i> Apple ile giriş (yakında)
-        </div>
-        <div class="drawerSep"></div>
-      </div>
-
-      <div class="drawerItem" id="aboutBtn"><i class="fa-solid fa-circle-info"></i> Hakkımızda</div>
-      <div class="drawerItem" id="faqBtn"><i class="fa-solid fa-circle-question"></i> Sık Sorulan Sorular</div>
-      <div class="drawerItem" id="contactBtn"><i class="fa-solid fa-envelope"></i> İletişim</div>
-      <div class="drawerItem" id="privacyBtn"><i class="fa-solid fa-shield-halved"></i> Gizlilik</div>
-
-      <div class="drawerSep"></div>
-
-      <div class="drawerItem" id="safeLogoutBtn" style="display:none;">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i> Güvenli Çıkış
-      </div>
-
-      <div class="drawerMuted footerInMenu">
-        <div>@CaynanaAI By Ozyigits</div>
-        <div class="mutedSmall">2026</div>
-      </div>
-    </div>
-
-    <!-- Topbar -->
-    <div id="topbar">
-      <div class="topbarGlass">
-        <div class="brand-wrap" id="brandTap" title="Mod değiştir (çift tık / swipe)">
-          <div class="brand"><i class="fa-solid fa-wand-magic-sparkles"></i>CAYNANA<span>.AI</span></div>
-          <div class="brand-sub">Yapay Zekânın Geleneksel Aklı</div>
-        </div>
-
-        <div class="topActions">
-          <div class="menu-btn" id="notifIconBtn" title="Bildirimler">
-            <i class="fa-solid fa-bell"></i>
-            <span class="notifBadge" id="notifBadge" style="display:none;">0</span>
-          </div>
-
-          <div class="menu-btn" id="personaBtn" title="Kaynana Modları">
-            <i class="fa-solid fa-masks-theater"></i>
-          </div>
-
-          <div class="menu-btn" id="menuBtn" title="Menü">
-            <i class="fa-solid fa-bars"></i>
-          </div>
+        <div style="margin-top:6px; font-size:12px; color:#666; font-weight:900;">
+          Avatar Google’dan gelir, burada değişmez.
         </div>
       </div>
     </div>
 
-    <div id="main">
-      <div id="heroContent">
-        <div id="heroTitle"></div>
-        <div id="heroDesc"></div>
+    <!-- ✅ SCROLL WRAPPER -->
+    <div class="profileScroll">
+      <!-- ZORUNLU -->
+      <div class="pfSectionTitle">Zorunlu</div>
+      <input id="pfFullName" class="authInput" placeholder="Ad Soyad *">
+      <input id="pfNick" class="authInput" placeholder="Takma Ad (Caynana nasıl hitap etsin?) *">
+
+      <div class="pfRow2">
+        <select id="pfGender" class="authInput">
+          <option value="">Cinsiyet *</option>
+          <option value="kadın">Kadın</option>
+          <option value="erkek">Erkek</option>
+          <option value="belirtmek istemiyorum">Belirtmek istemiyorum</option>
+        </select>
+        <input id="pfAge" class="authInput" inputmode="numeric" placeholder="Yaş *">
       </div>
-      <div id="chatContainer"></div>
+
+      <div class="pfRow2">
+        <input id="pfHeight" class="authInput" inputmode="numeric" placeholder="Boy (cm) *">
+        <input id="pfWeight" class="authInput" inputmode="numeric" placeholder="Kilo (kg) *">
+      </div>
+
+      <!-- OPSİYONEL -->
+      <div class="pfSectionTitle">Opsiyonel</div>
+      <textarea id="pfBio" class="authInput" style="height:78px;padding-top:10px;" placeholder="Kendini Tanıt (opsiyonel)"></textarea>
+
+      <!-- ✅ ALT ALTA -->
+      <select id="pfMarital" class="authInput">
+        <option value="">Medeni Durum (opsiyonel)</option>
+        <option value="bekar">Bekar</option>
+        <option value="evli">Evli</option>
+        <option value="ayrı">Ayrı</option>
+      </select>
+
+      <select id="pfKids" class="authInput">
+        <option value="">Çocuk var mı? (opsiyonel)</option>
+        <option value="yok">Yok</option>
+        <option value="var">Var</option>
+      </select>
+
+      <!-- ✅ “Kaç tane” -> “Çocuk sayısı” -->
+      <input id="pfKidsCount" class="authInput" inputmode="numeric" placeholder="Çocuk sayısı (opsiyonel)">
+      <input id="pfKidsAges" class="authInput" placeholder="Çocuk yaşları (örn: 5, 9) (opsiyonel)">
+
+      <input id="pfSpouseName" class="authInput" placeholder="Eşinin adı (opsiyonel)">
+      <input id="pfCity" class="authInput" placeholder="Yaşadığın il (opsiyonel)">
+      <input id="pfJob" class="authInput" placeholder="İş durumu (opsiyonel)">
+      <input id="pfPriority" class="authInput" placeholder="Öncelik (Aşk/Para/Sağlık...) (opsiyonel)">
     </div>
 
-    <div id="bottom">
-      <div id="suggestionText"></div>
+    <button id="profileSave" class="authSubmit">Kaydet</button>
+    <div id="profileStatus" class="authStatus"></div>
 
-      <!-- Fal UI -->
-      <div class="fal-only">
-        <div class="fal-cam-wrap">
-          <button class="fal-cam-btn" id="falCamBtn" aria-label="Fal fotoğraf çek">
-            <i class="fa-solid fa-camera"></i>
-          </button>
-        </div>
-        <div class="fal-step-text" id="falStepText">Fal için 3 fotoğraf çek</div>
-        <div class="fal-step-sub" id="falStepSub">1/3: Üstten çek</div>
-      </div>
-
-      <div class="input-wrapper">
-        <div class="search-bar">
-          <div class="tool-btn" id="camBtn"><i class="fa-solid fa-camera"></i></div>
-          <input id="text" placeholder="Bir şey yaz..." autocomplete="off">
-          <div class="tool-btn" id="micBtn"><i class="fa-solid fa-microphone"></i></div>
-        </div>
-        <button id="sendBtn" aria-label="Gönder"><i class="fa-solid fa-paper-plane"></i></button>
-      </div>
-
-      <div id="dock"></div>
-
-      <div class="brand-footer">
-        <div class="footer-text-line1">@CaynanaAI By Ozyigits</div>
-        <div class="oz-lines">
-          <span id="ozLine0"></span>
-          <span id="ozLine1"></span>
-          <span id="ozLine2"></span>
-          <span id="ozLine3"></span>
-        </div>
-        <div class="footer-text-line2">2026</div>
-      </div>
+    <div class="googleHint" style="margin-top:8px;">
+      * Bu alanlar olmadan fal/diyet/sağlık düzgün çalışmaz evladım 🙂
     </div>
-
-    <!-- AUTH Modal (Sadece Google + Apple) -->
-    <div id="authModal" class="modalMask">
-      <div class="authBox">
-        <div class="authTop">
-          <div class="authTitle">Devam Et</div>
-          <div class="authClose" id="authCloseX">✕</div>
-        </div>
-
-        <div class="googleArea" style="border-style:solid;border-color:#eee;">
-          <div class="googleLabel">Google ile devam et:</div>
-          <div id="googleBtn"></div>
-          <div class="googleHint">İlk girişte profilini tamamlayacaksın.</div>
-        </div>
-
-        <div class="googleArea" style="margin-top:10px;border-style:solid;border-color:#eee;">
-          <div class="googleLabel">Apple ile giriş:</div>
-          <button id="appleBtn" class="authSubmit" style="background:#111;">Apple (Yakında)</button>
-          <div class="googleHint">Şimdilik Google ile devam edebilirsin.</div>
-        </div>
-
-        <div id="authStatus" class="authStatus"></div>
-
-        <div class="authActions">
-          <button id="authClose" class="authMini dark">Kapat</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- PROFILE Modal (ilk girişte zorunlu) -->
-    <div id="profileModal" class="modalMask">
-      <div class="authBox">
-        <div class="authTop">
-          <div class="authTitle">Profil</div>
-          <div class="authClose" id="profileCloseX">✕</div>
-        </div>
-
-        <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
-          <img id="profileAvatar" src="" alt="avatar" style="width:54px;height:54px;border-radius:16px;object-fit:cover;background:#eee;">
-          <div style="min-width:0;">
-            <div style="font-weight:1000;color:#111; font-size:13px;" id="profileEmail">—</div>
-            <div style="margin-top:4px; display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-              <span class="dpCN" id="profileCN">CN-????</span>
-              <span class="dpPlan" id="profilePlan">FREE</span>
-            </div>
-            <div style="margin-top:6px; font-size:12px; color:#666; font-weight:900;">
-              Avatar Google’dan gelir, burada değişmez.
-            </div>
-          </div>
-        </div>
-
-        <!-- ZORUNLU -->
-        <div style="font-weight:1000;color:#111;margin:8px 0 6px 0;">Zorunlu</div>
-        <input id="pfFullName" class="authInput" placeholder="Ad Soyad *">
-        <input id="pfNick" class="authInput" placeholder="Takma Ad (Caynana nasıl hitap etsin?) *">
-
-        <div style="display:flex; gap:8px;">
-          <select id="pfGender" class="authInput" style="flex:1;">
-            <option value="">Cinsiyet *</option>
-            <option value="kadın">Kadın</option>
-            <option value="erkek">Erkek</option>
-            <option value="belirtmek istemiyorum">Belirtmek istemiyorum</option>
-          </select>
-          <input id="pfAge" class="authInput" style="flex:1;" inputmode="numeric" placeholder="Yaş *">
-        </div>
-
-        <div style="display:flex; gap:8px;">
-          <input id="pfHeight" class="authInput" style="flex:1;" inputmode="numeric" placeholder="Boy (cm) *">
-          <input id="pfWeight" class="authInput" style="flex:1;" inputmode="numeric" placeholder="Kilo (kg) *">
-        </div>
-
-        <!-- OPSİYONEL -->
-        <div style="font-weight:1000;color:#111;margin:10px 0 6px 0;">Opsiyonel</div>
-        <textarea id="pfBio" class="authInput" style="height:78px;padding-top:10px;" placeholder="Kendini Tanıt (opsiyonel)"></textarea>
-
-        <div style="display:flex; gap:8px;">
-          <select id="pfMarital" class="authInput" style="flex:1;">
-            <option value="">Medeni Durum (opsiyonel)</option>
-            <option value="bekar">Bekar</option>
-            <option value="evli">Evli</option>
-            <option value="ayrı">Ayrı</option>
-          </select>
-          <select id="pfKids" class="authInput" style="flex:1;">
-            <option value="">Çocuk var mı? (opsiyonel)</option>
-            <option value="yok">Yok</option>
-            <option value="var">Var</option>
-          </select>
-        </div>
-
-        <input id="pfKidsCount" class="authInput" inputmode="numeric" placeholder="Kaç tane? (opsiyonel)">
-        <input id="pfKidsAges" class="authInput" placeholder="Yaşları (örn: 5, 9) (opsiyonel)">
-        <input id="pfSpouseName" class="authInput" placeholder="Eşinin adı (opsiyonel)">
-        <input id="pfCity" class="authInput" placeholder="Yaşadığın il (opsiyonel)">
-        <input id="pfJob" class="authInput" placeholder="İş durumu (opsiyonel)">
-        <input id="pfPriority" class="authInput" placeholder="Öncelik (Aşk/Para/Sağlık...) (opsiyonel)">
-
-        <button id="profileSave" class="authSubmit">Kaydet</button>
-        <div id="profileStatus" class="authStatus"></div>
-
-        <div class="googleHint" style="margin-top:8px;">
-          * Bu alanlar olmadan fal/diyet/sağlık düzgün çalışmaz evladım 🙂
-        </div>
-      </div>
-    </div>
-
-    <!-- Page Modal -->
-    <div id="pageModal" class="modalMask">
-      <div class="pageBox">
-        <div class="pageTop">
-          <div id="pageTitle" class="pageTitle"></div>
-          <div id="pageClose" class="pageClose">Kapat ✕</div>
-        </div>
-        <div id="pageBody" class="pageBody"></div>
-      </div>
-    </div>
-
-    <!-- Notifications Modal -->
-    <div id="notifModal" class="modalMask">
-      <div class="notifBox">
-        <div class="notifTop">
-          <div class="notifTitle">Bildirimler</div>
-          <div class="notifClose" id="notifClose">✕</div>
-        </div>
-        <div class="notifList" id="notifList"></div>
-      </div>
-    </div>
-
   </div>
-
-  <input type="file" id="fileInput" accept="image/*" capture="environment" />
-
-  <script type="module" src="./js/main.js?v=8000"></script>
-</body>
-</html>
+</div>
