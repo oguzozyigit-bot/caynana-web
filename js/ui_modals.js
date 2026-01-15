@@ -1,15 +1,21 @@
-export function show(el){ el.style.display = "flex"; }
-export function hide(el){ el.style.display = "none"; }
+/* js/ui_modals.js
+   Açılır Pencereler ve UI Etkileşimleri
+*/
 
-export function bindPageModal(){
-  const pageModal = document.getElementById("pageModal");
-  const pageClose = document.getElementById("pageClose");
-  pageClose.onclick = ()=> hide(pageModal);
-  pageModal.addEventListener("click",(e)=>{ if(e.target.id==="pageModal") hide(pageModal); });
+export function initUi() {
+    console.log("🎨 UI Modülleri Yüklendi...");
+    // Modal kapatma butonlarını dinle
+    const closeBtns = document.querySelectorAll('.close-modal');
+    closeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const modal = btn.closest('.modal');
+            if (modal) modal.style.display = 'none';
+        });
+    });
 }
 
-export function openPage(title, html){
-  document.getElementById("pageTitle").textContent = title;
-  document.getElementById("pageBody").innerHTML = html;
-  document.getElementById("pageModal").style.display = "block";
+// Global modal açma fonksiyonları
+window.openLoginModal = function() {
+    const m = document.getElementById('login-modal');
+    if (m) m.style.display = 'flex';
 }
