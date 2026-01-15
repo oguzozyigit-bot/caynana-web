@@ -1,10 +1,10 @@
-// CAYNANA WEB - main.js (FINAL v7002.1)
+// CAYNANA WEB - main.js (FINAL v7003)
 // ✅ Tek dosya, çakışma yok.
 // ✅ Giriş yoksa: chat yok, mod yok, persona yok, kamera/mic yok.
 // ✅ Giriş varsa: tüm modlar + persona serbest.
 // ✅ Shopping: TEK SÜTUN premium kart + "Caynana Yıldızları" (puan/sıra yok).
 // ✅ PC: dblclick, Mobil: double-tap (çift tık) + swipe.
-// ✅ İSTEK: Yıldız rozetindeki “yıldıza göre renk” KALDIRILDI (tek renk).
+// ✅ Okunurluk: Nokta/ünlem/soru işaretinden sonra otomatik paragraf boşluğu.
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
@@ -187,20 +187,51 @@ function scrollToBottom(force = false) {
 }
 window.addEventListener("resize", () => scrollToBottom(true));
 
+function formatReadableText(raw) {
+  let t = (raw || "").trim();
+  if (!t) return t;
+
+  // Çoklu boşlukları sadeleştir
+  t = t.replace(/\r/g, "").replace(/[ \t]+/g, " ");
+
+  // Nokta/ünlem/soru işaretinden sonra paragraf boşluğu
+  // (kısa kısaltmalar için aşırı agresif olmamak adına basit koruma)
+  t = t.replace(/([.!?])\s+(?=[A-ZÇĞİÖŞÜ0-9])/g, "$1\n\n");
+
+  // Türkçe için de paragraf (büyük harf şartına takılmasın)
+  t = t.replace(/([.!?])\s+(?=[A-Za-zÇĞİÖŞÜ0-9])/g, "$1\n\n");
+
+  // Çok uzun tek paragrafı yumuşat
+  t = t.replace(/\n{3,}/g, "\n\n");
+
+  // Fazla satır başlarını sadeleştir
+  t = t.replace(/[ \t]+\n/g, "\n").replace(/\n[ \t]+/g, "\n");
+
+  return t;
+}
+
 async function typeWriterEffect(el, text, speed = 18) {
   return new Promise((resolve) => {
+    const pretty = formatReadableText(text);
     let i = 0;
     el.innerHTML = "";
     el.classList.add("typing-cursor");
     function tick() {
-      if (i < text.length) {
-        el.textContent += text.charAt(i++);
+      if (i < pretty.length) {
+        el.textContent += pretty.charAt(i++);
         scrollToBottom(true);
         setTimeout(tick, speed);
       } else {
         el.classList.remove("typing-cursor");
-        if (window.DOMPurify && window.marked) el.innerHTML = DOMPurify.sanitize(marked.parse(text));
-        else el.textContent = text;
+        const finalText = pretty;
+
+        // markdown -> HTML (paragraflar boşluklu gelsin)
+        if (window.DOMPurify && window.marked) {
+          const html = marked.parse(finalText);
+          el.innerHTML = DOMPurify.sanitize(html);
+        } else {
+          el.textContent = finalText;
+        }
         resolve();
       }
     }
@@ -291,7 +322,7 @@ function closeDrawer() {
 }
 
 // -------------------------
-// Premium Shopping Cards CSS injection
+// Style injection (Premium Shopping Cards)
 // -------------------------
 function ensureShoppingStyles() {
   if (document.getElementById("caynanaShopStyles")) return;
@@ -995,7 +1026,7 @@ async function playAudio(text, btn) {
 }
 
 // -------------------------
-// SHOPPING: Caynana Yıldızları (tek rozet rengi, yıldıza göre renk YOK)
+// SHOPPING: Caynana Yıldızları (puan/sıra yok)
 // -------------------------
 function normStr(x) { return (x == null ? "" : String(x)).trim(); }
 function pickUrl(p) { return normStr(p.url || p.link || p.product_url || p.productUrl || p.href); }
@@ -1028,15 +1059,14 @@ function buildWhyText(p, idx) {
   return variants[idx % variants.length];
 }
 
-// ✅ SABİT ROZET RENGİ (tek renk)
+// ✅ İSTENEN DÜZELTME: yıldız rozeti rengi SABİT (yıldız sayısına göre renk değişmez)
 const STAR_BADGE_GRAD = "linear-gradient(135deg,#FFB300,#FF6A00)";
 
 function starPackByIndex(i) {
-  // yıldız sayısı farklı, ama renk tek
-  if (i === 0) return { stars: 5, label: "Caynana Yıldızları" };
-  if (i === 1) return { stars: 4, label: "Caynana Yıldızları" };
-  if (i === 2) return { stars: 3, label: "Caynana Yıldızları" };
-  if (i === 3) return { stars: 2, label: "Caynana Yıldızları" };
+  if (i === 0) return { stars: 5, label: "Caynana Yıldızları", grad: STAR_BADGE_GRAD };
+  if (i === 1) return { stars: 4, label: "Caynana Yıldızları", grad: STAR_BADGE_GRAD };
+  if (i === 2) return { stars: 3, label: "Caynana Yıldızları", grad: STAR_BADGE_GRAD };
+  if (i === 3) return { stars: 2, label: "Caynana Yıldızları", grad: STAR_BADGE_GRAD };
   return null;
 }
 function starsText(n) { return "★★★★★".slice(0, n) + "☆☆☆☆☆".slice(0, 5 - n); }
@@ -1061,7 +1091,7 @@ function renderShoppingCards(products) {
 
     const glow = document.createElement("div");
     glow.className = "shopGlow";
-    // ✅ Glow da sabit (yıldıza göre renk YOK)
+    // Glow sabit ve yumuşak kalsın (renk değişimi yok)
     glow.style.background = "radial-gradient(circle, rgba(255,179,0,0.18) 0%, rgba(255,255,255,0) 70%)";
     card.appendChild(glow);
 
@@ -1090,7 +1120,7 @@ function renderShoppingCards(products) {
       const b = document.createElement("div");
       b.className = "starBadge";
       b.innerHTML = `
-        <span class="starPill" style="background:${STAR_BADGE_GRAD}">★</span>
+        <span class="starPill" style="background:${badge.grad}">★</span>
         <span class="starLabel">${escapeHtml(badge.label)}</span>
         <span class="stars">${escapeHtml(starsText(badge.stars))}</span>
       `;
@@ -1192,6 +1222,21 @@ async function send() {
 }
 
 // -------------------------
+// Persona UI
+// -------------------------
+function bindPersonaSelection() {
+  document.querySelectorAll("#personaModal .persona-opt").forEach((opt) => {
+    opt.addEventListener("click", () => {
+      if (!getToken()) return requireLogin("Evladım, kaynana modları için önce giriş yap.");
+      document.querySelectorAll("#personaModal .persona-opt").forEach((x) => x.classList.remove("selected"));
+      opt.classList.add("selected");
+      currentPersona = opt.getAttribute("data-persona") || "normal";
+      setTimeout(() => hideModal(personaModal), 150);
+    });
+  });
+}
+
+// -------------------------
 // Events
 // -------------------------
 function bindEvents() {
@@ -1211,17 +1256,9 @@ function bindEvents() {
   if (personaModal) personaModal.addEventListener("click", (e) => {
     if (e.target === personaModal) hideModal(personaModal);
   });
-  document.querySelectorAll("#personaModal .persona-opt").forEach((opt) => {
-    opt.addEventListener("click", () => {
-      if (!getToken()) return requireLogin("Evladım, kaynana modları için önce giriş yap.");
-      document.querySelectorAll("#personaModal .persona-opt").forEach((x) => x.classList.remove("selected"));
-      opt.classList.add("selected");
-      currentPersona = opt.getAttribute("data-persona") || "normal";
-      setTimeout(() => hideModal(personaModal), 150);
-    });
-  });
+  bindPersonaSelection();
 
-  // auth open
+  // auth modal open
   if (accountBtn) {
     accountBtn.onclick = () => {
       showModal(authModal);
