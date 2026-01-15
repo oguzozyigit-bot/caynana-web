@@ -437,3 +437,33 @@ body.fal-mode .fal-only{ display:block; }
 
 /* kartlar chatContainer içinde tıklanabilsin */
 #chatContainer{ pointer-events:auto !important; }
+/* =========================
+   PROFIL MODAL SCROLL FIX
+   ========================= */
+.profileBox{
+  max-height: 86vh;
+  overflow: hidden; /* dış kutu sabit */
+}
+
+.profileScroll{
+  max-height: 56vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-right: 4px;
+  touch-action: pan-y;
+}
+
+.pfSectionTitle{
+  font-weight: 1000;
+  color:#111;
+  margin: 10px 0 6px 0;
+}
+
+.pfRow2{
+  display:flex;
+  gap:8px;
+}
+.pfRow2 .authInput{
+  flex:1;
+  min-width:0;
+}
