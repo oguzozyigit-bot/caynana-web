@@ -325,3 +325,50 @@ body.fal-mode .input-wrapper { display: none !important; } /* Falda klavye gizle
 /* --- UTILS --- */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+/* --- CSS/APP.CSS EN ALTINA EKLE VEYA GÜNCELLE --- */
+
+/* Yeni Süzülme Animasyonu */
+@keyframes slideUpSlow {
+    from {
+        opacity: 0;
+        transform: translateY(30px); /* Aşağıdan başla */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0); /* Yerine otur */
+    }
+}
+
+/* Ürün Kartı Stili (Başlangıçta gizli) */
+.product-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    margin-top: 15px; /* Kartlar arası mesafe arttı */
+    border: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    opacity: 0; /* JS ile animasyon başlayana kadar gizli */
+    /* animation: slideUpSlow 0.8s ease forwards; <-- Bunu JS'te vereceğiz */
+}
+
+/* Buton görünümlü Link (Daha garantili çalışır) */
+.pc-btn {
+    width: 100%;
+    padding: 12px;
+    background: #111;
+    color: #fff !important; /* Link rengini ez */
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: block;
+    text-align: center;
+    text-decoration: none; /* Alt çizgiyi kaldır */
+    transition: background 0.3s;
+}
+.pc-btn:active {
+    background: #333;
+}
