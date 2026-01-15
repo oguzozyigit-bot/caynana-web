@@ -36,7 +36,7 @@ function initGoogleButton() {
     
     try {
         window.google.accounts.id.initialize({
-            client_id: "SENIN_GOOGLE_CLIENT_ID_BURAYA_GELECEK.apps.googleusercontent.com", // ⚠️ BURAYI KONTROL ET
+            client_id: "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com", // 
             callback: handleGoogleResponse,
             auto_select: false,
             cancel_on_tap_outside: false
