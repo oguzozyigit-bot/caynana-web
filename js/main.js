@@ -1,15 +1,16 @@
-// CAYNANA WEB - main.js (AUTH+PROFILE FIX v9200)
-// - Google tıklayınca: "Caynana'ya giriş yapılıyor..." yazar
-// - Token gelirse localStorage'a kaydeder, menü online olur
-// - /api/profile/me 404 olsa bile login kırılmaz (failsafe)
-// - Profil endpoint çalışıyorsa: ilk girişte profil modal açılır
+// main.js v9500
+// ✅ Modüller: chat + shopping (premium single-column cards) + fal + saglik + diyet
+// ✅ Swipe + double-tap/dblclick mod değişimi
+// ✅ Login: sadece Google (Apple placeholder)
+// ✅ İlk girişte profil zorunlu (profil eksikse otomatik açılır)
+// ✅ Avatar Google’dan gelir, burada değişmez
+// ✅ Güvenli çıkış: token + tüm sohbetleri (modeChats) temizler
 
 export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const API_URL = `${BASE_DOMAIN}/api/chat`;
 const SPEAK_URL = `${BASE_DOMAIN}/api/speak`;
 const FAL_CHECK_URL = `${BASE_DOMAIN}/api/fal/check`;
 const NOTIF_URL = `${BASE_DOMAIN}/api/notifications`;
-
 const PROFILE_ME_URL = `${BASE_DOMAIN}/api/profile/me`;
 const PROFILE_SET_URL = `${BASE_DOMAIN}/api/profile/set`;
 
@@ -31,7 +32,7 @@ export function authHeaders() {
 }
 
 // -------------------------
-// FAILSAFE (JS patlarsa kutu)
+// GLOBAL FAILSAFE
 // -------------------------
 window.addEventListener("error", (e) => {
   try {
@@ -64,6 +65,7 @@ let falImages = [];
 const FAL_STEPS = ["1/3: Üstten çek", "2/3: Yandan çek", "3/3: Diğer yandan çek"];
 
 if (window.marked) marked.setOptions({ mangle: false, headerIds: false });
+
 const $ = (id) => document.getElementById(id);
 
 // -------------------------
@@ -181,6 +183,7 @@ const oz3 = $("ozLine3");
 // -------------------------
 function showModal(el) { if (el) el.classList.add("show"); }
 function hideModal(el) { if (el) el.classList.remove("show"); }
+
 function setAuthStatus(msg) { if (authStatus) authStatus.textContent = msg; }
 function setProfileStatus(msg) { if (profileStatus) profileStatus.textContent = msg; }
 
@@ -200,6 +203,7 @@ function scrollToBottom(force = false) {
   if (!near) return;
   requestAnimationFrame(() => (chatContainer.scrollTop = chatContainer.scrollHeight));
 }
+window.addEventListener("resize", () => scrollToBottom(true));
 
 async function typeWriterEffect(el, text, speed = 18) {
   return new Promise((resolve) => {
@@ -256,18 +260,11 @@ async function apiFetch(url, opts = {}, timeoutMs = 20000) {
       err.data = data;
       throw err;
     }
-
     return { ok: true, status: res.status, data };
   } catch (e) {
-    if (String(e?.name || "").toLowerCase() === "aborterror") {
-      const err = new Error("Zaman aşımı (sunucu yanıt vermedi).");
-      err.code = "TIMEOUT";
-      throw err;
-    }
+    if (String(e?.name || "").toLowerCase() === "aborterror") throw new Error("Zaman aşımı.");
     if ((e && e.message === "Failed to fetch") || /failed to fetch/i.test(String(e?.message || ""))) {
-      const err = new Error("Sunucuya erişemedim (CORS / ağ / SSL).");
-      err.code = "FAILED_FETCH";
-      throw err;
+      throw new Error("Sunucuya erişemedim (CORS / ağ / SSL).");
     }
     throw e;
   } finally {
@@ -318,7 +315,7 @@ function unlockPersonaUI() {
 }
 
 // -------------------------
-// PROFILE
+// PROFILE helpers
 // -------------------------
 function syncKidsFields() {
   const v = (pfKids?.value || "").toLowerCase();
@@ -344,32 +341,25 @@ function isProfileComplete(me) {
 }
 
 async function fetchMeSafe() {
-  // ✅ FAILSAFE: endpoint yoksa login kırılmasın
   if (!getToken()) return null;
   try {
     const r = await apiFetch(PROFILE_ME_URL, { method: "GET", headers: { ...authHeaders() } }, 20000);
     meCache = r.data || null;
     return meCache;
-  } catch (e) {
-    if (e?.status === 404) {
-      // endpoint yok: sessiz geç, sadece UI online kalsın
-      return null;
-    }
-    // diğer hatalarda da login bozulmasın
+  } catch {
     return null;
   }
 }
 
 function fillDrawer(me) {
   if (!me) return;
-
   const display = (me.display_name || me.email || "Üye").trim();
-  const cn = (me.caynana_id || "CN-????").trim();
+  const idText = (me.caynana_id || "ID-????").trim();
   const plan = (me.plan || "free").toUpperCase();
   const avatar = (me.profile && me.profile.avatar_url) ? me.profile.avatar_url : "";
 
   if (dpName) dpName.textContent = display;
-  if (dpCN) dpCN.textContent = cn;
+  if (dpCN) dpCN.textContent = idText;
   if (dpPlan) dpPlan.textContent = plan;
 
   if (dpAvatar) {
@@ -382,12 +372,12 @@ function fillProfileModal(me) {
   if (!me) return;
 
   const email = (me.email || "").trim();
-  const cn = (me.caynana_id || "CN-????").trim();
+  const idText = (me.caynana_id || "ID-????").trim();
   const plan = (me.plan || "free").toUpperCase();
   const avatar = (me.profile && me.profile.avatar_url) ? me.profile.avatar_url : "";
 
   if (profileEmail) profileEmail.textContent = email || "—";
-  if (profileCN) profileCN.textContent = cn;
+  if (profileCN) profileCN.textContent = idText;
   if (profilePlan) profilePlan.textContent = plan;
 
   if (profileAvatar) {
@@ -406,7 +396,7 @@ function fillProfileModal(me) {
   if (pfBio) pfBio.value = p.bio || "";
   if (pfMarital) pfMarital.value = p.marital || "";
   if (pfKids) pfKids.value = p.kids || "";
-  if (pfKidsCount) pfKidsCount.value = p.kids_count ?? "";
+  if (pfKidsCount) pfKidsCount.value = (p.kids_count ?? "") === null ? "" : String(p.kids_count ?? "");
   if (pfKidsAges) pfKidsAges.value = p.kids_ages || "";
   if (pfSpouseName) pfSpouseName.value = p.spouse_name || "";
   if (pfCity) pfCity.value = p.city || "";
@@ -457,7 +447,6 @@ async function saveProfile() {
     }, 20000);
 
     setProfileStatus("Kaydedildi ✅");
-    // Backend /me çalışıyorsa güncelle
     const me = await fetchMeSafe();
     if (me) fillDrawer(me);
     closeProfile();
@@ -490,9 +479,7 @@ function ensureGoogleButton() {
     client_id: GOOGLE_CLIENT_ID,
     callback: async (resp) => {
       try {
-        // ✅ İstenen yazı
-        setAuthStatus("Caynana’ya giriş yapılıyor…");
-
+        setAuthStatus("Caynana’ya giriş yapılıyor… Lütfen bekleyiniz.");
         const r = await apiFetch(`${BASE_DOMAIN}/api/auth/google`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -502,30 +489,25 @@ function ensureGoogleButton() {
         const j = r.data || {};
         if (!j.token) throw new Error(j.detail || "Google giriş başarısız");
 
-        // ✅ En kritik: token'ı ÖNCE yaz
         setToken(j.token);
 
-        // UI: online mod
         closeAuth();
         closeDrawer();
         setMenuLoggedIn();
 
-        // Profil: endpoint varsa çek
         const me = await fetchMeSafe();
         if (me) {
           currentPlan = (me.plan || "free").toLowerCase();
           fillDrawer(me);
 
-          // İlk girişse profile
           if (!isProfileComplete(me)) {
             fillProfileModal(me);
             openProfile(true);
           }
         } else {
-          // /me yoksa en azından menü online kalsın
           if (dpAvatar) dpAvatar.src = FALLBACK_AVATAR;
           if (dpName) dpName.textContent = "Üye";
-          if (dpCN) dpCN.textContent = "CN-????";
+          if (dpCN) dpCN.textContent = "ID-????";
           if (dpPlan) dpPlan.textContent = "FREE";
         }
       } catch (e) {
@@ -543,11 +525,8 @@ function ensureGoogleButton() {
 }
 
 // -------------------------
-// Drawer / Page / Notif / Persona minimal bağlar
+// Notifications
 // -------------------------
-function openDrawer() { if (drawerMask) drawerMask.classList.add("show"); if (drawer) drawer.classList.add("open"); }
-function closeDrawer() { if (drawerMask) drawerMask.classList.remove("show"); if (drawer) drawer.classList.remove("open"); }
-
 async function openNotifications() {
   showModal(notifModal);
   if (!notifList) return;
@@ -588,6 +567,12 @@ async function openNotifications() {
   }
 }
 
+// -------------------------
+// Drawer / Page
+// -------------------------
+function openDrawer() { if (drawerMask) drawerMask.classList.add("show"); if (drawer) drawer.classList.add("open"); }
+function closeDrawer() { if (drawerMask) drawerMask.classList.remove("show"); if (drawer) drawer.classList.remove("open"); }
+
 async function openPageFromFile(title, path) {
   try {
     const r = await fetch(path, { cache: "no-store" });
@@ -607,7 +592,7 @@ function showPage(title, html) {
 function hidePage() { hideModal(pageModal); }
 
 // -------------------------
-// Modes (minimum – senin mevcut mod sistemin kalabilir)
+// MODES
 // -------------------------
 const MODES = {
   chat: { label:"Sohbet", icon:"fa-comments", color:"#FFB300", title:"Caynana ile<br>iki lafın belini kır.", desc:"Biraz dur bakalım, neler anlatacaksın?", img:assetUrl("images/hero-chat.png"), ph:"Naber Caynana?", sugg:"Benim zamanımda her şey daha güzeldi ah ah…" },
@@ -656,6 +641,7 @@ function renderDock() {
     dock.appendChild(item);
   });
 }
+
 const modeChats = {};
 function saveModeChat() { if (chatContainer) modeChats[currentMode] = chatContainer.innerHTML || ""; }
 function loadModeChat(modeKey) {
@@ -668,18 +654,87 @@ function switchMode(modeKey) {
   if (modeKey === currentMode) return;
   saveModeChat();
   currentMode = modeKey;
+
   document.querySelectorAll(".dock-item").forEach((el) => {
     el.classList.toggle("active", el.getAttribute("data-mode") === modeKey);
   });
+
   applyHero(modeKey);
   loadModeChat(modeKey);
+
   document.body.classList.toggle("fal-mode", modeKey === "fal");
   if (modeKey !== "fal") { falImages = []; setFalStepUI(); }
   else { resetFalCapture(); }
 }
 
 // -------------------------
-// Fal steps
+// Swipe + Double Tap / Dblclick
+// -------------------------
+function bindSwipeAndDoubleTap() {
+  const area = mainEl || $("main");
+  if (!area) return;
+
+  // swipe
+  let sx = 0, sy = 0, active = false;
+  area.addEventListener("pointerdown", (e) => {
+    const chatVisible = chatContainer && chatContainer.style.display === "block";
+    if (chatVisible) return;
+    active = true; sx = e.clientX; sy = e.clientY;
+  }, { passive:true });
+
+  area.addEventListener("pointerup", (e) => {
+    if (!active) return;
+    active = false;
+    if (!getToken()) return;
+
+    const dx = e.clientX - sx;
+    const dy = e.clientY - sy;
+    if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy)) return;
+
+    const step = dx < 0 ? 1 : -1;
+    const idx = MODE_KEYS.indexOf(currentMode);
+    const next = MODE_KEYS[(idx + step + MODE_KEYS.length) % MODE_KEYS.length];
+    switchMode(next);
+  }, { passive:true });
+
+  // PC dblclick
+  if (brandTap) {
+    brandTap.addEventListener("dblclick", (e) => {
+      e.preventDefault();
+      if (!getToken()) return requireLogin("Evladım, modlara geçmek için önce giriş yap.");
+      const idx = MODE_KEYS.indexOf(currentMode);
+      const next = MODE_KEYS[(idx + 1) % MODE_KEYS.length];
+      switchMode(next);
+    });
+  }
+
+  // mobile double-tap
+  if (brandTap) {
+    let lastTap = 0;
+    let lastX = 0, lastY = 0;
+    brandTap.addEventListener("pointerup", (e) => {
+      const now = Date.now();
+      const dx = Math.abs((e.clientX || 0) - lastX);
+      const dy = Math.abs((e.clientY || 0) - lastY);
+
+      const isQuick = (now - lastTap) < 320;
+      const isSameSpot = dx < 18 && dy < 18;
+
+      if (isQuick && isSameSpot) {
+        if (!getToken()) return requireLogin("Evladım, modlara geçmek için önce giriş yap.");
+        const idx = MODE_KEYS.indexOf(currentMode);
+        const next = MODE_KEYS[(idx + 1) % MODE_KEYS.length];
+        switchMode(next);
+        lastTap = 0;
+        return;
+      }
+      lastTap = now; lastX = e.clientX || 0; lastY = e.clientY || 0;
+    }, { passive:true });
+  }
+}
+
+// -------------------------
+// Fal UI
 // -------------------------
 function setFalStepUI() {
   if (!falStepText || !falStepSub) return;
@@ -694,8 +749,21 @@ function setFalStepUI() {
 }
 function resetFalCapture() { falImages = []; setFalStepUI(); }
 
+async function falCheckOneImage(dataUrl) {
+  try {
+    const r = await apiFetch(FAL_CHECK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image: dataUrl }),
+    }, 25000);
+    return r.data || { ok: false, reason: "Kontrol edilemedi." };
+  } catch {
+    return { ok: false, reason: "Kontrol edemedim, tekrar dene." };
+  }
+}
+
 // -------------------------
-// Photo modal basic
+// Photo modal
 // -------------------------
 function resetModalOnly() {
   pendingImage = null;
@@ -706,10 +774,11 @@ function resetModalOnly() {
 if (photoCancelBtn) photoCancelBtn.onclick = resetModalOnly;
 
 // -------------------------
-// Bubbles
+// Bubbles + TTS
 // -------------------------
 async function addBubble(role, text, isLoader = false, speech = "") {
   if (!chatContainer || !heroContent) return null;
+
   const div = document.createElement("div");
   div.className = "msg " + role;
   div.innerHTML = `<div class="bubble"></div>`;
@@ -723,20 +792,310 @@ async function addBubble(role, text, isLoader = false, speech = "") {
   if (role === "ai" && !isLoader) await typeWriterEffect(bubble, text);
   else bubble.innerHTML = role === "user" ? escapeHtml(text) : text;
 
+  // AI mesajına ses butonu
+  if (role === "ai") {
+    const sp = (speech && speech.trim()) ? speech : (text || "").replace(/[*_`#>-]/g, "").slice(0, 240);
+    const btn = document.createElement("div");
+    btn.className = "audio-btn";
+    btn.dataset.speech = sp;
+    btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Caynana Konuşuyor`;
+    div.appendChild(btn);
+  }
+
   scrollToBottom(true);
   return div;
 }
 
+if (chatContainer) {
+  chatContainer.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".audio-btn");
+    if (!btn) return;
+    await playAudio(btn.dataset.speech, btn);
+  });
+}
+
+async function playAudio(text, btn) {
+  if (!getToken()) return requireLogin("Evladım, ses için önce giriş yap.");
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+
+  const old = btn.innerHTML;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Yükleniyor`;
+
+  try {
+    const res = await fetch(SPEAK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({ text, persona: currentPersona }),
+    });
+    if (!res.ok) throw new Error("TTS çalışmadı");
+    const blob = await res.blob();
+    currentAudio = new Audio(URL.createObjectURL(blob));
+    currentAudio.onended = () => (btn.innerHTML = old);
+    await currentAudio.play();
+    btn.innerHTML = `<i class="fa-solid fa-stop"></i> Durdur`;
+  } catch {
+    btn.innerHTML = old;
+  }
+}
+
 // -------------------------
-// SEND (minimum)
-// (Senin mevcut /shopping render vb. burada kalsın istersen.
-// Şimdilik login fix odaklı olduğumuz için chat endpoint'i aynen çalışır.)
+// Shopping premium cards (tek sütun) — renk sabit, yıldız sayısı değişir
+// -------------------------
+function ensureShoppingStyles() {
+  if (document.getElementById("caynanaShopStyles")) return;
+
+  const s = document.createElement("style");
+  s.id = "caynanaShopStyles";
+  s.textContent = `
+  @keyframes slideUpFade { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+  .shopWrap{ margin-top:14px; display:flex; flex-direction:column; gap:14px; padding-bottom:18px; }
+  .shopCard{
+    background:#fff; border:1px solid rgba(0,0,0,0.06);
+    border-radius:22px; overflow:hidden; position:relative;
+    box-shadow:0 14px 34px rgba(0,0,0,0.14), 0 0 0 1px rgba(255,255,255,0.65) inset;
+    animation:slideUpFade .45s ease both;
+  }
+  .shopTop{ display:flex; gap:14px; padding:14px; align-items:center; position:relative; z-index:1; }
+  .shopImgBox{
+    width:110px; min-width:110px; height:110px; border-radius:18px;
+    background:#fff; border:1px solid rgba(0,0,0,0.06);
+    box-shadow:0 10px 22px rgba(0,0,0,0.08);
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+  }
+  .shopImgBox img{ width:92%; height:92%; object-fit:contain; }
+  .shopMeta{ flex:1; min-width:0; }
+  .shopTitle{
+    font-weight:950; color:#151515; font-size:15px; line-height:1.25; letter-spacing:-.2px;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .shopPrice{ margin-top:6px; font-size:18px; font-weight:1000; color:var(--primary,#00C897); letter-spacing:-.6px; }
+
+  .starBadge{
+    margin-top:10px; display:inline-flex; align-items:center; gap:8px;
+    padding:6px 12px 6px 6px; border-radius:999px;
+    background:rgba(255,255,255,0.88); border:1px solid rgba(0,0,0,0.08);
+    box-shadow:0 10px 22px rgba(0,0,0,0.10); backdrop-filter:blur(10px);
+  }
+  .starPill{
+    width:30px; height:30px; border-radius:999px; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:14px; font-weight:1000;
+    background: linear-gradient(135deg,#FFB300,#FF6A00);
+    box-shadow:0 10px 22px rgba(0,0,0,0.18);
+  }
+  .starLabel{ font-weight:1000; font-size:11px; color:#2b2b2b; letter-spacing:.3px; text-transform:uppercase; white-space:nowrap; }
+  .stars{ font-weight:1000; font-size:12px; letter-spacing:-1px; color:#FFB300; white-space:nowrap; }
+
+  .shopWhy{
+    margin:0 14px 14px 14px; padding:12px 14px; border-radius:18px;
+    background:#FFFBF0; border:1px solid rgba(255,179,0,0.14); border-left:5px solid #FFB300;
+    font-weight:850; font-size:13px; line-height:1.45; color:#4e3a2f;
+  }
+  .shopBtn{
+    margin:0 14px 14px 14px; height:50px; border-radius:16px;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    text-decoration:none; color:#fff; font-weight:1000;
+    background: linear-gradient(135deg, var(--primary,#00C897), #111);
+    box-shadow:0 14px 28px rgba(0,0,0,0.20);
+  }
+  .shopBtn:active{ transform:scale(.99); }
+  `;
+  document.head.appendChild(s);
+}
+
+function normStr(x){ return (x==null ? "" : String(x)).trim(); }
+function pickUrl(p){ return normStr(p.url || p.link || p.product_url || p.productUrl || p.href); }
+function pickTitle(p){ return normStr(p.title || p.name || p.product_title || p.productTitle || "Ürün"); }
+function pickImg(p){ return normStr(p.image || p.image_url || p.imageUrl || p.img || p.thumbnail); }
+function pickPrice(p){
+  const raw = normStr(p.price || p.price_text || p.priceText || p.display_price || "");
+  if (!raw) return "";
+  if (/fiyat/i.test(raw) && /tıkla/i.test(raw)) return "";
+  return raw;
+}
+function starsText(n){ return "★★★★★".slice(0,n) + "☆☆☆☆☆".slice(0,5-n); }
+
+function buildWhyText(p, idx){
+  const c = normStr(p.reason || p.why || p.caynana_reason || p.note);
+  if (c) return c;
+
+  const title = pickTitle(p).toLowerCase();
+  const hints = [];
+  if (/raf|dolap|kitap|ayakkabı/i.test(title)) hints.push("kurulum ve ölçü uyumu");
+  if (/ahşap|mdf|metal/i.test(title)) hints.push("malzeme/iskelet sağlamlığı");
+  if (/banyo|mutfak/i.test(title)) hints.push("nem/temizlik uyumu");
+  if (!hints.length) hints.push("fiyat/performans dengesi");
+
+  const variants = [
+    `Evladım bunu öne aldım çünkü ${hints[0]} tarafı daha temiz duruyor. Ölçünü yazarsan daha da nokta atışı seçeriz.`,
+    `Şuna “temiz tercih” derim: ${hints[0]} iyi. Satıcı yorumlarına bir bak, sonra “keşke” demeyelim.`,
+    `Bu seçenek ${hints[0]} açısından daha güven veriyor. Aşırı ucuzun peşine düşme, dayanım önemli.`,
+    `Bunu alternatif diye koydum: ${hints[0]} fena değil. Kurulum/yerleşimi kontrol edersen tadından yenmez.`,
+  ];
+  return variants[idx % variants.length];
+}
+
+function renderShoppingCards(products){
+  if (!chatContainer) return;
+  ensureShoppingStyles();
+
+  const wrap = document.createElement("div");
+  wrap.className = "shopWrap";
+
+  (products || []).slice(0,6).forEach((p,i)=>{
+    const url = pickUrl(p);
+    const title = pickTitle(p);
+    const img = pickImg(p);
+    const price = pickPrice(p);
+    const why = buildWhyText(p, i);
+    const stars = Math.max(0, 5 - i); // 5,4,3,2,1,0
+
+    const card = document.createElement("div");
+    card.className = "shopCard";
+
+    const top = document.createElement("div");
+    top.className = "shopTop";
+
+    const imgBox = document.createElement("div");
+    imgBox.className = "shopImgBox";
+    if (img){
+      const im = document.createElement("img");
+      im.src = img;
+      im.alt = "img";
+      im.onerror = () => { imgBox.innerHTML = `<div style="font-weight:900;color:#777;font-size:12px;">Görsel yok</div>`; };
+      imgBox.appendChild(im);
+    } else {
+      imgBox.innerHTML = `<div style="font-weight:900;color:#777;font-size:12px;">Görsel yok</div>`;
+    }
+
+    const meta = document.createElement("div");
+    meta.className = "shopMeta";
+    meta.innerHTML = `
+      <div class="shopTitle">${escapeHtml(title)}</div>
+      ${price ? `<div class="shopPrice">${escapeHtml(price)}</div>` : ``}
+      ${stars>0 ? `
+        <div class="starBadge">
+          <span class="starPill">★</span>
+          <span class="starLabel">Caynana Yıldızları</span>
+          <span class="stars">${escapeHtml(starsText(stars))}</span>
+        </div>` : ``}
+    `;
+
+    top.appendChild(imgBox);
+    top.appendChild(meta);
+
+    const whyEl = document.createElement("div");
+    whyEl.className = "shopWhy";
+    whyEl.textContent = "👵 " + why;
+
+    const btn = document.createElement("a");
+    btn.className = "shopBtn";
+    btn.target = "_blank";
+    btn.rel = "noopener";
+    if (url){
+      btn.href = url;
+      btn.innerHTML = `<i class="fa-solid fa-arrow-up-right-from-square"></i> Caynana Öneriyor — Ürüne Git`;
+    } else {
+      btn.href = "#";
+      btn.style.opacity = "0.55";
+      btn.style.pointerEvents = "none";
+      btn.textContent = "Link yok (kaynak gelmedi)";
+    }
+
+    card.appendChild(top);
+    card.appendChild(whyEl);
+    card.appendChild(btn);
+
+    wrap.appendChild(card);
+  });
+
+  chatContainer.appendChild(wrap);
+  scrollToBottom(true);
+}
+
+// -------------------------
+// Mic / Camera
+// -------------------------
+function startMic() {
+  if (!getToken()) return requireLogin("Evladım, mikrofon için önce giriş yap.");
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return alert("Tarayıcı desteklemiyor");
+  const r = new SR();
+  r.lang = "tr-TR";
+  r.onresult = (e) => {
+    if (textInput) textInput.value = e.results[0][0].transcript;
+    send();
+  };
+  r.start();
+}
+function openCamera() {
+  if (!getToken()) return requireLogin("Evladım, fotoğraf göndermek için önce giriş yap.");
+  if (fileEl) { fileEl.value = ""; fileEl.click(); }
+}
+function openFalCamera() { openCamera(); }
+
+// -------------------------
+// file input handling
+// -------------------------
+if (fileEl) {
+  fileEl.addEventListener("change", async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const imgData = reader.result;
+
+      if (currentMode === "fal") {
+        const check = await falCheckOneImage(imgData);
+        if (!check.ok) {
+          await addBubble("ai", check.reason || "Evladım bu fincan-tabak değil.", false, "");
+          resetModalOnly();
+          setTimeout(() => openFalCamera(), 150);
+          return;
+        }
+        falImages.push(imgData);
+        setFalStepUI();
+      }
+
+      pendingImage = imgData;
+      if (photoPreview) photoPreview.src = pendingImage;
+      if (photoTitle) photoTitle.textContent = currentMode === "fal" ? "Fal fotoğrafı" : "Fotoğraf hazır";
+      if (photoHint) photoHint.textContent = "Tamam deyince gönderiyorum.";
+      showModal(photoModal);
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+if (photoOkBtn) {
+  photoOkBtn.onclick = async () => {
+    hideModal(photoModal);
+
+    if (currentMode === "fal" && falImages.length < 3) {
+      setTimeout(() => openFalCamera(), 180);
+      return;
+    }
+
+    if (currentMode === "fal" && textInput) {
+      textInput.value = "Fal bak: fincanı 3 açıdan gönderdim. İnsani anlat.";
+    }
+
+    await send();
+    if (currentMode === "fal") resetFalCapture();
+  };
+}
+
+// -------------------------
+// SEND (tam) + shopping render
+// -------------------------
 async function send() {
   if (isSending) return;
   if (!getToken()) return requireLogin("Evladım, önce Google ile giriş yap.");
 
   let val = (textInput?.value || "").trim();
-  if (!val) return;
+  if (pendingImage && !val) val = "Bu resmi yorumla";
+  if (!val && !pendingImage) return;
 
   isSending = true;
   if (sendBtn) sendBtn.disabled = true;
@@ -754,15 +1113,28 @@ async function send() {
     const r = await apiFetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ message: val, session_id: sessionId, mode: currentMode, persona: currentPersona }),
+      body: JSON.stringify({
+        message: val,
+        session_id: sessionId,
+        image: pendingImage,
+        mode: currentMode,
+        persona: currentPersona
+      }),
     }, 25000);
 
+    pendingImage = null;
     loader.remove();
+
     const data = r.data || {};
-    await addBubble("ai", data.assistant_text || "Bir şey diyemedim evladım.");
+    await addBubble("ai", data.assistant_text || "Bir şey diyemedim evladım.", false, data.speech_text || "");
+
+    if (currentMode === "shopping" && Array.isArray(data.data) && data.data.length) {
+      renderShoppingCards(data.data);
+    }
   } catch (e) {
+    pendingImage = null;
     loader.remove();
-    await addBubble("ai", "Bağlantı sorunu: " + (e?.message || "Hata"));
+    await addBubble("ai", "Bağlantı sorunu: " + (e?.message || "Hata"), false, "");
   } finally {
     isSending = false;
     if (sendBtn) sendBtn.disabled = false;
@@ -773,17 +1145,21 @@ async function send() {
 // EVENTS
 // -------------------------
 function bindEvents() {
+  // drawer
   if (menuBtn) menuBtn.onclick = openDrawer;
   if (drawerClose) drawerClose.onclick = closeDrawer;
   if (drawerMask) drawerMask.onclick = closeDrawer;
 
+  // guest login buttons
   if (openLoginBtn) openLoginBtn.onclick = () => { openAuth(); closeDrawer(); };
   if (openAppleBtn) openAppleBtn.onclick = () => alert("Apple ile giriş yakında 👀");
 
+  // auth close
   if (authCloseX) authCloseX.onclick = closeAuth;
   if (authClose) authClose.onclick = closeAuth;
   if (appleLoginBtn) appleLoginBtn.onclick = () => alert("Apple ile giriş yakında 👀");
 
+  // profile modal
   if (profileCloseX) profileCloseX.onclick = closeProfile;
   if (profileSave) profileSave.onclick = saveProfile;
   if (pfKids) pfKids.addEventListener("change", syncKidsFields);
@@ -796,13 +1172,24 @@ function bindEvents() {
     closeDrawer();
   };
 
+  // logout: token + sohbetleri temizle
   if (safeLogoutBtn) safeLogoutBtn.onclick = () => {
     setToken("");
     meCache = null;
+    // sohbetleri temizle
+    Object.keys(modeChats).forEach(k => modeChats[k] = "");
+    if (chatContainer) chatContainer.innerHTML = "";
+    if (heroContent) heroContent.style.display = "block";
+    if (chatContainer) chatContainer.style.display = "none";
+
     setMenuLoggedOut();
+    currentMode = "chat";
+    applyHero("chat");
+    renderDock();
     closeDrawer();
   };
 
+  // persona
   if (personaBtn) personaBtn.onclick = () => {
     if (!getToken()) return requireLogin("Evladım, kaynana modları için giriş.");
     showModal(personaModal);
@@ -820,15 +1207,21 @@ function bindEvents() {
     });
   });
 
+  // pages
   if (aboutBtn) aboutBtn.onclick = () => openPageFromFile("Hakkımızda", "./pages/hakkimizda.html");
   if (faqBtn) faqBtn.onclick = () => openPageFromFile("Sık Sorulan Sorular", "./pages/sss.html");
   if (contactBtn) contactBtn.onclick = () => openPageFromFile("İletişim", "./pages/iletisim.html");
   if (privacyBtn) privacyBtn.onclick = () => openPageFromFile("Gizlilik", "./pages/gizlilik.html");
   if (pageClose) pageClose.onclick = hidePage;
 
+  // notifications
   if (notifIconBtn) notifIconBtn.onclick = openNotifications;
   if (notifClose) notifClose.onclick = () => hideModal(notifModal);
 
+  // actions
+  if (camBtn) camBtn.onclick = openCamera;
+  if (falCamBtn) falCamBtn.onclick = openFalCamera;
+  if (micBtn) micBtn.onclick = startMic;
   if (sendBtn) sendBtn.onclick = send;
   if (textInput) textInput.addEventListener("keypress", (e) => { if (e.key === "Enter") send(); });
 }
@@ -841,6 +1234,8 @@ async function init() {
   applyHero("chat");
   loadModeChat("chat");
   setFalStepUI();
+
+  bindSwipeAndDoubleTap();
   bindEvents();
 
   if (!getToken()) {
