@@ -1,810 +1,327 @@
-
-/* CAYNANA WEB - app.css (FIXED + COMPLETE)
-   - index.html (topbarGlass + topActions) ile uyumlu
-   - Fal UI sadece fal modunda görünür
-   - “Dosya seç” asla görünmez
+/* CAYNANA WEB - app.css (v9900 - FINAL)
+   - Topbar Glass efektli
+   - Fal UI sadece fal modunda aktif
+   - Dosya seçimi gizli
+   - Modal Scroll sorunları giderildi
+   - Alışveriş kartları ve Anayasa renkleri entegre
 */
 
-:root{
-  --primary:#FFB300;
-  --font:'Outfit',sans-serif;
-  --app-bg:#0b0f18;
-
-  --glass-bg: rgba(20,20,20,.38);
-  --glass-br: rgba(255,255,255,.16);
-  --glass-blur: 12px;
+:root {
+  /* --- 1. MODÜL RENKLERİ (ANAYASA) --- */
+  --col-chat:      #FFB300; /* Altın Sarı */
+  --col-dedikodu:  #111111; /* Antrasit */
+  --col-shopping:  #00C897; /* Turkuaz */
+  --col-fal:       #8B5CF6; /* Mor */
+  --col-health:    #EF4444; /* Kırmızı */
+  --col-diet:      #84CC16; /* Yeşil */
+  
+  /* Aktif Renk (JS ile değişir, varsayılan Chat) */
+  --primary:       var(--col-chat); 
+  
+  /* --- GENEL AYARLAR --- */
+  --font:          'Outfit', sans-serif;
+  --app-bg:        #0b0f18; /* Koyu Tema */
+  
+  /* Glassmorphism Değişkenleri */
+  --glass-bg:      rgba(20, 20, 20, 0.65);
+  --glass-br:      rgba(255, 255, 255, 0.12);
+  --glass-blur:    16px;
 }
 
-*{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-input, textarea, select { -webkit-user-select:text; user-select:text; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+input, textarea, select { -webkit-user-select: text; user-select: text; }
 
-html,body{ height:100%; width:100%; overflow:hidden; background:#000; font-family:var(--font); }
-body{ display:flex; align-items:center; justify-content:center; padding:12px; }
+html, body { height: 100%; width: 100%; overflow: hidden; background: #000; font-family: var(--font); }
+body { display: flex; align-items: center; justify-content: center; padding: 0; }
 
-#app{
-  width:100%; height:100%;
-  max-width:440px; max-height:880px;
-  border-radius:24px; overflow:hidden;
-  position:relative; display:flex; flex-direction:column;
-  background:var(--app-bg);
-  box-shadow: 0 0 0 10px #1a1a1a, 0 20px 50px rgba(0,0,0,0.75);
-}
-@media (max-width:500px){
-  body{ padding:0; display:block; }
-  #app{ max-width:none; max-height:none; border-radius:0; box-shadow:none; height:100dvh; }
-}
-
-/* HERO */
-#heroImage{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
-#app::before{
-  content:""; position:absolute; inset:0; z-index:1; pointer-events:none;
-  background:linear-gradient(to bottom, rgba(0,0,0,.35) 0%, rgba(0,0,0,.18) 45%, rgba(0,0,0,.62) 100%);
-}
-
-/* TOPBAR */
-#topbar{ position:absolute; top:10px; left:10px; right:10px; z-index:50; height:64px; }
-.topbarGlass{
-  height:64px; display:flex; align-items:center; justify-content:space-between; gap:10px;
-  padding:10px 12px; border-radius:18px;
-  background:var(--glass-bg);
-  border:1px solid var(--glass-br);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-}
-
-.brand-wrap{ min-width:0; display:flex; flex-direction:column; gap:2px; cursor:pointer; }
-.brand{ display:flex; align-items:center; gap:8px; font-size:19px; font-weight:900; letter-spacing:-.4px; color:#fff; white-space:nowrap; }
-.brand i{ color:var(--primary); font-size:17px; }
-.brand span{ color:var(--primary); }
-.brand-sub{ font-size:10px; font-weight:800; color:rgba(255,255,255,.75); letter-spacing:.4px; }
-
-.topActions{ display:flex; align-items:center; gap:10px; flex-shrink:0; }
-.menu-btn{
-  width:42px; height:42px; border-radius:999px;
-  display:flex; align-items:center; justify-content:center;
-  background: rgba(0,0,0,.45);
-  border:1px solid rgba(255,255,255,.18);
-  color:#fff; cursor:pointer; position:relative;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-.menu-btn:active{ transform:scale(.96); }
-.menu-btn i{ font-size:18px; color:#fff; }
-
-.notifBadge{
-  position:absolute; top:-6px; right:-6px;
-  min-width:18px; height:18px; padding:0 5px;
-  border-radius:999px; background:#EF4444; color:#fff;
-  font-size:11px; font-weight:900; display:flex; align-items:center; justify-content:center;
-  border:2px solid rgba(0,0,0,.35);
-}
-
-/* MAIN */
-#main{ position:relative; z-index:10; flex:1; overflow:hidden; padding-top:84px; }
-#heroContent{ position:absolute; z-index:11; pointer-events:none; padding:0 24px; top:100px; left:0; width:100%; }
-#heroTitle{ font-size:36px; font-weight:900; line-height:1.05; color:#fff; letter-spacing:-1.4px; text-shadow:0 10px 30px rgba(0,0,0,.65); }
-#heroDesc{ margin-top:12px; font-size:16px; font-weight:700; color:rgba(255,255,255,.92); line-height:1.4; text-shadow:0 5px 15px rgba(0,0,0,.55); }
-
-#chatContainer{
-  display:none; width:100%; height:100%;
-  overflow-y:auto; -webkit-overflow-scrolling:touch;
-  padding:20px 20px 240px 20px;
-  background:rgba(0,0,0,0.40);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border-radius:24px 24px 0 0;
-  border:1px solid rgba(255,255,255,0.10);
-  scrollbar-width:none;
-}
-#chatContainer::-webkit-scrollbar{ display:none; }
-
-/* Fal modunda chat padding (alttaki büyük fal panel için) */
-body.fal-mode #chatContainer{ padding-bottom:420px; }
-
-/* Messages */
-.msg{ display:flex; margin-bottom:12px; flex-direction:column; animation:fadeIn .25s ease; }
-.msg.user{ align-items:flex-end; } .msg.ai{ align-items:flex-start; }
-@keyframes fadeIn{ from{opacity:0; transform:translateY(12px);} to{opacity:1; transform:translateY(0);} }
-.bubble{ max-width:95%; padding:12px 16px; border-radius:18px; font-size:15px; line-height:1.55; font-weight:800; user-select:text; }
-.msg.user .bubble{ background:var(--primary); color:#fff; border-bottom-right-radius:6px; }
-.msg.ai .bubble{ background:#fff; color:#111; border-bottom-left-radius:6px; }
-.typing-cursor::after{ content:'|'; animation:blink 1s infinite; margin-left:2px; }
-@keyframes blink{ 50%{ opacity:0; } }
-.chat-img{ max-width:100%; border-radius:12px; margin-bottom:8px; }
-
-.audio-btn{
-  margin-top:6px; margin-left:4px; display:inline-flex; align-items:center; gap:8px;
-  padding:8px 14px; border-radius:20px; background:#fff; color:var(--primary);
-  font-size:12px; font-weight:900; cursor:pointer; width:fit-content;
-}
-.audio-btn.playing{ background:#ffebee; color:#d32f2f; }
-
-/* BOTTOM */
-#bottom{
-  position:absolute; left:0; right:0; bottom:0; z-index:40;
-  background:rgba(255,255,255,.96);
-  backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-  border-top-left-radius:24px; border-top-right-radius:24px;
-  padding:15px 18px calc(env(safe-area-inset-bottom) + 18px) 18px;
-  box-shadow:0 -10px 40px rgba(0,0,0,.15);
-}
-#suggestionText{
-  position:absolute; top:-15px; left:50%; transform:translateX(-50%);
-  background:#fff; color:var(--primary); padding:6px 14px; border-radius:20px;
-  font-size:12px; font-weight:900; white-space:nowrap; box-shadow:0 -5px 15px rgba(0,0,0,.08);
-}
-
-.input-wrapper{ display:flex; align-items:center; gap:8px; width:100%; }
-.search-bar{
-  flex:1; height:50px; background:#fff; border-radius:25px;
-  display:flex; align-items:center; padding:0 5px 0 15px;
-  border:1px solid #e0e0e0; box-shadow:0 4px 10px rgba(0,0,0,.05);
-}
-.search-bar:focus-within{ border-color:var(--primary); }
-#text{ flex:1; border:none; background:transparent; font-size:15px; color:#333; outline:none; }
-.tool-btn{ padding:8px; color:#999; font-size:18px; cursor:pointer; }
-.tool-btn:active{ color:var(--primary); }
-#sendBtn{
-  width:50px; height:50px; border-radius:50%; border:none;
-  background:var(--primary); color:#fff; font-size:20px; cursor:pointer;
-  box-shadow:0 8px 20px rgba(0,0,0,.2);
-}
-#sendBtn:active{ transform:scale(.95); }
-
-/* Dock */
-#dock{ display:flex; gap:20px; overflow-x:auto; padding:15px 5px 10px 5px; scrollbar-width:none; }
-#dock::-webkit-scrollbar{ display:none; }
-.dock-item{ display:flex; flex-direction:column; align-items:center; gap:6px; opacity:.55; transition:.25s; min-width:55px; }
-.dock-item.active{ opacity:1; transform:translateY(-3px); }
-.icon-box{ width:42px; height:42px; border-radius:14px; background:#eee; color:#666; display:flex; align-items:center; justify-content:center; font-size:18px; transition:.25s; }
-.dock-item.active .icon-box{ background:var(--primary); color:#fff; box-shadow:0 5px 15px rgba(0,0,0,.2); }
-.dock-label{ font-size:10px; font-weight:900; color:#444; }
-
-/* Footer */
-.brand-footer{ margin-top:12px; display:flex; flex-direction:column; align-items:center; gap:6px; }
-.footer-text-line1{ font-size:13px; font-weight:900; color:#36454F; letter-spacing:.5px; }
-.footer-text-line2{ font-size:12px; font-weight:800; color:#666; letter-spacing:.5px; }
-
-.oz-lines{ display:flex; gap:6px; height:5px; width:100%; }
-.oz-lines span{ height:100%; flex:1; border-radius:3px; background:#eaeaea; }
-
-/* Dosya seç asla görünmez */
-#fileInput,
-input[type="file"]{
-  display:none !important;
-  visibility:hidden !important;
-  width:0 !important;
-  height:0 !important;
-  opacity:0 !important;
-  position:absolute !important;
-  left:-9999px !important;
-  top:-9999px !important;
-}
-
-/* Modals */
-.modalMask{
-  position:absolute; inset:0; z-index:200; display:none;
-  align-items:center; justify-content:center;
-  background:rgba(0,0,0,.65); backdrop-filter:blur(8px);
-}
-.modalMask.show{ display:flex; }
-
-.photoBox, .authBox, .pageBox, .notifBox, .personaBox{
-  width:86%; max-width:380px; background:#fff; border-radius:22px; padding:16px;
-  box-shadow:0 10px 40px rgba(0,0,0,.35);
-}
-.personaBox{ max-width:320px; }
-
-.photoTitle{ font-weight:900; font-size:16px; margin-bottom:10px; color:#222; }
-#photoPreview{ width:100%; height:220px; object-fit:cover; border-radius:16px; background:#f2f2f2; }
-.photoActions{ display:flex; gap:10px; margin-top:12px; }
-.photoBtn{ flex:1; height:44px; border-radius:14px; font-weight:900; cursor:pointer; border:1px solid #e5e5e5; background:#fff; }
-.photoBtn.primary{ border:none; background:var(--primary); color:#fff; }
-.photoHint{ margin-top:10px; font-size:12px; color:#666; font-weight:800; }
-
-/* Persona */
-.persona-title{ font-size:18px; font-weight:900; margin-bottom:12px; color:#222; }
-.persona-opt{
-  padding:14px; border-radius:16px; background:#f7f7f7; margin-bottom:10px;
-  font-weight:800; cursor:pointer; border:2px solid transparent;
-  display:flex; justify-content:space-between; align-items:center;
-}
-.persona-opt.selected{ border-color:var(--primary); background:#fff8e1; color:#111; }
-.persona-opt.locked{ opacity:.55; cursor:not-allowed; }
-.persona-close{ margin-top:10px; text-align:center; color:#777; font-weight:900; cursor:pointer; }
-
-/* Drawer */
-.drawerMask{ position:absolute; inset:0; background:rgba(0,0,0,.6); z-index:120; display:none; }
-.drawerMask.show{ display:block; }
-.drawer{
-  position:absolute; top:0; right:0; height:100%; width:290px; background:#fff; z-index:130;
-  padding:14px; transform:translateX(100%); transition:.25s;
-}
-.drawer.open{ transform:translateX(0); }
-.drawerTop{ display:flex; align-items:center; justify-content:space-between; padding:6px 4px 12px 4px; }
-.drawerTitle{ font-weight:900; color:#111; }
-.drawerClose{ font-weight:900; cursor:pointer; padding:6px 10px; border-radius:10px; background:#f3f3f3; }
-
-.drawerItem{
-  padding:12px 10px; border-radius:14px; cursor:pointer; font-weight:900; color:#111;
-  display:flex; align-items:center; gap:10px;
-}
-.drawerItem:active{ transform:scale(.98); background:#f3f3f3; }
-.drawerSep{ height:1px; background:#eee; margin:10px 0; }
-
-.drawerProfile{
-  display:flex; gap:10px; align-items:center;
-  padding:12px; border-radius:16px; background:#f7f7f7; border:1px solid #eee;
-  margin:8px 0 10px 0;
-}
-.dpAvatar{ width:44px; height:44px; border-radius:50%; object-fit:cover; background:#ddd; }
-.dpMid{ flex:1; min-width:0; }
-.dpName{ font-weight:1000; color:#111; font-size:13px; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.dpPlanRow{ margin-top:4px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-.dpPlan{ font-weight:1000; font-size:11px; padding:4px 8px; border-radius:999px; background:#111; color:#fff; }
-.dpCN{ font-weight:1000; font-size:11px; padding:4px 8px; border-radius:999px; background:#fff; border:1px solid #eee; color:#111; }
-.dpEdit{ border:none; background:var(--primary); color:#fff; font-weight:1000; padding:8px 10px; border-radius:12px; cursor:pointer; }
-.dpEdit:active{ transform:scale(.98); }
-
-.drawerMuted{ padding:10px; color:#888; font-weight:800; }
-.footerInMenu{ text-align:center; line-height:1.4; margin-top:8px; }
-.mutedSmall{ font-weight:900; color:#777; }
-
-/* Auth */
-.authTop{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-.authTitle{ font-weight:1000; color:#111; }
-.authClose{ cursor:pointer; font-weight:1000; padding:6px 10px; border-radius:10px; background:#f3f3f3; }
-.authTabs{ display:flex; gap:10px; margin-bottom:10px; }
-.tab{ flex:1; height:40px; border-radius:12px; border:1px solid #eee; background:#fff; font-weight:1000; cursor:pointer; }
-.tabActive{ background:var(--primary); border:none; color:#fff; }
-.authInput{ width:100%; height:44px; border-radius:14px; border:1px solid #eee; padding:0 12px; margin-bottom:8px; font-weight:800; }
-.authSubmit{ width:100%; height:46px; border-radius:14px; border:none; background:var(--primary); color:#fff; font-weight:1000; cursor:pointer; margin-top:4px; }
-.googleArea{ margin-top:12px; padding:12px; border:1px dashed #ddd; border-radius:16px; }
-.googleLabel{ font-weight:1000; color:#111; margin-bottom:8px; }
-.googleHint{ margin-top:8px; font-size:12px; font-weight:900; color:#666; }
-.authStatus{ margin-top:10px; font-size:12px; font-weight:900; color:#444; min-height:16px; }
-.authActions{ display:flex; gap:10px; margin-top:12px; }
-.authMini{ flex:1; height:42px; border-radius:14px; border:1px solid #eee; background:#fff; font-weight:1000; cursor:pointer; }
-.authMini.dark{ border:none; background:#111; color:#fff; }
-
-/* Page modal */
-.pageTop{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px; }
-.pageTitle{ font-weight:1000; color:#111; }
-.pageClose{ cursor:pointer; font-weight:1000; }
-.pageBody{ font-size:13px; line-height:1.55; color:#333; font-weight:700; }
-
-/* Notif modal */
-.notifTop{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
-.notifTitle{ font-weight:1000; color:#111; }
-.notifClose{ cursor:pointer; font-weight:1000; padding:6px 10px; border-radius:10px; background:#f3f3f3; }
-.notifList{ max-height:62vh; overflow:auto; display:grid; gap:10px; }
-.notifItem{ border:1px solid #eee; border-radius:16px; padding:12px; background:#fff; }
-.notifItemTitle{ font-weight:1000; color:#111; }
-.notifItemBody{ margin-top:6px; font-weight:800; color:#444; font-size:13px; line-height:1.4; }
-
-/* Fal-only panel sadece fal modunda görünür */
-.fal-only{ display:none; }
-body.fal-mode #bottom .input-wrapper{ display:none !important; }
-body.fal-mode .fal-only{ display:block; }
-.fal-cam-wrap{ width:100%; display:flex; align-items:center; justify-content:center; padding:10px 0 6px 0; }
-.fal-cam-btn{ width:86px; height:86px; border-radius:28px; border:none; background:var(--primary); color:#fff; font-size:34px; display:flex; align-items:center; justify-content:center; box-shadow:0 14px 30px rgba(0,0,0,.25); cursor:pointer; }
-.fal-step-text{ margin-top:10px; text-align:center; font-weight:1000; font-size:12px; color:#222; }
-.fal-step-sub{ margin-top:4px; text-align:center; font-weight:900; font-size:11px; color:#666; }
-/* ===== FIX: Page modal içeriği scroll olsun ===== */
-#pageBody{
-  max-height: 70vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-right: 6px;
-}
-
-/* Modal kutunun kendisi taşmasın, içerik kaydırılsın */
-.pageBox{
-  max-height: 82vh;
+/* --- ANA UYGULAMA KUTUSU --- */
+#app {
+  width: 100%; height: 100%;
+  max-width: 500px; /* Mobil genişlik sınırı */
+  position: relative; display: flex; flex-direction: column;
+  background: var(--app-bg);
+  box-shadow: 0 0 0 1px #1a1a1a;
   overflow: hidden;
 }
 
-/* Eğer mobilde daha fazla alan istersen */
-@media (max-width: 500px){
-  #pageBody{ max-height: 72vh; }
-  .pageBox{ max-height: 86vh; }
-}
-/* ============================
-   FINAL FIX: Page Modal SCROLL
-   ============================ */
-
-/* Modal açıkken kutu ekrana sığsın */
-#pageModal.show{
-  align-items: center !important;
-  justify-content: center !important;
-  overflow: hidden !important;
-}
-
-/* Kutu: yüksekliği sınırlı, içerik içerden kayar */
-#pageModal .pageBox{
-  max-height: 86vh !important;
-  height: auto !important;
-  overflow: hidden !important;      /* scroll dış kutuda değil */
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-/* Üst bar sabit kalsın */
-#pageModal .pageTop{
-  flex: 0 0 auto !important;
-}
-
-/* SCROLL ASIL BURADA */
-#pageModal .pageBody,
-#pageBody{
-  flex: 1 1 auto !important;
-  min-height: 0 !important;         /* flex içinde scroll için kritik */
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  touch-action: pan-y !important;   /* мобilde sürükleyerek kaydır */
-  padding-right: 10px !important;
-}
-
-/* Mobilde biraz daha uzun */
-@media (max-width: 500px){
-  #pageModal .pageBox{ max-height: 90vh !important; }
-}
-
-/* Eğer page içeriği uzun metinse tıklama/drag sorununu azalt */
-#pageModal .pageBody *{
-  user-select: text !important;
-  -webkit-user-select: text !important;
-}
-/* === SHOPPING CARDS FIX (OKUNUR + TIKLANIR) === */
-.cards{
-  display:grid !important;
-  grid-template-columns:1fr 1fr !important;
-  gap:10px !important;
-  margin-top:12px !important;
-}
-
-.card{
-  background:#ffffff !important;
-  border:1px solid #eee !important;
-  border-radius:14px !important;
-  overflow:hidden !important;
-  box-shadow:0 6px 18px rgba(0,0,0,.15) !important;
-}
-
-.card .title{ color:#111 !important; }
-.card .price{ color:var(--primary) !important; }
-
-.card-why{
-  margin-top:6px;
-  font-size:11px;
-  font-weight:800;
-  color:#444;
-  line-height:1.35;
-  background:#f6f6f6;
-  padding:8px 10px;
-  border-radius:12px;
-}
-
-.btnLink{
-  pointer-events:auto !important;
-  opacity:1 !important;
-  background:#111 !important;
-  color:#fff !important;
-}
-
-.btnLink:visited{ color:#fff !important; }
-
-/* kartlar chatContainer içinde tıklanabilsin */
-#chatContainer{ pointer-events:auto !important; }
-// ---- SHOPPING CARDS ----
-/* === SHOPPING CARDS FIX (OKUNUR + TIKLANIR) === */
-.cards{
-  display:grid !important;
-  grid-template-columns:1fr 1fr !important;
-  gap:10px !important;
-  margin-top:12px !important;
-}
-
-.card{
-  background:#ffffff !important;
-  border:1px solid #eee !important;
-  border-radius:14px !important;
-  overflow:hidden !important;
-  box-shadow:0 6px 18px rgba(0,0,0,.15) !important;
-}
-
-.card .title{ color:#111 !important; }
-.card .price{ color:var(--primary) !important; }
-
-.card-why{
-  margin-top:6px;
-  font-size:11px;
-  font-weight:800;
-  color:#444;
-  line-height:1.35;
-  background:#f6f6f6;
-  padding:8px 10px;
-  border-radius:12px;
-}
-
-.btnLink{
-  pointer-events:auto !important;
-  opacity:1 !important;
-  background:#111 !important;
-  color:#fff !important;
-}
-
-.btnLink:visited{ color:#fff !important; }
-
-/* kartlar chatContainer içinde tıklanabilsin */
-#chatContainer{ pointer-events:auto !important; }
-/* =========================
-   PROFIL MODAL SCROLL FIX
-   ========================= */
-.profileBox{
-  max-height: 86vh;
-  overflow: hidden; /* dış kutu sabit */
-}
-
-.profileScroll{
-  max-height: 56vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-right: 4px;
-  touch-action: pan-y;
-}
-
-.pfSectionTitle{
-  font-weight: 1000;
-  color:#111;
-  margin: 10px 0 6px 0;
-}
-
-.pfRow2{
-  display:flex;
-  gap:8px;
-}
-.pfRow2 .authInput{
-  flex:1;
-  min-width:0;
-}
-/* ===============================
-   CAYNANA – app.css EKLERİ
-   (Login + Profil + Okunabilir Metin)
-   =============================== */
-
-/* --- Genel okunabilirlik --- */
-.msg.ai .bubble,
-.msg.user .bubble {
-  line-height: 1.65;
-  font-size: 15px;
-  letter-spacing: 0.2px;
-}
-
-.msg.ai .bubble p {
-  margin: 0 0 10px 0;
-}
-
-.msg.ai .bubble p:last-child {
-  margin-bottom: 0;
-}
-
-/* Nokta sonrası satır boşluğu hissi */
-.msg.ai .bubble {
-  white-space: pre-line;
-}
-
-/* --- Modal genel scroll fix --- */
-.modalMask {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-.modalMask .authBox,
-.modalMask .pageBox {
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-/* --- Login Modal --- */
-.authBox {
-  padding-bottom: 16px;
-}
-
-.googleArea {
-  margin-top: 14px;
-}
-
-/* Google butonu renk fix */
-#googleBtn > div {
-  width: 100% !important;
-}
-
-.googleLabel {
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-/* Apple butonu */
-.appleBtn {
-  width: 100%;
-  height: 48px;
-  border-radius: 14px;
-  background: #000;
-  color: #fff;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
-  opacity: 0.8;
-}
-
-/* Login loading text */
-.authStatus {
-  margin-top: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #555;
-}
-
-/* --- Profil Modal --- */
-.profileBox {
-  max-height: 90vh;
-  overflow-y: auto;
-  padding-bottom: 24px;
-}
-
-/* Profil zorunlu/opsiyonel ayrımı */
-.profileSectionTitle {
-  font-weight: 900;
-  font-size: 14px;
-  margin: 14px 0 8px;
-}
-
-/* Input alanları */
-.profileBox input,
-.profileBox select,
-.profileBox textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
-  font-size: 14px;
-}
-
-/* Yan yana alanlar mobilde alt alta */
-.profileRow {
-  display: flex;
-  gap: 10px;
-}
-@media (max-width: 480px) {
-  .profileRow {
-    flex-direction: column;
+/* Masaüstü ortalama efekti (Opsiyonel) */
+@media (min-width: 501px) {
+  body { padding: 20px; background: #111; }
+  #app { 
+    height: 90vh; max-height: 900px; 
+    border-radius: 24px; 
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
   }
 }
 
-/* Kaydet butonu sabit ve görünür */
-.profileSave {
-  position: sticky;
-  bottom: 0;
-  background: #fff;
-  padding: 10px 0;
+/* --- HERO ARKA PLAN --- */
+#heroImage { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; opacity: 0.6; pointer-events: none; }
+#app::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(11,15,24,0.4) 0%, rgba(11,15,24,0.2) 40%, rgba(11,15,24,0.9) 100%);
 }
 
-/* --- Drawer / Menü --- */
-.drawerProfile {
-  padding-bottom: 10px;
+/* --- TOPBAR (GLASS) --- */
+#topbar { position: absolute; top: 0; left: 0; right: 0; z-index: 50; padding: 10px; }
+.topbarGlass {
+  height: 60px; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 0 16px; border-radius: 18px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-br);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
 }
 
-.dpCN {
-  font-weight: 900;
-  font-size: 12px;
-  opacity: 0.8;
+.brand-wrap { display: flex; flex-direction: column; cursor: pointer; }
+.brand { display: flex; align-items: center; gap: 8px; font-size: 19px; font-weight: 900; color: #fff; letter-spacing: -0.5px; }
+.brand i { color: var(--primary); font-size: 17px; transition: color 0.3s; }
+.brand span { color: var(--primary); transition: color 0.3s; }
+.brand-sub { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 0.5px; margin-left: 26px; margin-top: -2px; }
+
+.topActions { display: flex; align-items: center; gap: 10px; }
+.menu-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.1);
+  color: #fff; cursor: pointer; position: relative;
+  transition: background 0.2s;
+}
+.menu-btn:active { background: rgba(255,255,255,0.2); transform: scale(0.95); }
+.notifBadge {
+  position: absolute; top: -2px; right: -2px;
+  background: var(--col-health); color: #fff;
+  font-size: 10px; font-weight: 900; padding: 2px 5px;
+  border-radius: 10px; border: 2px solid rgba(0,0,0,0.5);
 }
 
-/* --- Güvenli çıkış --- */
-#safeLogoutBtn {
-  color: #b00020;
-  font-weight: 800;
+/* --- MAIN CONTENT & CHAT --- */
+#main { position: relative; z-index: 10; flex: 1; overflow: hidden; padding-top: 80px; display: flex; flex-direction: column; }
+
+#heroContent { position: absolute; top: 100px; left: 0; width: 100%; padding: 0 24px; text-align: center; pointer-events: none; z-index: 5; transition: opacity 0.3s; }
+#heroTitle { font-size: 38px; font-weight: 900; line-height: 1.1; color: #fff; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+#heroDesc { margin-top: 10px; font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.85); text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+
+#chatContainer {
+  flex: 1; width: 100%; 
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 20px 16px 200px 16px; /* Alt boşluk bottom bar için */
+  display: flex; flex-direction: column; gap: 12px;
+  /* Scrollbar gizle */
+  scrollbar-width: none; 
+}
+#chatContainer::-webkit-scrollbar { display: none; }
+
+/* Mesaj Balonları (Okunabilirlik Odaklı) */
+.msg-row { display: flex; width: 100%; animation: fadeIn 0.3s ease; }
+.msg-row.user { justify-content: flex-end; }
+.msg-row.bot { justify-content: flex-start; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.msg-bubble {
+  max-width: 88%; padding: 14px 18px; border-radius: 20px;
+  font-size: 15px; line-height: 1.6; font-weight: 500;
+  position: relative; word-wrap: break-word;
+}
+.msg-bubble p { margin-bottom: 10px; } /* Paragraf boşluğu */
+.msg-bubble p:last-child { margin-bottom: 0; }
+
+.msg-bubble.user {
+  background: var(--primary); color: #fff; /* Kullanıcı rengi aktif moda uyar */
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.msg-bubble.bot {
+  background: #fff; color: #111;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
-/* --- Sohbet temizle (ileride kullanılacak) --- */
-.clearChatBtn {
-  margin-top: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  opacity: 0.6;
-  cursor: pointer;
+/* --- BOTTOM BAR & DOCK --- */
+#bottom {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 40;
+  background: rgba(255,255,255,0.98);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-top-left-radius: 24px; border-top-right-radius: 24px;
+  padding: 15px 16px calc(env(safe-area-inset-bottom) + 10px) 16px;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
+  transition: padding-bottom 0.3s;
 }
 
-/* --- Genel scrollbar inceltme --- */
-*::-webkit-scrollbar {
-  width: 6px;
-}
-*::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.2);
-  border-radius: 6px;
-}
-/* ===============================
-   CAYNANA – app.css EKLERİ
-   (Login + Profil + Okunabilir Metin)
-   =============================== */
-
-/* --- Genel okunabilirlik --- */
-.msg.ai .bubble,
-.msg.user .bubble {
-  line-height: 1.65;
-  font-size: 15px;
-  letter-spacing: 0.2px;
+#suggestionText {
+  position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: #fff; color: var(--primary); padding: 4px 12px; border-radius: 12px;
+  font-size: 11px; font-weight: 800; box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+  white-space: nowrap; pointer-events: none;
 }
 
-.msg.ai .bubble p {
-  margin: 0 0 10px 0;
+.input-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.search-bar {
+  flex: 1; height: 50px; background: #f2f2f2; border-radius: 25px;
+  display: flex; align-items: center; padding: 0 6px 0 16px;
+  border: 1px solid transparent; transition: all 0.3s;
+}
+.search-bar:focus-within { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(0,0,0,0.05); }
+#text { flex: 1; border: none; background: transparent; font-size: 16px; color: #111; outline: none; }
+.tool-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; color: #888; font-size: 18px; cursor: pointer; border-radius: 50%; }
+.tool-btn:active { background: #ddd; color: var(--primary); }
+
+#sendBtn {
+  width: 50px; height: 50px; border-radius: 50%; border: none;
+  background: var(--primary); color: #fff; font-size: 20px; cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: transform 0.2s, background 0.3s;
+}
+#sendBtn:active { transform: scale(0.92); }
+
+/* DOCK (Modüller) */
+#dock {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 10px; border-top: 1px solid #eee;
+  overflow-x: auto; /* Küçük ekranlarda taşarsa kaydır */
+}
+.dock-item { display: flex; flex-direction: column; align-items: center; gap: 4px; opacity: 0.5; transition: all 0.3s; cursor: pointer; min-width: 50px; }
+.dock-item.active { opacity: 1; transform: translateY(-4px); }
+.dock-icon { font-size: 22px; color: #333; transition: color 0.3s; }
+.dock-item.active .dock-icon { color: var(--primary); }
+.dock-label { font-size: 10px; font-weight: 800; color: #666; transition: color 0.3s; }
+.dock-item.active .dock-label { color: var(--primary); }
+
+/* Footer Lines */
+.brand-footer { margin-top: 10px; text-align: center; }
+.footer-text-line1 { font-size: 10px; font-weight: 800; color: #888; letter-spacing: 0.5px; }
+.oz-lines { display: flex; justify-content: center; gap: 4px; margin: 6px 0 2px 0; height: 4px; }
+.oz-lines span { width: 12px; height: 100%; border-radius: 2px; background: #eee; }
+#ozLine0 { background: var(--col-chat); }
+#ozLine1 { background: var(--col-shopping); }
+#ozLine2 { background: var(--col-fal); }
+#ozLine3 { background: var(--col-dedikodu); }
+
+/* --- FAL MODU ÖZEL UI --- */
+.fal-only { display: none; flex-direction: column; align-items: center; padding-bottom: 10px; }
+/* Body'de fal-mode class'ı varsa göster */
+body.fal-mode .fal-only { display: flex; }
+body.fal-mode .input-wrapper { display: none !important; } /* Falda klavye gizle */
+
+.fal-cam-wrap { display: flex; justify-content: center; margin-bottom: 5px; }
+.fal-cam-btn {
+  width: 72px; height: 72px; border-radius: 24px; border: none;
+  background: var(--col-fal); color: #fff; font-size: 28px;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.4); cursor: pointer;
+  animation: pulseFal 2s infinite;
+}
+@keyframes pulseFal { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+.fal-step-text { font-size: 14px; font-weight: 800; color: var(--col-fal); margin-top: 8px; }
+.fal-step-sub { font-size: 11px; color: #666; font-weight: 600; }
+
+/* --- GİZLİ DOSYA SEÇİMİ --- */
+#fileInput, input[type="file"] {
+  display: none !important; visibility: hidden !important; opacity: 0 !important;
+  position: absolute; left: -9999px;
 }
 
-.msg.ai .bubble p:last-child {
-  margin-bottom: 0;
-}
-
-/* Nokta sonrası satır boşluğu hissi */
-.msg.ai .bubble {
-  white-space: pre-line;
-}
-
-/* --- Modal genel scroll fix --- */
+/* --- MODALS (SCROLL FIX DAHİL) --- */
 .modalMask {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  position: fixed; inset: 0; z-index: 200; display: none;
+  align-items: flex-end; justify-content: center; /* Mobil Sheet mantığı */
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+  padding: 0;
+}
+/* Modal açıldığında */
+.modalMask[style*="display: flex"], .modalMask[style*="display: block"] { display: flex !important; }
+
+/* Ortak Kutu Yapısı */
+.authBox, .pageBox, .notifBox, .personaBox, .photoBox {
+  width: 100%; max-width: 500px; background: #fff;
+  border-top-left-radius: 24px; border-top-right-radius: 24px;
+  padding: 20px; box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+  animation: slideUp 0.3s ease-out;
+  display: flex; flex-direction: column;
+  max-height: 85vh; /* Ekranın %85'ini kaplasın */
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* İçerik Başlıkları Sabit kalsın */
+.authTop, .pageTop, .notifTop { flex-shrink: 0; margin-bottom: 15px; }
+
+/* --- SCROLL ALANLARI (ÖNEMLİ FIX) --- */
+/* Bu class'ları içerik div'lerine veriyoruz */
+.profileScroll, .pageBody, .notifList, .profileBox {
+  overflow-y: auto; 
+  -webkit-overflow-scrolling: touch; /* iOS smooth scroll */
+  padding-right: 4px; /* Scrollbar payı */
+  flex: 1; /* Kalan alanı doldur */
 }
 
-.modalMask .authBox,
-.modalMask .pageBox {
-  max-height: 90vh;
-  overflow-y: auto;
+/* Page Body Özel */
+.pageBody { font-size: 14px; line-height: 1.6; color: #333; }
+
+/* --- FORM & PROFIL ELEMANLARI --- */
+.authInput {
+  width: 100%; padding: 14px; margin-bottom: 12px;
+  border: 1px solid #eee; border-radius: 12px; background: #f9f9f9;
+  font-size: 14px; font-weight: 600; font-family: inherit; outline: none;
+}
+.authInput:focus { border-color: var(--primary); background: #fff; }
+
+.pfRow2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pfSectionTitle { font-size: 11px; font-weight: 800; color: #999; text-transform: uppercase; margin: 15px 0 6px 0; letter-spacing: 0.5px; }
+.profileSave { margin-top: 10px; }
+
+.authSubmit {
+  width: 100%; padding: 14px; background: var(--primary); color: #fff;
+  border: none; border-radius: 14px; font-weight: 800; font-size: 15px;
+  cursor: pointer; transition: opacity 0.2s;
+}
+.authSubmit:active { opacity: 0.9; }
+
+/* Google Button Area */
+.googleArea { margin-top: 10px; padding: 15px; border: 1px dashed #ddd; border-radius: 16px; text-align: center; }
+.googleLabel { font-weight: 800; font-size: 14px; margin-bottom: 10px; color: #333; }
+#googleBtn > div { width: 100% !important; display: flex; justify-content: center; } /* Google butonu ortala */
+
+/* --- SHOPPING CARD (ALIŞVERİŞ) --- */
+.product-card {
+  background: #fff; border-radius: 16px; overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08); margin-top: 10px;
+  border: 1px solid #eee; display: flex; flex-direction: column;
+}
+.pc-img-wrap { width: 100%; height: 180px; background: #f9f9f9; display: flex; align-items: center; justify-content: center; position: relative; }
+.pc-img { max-width: 100%; max-height: 100%; mix-blend-mode: multiply; }
+.pc-content { padding: 12px 14px; }
+.pc-title { font-size: 14px; font-weight: 700; color: #222; margin-bottom: 4px; line-height: 1.3; }
+.caynana-stars { color: #FFB300; font-size: 12px; margin-bottom: 8px; }
+.pc-desc { font-size: 13px; color: #555; background: #fffbf0; padding: 8px; border-radius: 8px; border-left: 3px solid #FFB300; margin-bottom: 10px; line-height: 1.4; }
+.pc-btn {
+  width: 100%; padding: 10px; background: #111; color: #fff; border: none; border-radius: 10px;
+  font-weight: 700; font-size: 13px; cursor: pointer; display: block; text-align: center;
 }
 
-/* --- Login Modal --- */
-.authBox {
-  padding-bottom: 16px;
+/* --- DRAWER (YAN MENÜ) --- */
+.drawerMask { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 120; display: none; }
+.drawer {
+  position: fixed; top: 0; right: 0; height: 100%; width: 280px; background: #fff; z-index: 130;
+  padding: 16px; transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex; flex-direction: column;
 }
+.drawer.open { transform: translateX(0); }
+.drawerTop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.drawerTitle { font-size: 20px; font-weight: 900; }
+.drawerClose { padding: 6px 12px; background: #f0f0f0; border-radius: 8px; font-weight: 700; cursor: pointer; }
 
-.googleArea {
-  margin-top: 14px;
-}
+.drawerProfile { display: flex; gap: 10px; align-items: center; background: #f9f9f9; padding: 12px; border-radius: 16px; margin-bottom: 15px; }
+.dpAvatar { width: 44px; height: 44px; border-radius: 50%; background: #ddd; object-fit: cover; }
+.dpName { font-weight: 800; font-size: 14px; color: #111; }
+.dpPlanRow { display: flex; gap: 6px; margin-top: 2px; }
+.dpPlan, .dpCN { font-size: 10px; font-weight: 800; padding: 2px 6px; border-radius: 6px; }
+.dpPlan { background: #111; color: #fff; }
+.dpCN { border: 1px solid #ddd; color: #555; }
 
-/* Google butonu renk fix */
-#googleBtn > div {
-  width: 100% !important;
-}
+.drawerItem { padding: 12px; border-radius: 12px; font-weight: 700; color: #333; display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 4px; }
+.drawerItem:active { background: #f0f0f0; }
+.drawerItem i { width: 20px; text-align: center; }
+.drawerSep { height: 1px; background: #eee; margin: 10px 0; }
 
-.googleLabel {
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-/* Apple butonu */
-.appleBtn {
-  width: 100%;
-  height: 48px;
-  border-radius: 14px;
-  background: #000;
-  color: #fff;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 10px;
-  opacity: 0.8;
-}
-
-/* Login loading text */
-.authStatus {
-  margin-top: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #555;
-}
-
-/* --- Profil Modal --- */
-.profileBox {
-  max-height: 90vh;
-  overflow-y: auto;
-  padding-bottom: 24px;
-}
-
-/* Profil zorunlu/opsiyonel ayrımı */
-.profileSectionTitle {
-  font-weight: 900;
-  font-size: 14px;
-  margin: 14px 0 8px;
-}
-
-/* Input alanları */
-.profileBox input,
-.profileBox select,
-.profileBox textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 12px;
-  border: 1px solid #ddd;
-  font-size: 14px;
-}
-
-/* Yan yana alanlar mobilde alt alta */
-.profileRow {
-  display: flex;
-  gap: 10px;
-}
-@media (max-width: 480px) {
-  .profileRow {
-    flex-direction: column;
-  }
-}
-
-/* Kaydet butonu sabit ve görünür */
-.profileSave {
-  position: sticky;
-  bottom: 0;
-  background: #fff;
-  padding: 10px 0;
-}
-
-/* --- Drawer / Menü --- */
-.drawerProfile {
-  padding-bottom: 10px;
-}
-
-.dpCN {
-  font-weight: 900;
-  font-size: 12px;
-  opacity: 0.8;
-}
-
-/* --- Güvenli çıkış --- */
-#safeLogoutBtn {
-  color: #b00020;
-  font-weight: 800;
-}
-
-/* --- Sohbet temizle (ileride kullanılacak) --- */
-.clearChatBtn {
-  margin-top: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  opacity: 0.6;
-  cursor: pointer;
-}
-
-/* --- Genel scrollbar inceltme --- */
-*::-webkit-scrollbar {
-  width: 6px;
-}
-*::-webkit-scrollbar-thumb {
-  background: rgba(0,0,0,0.2);
-  border-radius: 6px;
-}
-/* === v9500 Profile Scroll Fix === */
-.profileBox { max-height: 78vh; overflow: hidden; }
-.profileScroll{
-  max-height: 52vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-right: 6px;
-}
-.pfRow2{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap:10px;
-}
-.pfSectionTitle{
-  margin: 10px 0 6px 0;
-  font-weight: 1000;
-  color:#111;
-  font-size:12px;
-}
-@media (max-width: 420px){
-  .pfRow2{ grid-template-columns: 1fr; }
-}
+/* --- UTILS --- */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
