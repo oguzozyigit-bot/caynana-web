@@ -626,3 +626,162 @@ body.fal-mode .fal-only{ display:block; }
   background: rgba(0,0,0,0.2);
   border-radius: 6px;
 }
+/* ===============================
+   CAYNANA – app.css EKLERİ
+   (Login + Profil + Okunabilir Metin)
+   =============================== */
+
+/* --- Genel okunabilirlik --- */
+.msg.ai .bubble,
+.msg.user .bubble {
+  line-height: 1.65;
+  font-size: 15px;
+  letter-spacing: 0.2px;
+}
+
+.msg.ai .bubble p {
+  margin: 0 0 10px 0;
+}
+
+.msg.ai .bubble p:last-child {
+  margin-bottom: 0;
+}
+
+/* Nokta sonrası satır boşluğu hissi */
+.msg.ai .bubble {
+  white-space: pre-line;
+}
+
+/* --- Modal genel scroll fix --- */
+.modalMask {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modalMask .authBox,
+.modalMask .pageBox {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* --- Login Modal --- */
+.authBox {
+  padding-bottom: 16px;
+}
+
+.googleArea {
+  margin-top: 14px;
+}
+
+/* Google butonu renk fix */
+#googleBtn > div {
+  width: 100% !important;
+}
+
+.googleLabel {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+/* Apple butonu */
+.appleBtn {
+  width: 100%;
+  height: 48px;
+  border-radius: 14px;
+  background: #000;
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  opacity: 0.8;
+}
+
+/* Login loading text */
+.authStatus {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #555;
+}
+
+/* --- Profil Modal --- */
+.profileBox {
+  max-height: 90vh;
+  overflow-y: auto;
+  padding-bottom: 24px;
+}
+
+/* Profil zorunlu/opsiyonel ayrımı */
+.profileSectionTitle {
+  font-weight: 900;
+  font-size: 14px;
+  margin: 14px 0 8px;
+}
+
+/* Input alanları */
+.profileBox input,
+.profileBox select,
+.profileBox textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+/* Yan yana alanlar mobilde alt alta */
+.profileRow {
+  display: flex;
+  gap: 10px;
+}
+@media (max-width: 480px) {
+  .profileRow {
+    flex-direction: column;
+  }
+}
+
+/* Kaydet butonu sabit ve görünür */
+.profileSave {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  padding: 10px 0;
+}
+
+/* --- Drawer / Menü --- */
+.drawerProfile {
+  padding-bottom: 10px;
+}
+
+.dpCN {
+  font-weight: 900;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+/* --- Güvenli çıkış --- */
+#safeLogoutBtn {
+  color: #b00020;
+  font-weight: 800;
+}
+
+/* --- Sohbet temizle (ileride kullanılacak) --- */
+.clearChatBtn {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+/* --- Genel scrollbar inceltme --- */
+*::-webkit-scrollbar {
+  width: 6px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.2);
+  border-radius: 6px;
+}
