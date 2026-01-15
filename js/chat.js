@@ -1,4 +1,4 @@
-/* js/chat.js (v9911 - TYPEWRITER EFFECT + IMAGES FIX) */
+/* js/chat.js (v9913 - SMOOTH SHOPPING FLOW & FIXED LINKS) */
 import { BASE_DOMAIN } from './main.js';
 
 export function initChat() {
@@ -22,7 +22,6 @@ async function sendMessage() {
     const txt = input.value.trim();
     if (!txt) return;
 
-    // 1. Kullanıcı mesajı (Hemen görünür)
     addBubble(txt, 'user', false); 
     input.value = '';
 
@@ -33,7 +32,6 @@ async function sendMessage() {
         const headers = { "Content-Type": "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        // "Yazıyor..." balonu (Geçici)
         addBubble("...", 'bot', true, true); 
 
         const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
@@ -42,24 +40,23 @@ async function sendMessage() {
             body: JSON.stringify({ message: txt, mode: currentMode, persona: "normal" })
         });
 
-        // "Yazıyor..." balonunu sil
         const loadingBubble = document.getElementById('loadingBubble');
         if (loadingBubble) loadingBubble.remove();
 
         const data = await res.json();
 
         if (res.ok) {
-            // 2. Asistan Cevabı (DAKTİLO EFEKTİ İLE)
             const botText = data.assistant_text || "Hımm...";
-            
-            // Eğer ürün varsa, metni yazdıktan SONRA ürünleri göster
             const hasProducts = data.data && Array.isArray(data.data) && data.data.length > 0;
             
-            // Daktilo efektini başlat
+            // Daktilo efekti ile yaz
             typeWriterBubble(botText, () => {
-                // Metin bittiğinde burası çalışır
+                // Metin bittiğinde çalışır
                 if (hasProducts) {
-                    renderProducts(data.data);
+                    // KRİTİK AYAR 1: Metin bittikten sonra biraz bekle (Nefes payı)
+                    setTimeout(() => {
+                        renderProducts(data.data);
+                    }, 800); // 800ms bekleme
                 }
             });
 
@@ -74,7 +71,7 @@ async function sendMessage() {
     }
 }
 
-// --- STANDART BALON EKLEME (Kullanıcı için) ---
+// --- STANDART BALON EKLEME ---
 function addBubble(text, type, isLoading = false) {
     const container = document.getElementById('chatContainer');
     const row = document.createElement('div');
@@ -94,64 +91,56 @@ function addBubble(text, type, isLoading = false) {
     container.scrollTo(0, container.scrollHeight);
 }
 
-// --- DAKTİLO EFEKTİ (Caynana için) ---
+// --- DAKTİLO EFEKTİ ---
 function typeWriterBubble(text, callback) {
     const container = document.getElementById('chatContainer');
     const row = document.createElement('div');
     row.className = 'msg-row bot';
-    
     const bubble = document.createElement('div');
     bubble.className = 'msg-bubble bot';
-    bubble.innerHTML = ''; // Başlangıçta boş
-    
+    bubble.innerHTML = ''; 
     row.appendChild(bubble);
     container.appendChild(row);
 
     let i = 0;
-    const speed = 20; // Hız (ms) - Ne kadar düşükse o kadar hızlı
+    const speed = 25; // Yazma hızı
 
     function type() {
         if (i < text.length) {
             const char = text.charAt(i);
-            // Satır sonu karakterini <br> yap
-            if (char === '\n') {
-                bubble.innerHTML += '<br>';
-            } else {
-                bubble.innerHTML += char;
-            }
+            if (char === '\n') bubble.innerHTML += '<br>';
+            else bubble.innerHTML += char;
             i++;
-            
-            // Otomatik kaydır
             container.scrollTo(0, container.scrollHeight);
-            
             setTimeout(type, speed);
         } else {
-            // Yazma bitti
             if (callback) callback();
         }
     }
-    
-    type(); // Başlat
+    type();
 }
 
-// --- ÜRÜN KARTLARI ---
+// --- ÜRÜN KARTLARI (YENİ ANİMASYONLU & LİNKLİ) ---
 function renderProducts(products) {
     const container = document.getElementById('chatContainer');
     
     products.forEach((p, index) => {
-        // Hafif gecikmeli gelsin (sırayla pıt pıt düşsün)
+        // KRİTİK AYAR 2: Her kart arasında daha uzun bekle (Yavaş akış)
         setTimeout(() => {
             const card = document.createElement('div');
             card.className = 'product-card';
-            // Animasyonlu giriş
-            card.style.animation = 'fadeIn 0.5s ease forwards';
+            
+            // KRİTİK AYAR 3: Yeni süzülme animasyonunu uygula
+            // 0.8s sürecek, yavaşça süzülecek
+            card.style.animation = 'slideUpSlow 0.8s ease forwards';
             
             let starsHTML = '';
             for(let i=0; i<5; i++) starsHTML += '<i class="fa-solid fa-star"></i>';
 
+            // Not: Buton yerine <a> etiketi kullanıyoruz (Daha güvenli link)
             card.innerHTML = `
                 <div class="pc-img-wrap">
-                    <img src="${p.image}" class="pc-img" onerror="this.src='https://via.placeholder.com/300?text=Urun+Yok'">
+                    <img src="${p.image}" class="pc-img" onerror="this.src='https://via.placeholder.com/300?text=Görsel+Yok'">
                 </div>
                 <div class="pc-content">
                     <div class="pc-title">${p.title}</div>
@@ -163,9 +152,9 @@ function renderProducts(products) {
                         ${p.reason}
                     </div>
                     
-                    <button class="pc-btn" onclick="window.open('${p.url}', '_blank')">
+                    <a href="${p.url}" target="_blank" class="pc-btn">
                         Caynana Öneriyor — Ürüne Git
-                    </button>
+                    </a>
                 </div>
             `;
             
@@ -177,6 +166,6 @@ function renderProducts(products) {
             container.appendChild(row);
             container.scrollTo(0, container.scrollHeight);
             
-        }, index * 400); // Her kart arasında 400ms bekle
+        }, index * 800); // Her kart arası 800ms fark
     });
 }
