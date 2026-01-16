@@ -1,99 +1,208 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#000000">
-    <title>Caynana.AI</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+/* js/chat.js (v16.1 - PRODUCTION READY & SECURE) */
+const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com"; 
+const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
+
+// Çift tıklamayı önlemek için kilit
+let isBusy = false;
+
+export function initChat() {
+  console.log("Chat Modülü Aktif v16.1");
+  const sendBtn = document.getElementById("sendBtn");
+  const input = document.getElementById("text");
+  
+  if (sendBtn) {
+    // Event listener temizliği (Double-bind önlemi)
+    const newBtn = sendBtn.cloneNode(true);
+    sendBtn.parentNode.replaceChild(newBtn, sendBtn);
+    newBtn.addEventListener("click", sendMessage);
+  }
+  
+  if (input) {
+    input.onkeydown = (e) => { 
+        if (e.key === "Enter" && !isBusy) sendMessage(); 
+    };
+  }
+}
+
+function getToken() { return localStorage.getItem("auth_token") || ""; }
+
+async function sendMessage() {
+  if (isBusy) return; // Kilitliyse işlem yapma
+
+  const input = document.getElementById("text");
+  const txt = (input?.value || "").trim();
+  if (!txt) return;
+
+  const token = getToken();
+  if (!token) { triggerAuth("Giriş yap evladım."); return; }
+
+  // Kilidi kapat ve UI'ı güncelle
+  isBusy = true;
+  input.disabled = true; // Inputu dondur
+  input.style.opacity = "0.5";
+
+  addBubble(txt, "user");
+  input.value = "";
+
+  const mode = window.currentAppMode || "chat";
+  
+  // Loading ekle
+  addLoading("Caynana yazıyor...");
+
+  try {
+    const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ message: txt, mode, persona: "normal" }),
+    });
+
+    // Loading balonlarını temizle
+    removeLoading();
     
-    <link rel="stylesheet" href="css/app.css?v=22.0">
-</head>
-<body>
-    <div id="app">
-        <img id="heroImage" src="./images/hero-chat.png" alt="Hero">
-        <div id="heroOverlay"></div>
+    if (res.status === 401) { triggerAuth("Süren dolmuş."); return; }
+    if (!res.ok) { addBubble("Sunucu hatası evladım.", "ai"); return; }
 
-        <div id="topbar">
-            <div class="topbarGlass">
-                <div class="menu-btn" onclick="document.getElementById('drawerMask').style.display='flex'">
-                    <i class="fa-solid fa-bars"></i>
-                </div>
-                <div class="brand-container">
-                    <div class="brand"><i class="fa-solid fa-bolt"></i> CAYNANA</div>
-                    <div class="brand-slogan">Yapay Zekânın Geleneksel Aklı</div>
-                </div>
-                <div class="topActions">
-                    <div class="menu-btn relative" id="notifBtn"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></div>
-                    <div class="menu-btn" id="voiceToggleBtn"><i class="fa-solid fa-volume-xmark" id="voiceIcon"></i></div>
-                    
-                    <div class="menu-btn" onclick="clearCurrentChat()">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+    const data = await res.json();
+    const botText = data.assistant_text || "...";
+    const products = Array.isArray(data.data) ? data.data : [];
 
-        <div id="main">
-            <div id="heroContent">
-                <div id="heroTitle">Caynana ile<br>Dertleş.</div>
-                <div id="heroDesc">Hadi gel evladım, anlat bakalım. Neler var neler yok?</div>
-                <div id="caynanaSpeaking"><i class="fa-solid fa-comment-dots"></i> Caynana Dinliyor...</div>
-            </div>
+    // Gerçek daktilo efekti ile yazdır
+    typeWriterBubble(botText, "ai", () => {
+      if (products.length > 0) {
+        setTimeout(() => renderProducts(products), 300);
+      }
+    });
 
-            <div id="chatContainer">
-                <div class="msg-row bot">
-                    <div class="msg-bubble bot">
-                        Ooo hoş geldin evladım! Gözüm yollarda kaldı. Gel otur şöyle, anlat bakalım derdin ne?
-                    </div>
-                </div>
-            </div>
-        </div>
+  } catch (err) {
+    removeLoading();
+    console.error(err);
+    addBubble("Bağlantı koptu evladım.", "ai");
+  } finally {
+    // İşlem bitince kilidi aç
+    isBusy = false;
+    input.disabled = false;
+    input.style.opacity = "1";
+    input.focus();
+  }
+}
 
-        <div id="bottom">
-            <div id="suggestionText">Benim zamanımda...</div>
-            <div class="input-wrapper" id="stdInputArea">
-                <div class="cam-btn" id="camBtn"><i class="fa-solid fa-camera"></i></div>
-                <div class="search-bar">
-                    <input type="text" id="text" placeholder="Bir şey yaz..." autocomplete="off">
-                </div>
-                <button id="sendBtn"><i class="fa-solid fa-location-arrow"></i></button>
-            </div>
-            
-            <div class="fal-input-area" id="falInputArea" style="display:none;">
-                <div class="big-cam-btn" id="falCamBtn"><i class="fa-solid fa-camera fa-2x"></i><span>Fincanı Çek</span></div>
-            </div>
+// 🛡️ GÜVENLİ MESAJ BALONU (XSS FİXLENDİ)
+function addBubble(text, role) {
+  const container = document.getElementById("chatContainer");
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row " + role;
+  
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble " + role;
+  
+  // Önce textContent ile güvenli hale getir, sonra satır başlarını işle
+  bubble.textContent = text; 
+  bubble.innerHTML = bubble.innerHTML.replace(/\n/g, "<br>");
+  
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  container.scrollTo(0, container.scrollHeight);
+  return bubble; // Typewriter için elementi döndür
+}
 
-            <div id="dockContainer"><div id="dock"></div></div>
-            <div class="footer-sign">@CaynanaAI By Ozyigits</div>
-            <div class="oz-lines"><span id="line1"></span><span id="line2"></span><span id="line3"></span><span id="line4"></span></div>
-        </div>
-    </div>
+// ✍️ GERÇEK DAKTİLO EFEKTİ
+function typeWriterBubble(text, role, cb) {
+  const container = document.getElementById("chatContainer");
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row " + role;
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble " + role;
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
 
-    <div id="drawerMask" class="modalMask">
-        <div id="drawer">
-            <div class="drawer-header"><h2>Menü</h2><div class="close-btn" onclick="document.getElementById('drawerMask').style.display='none'"><i class="fa-solid fa-xmark"></i></div></div>
-            <div class="menu-list">
-                <div class="menu-item highlight" onclick="document.getElementById('authModal').style.display='flex'"><i class="fa-solid fa-user-plus"></i> Giriş Yap / Kayıt Ol</div>
-                <div class="menu-item"><i class="fa-solid fa-circle-info"></i> Hakkımızda</div>
-                <div class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</div>
-            </div>
-        </div>
-    </div>
-    <div id="authModal" class="modalMask">
-        <div class="authBox">
-            <div class="modalHeader">Giriş Yap</div>
-            <input type="text" id="loginEmail" class="authInput" placeholder="E-posta">
-            <input type="password" id="loginPass" class="authInput" placeholder="Şifre">
-            <button class="pc-btn" id="doLoginBtn">Giriş Yap</button>
-            <div style="margin-top:10px; font-size:12px; text-align:center; color:#888;" id="goRegister">Kayıt Ol</div>
-        </div>
-    </div>
-    <input type="file" id="fileInput" style="display: none;" accept="image/*">
+  let i = 0;
+  const speed = 15; // Yazma hızı (ms)
+
+  function type() {
+    if (i < text.length) {
+        // Tek tek harf ekle (HTML entity korumalı değil ama temel metin için ok)
+        // Eğer HTML tag varsa burası değişmeli, şimdilik düz metin varsayıyoruz.
+        const char = text.charAt(i);
+        bubble.innerHTML += (char === '\n' ? '<br>' : char);
+        i++;
+        container.scrollTo(0, container.scrollHeight);
+        setTimeout(type, speed);
+    } else {
+        if (cb) cb(); // Yazma bitince callback çalıştır
+    }
+  }
+  type();
+}
+
+// ✨ CANLI LOADING
+function addLoading(text) {
+    const container = document.getElementById("chatContainer");
+    const wrap = document.createElement("div");
+    wrap.className = "msg-row bot loading-bubble-wrap"; // Sınıf bazlı takip
     
-    <script type="module" src="js/main.js?v=22.0"></script>
-</body>
-</html>
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble bot";
+    // fa-beat-fade ile daha canlı animasyon
+    bubble.innerHTML = `${text} <i class="fa-solid fa-pen-nib fa-beat-fade" style="margin-left:5px; font-size:12px;"></i>`;
+    
+    wrap.appendChild(bubble);
+    container.appendChild(wrap);
+    container.scrollTo(0, container.scrollHeight);
+}
+
+function removeLoading() {
+    document.querySelectorAll('.loading-bubble-wrap').forEach(el => el.remove());
+}
+
+function renderProducts(products) {
+  const container = document.getElementById("chatContainer");
+  products.slice(0, 5).forEach((p, index) => {
+    setTimeout(() => {
+      const card = document.createElement("div");
+      card.className = "product-card";
+      
+      const img = p.image || PLACEHOLDER_IMG;
+      const title = p.title || "Ürün";
+      const price = p.price || "Fiyat Gör";
+      const url = p.url || "#";
+      const reason = p.reason || "İncele";
+      
+      card.innerHTML = `
+        <div class="pc-source">Trendyol</div>
+        <div class="pc-img-wrap">
+          <img src="${img}" class="pc-img" onerror="this.src='${PLACEHOLDER_IMG}'">
+        </div>
+        <div class="pc-content">
+            <div class="pc-title">${title}</div>
+            <div class="pc-info-row">
+                <i class="fa-solid fa-circle-check"></i> <span>${reason}</span>
+            </div>
+            <div class="pc-bottom-row">
+                <div class="pc-price">${price}</div>
+                <a href="${url}" target="_blank" class="pc-btn-mini">Ürüne Git</a>
+            </div>
+        </div>
+      `;
+      
+      const wrap = document.createElement("div");
+      wrap.className = "msg-row bot";
+      wrap.appendChild(card);
+      container.appendChild(wrap);
+      container.scrollTo(0, container.scrollHeight);
+    }, index * 300);
+  });
+}
+
+function triggerAuth(msg) { 
+    // Auth uyarısını daktilo efekti olmadan direkt bas
+    const container = document.getElementById("chatContainer");
+    const wrap = document.createElement("div");
+    wrap.className = "msg-row bot";
+    const bubble = document.createElement("div");
+    bubble.className = "msg-bubble bot";
+    bubble.textContent = msg;
+    wrap.appendChild(bubble);
+    container.appendChild(wrap);
+    
+    document.getElementById('authModal').style.display = 'flex'; 
+}
