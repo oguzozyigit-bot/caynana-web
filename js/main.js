@@ -28,10 +28,17 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("🚀 Caynana v55.0 GOLD Ready");
     initDock();
     setAppMode('chat');
-    updateUIForUser(); // Menüyü ve Google butonunu ayarlar
+    updateUIForUser(); // Menüyü ve giriş durumunu ayarlar
     
     if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID) {
-        try { google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleResponse, auto_select: false }); } catch(e) {}
+        try { 
+            google.accounts.id.initialize({ 
+                client_id: GOOGLE_CLIENT_ID, 
+                callback: handleGoogleResponse, 
+                auto_select: false,
+                cancel_on_tap_outside: false
+            }); 
+        } catch(e) { console.error("Google Init Error:", e); }
     }
 
     document.getElementById("sendBtn").addEventListener("click", sendMessage);
@@ -160,7 +167,7 @@ function setAppMode(m) {
     if(c.specialInput === 'diet') document.getElementById('dietActions').style.display='flex';
     if(c.specialInput === 'astro') document.getElementById('astroActions').style.display='flex';
 
-    // 🔥 ALT ÇİZGİLERİ RENKLENDİR 🔥
+    // ALT ÇİZGİLERİ RENKLENDİR
     const idx = MODULE_ORDER.indexOf(m);
     for(let i=0; i<4; i++) {
         const line = document.querySelector(`.oz-lines span:nth-child(${i+1})`);
@@ -176,7 +183,7 @@ function updateUIForUser() {
     const footer = document.querySelector('.menu-footer');
     
     if(r) {
-        // GİRİŞ VAR
+        // GİRİŞ VARSA
         const u = JSON.parse(r);
         const bar = document.getElementById('userInfoBar');
         if(bar) {
@@ -199,7 +206,7 @@ function updateUIForUser() {
             `;
         }
     } else {
-        // GİRİŞ YOK
+        // GİRİŞ YOKSA
         const bar = document.getElementById('userInfoBar');
         if(bar) bar.classList.remove('visible');
 
@@ -213,7 +220,6 @@ function updateUIForUser() {
                 </div>
                 <a href="pages/sss.html" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
                 <a href="pages/gizlilik.html" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik</a>
-                <a href="pages/iletisim.html" class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
             `;
         }
     }
