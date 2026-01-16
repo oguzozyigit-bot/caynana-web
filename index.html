@@ -19,10 +19,15 @@
 
         <div id="topbar">
             <div class="topbarGlass">
-                <div class="brand-container">
+                <div class="menu-btn" id="menuBtn">
+                    <i class="fa-solid fa-bars"></i>
+                </div>
+
+                <div class="brand-container" style="align-items:center;">
                     <div class="brand"><i class="fa-solid fa-bolt"></i> CAYNANA</div>
                     <div class="brand-slogan">Yapay Zekânın Geleneksel Aklı</div>
                 </div>
+
                 <div class="topActions">
                     <div class="menu-btn" id="voiceToggleBtn"><i class="fa-solid fa-volume-xmark" id="voiceIcon"></i></div>
                     <div class="menu-btn" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i></div>
@@ -87,6 +92,14 @@
             <div style="margin-top:10px; font-size:12px; text-align:center; color:#888; cursor:pointer;" id="goRegister">
                 Hesabın yok mu? Kayıt Ol
             </div>
+        </div>
+    </div>
+    
+    <div id="drawerMask" class="modalMask">
+        <div id="drawer">
+            <h2>Ayarlar</h2>
+            <p>Buraya menü gelecek...</p>
+            <button class="pc-btn" onclick="document.getElementById('drawerMask').style.display='none'">Kapat</button>
         </div>
     </div>
 
