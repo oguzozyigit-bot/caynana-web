@@ -6,14 +6,15 @@
     <title>Profil Ayarları</title>
     
     <script>
+        // Eğer kullanıcı bilgisi yoksa, sayfayı gösterme direkt ana sayfaya at.
         if (!localStorage.getItem("user_info")) {
-            window.location.href = "../index.html"; 
+            window.location.replace("../index.html"); // .href yerine .replace kullandım ki "Geri" tuşu çalışmasın
         }
     </script>
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/app.css?v=55.0">
+    <link rel="stylesheet" href="../css/app.css?v=56.0">
 </head>
 <body>
     <div id="app">
@@ -30,17 +31,17 @@
         <div class="page-container">
             <div style="text-align:center; margin-bottom:25px;">
                 <img id="userAvatar" src="https://via.placeholder.com/100" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--primary); object-fit:cover;">
-                <div style="font-size:11px; color:#666; margin-top:5px;">Google Hesabından</div>
+                <div style="font-size:11px; color:#666; margin-top:5px;">Google Hesabın</div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">Ad Soyad</label>
-                <input type="text" id="fullname" class="form-input" disabled style="opacity:0.5;">
+                <label class="form-label">Ad Soyad (Google'dan)</label>
+                <input type="text" id="fullname" class="form-input" disabled style="opacity:0.6; cursor:not-allowed;">
             </div>
 
             <div class="form-group">
-                <label class="form-label" style="color:var(--primary);">Caynana Sana Nasıl Seslensin? (Max 10)</label>
-                <input type="text" id="hitap" class="form-input" maxlength="10" placeholder="Örn: Damat">
+                <label class="form-label" style="color:var(--primary); font-weight:900;">Caynana Sana Nasıl Seslensin? (Max 10 Harf)</label>
+                <input type="text" id="hitap" class="form-input" maxlength="10" placeholder="Örn: Damat Bey">
             </div>
 
             <div class="form-group">
@@ -75,7 +76,7 @@
                 </select>
             </div>
 
-            <div id="childNamesArea" class="form-group" style="display:none; background:#222; padding:10px; border-radius:8px;">
+            <div id="childNamesArea" class="form-group" style="display:none; background:#222; padding:15px; border-radius:12px; border:1px solid #333;">
                 <label class="form-label" style="color:#ddd;">Çocukların İsimleri</label>
                 <input type="text" id="childNames" class="form-input" placeholder="Örn: Ali, Ayşe">
             </div>
@@ -96,6 +97,7 @@
                 
                 document.getElementById('userAvatar').src = u.picture || "https://via.placeholder.com/100";
                 document.getElementById('fullname').value = p.fullname || u.name || "";
+                
                 if(u.hitap) document.getElementById('hitap').value = u.hitap;
                 if(p.gender) document.getElementById('gender').value = p.gender;
                 if(p.birthDate) document.getElementById('birthDate').value = p.birthDate;
@@ -116,7 +118,7 @@
 
         function saveProfile() {
             const hitap = document.getElementById('hitap').value.trim();
-            if(!hitap) { alert("Lütfen bir hitap ismi yazın."); return; }
+            if(!hitap) { alert("Hitap ismi boş olamaz!"); return; }
 
             const profile = {
                 fullname: document.getElementById('fullname').value,
@@ -135,7 +137,8 @@
             const btn = document.querySelector('.save-btn');
             btn.innerHTML = `<i class="fa-solid fa-check"></i> KAYDEDİLDİ`;
             btn.style.background = "#4CAF50";
-            setTimeout(() => { window.location.href = "../index.html"; }, 800);
+            
+            setTimeout(() => { window.location.href = "../index.html"; }, 1000);
         }
     </script>
 </body>
