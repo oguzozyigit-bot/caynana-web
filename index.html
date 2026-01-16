@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#000000">
     <title>Caynana.AI</title>
+
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="stylesheet" href="css/app.css?v=50.0">
+    <link rel="stylesheet" href="css/app.css?v=55.0">
 </head>
 <body>
 
@@ -27,8 +27,7 @@
                     <div class="brand-slogan">Yapay Zekânın Geleneksel Aklı</div>
                 </div>
                 <div class="top-actions">
-                    <div class="action-btn" style="color:var(--primary); border-color:var(--primary);" onclick="openPersonaModal()"><i class="fa-solid fa-masks-theater"></i></div>
-                    <div class="action-btn" id="voiceToggleBtn" onclick="toggleVoice()"><i class="fa-solid fa-volume-high"></i></div>
+                    <div class="action-btn" onclick="openPersonaModal()"><i class="fa-solid fa-masks-theater"></i></div>
                     <div class="action-btn" onclick="clearCurrentChat()"><i class="fa-solid fa-trash-can"></i></div>
                     <div class="action-btn" onclick="openDrawer()"><i class="fa-solid fa-bars"></i></div>
                 </div>
@@ -78,12 +77,12 @@
 
     <div id="drawerMask" class="modalMask">
         <div id="drawer">
-            <div class="drawer-header">
+            <div class="drawer-header" style="display:flex; justify-content:space-between; margin-bottom:20px; color:#fff;">
                 <h2>Menü</h2>
-                <div class="close-btn" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></div>
+                <div onclick="closeDrawer()" style="cursor:pointer;"><i class="fa-solid fa-xmark"></i></div>
             </div>
             <div class="menu-list"></div>
-            <div class="menu-footer"><span>v50.0 - Stable</span></div>
+            <div class="menu-footer"><span>v55.0 - Gold Master</span></div>
         </div>
     </div>
 
@@ -96,21 +95,10 @@
                 <div class="persona-option selected" onclick="changePersona('normal')">👵 Normal</div>
                 <div class="persona-option" onclick="changePersona('huysuz')">😒 Huysuz</div>
                 <div class="persona-option" onclick="changePersona('sinirli')">😡 Sinirli</div>
-                <div class="persona-option" onclick="changePersona('dobra')">🤬 Dobra</div>
             </div>
         </div>
     </div>
 
-    <div id="authModal" class="modalMask">
-        <div class="authBox" style="text-align: center;">
-            <div class="close-btn-abs" onclick="document.getElementById('authModal').style.display='none'"><i class="fa-solid fa-xmark"></i></div>
-            <h2 style="color:#fff;">Giriş Yap</h2>
-            <div class="social-buttons">
-                <button class="social-btn btn-google" onclick="handleGoogleLogin()"><i class="fa-brands fa-google"></i> Google</button>
-            </div>
-        </div>
-    </div>
-
-    <script src="js/main.js?v=50.0"></script>
+    <script src="js/main.js?v=55.0"></script>
 </body>
 </html>
