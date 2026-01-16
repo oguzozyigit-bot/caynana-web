@@ -1,4 +1,4 @@
-/* js/chat.js (v15.1 - FIX LOADING STUCK) */
+/* js/chat.js (v16.0 - NO STUCK LOADING) */
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com"; 
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
@@ -31,8 +31,9 @@ async function sendMessage() {
   input.value = "";
 
   const mode = window.currentAppMode || "chat";
-  // Loading balonuna ID verdik ki sonra silebilelim
-  const loadingId = addLoading("Caynana yazıyor...");
+  
+  // Yükleniyor balonunu ekle
+  addLoading("Caynana yazıyor...");
 
   try {
     const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
@@ -41,8 +42,8 @@ async function sendMessage() {
       body: JSON.stringify({ message: txt, mode, persona: "normal" }),
     });
 
-    // ID ile balonu siliyoruz
-    removeById(loadingId);
+    // 🌟 KESİN ÇÖZÜM: TÜM YÜKLENİYOR BALONLARINI SİL
+    removeLoading();
     
     if (res.status === 401) { triggerAuth("Süren dolmuş."); return; }
     if (!res.ok) { addBubble("Sunucu hatası evladım.", "ai"); return; }
@@ -58,37 +59,33 @@ async function sendMessage() {
     });
 
   } catch (err) {
-    removeById(loadingId); // Hata olsa da sil
+    removeLoading(); // Hata olsa bile sil
     console.error(err);
     addBubble("Bağlantı koptu evladım.", "ai");
   }
 }
 
-// 🛠️ DÜZELTİLEN YER: ID döndüren loading fonksiyonu
+// 🌟 YENİ LOADING FONKSİYONLARI 🌟
 function addLoading(text) {
     const container = document.getElementById("chatContainer");
-    const id = "ldr_" + Date.now(); // Benzersiz ID
-    
     const wrap = document.createElement("div");
-    wrap.id = id; // Wrapper'a ID ver
-    wrap.className = "msg-row bot";
+    
+    // ÖZEL SINIF EKLENDİ: 'loading-bubble-wrap'
+    wrap.className = "msg-row bot loading-bubble-wrap"; 
     
     const bubble = document.createElement("div");
     bubble.className = "msg-bubble bot";
-    bubble.innerHTML = text + ' <i class="fa-solid fa-pen-nib fa-fade"></i>'; // Animasyonlu ikon
+    bubble.innerHTML = text + ' <i class="fa-solid fa-pen-nib fa-fade"></i>';
     
     wrap.appendChild(bubble);
     container.appendChild(wrap);
     container.scrollTo(0, container.scrollHeight);
-    
-    return id; // ID'yi geri döndür
 }
 
-// ID ile silme fonksiyonu
-function removeById(id) { 
-    if(!id) return;
-    const el = document.getElementById(id); 
-    if (el) el.remove(); 
+function removeLoading() {
+    // ID yerine sınıf ile bulup siliyoruz. Daha güvenli.
+    const loaders = document.querySelectorAll('.loading-bubble-wrap');
+    loaders.forEach(el => el.remove());
 }
 
 function renderProducts(products) {
