@@ -1,4 +1,4 @@
-/* js/main.js (v26.0 - GOOGLE LOGIN INTEGRATED & FULL SYSTEM) */
+/* js/main.js (v26.1 - AUTH CODE FLOW FIX) */
 
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
@@ -23,18 +23,15 @@ const MODE_CONFIG = {
 };
 const MODULE_ORDER = ['chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'];
 
-// BAŞLATMA
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v26.0 Started (Google Login Ready)");
+    console.log("🚀 Caynana v26.1 Started (Code Flow)");
     initDock();
     setAppMode('chat');
-    
-    // Event Listenerlar
     document.getElementById("sendBtn").addEventListener("click", sendMessage);
     document.getElementById("text").addEventListener("keydown", (e) => { if(e.key==="Enter") sendMessage(); });
 });
 
-// DOCK (İKONLAR)
+/* ... DOCK ve UI FONKSİYONLARI ... */
 function initDock() {
     const dock = document.getElementById('dock');
     if (!dock) return;
@@ -49,21 +46,15 @@ function initDock() {
         dock.appendChild(item);
     });
 }
-
-// MOD DEĞİŞTİRME
 function setAppMode(mode) {
     const currentContainer = document.getElementById('chatContainer');
     const oldMode = window.currentAppMode || 'chat';
     if(currentContainer) chatHistory[oldMode] = currentContainer.innerHTML;
-
     window.currentAppMode = mode;
     const cfg = MODE_CONFIG[mode] || MODE_CONFIG['chat'];
-    
     document.getElementById('heroTitle').innerHTML = cfg.title;
     document.getElementById('heroDesc').innerHTML = cfg.desc;
     document.documentElement.style.setProperty('--primary', cfg.color);
-    
-    // Resim Değişimi
     const heroImg = document.getElementById('heroImage');
     heroImg.style.opacity = '0';
     setTimeout(() => {
@@ -71,14 +62,11 @@ function setAppMode(mode) {
         heroImg.onload = () => heroImg.style.opacity = '1';
         heroImg.onerror = () => { heroImg.src = './images/hero-chat.png'; heroImg.style.opacity='1'; };
     }, 200);
-
     document.querySelectorAll('.dock-item').forEach(el => {
         el.classList.remove('active');
         if(el.dataset.mode === mode) el.classList.add('active');
     });
     updateFooterBars(mode);
-
-    // Geçmişi Yükle
     if (chatHistory[mode]) {
         currentContainer.innerHTML = chatHistory[mode];
         setTimeout(() => currentContainer.scrollTo({ top: currentContainer.scrollHeight, behavior: 'instant' }), 10);
@@ -87,7 +75,6 @@ function setAppMode(mode) {
         addBotMessage(cfg.welcome);
     }
 }
-
 function updateFooterBars(currentMode) {
     const idx = MODULE_ORDER.indexOf(currentMode);
     if(idx === -1) return;
@@ -99,27 +86,21 @@ function updateFooterBars(currentMode) {
     }
 }
 
-// MESAJLAŞMA
+/* ... CHAT FONKSİYONLARI ... */
 async function sendMessage() {
     if(isBusy) return;
     const input = document.getElementById("text");
     const txt = input.value.trim();
     if(!txt) return;
-
     if(!localStorage.getItem("auth_token")) { triggerAuth("Giriş yap evladım."); return; }
-
     removeLoading();
     isBusy = true; input.disabled = true; input.style.opacity = "0.5";
-    
     addBubble(txt, 'user');
     input.value = "";
-    
     setCaynanaStatus("typing");
     addLoading("Caynana yazıyor...");
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 40000);
-
     try {
         const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
             method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("auth_token")}` },
@@ -128,17 +109,14 @@ async function sendMessage() {
         });
         clearTimeout(timeoutId);
         removeLoading();
-
         if (res.status === 401) { triggerAuth("Süren dolmuş."); isBusy = false; input.disabled=false; input.style.opacity="1"; return; }
         if (!res.ok) { addBotMessage("Sunucu hatası evladım."); isBusy = false; input.disabled=false; input.style.opacity="1"; return; }
-
         const data = await res.json();
         const botText = (data?.assistant_text ?? "...").toString();
         typeWriterBubble(botText, () => {
             setCaynanaStatus("replied");
             if (Array.isArray(data?.data) && data.data.length > 0) setTimeout(() => renderProducts(data.data), 250);
         });
-
     } catch(err) {
         clearTimeout(timeoutId); removeLoading();
         addBotMessage("Bağlantı koptu evladım.");
@@ -148,7 +126,6 @@ async function sendMessage() {
     }
 }
 
-// YARDIMCILAR
 function addBubble(text, role) {
     const container = document.getElementById("chatContainer");
     const wrap = document.createElement("div"); wrap.className = "msg-row " + role;
@@ -157,7 +134,6 @@ function addBubble(text, role) {
     parts.forEach((part, idx) => { bubble.appendChild(document.createTextNode(part)); if (idx !== parts.length - 1) bubble.appendChild(document.createElement("br")); });
     wrap.appendChild(bubble); container.appendChild(wrap); container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
 }
-
 function addBotMessage(text) {
     const container = document.getElementById("chatContainer");
     const wrap = document.createElement("div"); wrap.className = "msg-row bot";
@@ -165,7 +141,6 @@ function addBotMessage(text) {
     bubble.innerHTML = text;
     wrap.appendChild(bubble); container.appendChild(wrap);
 }
-
 function typeWriterBubble(text, cb) {
     const container = document.getElementById("chatContainer");
     const wrap = document.createElement("div"); wrap.className = "msg-row bot";
@@ -179,7 +154,6 @@ function typeWriterBubble(text, cb) {
         i++; container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' }); setTimeout(step, 10);
     } step();
 }
-
 function addLoading(text) {
     const container = document.getElementById("chatContainer"); removeLoading();
     const wrap = document.createElement("div"); wrap.className = "msg-row bot loading-bubble-wrap";
@@ -187,9 +161,7 @@ function addLoading(text) {
     bubble.innerHTML = `${text} <i class="fa-solid fa-pen-nib fa-fade"></i>`;
     wrap.appendChild(bubble); container.appendChild(wrap); container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
 }
-
 function removeLoading() { document.querySelectorAll('.loading-bubble-wrap').forEach(el => el.remove()); }
-
 function renderProducts(products) {
     const container = document.getElementById("chatContainer");
     products.slice(0, 5).forEach((p, index) => {
@@ -201,7 +173,6 @@ function renderProducts(products) {
         }, index * 260);
     });
 }
-
 function clearCurrentChat() {
     const container = document.getElementById('chatContainer');
     const mode = window.currentAppMode || 'chat';
@@ -211,50 +182,39 @@ function clearCurrentChat() {
         chatHistory[mode] = container.innerHTML;
     }
 }
-
 function setCaynanaStatus(state) {
     const badge = document.getElementById("caynanaSpeaking");
     if(!badge) return;
     if(state === "typing") { badge.classList.add("is-typing"); badge.innerHTML = `<i class="fa-solid fa-pen-nib"></i> Caynana yazıyor...`; }
     else { badge.classList.remove("is-typing"); badge.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Caynana dinliyor...`; }
 }
-
-// GLOBAL FONKSİYONLAR
 window.clearCurrentChat = clearCurrentChat;
 window.triggerAuth = (msg) => {
     addBotMessage(msg);
     document.getElementById("authModal").style.display = "flex";
 };
 
-// 🔥 GOOGLE GİRİŞ FONKSİYONU (GERÇEK) 🔥
+// 🔥 GOOGLE LOGIN (AUTH CODE FLOW - SUNUCU DOSTU) 🔥
 window.handleGoogleLogin = () => {
-    // Google Kütüphanesi Yüklü mü?
-    if (typeof google === 'undefined') {
-        alert("Google bağlantısı kurulamadı. Lütfen sayfayı yenile veya internetini kontrol et.");
-        return;
-    }
-
-    if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("YAPISTIR")) {
-        alert("Başkanım, js/main.js dosyasına Google Client ID yapıştırılmamış!");
-        return;
-    }
+    if (typeof google === 'undefined') { alert("Google servisi yüklenemedi. Lütfen sayfayı yenile."); return; }
+    if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("YAPISTIR")) { alert("JS Dosyasında Client ID eksik!"); return; }
 
     const btn = document.querySelector('.btn-google');
     const oldText = btn.innerHTML;
     
-    // UI Yükleniyor Modu
     btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor...`;
-    btn.style.opacity = "0.7";
-    btn.disabled = true;
+    btn.style.opacity = "0.7"; btn.disabled = true;
 
-    // Google Token Client Başlat
-    const client = google.accounts.oauth2.initTokenClient({
+    // initTokenClient YERİNE initCodeClient KULLANIYORUZ
+    // Bu yöntem "Access Token" değil "Auth Code" verir. Sunucular bunu sever.
+    const client = google.accounts.oauth2.initCodeClient({
         client_id: GOOGLE_CLIENT_ID,
         scope: 'email profile openid',
+        ux_mode: 'popup',
         callback: (response) => {
-            if (response.access_token) {
-                console.log("🟢 Google Token Alındı, Backend'e Gönderiliyor...");
-                verifyGoogleTokenOnBackend(response.access_token, btn, oldText);
+            if (response.code) {
+                console.log("🟢 Google Auth Code Alındı, Backend'e Gönderiliyor...");
+                verifyGoogleTokenOnBackend(response.code, btn, oldText);
             } else {
                 console.warn("Google girişi iptal edildi.");
                 resetGoogleBtn(btn, oldText);
@@ -262,47 +222,46 @@ window.handleGoogleLogin = () => {
         },
     });
 
-    // Pencereyi Aç
-    client.requestAccessToken();
+    client.requestCode(); // requestAccessToken yerine requestCode
 };
 
-// Backend Doğrulama
-async function verifyGoogleTokenOnBackend(accessToken, btn, oldText) {
+async function verifyGoogleTokenOnBackend(code, btn, oldText) {
     try {
+        // Backend 'code' bekliyorsa bu çalışır
+        const payload = { 
+            code: code,
+            google_token: code // Yedek olarak
+        };
+
         const res = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ token: accessToken })
+            body: JSON.stringify(payload)
         });
 
         const data = await res.json();
+        
+        if (!res.ok) {
+            console.error("🔴 SUNUCU HATASI:", data);
+            throw new Error(data.message || data.error || "Sunucu girişi reddetti (400).");
+        }
 
-        if (res.ok && data.token) {
-            // BAŞARILI
+        if (data.token) {
             console.log("🚀 Giriş Başarılı:", data);
             localStorage.setItem("auth_token", data.token);
             
-            // UI Güncelle
             document.getElementById('authModal').style.display = 'none';
-            addBotMessage("Ooo hoş geldin evladım! Girişini yaptım, artık seni tanıyorum. Ne lazımdı?");
+            addBotMessage("Ooo hoş geldin evladım! Girişin tamam, artık seni tanıyorum.");
             
             resetGoogleBtn(btn, oldText);
-        } else {
-            console.error("Backend Hatası:", data);
-            throw new Error(data.message || "Sunucu girişi reddetti.");
         }
 
     } catch (err) {
-        console.error("Login Hatası:", err);
-        alert("Giriş yapılamadı: " + err.message);
+        alert("Giriş Hatası: " + err.message);
         resetGoogleBtn(btn, oldText);
     }
 }
 
 function resetGoogleBtn(btn, oldText) {
-    if(btn) {
-        btn.innerHTML = oldText;
-        btn.style.opacity = "1";
-        btn.disabled = false;
-    }
+    if(btn) { btn.innerHTML = oldText; btn.style.opacity = "1"; btn.disabled = false; }
 }
