@@ -16,28 +16,28 @@
         <img id="heroImage" src="./images/hero-chat.png" alt="Hero">
         <div id="heroOverlay"></div>
 
-        <div id="topbar">
-            <div class="topbarGlass">
-                <div class="menu-btn" id="menuBtn" onclick="openDrawer()">
+        <div id="topSection">
+            <div class="header-row">
+                <div class="menu-btn" onclick="openDrawer()">
                     <i class="fa-solid fa-bars"></i>
                 </div>
-
-                <div class="brand-container">
-                    <div class="brand"><i class="fa-solid fa-bolt"></i> CAYNANA</div>
-                    <div class="brand-slogan">Yapay Zekânın Geleneksel Aklı</div>
+                
+                <div class="brand">
+                    <i class="fa-solid fa-bolt"></i> CAYNANA
                 </div>
 
-                <div class="topActions">
-                    <div class="menu-btn" id="voiceToggleBtn"><i class="fa-solid fa-volume-xmark" id="voiceIcon"></i></div>
-                    <div class="menu-btn" onclick="location.reload()"><i class="fa-solid fa-rotate-right"></i></div>
-                </div>
+                <div class="menu-btn relative" id="notifBtn">
+                    <i class="fa-solid fa-bell"></i>
+                    <span class="notif-dot"></span> </div>
             </div>
-        </div>
 
+            <div id="topModeBar">
+                </div>
+        </div>
         <div id="main">
             <div id="heroContent">
-                <div id="heroTitle">Caynana ile<br>İki Lafın Belini Kır.</div>
-                <div id="heroDesc">Hadi gel evladım, biraz dertleşelim. Neler var neler yok?</div>
+                <div id="heroTitle">Caynana ile<br>Dertleş.</div>
+                <div id="heroDesc">Hadi gel evladım, anlat bakalım.</div>
                 <div id="caynanaSpeaking">
                     <i class="fa-solid fa-comment-dots"></i> Caynana Hazır...
                 </div>
@@ -46,7 +46,7 @@
             <div id="chatContainer">
                 <div class="msg-row bot">
                     <div class="msg-bubble bot">
-                        Hoş geldin evladım! Kartları düzelttim, menüyü taktım. Ne bakacaktık?
+                        Hoş geldin başkanım! Modları yukarı aldım, menüyü düzenledim. Tam istediğin gibi oldu mu?
                     </div>
                 </div>
             </div>
@@ -70,25 +70,42 @@
                 </div>
             </div>
 
-            <div id="dockContainer">
-                <div id="dock"></div>
-            </div>
-
             <div class="footer-sign">@CaynanaAI By Ozyigits</div>
-            <div class="oz-lines">
-                <span id="line1"></span><span id="line2"></span><span id="line3"></span><span id="line4"></span>
-            </div>
         </div>
     </div>
 
     <div id="drawerMask" class="modalMask">
         <div id="drawer">
-            <h2>Ayarlar</h2>
-            <div class="persona-opt selected"><span>Normal Mod</span> <i class="fa-solid fa-check"></i></div>
-            <div class="persona-opt locked"><span>Sinirli Caynana</span> <i class="fa-solid fa-lock"></i></div>
-            <div class="persona-opt locked"><span>Pamuk Nine</span> <i class="fa-solid fa-lock"></i></div>
-            <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
-            <button class="pc-btn" style="background:#333; color:#fff;" onclick="closeDrawer()">Kapat</button>
+            <div class="drawer-header">
+                <h2>Menü</h2>
+                <div class="close-btn" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></div>
+            </div>
+
+            <div class="user-profile-card">
+                <div class="user-avatar"><i class="fa-solid fa-user"></i></div>
+                <div class="user-info">
+                    <div class="u-name">Misafir Kullanıcı</div>
+                    <div class="u-sub">Giriş Yapılmadı</div>
+                </div>
+            </div>
+
+            <div class="menu-list">
+                <div class="menu-item" onclick="triggerAuth('Giriş yapılıyor...')">
+                    <i class="fa-solid fa-right-to-bracket"></i> Giriş Yap / Kayıt Ol
+                </div>
+                <div class="menu-item">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Geçmiş Sohbetler
+                </div>
+                <div class="menu-item">
+                    <i class="fa-solid fa-wallet"></i> Abonelik & Krediler
+                </div>
+                <div class="menu-item">
+                    <i class="fa-solid fa-gear"></i> Uygulama Ayarları
+                </div>
+                <div class="menu-item" style="color:#FF1744;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Çıkış Yap
+                </div>
+            </div>
         </div>
     </div>
 
@@ -104,7 +121,6 @@
 
     <input type="file" id="fileInput" style="display: none;" accept="image/*">
     <script type="module" src="js/main.js"></script>
-    
     <script>
         function openDrawer() { document.getElementById('drawerMask').style.display = 'flex'; }
         function closeDrawer() { document.getElementById('drawerMask').style.display = 'none'; }
