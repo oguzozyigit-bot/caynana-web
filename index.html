@@ -11,7 +11,59 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <link rel="stylesheet" href="css/app.css?v=25.0">
+    
+    <link rel="stylesheet" href="css/app.css?v=30.0">
+
+    <style>
+        /* --- YENİ TOP BAR DÜZENİ --- */
+        .topbarGlass {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 15px; height: 60px;
+        }
+        
+        /* Sol Taraf: Logo + Mod İkonu */
+        .brand-area { display: flex; align-items: center; gap: 10px; }
+        .brand-logo { font-size: 20px; font-weight: 900; color: #fff; letter-spacing: 1px; }
+        .current-mode-icon { 
+            width: 32px; height: 32px; background: var(--primary); color: #000;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 14px; box-shadow: 0 0 10px rgba(230, 194, 91, 0.4);
+            transition: 0.3s;
+        }
+
+        /* Sağ Taraf: İkonlar */
+        .top-actions { display: flex; align-items: center; gap: 12px; }
+        .action-btn { 
+            width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.1); 
+            display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px;
+            cursor: pointer; backdrop-filter: blur(5px); transition: 0.2s;
+        }
+        .action-btn:active { transform: scale(0.9); }
+        .notif-dot { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: red; border-radius: 50%; display: none; }
+
+        /* --- SUB HEADER (AVATAR & İSİM) --- */
+        #userInfoBar {
+            position: fixed; top: 60px; left: 0; right: 0; z-index: 90;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 10px; pointer-events: none; /* Arkasına tıklanabilsin */
+            transition: 0.3s;
+        }
+        .user-pill {
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 5px 15px 5px 5px; border-radius: 30px;
+            display: flex; align-items: center; gap: 10px;
+            pointer-events: auto;
+        }
+        .user-avatar-mini { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--primary); object-fit: cover; }
+        .user-welcome-text { color: #fff; font-size: 13px; font-weight: 600; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* --- DİYET KARTLARI --- */
+        .diet-card { background: #1a1a1a; border: 1px solid #333; border-radius: 15px; padding: 15px; margin-bottom: 10px; border-left: 4px solid var(--primary); }
+        .diet-title { color: var(--primary); font-weight: 800; margin-bottom: 5px; font-size: 15px; }
+        .diet-content { color: #ddd; font-size: 13px; line-height: 1.5; }
+        .status-badge { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; background: #333; color: #fff; margin-bottom: 15px; }
+    </style>
 </head>
 <body>
 
@@ -21,44 +73,64 @@
 
         <div id="topbar">
             <div class="topbarGlass">
-                <div class="menu-btn" onclick="document.getElementById('drawerMask').style.display='flex'">
-                    <i class="fa-solid fa-bars"></i>
-                </div>
-                
-                <div class="brand-container">
-                    <div class="brand"><i class="fa-solid fa-bolt"></i> CAYNANA</div>
-                    <div class="brand-slogan">Yapay Zekânın Geleneksel Aklı</div>
-                </div>
-
-                <div class="topActions">
-                    <div class="menu-btn relative" id="notifBtn"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></div>
-                    <div class="menu-btn" id="voiceToggleBtn"><i class="fa-solid fa-volume-xmark" id="voiceIcon"></i></div>
-                    <div class="menu-btn" onclick="clearCurrentChat()">
-                        <i class="fa-solid fa-trash-can"></i>
+                <div class="brand-area">
+                    <div class="brand-logo">CAYNANA</div>
+                    <div id="currentModeIcon" class="current-mode-icon">
+                        <i class="fa-solid fa-comments"></i>
                     </div>
                 </div>
+
+                <div class="top-actions">
+                    <div class="action-btn" id="voiceToggleBtn" onclick="toggleVoice()">
+                        <i class="fa-solid fa-volume-xmark" id="voiceIcon"></i>
+                    </div>
+                    <div class="action-btn relative">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notif-dot"></span>
+                    </div>
+                    <div class="action-btn" onclick="clearCurrentChat()">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </div>
+                    <div class="action-btn" onclick="document.getElementById('drawerMask').style.display='flex'">
+                        <i class="fa-solid fa-bars"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="userInfoBar">
+            <div class="user-pill" onclick="window.location.href='pages/profil.html'">
+                <img id="headerAvatar" src="https://via.placeholder.com/40" class="user-avatar-mini">
+                <div id="headerWelcome" class="user-welcome-text">Hoş geldin...</div>
             </div>
         </div>
 
         <div id="main">
             <div id="heroContent">
                 <div id="heroTitle">Caynana ile<br>Dertleş.</div>
-                <div id="heroDesc">Hadi gel evladım, anlat bakalım. Neler var neler yok?</div>
+                <div id="heroDesc">Hadi gel evladım, anlat bakalım.</div>
+                
                 <div id="caynanaSpeaking"><i class="fa-solid fa-comment-dots"></i> Caynana Dinliyor...</div>
             </div>
 
-            <div id="chatContainer">
-                </div>
+            <div id="chatContainer"></div>
         </div>
 
         <div id="bottom">
-            <div id="suggestionText">Benim zamanımda...</div>
-            
+            <div id="dietActions" style="display:none; gap:10px; margin-bottom:10px; justify-content:center;">
+                <button class="pc-btn-mini" onclick="generateDietList(true)"><i class="fa-solid fa-rotate"></i> Yeni Liste Öner</button>
+                <button class="pc-btn-mini" style="background:#333; color:#fff;" onclick="showBmiStatus()"><i class="fa-solid fa-heart-pulse"></i> Durumum</button>
+            </div>
+
             <div class="input-wrapper" id="stdInputArea">
                 <div class="cam-btn" id="camBtn"><i class="fa-solid fa-camera"></i></div>
+                
                 <div class="search-bar">
                     <input type="text" id="text" placeholder="Bir şey yaz..." autocomplete="off">
                 </div>
+                
+                <div class="cam-btn" id="micBtn" style="margin-left: 5px; background: #333;"><i class="fa-solid fa-microphone"></i></div>
+
                 <button id="sendBtn"><i class="fa-solid fa-location-arrow"></i></button>
             </div>
             
@@ -76,30 +148,27 @@
     <div id="drawerMask" class="modalMask">
         <div id="drawer">
             <div class="drawer-header">
-                <h2>Menü</h2>
+                <h2>Ayarlar</h2>
                 <div class="close-btn" onclick="document.getElementById('drawerMask').style.display='none'">
                     <i class="fa-solid fa-xmark"></i>
                 </div>
             </div>
-            <div class="menu-list">
-                <div class="menu-item highlight" onclick="document.getElementById('authModal').style.display='flex'">
-                    <i class="fa-solid fa-user-plus"></i> Giriş Yap / Üye Ol
-                </div>
-                
-                <a href="pages/hakkimizda.html" class="menu-item link-item">
-                    <i class="fa-solid fa-circle-info"></i> Hakkımızda
-                </a>
-                <a href="pages/faq.html" class="menu-item link-item">
-                    <i class="fa-solid fa-circle-question"></i> S.S.S
-                </a>
-                <a href="pages/iletisim.html" class="menu-item link-item">
-                    <i class="fa-solid fa-envelope"></i> İletişim
-                </a>
-                <a href="pages/gizlilik.html" class="menu-item link-item">
-                    <i class="fa-solid fa-shield-halved"></i> Gizlilik Politikası
-                </a>
+
+            <div style="padding: 15px; border-bottom: 1px solid #333;">
+                <label style="color:#bbb; font-size:12px; font-weight:700; display:block; margin-bottom:8px;">KAYNANA MODU</label>
+                <select id="personaSelect" class="form-select" onchange="changePersona(this.value)" style="width:100%; background:#222; color:#fff; border:1px solid #444; padding:10px; border-radius:8px;">
+                    <option value="anne">Anne Tadında (Şefkatli)</option>
+                    <option value="normal" selected>Kaynana Gibi (Standart)</option>
+                    <option value="huysuz">Huysuz (Memnuniyetsiz)</option>
+                    <option value="sinirli">Sinirli (Barut)</option>
+                    <option value="yasli">Bir Ayağı Çukurda (Unutkan)</option>
+                    <option value="dobra">Küfürbaz/Dobra (Sansürsüz)</option>
+                </select>
             </div>
 
+            <div class="menu-list">
+                </div>
+            
             <div class="menu-footer">
                 <span style="color: var(--primary); font-size: 12px; display:block;">@CaynanaAI</span>
                 <span style="font-size: 10px; color: #666;">By Ozyigits</span>
@@ -108,37 +177,21 @@
     </div>
 
     <div id="authModal" class="modalMask">
-    <div class="authBox" style="text-align: center;">
-        <div class="close-btn-abs" onclick="document.getElementById('authModal').style.display='none'">
-            <i class="fa-solid fa-xmark"></i>
-        </div>
-        
-        <h2 style="margin-bottom: 5px; color:#fff;">Hoş Geldin</h2>
-        <p style="font-size: 12px; color: #aaa; margin-bottom: 25px;">Devam etmek için bir yöntem seç.</p>
-
-        <div class="social-buttons">
-            <button class="social-btn btn-google" onclick="handleGoogleLogin()">
-                <i class="fa-brands fa-google"></i> Google ile Bağlan
-            </button>
-            
-            <button class="social-btn btn-apple">
-                <i class="fa-brands fa-apple"></i> Apple ile Bağlan
-            </button>
-        </div>
-
-        <div class="auth-note" style="margin-top: 25px;">
-            Giriş yaparak 
-            <a href="pages/sozlesme.html" class="auth-link">Kullanıcı Sözleşmesi</a>'ni 
-            kabul etmiş sayılırsınız.
+        <div class="authBox" style="text-align: center;">
+            <div class="close-btn-abs" onclick="document.getElementById('authModal').style.display='none'"><i class="fa-solid fa-xmark"></i></div>
+            <h2 style="margin-bottom: 5px; color:#fff;">Hoş Geldin</h2>
+            <p style="font-size: 12px; color: #aaa; margin-bottom: 25px;">Devam etmek için bir yöntem seç.</p>
+            <div class="social-buttons">
+                <button class="social-btn btn-google" onclick="handleGoogleLogin()"><i class="fa-brands fa-google"></i> Google ile Bağlan</button>
+                <button class="social-btn btn-apple"><i class="fa-brands fa-apple"></i> Apple ile Bağlan</button>
+            </div>
+            <div class="auth-note" style="margin-top: 25px;">
+                Giriş yaparak <a href="pages/sozlesme.html" class="auth-link">Kullanıcı Sözleşmesi</a>'ni kabul etmiş sayılırsınız.
+            </div>
         </div>
     </div>
-</div>
 
     <input type="file" id="fileInput" style="display: none;" accept="image/*">
-
-    <script type="module" src="js/main.js?v=25.0"></script>
-
+    <script type="module" src="js/main.js?v=30.0"></script>
 </body>
 </html>
-
-
