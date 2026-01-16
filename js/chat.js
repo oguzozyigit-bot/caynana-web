@@ -1,7 +1,8 @@
-/* js/chat.js (v5.2 - FIX & COMPACT) */
+/* js/chat.js (v8.0 - PREMIUM BMW X5 CARDS HTML) */
 import { BASE_DOMAIN } from "./main.js";
 
-const PLACEHOLDER_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23eeeeee'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23999999'%3EGörsel Yok%3C/text%3E%3C/svg%3E";
+// Daha şık bir placeholder görseli
+const PLACEHOLDER_IMG = "https://via.placeholder.com/400x300/f0f2f5/999999?text=Görsel+Yok";
 
 export function initChat() {
   const sendBtn = document.getElementById("sendBtn");
@@ -118,7 +119,7 @@ function typeWriterBubble(text, role, callback) {
   tick();
 }
 
-// 🌟 FERRARI KART (Yatay & Kompakt) 🌟
+// 🌟 PREMIUM BMW X5 KART YAPISI 🌟
 function renderProducts(products) {
   const container = document.getElementById("chatContainer");
 
@@ -127,26 +128,34 @@ function renderProducts(products) {
       const card = document.createElement("div");
       card.className = "product-card";
 
-      const img = p.image || PLACEHOLDER_IMG;
+      // Görsel kontrolü: Eğer görsel yoksa veya hata verirse placeholder kullan
+      let img = p.image;
+      if (!img || img === "") {
+          img = PLACEHOLDER_IMG;
+      }
+
       const url = p.url || "#";
       const title = p.title || "Ürün";
-      const price = p.price || "Fiyat Gör"; 
+      let price = p.price;
+      if (!price || price === "" || price === "Fiyat Gör") {
+          price = "Fiyatı Gör";
+      }
       const reason = p.reason || "Bunu beğendim.";
 
       card.innerHTML = `
         <div class="pc-img-wrap">
-          <img src="${img}" class="pc-img" onerror="this.src='${PLACEHOLDER_IMG}'">
+          <img src="${img}" class="pc-img" alt="${escapeHtml(title)}" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMG}';">
           <div class="pc-source-badge">Trendyol</div>
+          <div class="pc-price-tag">${escapeHtml(price)}</div>
         </div>
         <div class="pc-content">
             <div class="pc-title">${escapeHtml(title)}</div>
-            <div class="pc-reason-tag"><i class="fa-solid fa-comment-dots"></i> ${escapeHtml(reason)}</div>
-            <div style="display:flex; justify-content:space-between; align-items:end;">
-                <div class="pc-price">${escapeHtml(price)}</div>
-                <a href="${url}" target="_blank" class="pc-btn-mini">
-                    İncele <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
-                </a>
+            <div class="pc-reason-badge">
+                <i class="fa-solid fa-comment-dots"></i> ${escapeHtml(reason)}
             </div>
+            <a href="${url}" target="_blank" class="pc-btn-premium">
+                Ürüne Git <i class="fa-solid fa-arrow-right-long"></i>
+            </a>
         </div>
       `;
 
