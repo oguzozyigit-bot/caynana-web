@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Profil Ayarları - Caynana.AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../css/app.css?v=26.0">
+    
+    <style>
+        .profile-container { padding: 80px 20px 40px 20px; color: #fff; max-width: 600px; margin: 0 auto; }
+        
+        /* Avatar Alanı */
+        .avatar-section { display: flex; flex-direction: column; align-items: center; margin-bottom: 30px; position: relative; }
+        .avatar-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--primary); object-fit: cover; box-shadow: 0 0 20px rgba(230, 194, 91, 0.3); }
+        .lock-icon { position: absolute; bottom: 0; background: #333; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; border: 1px solid #555; }
+        
+        /* Form Elemanları */
+        .form-group { margin-bottom: 20px; }
+        .form-label { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 8px; display: block; }
+        .form-input, .form-select, .form-textarea { width: 100%; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 14px; border-radius: 12px; font-family: 'Outfit', sans-serif; font-size: 14px; outline: none; transition: 0.3s; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(230, 194, 91, 0.1); }
+        
+        /* Read Only Stil */
+        .form-input:disabled { opacity: 0.5; cursor: not-allowed; border-color: #222; }
+
+        /* Checkbox Grubu */
+        .checkbox-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        .cb-item { background: #1a1a1a; border: 1px solid #333; padding: 10px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: 0.2s; user-select: none; }
+        .cb-item.selected { background: var(--primary); color: #000; font-weight: 700; border-color: var(--primary); }
+
+        /* Kaydet Butonu */
+        .save-btn { width: 100%; background: var(--primary); color: #000; font-weight: 900; padding: 16px; border-radius: 14px; border: none; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .save-btn:disabled { opacity: 0.5; cursor: wait; }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        <div id="heroOverlay" style="background: #000; z-index: -1;"></div>
+
+        <div class="sub-page-header">
+            <div class="header-logo" style="width:100%; text-align:center;">
+                <i class="fa-solid fa-user-gear"></i> PROFİL BİLGİLERİ
+            </div>
+        </div>
+
+        <div class="page-container profile-container">
+            
+            <div class="avatar-section">
+                <img id="userAvatar" src="https://via.placeholder.com/100" class="avatar-img">
+                <div class="lock-icon"><i class="fa-solid fa-lock"></i></div>
+                <div style="font-size: 11px; color: #666; margin-top: 8px;">Google Hesabından Çekildi</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Kullanıcı ID (Sistem)</label>
+                <input type="text" id="userId" class="form-input" disabled value="USER_12345">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🗣️ Caynana Sana Nasıl Hitap Etsin? *</label>
+                <input type="text" id="hitap" class="form-input" placeholder="Örn: Oğuz, Abi, Güzelim, Reis..." maxlength="20">
+                <div style="font-size: 10px; color: #666; margin-top: 4px;">Caynana seni bu isimle çağıracak. (Küfür/Emoji Yasak)</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🎯 Kullanım Amacı (En az 1 tane) *</label>
+                <div class="checkbox-group" id="purposeGroup">
+                    <div class="cb-item" onclick="toggleCb(this)">Sohbet & Dertleşme</div>
+                    <div class="cb-item" onclick="toggleCb(this)">Alışveriş Tavsiyesi</div>
+                    <div class="cb-item" onclick="toggleCb(this)">Eğlence & Fal</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">✍️ Hakkımda (Opsiyonel)</label>
+                <textarea id="about" class="form-textarea" rows="2" placeholder="Kendinden kısaca bahset..." maxlength="140"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">⚽ Tuttuğun Takım (Opsiyonel)</label>
+                <input type="text" id="team" class="form-input" placeholder="Takım ismi...">
+            </div>
+
+            <div class="form-group" style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                    <label class="form-label">Konuşma Tarzı</label>
+                    <select id="style" class="form-select">
+                        <option value="direct">Direkt (Dobra)</option>
+                        <option value="soft">Yumuşak (Anaç)</option>
+                        <option value="funny">Umursamaz (Eğlenceli)</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label class="form-label">Bildirimler</label>
+                    <select id="notif" class="form-select">
+                        <option value="on">Açık</option>
+                        <option value="off">Kapalı</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="save-btn" onclick="saveProfile()">
+                <i class="fa-solid fa-check"></i> KAYDET VE BAŞLA
+            </button>
+
+        </div>
+    </div>
+
+    <script>
+        // Sayfa Yüklendiğinde
+        document.addEventListener('DOMContentLoaded', () => {
+            // LocalStorage'dan veriyi çek
+            const rawUser = localStorage.getItem("user_info");
+            if (!rawUser) {
+                // Giriş yapılmamışsa ana sayfaya at
+                alert("Önce giriş yapmalısın başkanım.");
+                window.location.href = "../index.html";
+                return;
+            }
+
+            const user = JSON.parse(rawUser);
+
+            // Alanları Doldur
+            document.getElementById('userAvatar').src = user.picture || "https://via.placeholder.com/100";
+            document.getElementById('userId').value = user.id || "Bilinmiyor";
+            
+            // Eğer daha önce kaydedilmiş hitap varsa doldur (İlerde backend'den gelirse)
+            if(user.hitap) document.getElementById('hitap').value = user.hitap;
+        });
+
+        // Checkbox Mantığı
+        function toggleCb(el) {
+            el.classList.toggle('selected');
+        }
+
+        // Kaydetme Fonksiyonu
+        function saveProfile() {
+            const hitap = document.getElementById('hitap').value.trim();
+            const purposes = document.querySelectorAll('#purposeGroup .cb-item.selected');
+            
+            // 1. ZORUNLU ALAN KONTROLÜ
+            if (!hitap) {
+                alert("Caynana sana ne diyecek? Hitap şeklini boş bırakma.");
+                return;
+            }
+            if (purposes.length === 0) {
+                alert("En az bir kullanım amacı seçmelisin başkanım.");
+                return;
+            }
+
+            // 2. VERİYİ HAZIRLA
+            const profileData = {
+                hitap: hitap,
+                purposes: Array.from(purposes).map(el => el.innerText),
+                about: document.getElementById('about').value.trim(),
+                team: document.getElementById('team').value.trim(),
+                style: document.getElementById('style').value,
+                notification: document.getElementById('notif').value
+            };
+
+            console.log("Kaydedilecek Profil:", profileData);
+
+            // 3. BACKEND'E GÖNDER (Şimdilik LocalStorage güncelle ve ana sayfaya git)
+            // İlerde buraya: await fetch('/api/profile', ...) gelecek.
+            
+            let currentUser = JSON.parse(localStorage.getItem("user_info"));
+            currentUser = { ...currentUser, ...profileData }; // Verileri birleştir
+            localStorage.setItem("user_info", JSON.stringify(currentUser));
+
+            // Buton Efekti
+            const btn = document.querySelector('.save-btn');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Ayarlanıyor...`;
+            
+            setTimeout(() => {
+                // Ana Sayfaya Dön (Profil Tamamlandı)
+                window.location.href = "../index.html";
+            }, 1000);
+        }
+    </script>
+
+</body>
+</html>
