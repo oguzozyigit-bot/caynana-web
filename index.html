@@ -12,8 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
-    <link rel="stylesheet" href="css/app.css?v=40.0">
+    <link rel="stylesheet" href="css/app.css?v=50.0">
 </head>
 <body>
 
@@ -27,28 +26,11 @@
                     <div class="brand-logo"><i class="fa-solid fa-bolt"></i> CAYNANA</div>
                     <div class="brand-slogan">Yapay Zekânın Geleneksel Aklı</div>
                 </div>
-
                 <div class="top-actions">
-                    <div class="action-btn" style="border-color:var(--primary); color:var(--primary);" onclick="openPersonaModal()">
-                        <i class="fa-solid fa-masks-theater"></i>
-                    </div>
-                    
-                    <div class="action-btn" id="voiceToggleBtn" onclick="toggleVoice()">
-                        <i class="fa-solid fa-volume-xmark" id="voiceIcon"></i>
-                    </div>
-                    
-                    <div class="action-btn relative">
-                        <i class="fa-solid fa-bell"></i>
-                        <span class="notif-dot"></span>
-                    </div>
-                    
-                    <div class="action-btn" onclick="clearCurrentChat()">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </div>
-                    
-                    <div class="action-btn" onclick="openDrawer()">
-                        <i class="fa-solid fa-bars"></i>
-                    </div>
+                    <div class="action-btn" style="color:var(--primary); border-color:var(--primary);" onclick="openPersonaModal()"><i class="fa-solid fa-masks-theater"></i></div>
+                    <div class="action-btn" id="voiceToggleBtn" onclick="toggleVoice()"><i class="fa-solid fa-volume-high"></i></div>
+                    <div class="action-btn" onclick="clearCurrentChat()"><i class="fa-solid fa-trash-can"></i></div>
+                    <div class="action-btn" onclick="openDrawer()"><i class="fa-solid fa-bars"></i></div>
                 </div>
             </div>
         </div>
@@ -64,34 +46,31 @@
             <div id="heroContent">
                 <div id="heroTitle">Caynana ile<br>Dertleş.</div>
                 <div id="heroDesc">Hadi gel evladım, anlat bakalım.</div>
-                <div id="caynanaSpeaking"><i class="fa-solid fa-comment-dots"></i> Caynana Dinliyor...</div>
+                <div id="caynanaSpeaking"><i class="fa-solid fa-comment-dots"></i> Dinliyor...</div>
             </div>
             <div id="chatContainer"></div>
         </div>
 
         <div id="bottom">
             <div id="dietActions" style="display:none; gap:10px; margin-bottom:10px; justify-content:center;">
-                <button class="pc-btn-mini" onclick="generateDietList(true)"><i class="fa-solid fa-rotate"></i> Yeni Öneri</button>
-                <button class="pc-btn-mini" style="background:#333; color:#fff;" onclick="showBmiStatus()"><i class="fa-solid fa-heart-pulse"></i> Durumum</button>
+                <button class="pc-btn-mini" onclick="generateDietList()"><i class="fa-solid fa-rotate"></i> Liste Oluştur</button>
             </div>
             <div id="astroActions" style="display:none; gap:10px; margin-bottom:10px; justify-content:center;">
-                <button class="pc-btn-mini" style="background:#4a3b69; border:1px solid #7986CB;" onclick="showZodiacFeatures()">
-                    <i class="fa-solid fa-star"></i> Burç Özellikleri
-                </button>
+                <button class="pc-btn-mini" style="background:#4a3b69;" onclick="loadAstroContent()"><i class="fa-solid fa-star"></i> Yorumla</button>
             </div>
 
             <div class="input-wrapper" id="stdInputArea">
-                <div class="cam-btn" id="camBtn"><i class="fa-solid fa-camera"></i></div>
+                <div class="cam-btn"><i class="fa-solid fa-camera"></i></div>
                 <div class="search-bar"><input type="text" id="text" placeholder="Bir şey yaz..." autocomplete="off"></div>
-                <div class="cam-btn" id="micBtn" style="margin-left: 5px; background: #222;"><i class="fa-solid fa-microphone"></i></div>
                 <button id="sendBtn"><i class="fa-solid fa-location-arrow"></i></button>
             </div>
             
             <div class="fal-input-area" id="falInputArea" style="display:none;">
-                <div class="big-cam-btn" id="falCamBtn"><i class="fa-solid fa-camera fa-2x"></i><span>Fincanı Çek</span></div>
+                <div class="big-cam-btn"><i class="fa-solid fa-camera fa-2x"></i><span>Fincanı Çek</span></div>
             </div>
 
             <div id="dockContainer"><div id="dock"></div></div>
+            
             <div class="footer-sign">@CaynanaAI By Ozyigits</div>
             <div class="oz-lines"><span id="line1"></span><span id="line2"></span><span id="line3"></span><span id="line4"></span></div>
         </div>
@@ -103,24 +82,21 @@
                 <h2>Menü</h2>
                 <div class="close-btn" onclick="closeDrawer()"><i class="fa-solid fa-xmark"></i></div>
             </div>
-            <div class="menu-list"></div> <div class="menu-footer">
-                <span style="color: var(--primary); font-size: 12px; display:block;">@CaynanaAI</span>
-                <span style="font-size: 10px; color: #666;">By Ozyigits</span>
-            </div>
+            <div class="menu-list"></div>
+            <div class="menu-footer"><span>v50.0 - Stable</span></div>
         </div>
     </div>
 
     <div id="personaModal" class="modalMask" style="justify-content:center; align-items:center;">
-        <div class="authBox" style="border-color:var(--primary);">
+        <div class="authBox" style="border:1px solid var(--primary);">
             <div class="close-btn-abs" onclick="document.getElementById('personaModal').style.display='none'"><i class="fa-solid fa-xmark"></i></div>
-            <h3 style="color:var(--primary); margin-bottom:15px; text-align:center;"><i class="fa-solid fa-masks-theater"></i> Kaynana Ruh Hali</h3>
+            <h3 style="color:var(--primary); text-align:center; margin-bottom:15px;">Ruh Hali Seç</h3>
             <div class="persona-grid">
-                <div class="persona-option" onclick="changePersona('anne')">🥰 Anne Tadında</div>
-                <div class="persona-option selected" onclick="changePersona('normal')">👵 Normal Kaynana</div>
+                <div class="persona-option" onclick="changePersona('anne')">🥰 Anne</div>
+                <div class="persona-option selected" onclick="changePersona('normal')">👵 Normal</div>
                 <div class="persona-option" onclick="changePersona('huysuz')">😒 Huysuz</div>
                 <div class="persona-option" onclick="changePersona('sinirli')">😡 Sinirli</div>
-                <div class="persona-option" onclick="changePersona('yasli')">🧓 Unutkan/Yaşlı</div>
-                <div class="persona-option" onclick="changePersona('dobra')">🤬 Dobra/Küfürbaz</div>
+                <div class="persona-option" onclick="changePersona('dobra')">🤬 Dobra</div>
             </div>
         </div>
     </div>
@@ -128,17 +104,13 @@
     <div id="authModal" class="modalMask">
         <div class="authBox" style="text-align: center;">
             <div class="close-btn-abs" onclick="document.getElementById('authModal').style.display='none'"><i class="fa-solid fa-xmark"></i></div>
-            <h2 style="margin-bottom: 5px; color:#fff;">Hoş Geldin</h2>
+            <h2 style="color:#fff;">Giriş Yap</h2>
             <div class="social-buttons">
-                <button class="social-btn btn-google" onclick="handleGoogleLogin()"><i class="fa-brands fa-google"></i> Google ile Bağlan</button>
-                <button class="social-btn btn-apple"><i class="fa-brands fa-apple"></i> Apple ile Bağlan</button>
+                <button class="social-btn btn-google" onclick="handleGoogleLogin()"><i class="fa-brands fa-google"></i> Google</button>
             </div>
-            <div class="auth-note" style="margin-top: 25px;">Sözleşmeyi kabul etmiş sayılırsınız.</div>
         </div>
     </div>
 
-    <input type="file" id="fileInput" style="display: none;" accept="image/*">
-    
-    <script src="js/main.js?v=40.0"></script>
+    <script src="js/main.js?v=50.0"></script>
 </body>
 </html>
