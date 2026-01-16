@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <link rel="stylesheet" href="css/app.css?v=23.0">
+    <link rel="stylesheet" href="css/app.css?v=25.0">
 </head>
 <body>
 
@@ -24,10 +24,12 @@
                 <div class="menu-btn" onclick="document.getElementById('drawerMask').style.display='flex'">
                     <i class="fa-solid fa-bars"></i>
                 </div>
+                
                 <div class="brand-container">
                     <div class="brand"><i class="fa-solid fa-bolt"></i> CAYNANA</div>
                     <div class="brand-slogan">Yapay Zekânın Geleneksel Aklı</div>
                 </div>
+
                 <div class="topActions">
                     <div class="menu-btn relative" id="notifBtn"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></div>
                     <div class="menu-btn" id="voiceToggleBtn"><i class="fa-solid fa-volume-xmark" id="voiceIcon"></i></div>
@@ -72,52 +74,67 @@
     </div>
 
     <div id="drawerMask" class="modalMask">
-    <div id="drawer">
-        <div class="drawer-header">
-            <h2>Menü</h2>
-            <div class="close-btn" onclick="document.getElementById('drawerMask').style.display='none'">
-                <i class="fa-solid fa-xmark"></i>
+        <div id="drawer">
+            <div class="drawer-header">
+                <h2>Menü</h2>
+                <div class="close-btn" onclick="document.getElementById('drawerMask').style.display='none'">
+                    <i class="fa-solid fa-xmark"></i>
+                </div>
             </div>
-        </div>
-        <div class="menu-list">
-            <div class="menu-item highlight" onclick="document.getElementById('authModal').style.display='flex'">
-                <i class="fa-solid fa-user-plus"></i> Giriş Yap / Kayıt Ol
+            <div class="menu-list">
+                <div class="menu-item highlight" onclick="document.getElementById('authModal').style.display='flex'">
+                    <i class="fa-solid fa-user-plus"></i> Giriş Yap / Üye Ol
+                </div>
+                
+                <a href="pages/hakkimizda.html" class="menu-item link-item">
+                    <i class="fa-solid fa-circle-info"></i> Hakkımızda
+                </a>
+                <a href="pages/faq.html" class="menu-item link-item">
+                    <i class="fa-solid fa-circle-question"></i> S.S.S
+                </a>
+                <a href="pages/iletisim.html" class="menu-item link-item">
+                    <i class="fa-solid fa-envelope"></i> İletişim
+                </a>
+                <a href="pages/gizlilik.html" class="menu-item link-item">
+                    <i class="fa-solid fa-shield-halved"></i> Gizlilik Politikası
+                </a>
             </div>
 
-            <a href="pages/hakkimizda.html" class="menu-item link-item">
-                <i class="fa-solid fa-circle-info"></i> Hakkımızda
-            </a>
-            
-            <a href="pages/faq.html" class="menu-item link-item">
-                <i class="fa-solid fa-circle-question"></i> S.S.S
-            </a>
-            
-            <a href="pages/iletisim.html" class="menu-item link-item">
-                <i class="fa-solid fa-envelope"></i> İletişim
-            </a>
-
-            <a href="pages/gizlilik.html" class="menu-item link-item">
-                <i class="fa-solid fa-shield-halved"></i> Gizlilik Politikası
-            </a>
+            <div class="menu-footer">
+                <span style="color: var(--primary); font-size: 12px; display:block;">@CaynanaAI</span>
+                <span style="font-size: 10px; color: #666;">By Ozyigits</span>
+            </div>
         </div>
-        <div class="menu-footer">v24.1 System</div>
     </div>
-</div>
 
     <div id="authModal" class="modalMask">
-        <div class="authBox">
-            <div class="modalHeader">Giriş Yap</div>
-            <input type="text" id="loginEmail" class="authInput" placeholder="E-posta">
-            <input type="password" id="loginPass" class="authInput" placeholder="Şifre">
-            <button class="pc-btn" id="doLoginBtn">Giriş Yap</button>
-            <div style="margin-top:10px; font-size:12px; text-align:center; color:#888;" id="goRegister">Kayıt Ol</div>
+        <div class="authBox" style="text-align: center;">
+            <div class="close-btn-abs" onclick="document.getElementById('authModal').style.display='none'">
+                <i class="fa-solid fa-xmark"></i>
+            </div>
+            
+            <h2 style="margin-bottom: 5px; color:#fff;">Hoş Geldin</h2>
+            <p style="font-size: 12px; color: #aaa; margin-bottom: 25px;">Devam etmek için bir yöntem seç.</p>
+
+            <div class="social-buttons">
+                <button class="social-btn btn-google">
+                    <i class="fa-brands fa-google"></i> Google ile Bağlan
+                </button>
+                
+                <button class="social-btn btn-apple">
+                    <i class="fa-brands fa-apple"></i> Apple ile Bağlan
+                </button>
+            </div>
+
+            <div class="auth-note" style="margin-top: 20px;">
+                Giriş yaparak <b>Kullanıcı Sözleşmesi</b>'ni kabul etmiş sayılırsınız.
+            </div>
         </div>
     </div>
 
     <input type="file" id="fileInput" style="display: none;" accept="image/*">
 
-    <script src="js/main.js?v=23.0"></script>
+    <script type="module" src="js/main.js?v=25.0"></script>
 
 </body>
 </html>
-
