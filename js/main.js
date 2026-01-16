@@ -1,11 +1,10 @@
-/* js/main.js (v51.0 - MENU, COLORS & PROPER BUTTON) */
+/* js/main.js (v55.0 - GOLD MASTER) */
 
 // 1. AYARLAR
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const GOOGLE_CLIENT_ID = "530064560706-03ga0q36t703ve7gmahr98.apps.googleusercontent.com"; 
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
-// 🔥 MODÜL RENKLERİ VE İKONLARI 🔥
 const MODE_CONFIG = {
     'chat': { title: "Caynana ile<br>Dertleş.", desc: "Hadi gel evladım, anlat bakalım.", color: "#E6C25B", icon: "fa-comments", showCam: false },
     'shopping': { title: "Paranı Çarçur Etme<br>Bana Sor.", desc: "En sağlamını bulurum.", color: "#81C784", icon: "fa-bag-shopping", showCam: true },
@@ -26,10 +25,10 @@ window.currentAppMode = 'chat';
 
 // 2. BAŞLATMA
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v51.0 Ready");
+    console.log("🚀 Caynana v55.0 GOLD Ready");
     initDock();
     setAppMode('chat');
-    updateUIForUser();
+    updateUIForUser(); // Menüyü ve Google butonunu ayarlar
     
     if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID) {
         try { google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleResponse, auto_select: false }); } catch(e) {}
@@ -72,8 +71,7 @@ async function sendMessage() {
 
         typeWriter(ans, () => {
             badge.style.display = "none";
-            
-            // 🔥 YENİ BUTON İSMİ VE YAPISI 🔥
+            // BUTON ALTA EKLENİYOR
             const rows = document.querySelectorAll('.msg-row.bot');
             const lastRow = rows[rows.length - 1];
             if(lastRow) {
@@ -95,7 +93,6 @@ async function sendMessage() {
 // 4. SES İŞLEMİ
 window.fetchAndPlayAudio = async () => {
     if(!lastBotResponseText) return;
-    
     const btns = document.querySelectorAll('.speak-btn-inline');
     const btn = btns[btns.length - 1];
     if(btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Hazırlanıyor...`;
@@ -116,7 +113,7 @@ window.fetchAndPlayAudio = async () => {
         } else { throw new Error("Ses boş"); }
     } catch(e) {
         if(btn) btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Hata`;
-        alert("Backend gelince konuşacağım evladım. 😅");
+        alert("Evde elektrik yokken ütü çalışmaz ya, backend gelince konuşacağım evladım. 😅");
     }
 };
 
@@ -135,7 +132,7 @@ function playAudioRaw(b64) {
 function initDock() {
     const dock = document.getElementById('dock');
     dock.innerHTML = '';
-    // 🔥 RENKLİ İKONLAR İÇİN STYLE EKLENDİ 🔥
+    // İkon Renkleri
     MODULE_ORDER.forEach(key => {
         const color = MODE_CONFIG[key].color;
         dock.innerHTML += `<div class="dock-item" onclick="setAppMode('${key}')">
@@ -157,11 +154,18 @@ function setAppMode(m) {
     img.style.opacity = '0';
     setTimeout(() => { img.src = `./images/hero-${m}.png`; img.onload = () => img.style.opacity = '1'; }, 200);
 
-    ['falInputArea','stdInputArea','dietActions','astroActions'].forEach(i=>document.getElementById(i).style.display='none');
+    ['falInputArea','stdInputArea','dietActions','astroActions'].forEach(i=>{ const el = document.getElementById(i); if(el) el.style.display='none'; });
     if(c.specialInput === 'fal') document.getElementById('falInputArea').style.display='flex';
     else document.getElementById('stdInputArea').style.display='flex';
     if(c.specialInput === 'diet') document.getElementById('dietActions').style.display='flex';
     if(c.specialInput === 'astro') document.getElementById('astroActions').style.display='flex';
+
+    // 🔥 ALT ÇİZGİLERİ RENKLENDİR 🔥
+    const idx = MODULE_ORDER.indexOf(m);
+    for(let i=0; i<4; i++) {
+        const line = document.querySelector(`.oz-lines span:nth-child(${i+1})`);
+        if(line) line.style.background = MODE_CONFIG[MODULE_ORDER[(idx+i)%9]].color;
+    }
 
     document.getElementById('chatContainer').innerHTML = '';
 }
@@ -171,26 +175,50 @@ function updateUIForUser() {
     const menu = document.querySelector('.menu-list');
     const footer = document.querySelector('.menu-footer');
     
-    // 🔥 MENÜ LİNKLERİ GERİ GELDİ 🔥
-    let menuHTML = `
-        <a href="pages/profil.html" class="menu-item" style="border:1px solid var(--primary);"><i class="fa-solid fa-user-pen"></i> Profil</a>
-        <a href="pages/sss.html" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
-        <a href="pages/gizlilik.html" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik</a>
-        <a href="pages/iletisim.html" class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
-    `;
-
     if(r) {
+        // GİRİŞ VAR
         const u = JSON.parse(r);
-        document.getElementById('userInfoBar').classList.add('visible');
-        document.getElementById('headerHitap').innerText = u.hitap.toUpperCase();
-        document.getElementById('headerAvatar').src = u.picture || PLACEHOLDER_IMG;
-        menuHTML += `<div class="menu-item" onclick="window.handleLogout()" style="color:#f44;"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</div>`;
+        const bar = document.getElementById('userInfoBar');
+        if(bar) {
+            bar.classList.add('visible');
+            document.getElementById('headerHitap').innerText = (u.hitap || "MİSAFİR").toUpperCase();
+            document.getElementById('headerAvatar').src = u.picture || PLACEHOLDER_IMG;
+        }
+        
+        if(menu) {
+            menu.innerHTML = `
+                <div style="text-align:center; margin-bottom:15px;">
+                    <img src="${u.picture || PLACEHOLDER_IMG}" style="width:60px; height:60px; border-radius:50%; border:2px solid var(--primary);">
+                    <div style="color:#fff; font-weight:700; margin-top:5px;">${u.hitap}</div>
+                </div>
+                <a href="pages/profil.html" class="menu-item" style="border:1px solid var(--primary);"><i class="fa-solid fa-user-pen"></i> Profil Düzenle</a>
+                <a href="pages/sss.html" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
+                <a href="pages/gizlilik.html" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik</a>
+                <a href="pages/iletisim.html" class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
+                <div class="menu-item" onclick="window.handleLogout()" style="color:#f44; margin-top:15px;"><i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</div>
+            `;
+        }
     } else {
-        menuHTML += `<div class="menu-item" onclick="document.getElementById('authModal').style.display='flex'" style="background:var(--primary); color:#000;">Giriş Yap</div>`;
+        // GİRİŞ YOK
+        const bar = document.getElementById('userInfoBar');
+        if(bar) bar.classList.remove('visible');
+
+        if(menu) {
+            menu.innerHTML = `
+                <div style="text-align:center; padding:20px; color:#ccc; font-size:13px;">
+                    Daha iyi hizmet için giriş yapman lazım evladım.
+                </div>
+                <div class="menu-item" onclick="window.handleGoogleLogin()" style="background:#fff; color:#000; text-align:center; justify-content:center; cursor:pointer;">
+                    <i class="fa-brands fa-google"></i> Google ile Bağlan
+                </div>
+                <a href="pages/sss.html" class="menu-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
+                <a href="pages/gizlilik.html" class="menu-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik</a>
+                <a href="pages/iletisim.html" class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
+            `;
+        }
     }
     
-    menu.innerHTML = menuHTML;
-    footer.innerHTML = `<span>@CaynanaAI By Ozyigits</span>`;
+    if(footer) footer.innerHTML = `<span>@CaynanaAI By Ozyigits</span>`;
 }
 
 // Global Binding
@@ -200,9 +228,8 @@ window.openPersonaModal = () => document.getElementById('personaModal').style.di
 window.changePersona = (p) => { currentPersona=p; document.getElementById('personaModal').style.display='none'; addBubble(`Mod: ${p.toUpperCase()}`, 'bot'); };
 window.clearCurrentChat = () => { document.getElementById('chatContainer').innerHTML=''; };
 window.handleLogout = () => { localStorage.clear(); window.location.reload(); };
-window.handleGoogleLogin = () => google.accounts.id.prompt();
-window.toggleVoice = () => alert("Sesi her mesajda 'Dinle' butonuyla açabilirsin.");
-window.triggerAuth = (m) => { addBubble(m, 'bot'); document.getElementById('authModal').style.display='flex'; };
+window.handleGoogleLogin = () => { if(typeof google === 'undefined') { alert("Google script yüklenemedi."); return; } google.accounts.id.prompt(); };
+window.triggerAuth = (m) => { addBubble(m, 'bot'); window.openDrawer(); };
 window.generateDietList = () => addBubble("Diyet listesi hazırlanıyor...", 'bot');
 window.loadAstroContent = () => addBubble("Yıldızlara bakılıyor...", 'bot');
 
