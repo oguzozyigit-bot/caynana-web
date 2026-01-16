@@ -72,15 +72,37 @@
     </div>
 
     <div id="drawerMask" class="modalMask">
-        <div id="drawer">
-            <div class="drawer-header"><h2>Menü</h2><div class="close-btn" onclick="document.getElementById('drawerMask').style.display='none'"><i class="fa-solid fa-xmark"></i></div></div>
-            <div class="menu-list">
-                <div class="menu-item highlight" onclick="document.getElementById('authModal').style.display='flex'"><i class="fa-solid fa-user-plus"></i> Giriş Yap / Kayıt Ol</div>
-                <div class="menu-item"><i class="fa-solid fa-circle-info"></i> Hakkımızda</div>
-                <div class="menu-item"><i class="fa-solid fa-envelope"></i> İletişim</div>
+    <div id="drawer">
+        <div class="drawer-header">
+            <h2>Menü</h2>
+            <div class="close-btn" onclick="document.getElementById('drawerMask').style.display='none'">
+                <i class="fa-solid fa-xmark"></i>
             </div>
         </div>
+        <div class="menu-list">
+            <div class="menu-item highlight" onclick="document.getElementById('authModal').style.display='flex'">
+                <i class="fa-solid fa-user-plus"></i> Giriş Yap / Kayıt Ol
+            </div>
+
+            <a href="pages/hakkimizda.html" class="menu-item link-item">
+                <i class="fa-solid fa-circle-info"></i> Hakkımızda
+            </a>
+            
+            <a href="pages/faq.html" class="menu-item link-item">
+                <i class="fa-solid fa-circle-question"></i> S.S.S
+            </a>
+            
+            <a href="pages/iletisim.html" class="menu-item link-item">
+                <i class="fa-solid fa-envelope"></i> İletişim
+            </a>
+
+            <a href="pages/gizlilik.html" class="menu-item link-item">
+                <i class="fa-solid fa-shield-halved"></i> Gizlilik Politikası
+            </a>
+        </div>
+        <div class="menu-footer">v24.1 System</div>
     </div>
+</div>
 
     <div id="authModal" class="modalMask">
         <div class="authBox">
@@ -98,3 +120,4 @@
 
 </body>
 </html>
+
