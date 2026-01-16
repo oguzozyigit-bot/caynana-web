@@ -10,88 +10,57 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
-    <link rel="stylesheet" href="css/app.css?v=36.0">
+    <link rel="stylesheet" href="css/app.css?v=37.0">
 
     <style>
-        /* --- ACİL MÜDAHALE CSS (SIKIŞIKLIK GİDERİCİ) --- */
+        /* --- TOP BAR (RADİKAL DÜZENLEME) --- */
         .topbarGlass {
             display: flex; 
-            justify-content: space-between; /* İki uca yasla */
+            justify-content: space-between; 
             align-items: center;
-            padding: 5px 8px; /* Kenar boşluklarını azalttım */
+            padding: 5px 8px; 
             height: 60px;
             width: 100%;
             box-sizing: border-box;
-            gap: 5px; /* Logo ve ikonlar arası minik boşluk */
+            overflow: hidden; /* Taşmayı engelle */
         }
         
-        /* SOL: LOGO & SLOGAN (Kompakt) */
+        /* SOL: LOGO (Daralabilir) */
         .brand-container { 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            /* Flex: 1 yerine Flex: 0 yaptık, sadece kapladığı yer kadar olsun */
-            flex: 0 1 auto; 
-            min-width: 0; /* Taşarsa nokta koy */
-            margin-right: auto; /* Sağa yasla ikonları */
+            display: flex; flex-direction: column; justify-content: center; 
+            flex: 1; min-width: 0; margin-right: 5px;
         }
-        
         .brand-logo { 
-            font-size: 16px; /* 18'den 16'ya indirdik */
-            font-weight: 900; 
-            color: #fff; 
-            line-height: 1; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis;
+            font-size: 16px; font-weight: 900; color: #fff; line-height: 1; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
-        
-        .brand-logo i { color: var(--primary); margin-right: 3px; font-size: 14px; }
-        
         .brand-slogan { 
-            font-size: 8px; /* 9'dan 8'e indirdik */
-            color: #aaa; 
-            margin-top: 2px; 
-            font-weight: 500; 
-            white-space: nowrap; 
-            overflow: hidden; 
-            text-overflow: ellipsis;
+            font-size: 8px; color: #aaa; margin-top: 2px; font-weight: 500; 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
-        /* SAĞ: İKON GRUBU (Sıkı Düzen) */
+        /* SAĞ: İKONLAR (Sabit, Küçültülmüş) */
         .top-actions { 
-            display: flex; 
-            align-items: center; 
-            gap: 4px; /* İkonlar birbirine yakın olsun */
-            flex-shrink: 0; /* Asla büzüşmesin */
+            display: flex; align-items: center; 
+            gap: 3px; /* Araları iyice sıktık */
+            flex-shrink: 0; 
         }
         
         .action-btn { 
-            width: 30px; /* 34'ten 30'a indirdik */
-            height: 30px; 
-            border-radius: 50%; 
-            background: rgba(0,0,0,0.4); 
+            width: 28px; height: 28px; /* İdeal mobil boyutu */
+            border-radius: 50%; background: rgba(0,0,0,0.4); 
             border: 1px solid rgba(255,255,255,0.15);
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: #fff; 
-            font-size: 12px; /* İkon fontunu küçülttük */
-            cursor: pointer; 
-            backdrop-filter: blur(5px);
-            transition: 0.2s;
+            display: flex; align-items: center; justify-content: center; 
+            color: #fff; font-size: 12px; cursor: pointer;
         }
         .action-btn:active { transform: scale(0.9); background: var(--primary); color: #000; }
         
-        /* Renkli İkonlar */
         .mode-indicator { background: var(--primary); color: #000; border: none; font-weight:bold; }
         .commentary-btn { border-color: var(--primary); color: var(--primary); }
-        .notif-dot { position: absolute; top: 5px; right: 5px; width: 6px; height: 6px; background: red; border-radius: 50%; display: none; border:1px solid #fff; }
+        .notif-dot { position: absolute; top: 5px; right: 5px; width: 5px; height: 5px; background: red; border-radius: 50%; display: none; }
 
-        /* --- USER INFO BAR (AYNI) --- */
+        /* --- DİĞER STİLLER (AYNI) --- */
         #userInfoBar { position: fixed; top: 60px; left: 0; right: 0; z-index: 80; display: flex; align-items: center; justify-content: center; padding: 5px 0; pointer-events: none; opacity: 0; transition: 0.5s; transform: translateY(-20px); }
         #userInfoBar.visible { opacity: 1; transform: translateY(0); }
         .user-pill { background: rgba(20, 20, 20, 0.9); backdrop-filter: blur(10px); border: 1px solid var(--primary); padding: 4px 15px 4px 4px; border-radius: 30px; display: flex; align-items: center; gap: 8px; pointer-events: auto; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
@@ -165,7 +134,6 @@
                 <button class="pc-btn-mini" onclick="window.generateDietList(true)"><i class="fa-solid fa-rotate"></i> Yeni Öneri</button>
                 <button class="pc-btn-mini" style="background:#333; color:#fff;" onclick="window.showBmiStatus()"><i class="fa-solid fa-heart-pulse"></i> Durumum</button>
             </div>
-            
             <div id="astroActions" style="display:none; gap:10px; margin-bottom:10px; justify-content:center;">
                 <button class="pc-btn-mini" style="background:#4a3b69; border:1px solid #7986CB;" onclick="window.showZodiacFeatures()">
                     <i class="fa-solid fa-star"></i> Burç Özellikleri
@@ -178,7 +146,6 @@
                 <div class="cam-btn" id="micBtn" style="margin-left: 5px; background: #222;"><i class="fa-solid fa-microphone"></i></div>
                 <button id="sendBtn"><i class="fa-solid fa-location-arrow"></i></button>
             </div>
-            
             <div class="fal-input-area" id="falInputArea" style="display:none;">
                 <div class="big-cam-btn" id="falCamBtn"><i class="fa-solid fa-camera fa-2x"></i><span>Fincanı Çek</span></div>
             </div>
@@ -218,20 +185,15 @@
         <div class="authBox" style="text-align: center;">
             <div class="close-btn-abs" onclick="document.getElementById('authModal').style.display='none'"><i class="fa-solid fa-xmark"></i></div>
             <h2 style="margin-bottom: 5px; color:#fff;">Hoş Geldin</h2>
-            <p style="font-size: 12px; color: #aaa; margin-bottom: 25px;">Devam etmek için bir yöntem seç.</p>
             <div class="social-buttons">
                 <button class="social-btn btn-google" onclick="window.handleGoogleLogin()"><i class="fa-brands fa-google"></i> Google ile Bağlan</button>
                 <button class="social-btn btn-apple"><i class="fa-brands fa-apple"></i> Apple ile Bağlan</button>
             </div>
-            <div class="auth-note" style="margin-top: 25px;">
-                Giriş yaparak <a href="pages/sozlesme.html" class="auth-link">Kullanıcı Sözleşmesi</a>'ni kabul etmiş sayılırsınız.
-            </div>
+            <div class="auth-note" style="margin-top: 25px;">Giriş yaparak <a href="pages/sozlesme.html" class="auth-link">Kullanıcı Sözleşmesi</a>'ni kabul etmiş sayılırsınız.</div>
         </div>
     </div>
 
     <input type="file" id="fileInput" style="display: none;" accept="image/*">
-    
-    <script type="module" src="js/main.js?v=36.0"></script>
+    <script type="module" src="js/main.js?v=37.0"></script>
 </body>
 </html>
-
