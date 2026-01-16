@@ -1,4 +1,4 @@
-/* js/main.js (v26.3 - FINAL STABLE & DEBUG) */
+/* js/main.js (v26.4 - ID TOKEN / JWT STRATEGY) */
 
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
@@ -9,7 +9,6 @@ const GOOGLE_CLIENT_ID = "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.go
 let isBusy = false;
 const chatHistory = {};
 
-// MOD YAPILANDIRMASI
 const MODE_CONFIG = {
     'chat': { title: "Caynana ile<br>Dertleş.", desc: "Hadi gel evladım, anlat bakalım.", color: "#E6C25B", icon: "fa-comments", welcome: "Ooo hoş geldin evladım! Gözüm yollarda kaldı. Gel otur şöyle, anlat bakalım derdin ne?" },
     'shopping': { title: "Paranı Çarçur Etme<br>Bana Sor.", desc: "En sağlamını bulurum.", color: "#81C784", icon: "fa-bag-shopping", welcome: "Aman evladım, paranı sokağa atma. Ne lazım söyle, en uygununu bulayım sana." },
@@ -24,9 +23,23 @@ const MODE_CONFIG = {
 const MODULE_ORDER = ['chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'];
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v26.3 Started (Access Token Mode)");
+    console.log("🚀 Caynana v26.4 Started (ID Token Mode)");
     initDock();
     setAppMode('chat');
+    
+    // Google Kütüphanesi Yüklendiğinde Başlat
+    if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.includes("YAPISTIR")) {
+        try {
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleGoogleResponse,
+                auto_select: false,
+                cancel_on_tap_outside: true
+            });
+            console.log("🟢 Google ID Servisi Hazır");
+        } catch(e) { console.error("Google Init Hatası:", e); }
+    }
+
     document.getElementById("sendBtn").addEventListener("click", sendMessage);
     document.getElementById("text").addEventListener("keydown", (e) => { if(e.key==="Enter") sendMessage(); });
 });
@@ -86,7 +99,6 @@ function updateFooterBars(currentMode) {
     }
 }
 
-/* ... CHAT ... */
 async function sendMessage() {
     if(isBusy) return;
     const input = document.getElementById("text");
@@ -194,47 +206,45 @@ window.triggerAuth = (msg) => {
     document.getElementById("authModal").style.display = "flex";
 };
 
-// 🔥 GOOGLE LOGIN (UNIVERSAL ACCESS TOKEN) 🔥
+// 🔥 GOOGLE GİRİŞ (ID TOKEN / JWT) 🔥
 window.handleGoogleLogin = () => {
-    if (typeof google === 'undefined') { alert("Google servisi yüklenemedi. Lütfen sayfayı yenile."); return; }
+    if (typeof google === 'undefined') { alert("Google servisi yüklenemedi. Sayfayı yenile."); return; }
     if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("YAPISTIR")) { alert("JS Dosyasında Client ID eksik!"); return; }
 
     const btn = document.querySelector('.btn-google');
-    const oldText = btn.innerHTML;
-    
-    btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor...`;
-    btn.style.opacity = "0.7"; btn.disabled = true;
+    if(btn) {
+        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor...`;
+        btn.style.opacity = "0.7";
+        btn.disabled = true;
+    }
 
-    // initTokenClient: Access Token alır. Backend Secret gerektirmez.
-    const client = google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: 'email profile openid',
-        callback: (response) => {
-            if (response.access_token) {
-                console.log("🟢 Google Access Token Alındı...", response);
-                verifyGoogleTokenOnBackend(response.access_token, btn, oldText);
-            } else {
-                console.warn("Google girişi iptal edildi.");
-                resetGoogleBtn(btn, oldText);
+    // Google Penceresini Aç (Prompt)
+    google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            console.warn("Google Prompt açılamadı:", notification);
+            // Pencere açılmazsa manuel yedek yöntem yok, kullanıcıya bildir
+            if(btn) { 
+                btn.innerHTML = '<i class="fa-brands fa-google"></i> Tekrar Dene'; 
+                btn.disabled=false; 
+                btn.style.opacity="1"; 
             }
-        },
+        }
     });
-
-    // Pencereyi Aç
-    client.requestAccessToken();
 };
 
-async function verifyGoogleTokenOnBackend(accessToken, btn, oldText) {
-    try {
-        // Backend ne isterse istesin diye her formatı gönderiyoruz
-        const payload = { 
-            token: accessToken,
-            access_token: accessToken,
-            google_token: accessToken,
-            id_token: accessToken // Bazı sistemler buna da Access Token kabul eder
-        };
+// Google'dan Cevap Gelince Çalışır
+async function handleGoogleResponse(response) {
+    console.log("🟢 Google Credential (JWT) Alındı:", response);
+    const credential = response.credential; // Bu JWT Token'dır
 
-        console.log("📤 Backend'e giden payload:", payload);
+    try {
+        // Backend'e her ihtimale karşı tüm isimlerle gönderiyoruz
+        const payload = { 
+            token: credential,       
+            credential: credential,
+            id_token: credential,
+            google_token: credential 
+        };
 
         const res = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
             method: "POST",
@@ -244,13 +254,9 @@ async function verifyGoogleTokenOnBackend(accessToken, btn, oldText) {
 
         const data = await res.json();
         
-        // HATA YAKALAMA
         if (!res.ok) {
             console.error("🔴 SUNUCU HATASI:", data);
-            // Ekrana hatayı basıyoruz ki bilelim neymiş derdi
-            const errMsg = data.message || data.error || JSON.stringify(data);
-            alert("Sunucu Hatası: " + errMsg);
-            throw new Error(errMsg);
+            throw new Error(data.message || data.error || "Sunucu girişi reddetti.");
         }
 
         if (data.token) {
@@ -258,17 +264,23 @@ async function verifyGoogleTokenOnBackend(accessToken, btn, oldText) {
             localStorage.setItem("auth_token", data.token);
             
             document.getElementById('authModal').style.display = 'none';
-            addBotMessage("Ooo hoş geldin evladım! Girişin tamam, artık seni tanıyorum.");
+            addBotMessage("Ooo hoş geldin evladım! Girişini yaptım, artık seni tanıyorum.");
             
-            resetGoogleBtn(btn, oldText);
+            const btn = document.querySelector('.btn-google');
+            if(btn) {
+                btn.innerHTML = '<i class="fa-brands fa-google"></i> Google ile Bağlan';
+                btn.style.opacity = "1";
+                btn.disabled = false;
+            }
         }
 
     } catch (err) {
-        console.error(err);
-        resetGoogleBtn(btn, oldText);
+        alert("Giriş Yapılamadı: " + err.message);
+        const btn = document.querySelector('.btn-google');
+        if(btn) {
+            btn.innerHTML = '<i class="fa-brands fa-google"></i> Google ile Bağlan';
+            btn.style.opacity = "1";
+            btn.disabled = false;
+        }
     }
-}
-
-function resetGoogleBtn(btn, oldText) {
-    if(btn) { btn.innerHTML = oldText; btn.style.opacity = "1"; btn.disabled = false; }
 }
