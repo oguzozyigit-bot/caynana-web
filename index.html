@@ -9,127 +9,107 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <link rel="stylesheet" href="./css/app.css">
 </head>
 <body>
 
-    <div id="app">
-        <img id="heroImage" src="./images/hero-chat.png" alt="Hero">
+<div id="app">
+    <img id="heroImage" src="./images/hero-chat.png" alt="Hero">
+    <div id="heroOverlay"></div>
 
-        <div id="topbar">
-    <div class="topbarGlass">
-        <div class="brand-wrap">
-            <div class="brand">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> CAYNANA
-            </div>
-            <div class="brand-slogan">Yapay Zekânın Geleneksel Aklı</div>
-        </div>
-
-        <div class="topActions">
-            <div class="menu-btn" id="voiceToggleBtn">
-                <i class="fa-solid fa-volume-xmark" id="voiceIcon"></i>
-            </div>
-            <div class="menu-btn" id="personaBtn">
-                 <i class="fa-solid fa-masks-theater"></i>
-            </div>
-            <div class="menu-btn" id="notifIconBtn">
-                <i class="fa-solid fa-bell"></i>
-            </div>
-            <div class="menu-btn" id="menuBtn">
-                <i class="fa-solid fa-bars"></i>
-            </div>
-        </div>
-    </div>
-</div></div>
-
-        <div id="main">
-            <div id="heroContent">
-                <div id="heroTitle">Caynana ile<br>İki Lafın Belini Kır.</div>
-                <div id="heroDesc">Hadi gel evladım, biraz dertleşelim. Neler var neler yok?</div>
-            </div>
-
-            <div id="chatContainer">
+    <div id="topbar">
+        <div class="topbarGlass">
+            <div class="brand-container">
+                <div class="brand">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> CAYNANA
                 </div>
-        </div>
-
-        <div id="bottom">
-            <div id="suggestionText">✨ Naber Caynana?</div>
-
-            <div class="input-wrapper">
-                <div class="search-bar">
-                    <input type="text" id="text" placeholder="Bir şey yaz..." autocomplete="off">
-                </div>
-                <button id="sendBtn">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
+                <div class="brand-slogan">Yapay Zekânın Geleneksel Aklı</div>
             </div>
 
-            <div id="dock">
-                </div>
+            <div class="topActions">
+                <div class="menu-btn" id="voiceToggleBtn"><i class="fa-solid fa-volume-xmark" id="voiceIcon"></i></div>
+                <div class="menu-btn" id="personaBtn"><i class="fa-solid fa-masks-theater"></i></div>
+                <div class="menu-btn" id="notifIconBtn"><i class="fa-solid fa-bell"></i></div>
+                <div class="menu-btn" id="menuBtn"><i class="fa-solid fa-bars"></i></div>
+            </div>
         </div>
     </div>
 
-    <div id="personaModal" class="modalMask">
-        <div class="authBox"> <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="font-weight:900; font-size:20px;">Caynana Modunu Seç</h3>
-                <i class="fa-solid fa-xmark" id="personaClose" style="cursor:pointer; font-size:22px;"></i>
-            </div>
+    <div id="main">
+        <div id="heroContent">
+            <div id="heroTitle">Caynana ile<br>İki Lafın Belini Kır.</div>
+            <div id="heroDesc">Hadi gel evladım, biraz dertleşelim. Neler var neler yok?</div>
             
-            <div class="persona-opt selected" data-p="normal">
-                <span>👵 Görmüş Geçirmiş Kaynana</span>
-                <i class="fa-solid fa-check"></i>
-            </div>
-            <div class="persona-opt locked">
-                <span>🥰 Anne Tadında Kaynana</span>
-                <i class="fa-solid fa-lock"></i>
-            </div>
-            <div class="persona-opt locked">
-                <span>😠 Kaynana Gibi Kaynana</span>
-                <i class="fa-solid fa-lock"></i>
-            </div>
-            <div class="persona-opt locked">
-                <span>🤕 Bir Ayağı Çukurda Kaynana</span>
-                <i class="fa-solid fa-lock"></i>
-            </div>
-            <div class="persona-opt locked">
-                <span>😤 Herşeye Muhalif Kaynana</span>
-                <i class="fa-solid fa-lock"></i>
+            <div id="caynanaSpeaking" style="display:none;">
+                <i class="fa-solid fa-microphone-lines"></i> Caynana Konuşuyor...
             </div>
         </div>
+
+        <div id="chatContainer"></div>
     </div>
 
-    <div id="authModal" class="modalMask">
-        <div class="authBox">
-            <div style="text-align:right;">
-                <i class="fa-solid fa-xmark" id="authClose" style="cursor:pointer; font-size:22px;"></i>
+    <div id="bottom">
+        <div id="suggestionText">✨ Naber Caynana?</div>
+
+        <div class="input-wrapper">
+            <div class="cam-btn" id="camBtn"><i class="fa-solid fa-camera"></i></div>
+            <div class="search-bar">
+                <input type="text" id="text" placeholder="Bir şey yaz..." autocomplete="off">
             </div>
-            <h2 style="font-weight:900; font-size:24px; margin-bottom:10px;">Giriş Yap</h2>
-            <p style="font-size:14px; opacity:0.7; margin-bottom:20px;">Seni tanımam için giriş yapman lazım evladım.</p>
-            
-            <input type="email" id="email" class="authInput" placeholder="E-Posta Adresi">
-            <input type="password" id="password" class="authInput" placeholder="Şifre" style="margin-top:10px;">
-            
-            <button class="pc-btn" id="loginBtn" style="margin-top:15px; width:100%;">Giriş Yap</button>
-            <div id="authStatus" style="margin-top:10px; font-size:12px; color:orange;"></div>
+            <button id="sendBtn"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+
+        <div id="dock"></div>
+
+        <div class="footer-sign">@CaynanaAI By Ozyigits</div>
+        <div class="footer-year">2026</div>
+
+        <div class="oz-lines">
+            <span id="line1"></span>
+            <span id="line2"></span>
+            <span id="line3"></span>
+            <span id="line4"></span>
         </div>
     </div>
+</div>
 
-    <div id="drawerMask" class="modalMask" style="background:rgba(0,0,0,0.5); align-items:flex-start; justify-content:flex-end;">
-        <div id="drawer" style="width:75%; height:100%; background:#1a1a1a; padding:20px; color:#fff; transform:translateX(100%); transition:0.3s;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-                <h2 style="font-weight:900;">Menü</h2>
-                <i class="fa-solid fa-xmark" id="drawerClose" style="cursor:pointer; font-size:24px;"></i>
-            </div>
-            <div id="openProfileBtn" style="padding:15px 0; border-bottom:1px solid rgba(255,255,255,0.1); cursor:pointer;">👤 Profilim</div>
-            <div id="openLoginBtn" style="padding:15px 0; border-bottom:1px solid rgba(255,255,255,0.1); cursor:pointer;">🔑 Giriş Yap</div>
-        </div>
+<div id="drawerMask" class="modalMask">
+    <div id="drawer">
+        <div class="drawerHeader"><h2>Menü</h2><i class="fa-solid fa-xmark" id="drawerClose"></i></div>
+        <div class="drawerItem" id="openProfileBtn">👤 Profil & Hitap</div>
+        <div class="drawerItem" id="openLoginBtn">🔑 Giriş Yap</div>
     </div>
+</div>
 
-    <input type="file" id="fileInput" accept="image/*" style="display:none !important;" hidden>
+<div id="profileModal" class="modalMask">
+    <div class="authBox">
+        <div class="modalHeader"><h3>Profil</h3><i class="fa-solid fa-xmark" id="profileCloseX"></i></div>
+        <input type="text" id="pfName" class="authInput" placeholder="Adın?">
+        <select id="pfGender" class="authInput">
+            <option value="">Belirtme</option><option value="kiz">Kızım</option><option value="ogul">Oğlum</option>
+        </select>
+        <button class="pc-btn" id="profileSave" style="margin-top:10px;">Kaydet</button>
+    </div>
+</div>
 
-    <script type="module" src="./js/main.js"></script>
+<div id="authModal" class="modalMask">
+    <div class="authBox">
+        <div class="modalHeader"><h3>Giriş</h3><i class="fa-solid fa-xmark" id="authClose"></i></div>
+        <input type="email" id="email" class="authInput" placeholder="E-Posta">
+        <input type="password" id="password" class="authInput" placeholder="Şifre" style="margin-top:10px;">
+        <button class="pc-btn" id="loginBtn" style="margin-top:15px;">Giriş</button>
+    </div>
+</div>
 
+<div id="personaModal" class="modalMask">
+    <div class="authBox">
+        <div class="modalHeader"><h3>Mod Seç</h3><i class="fa-solid fa-xmark" id="personaClose"></i></div>
+        <div class="persona-opt selected" data-p="normal">👵 Normal</div>
+        <div class="persona-opt locked">🥰 Anne Tadında (Pro)</div>
+    </div>
+</div>
+
+<input type="file" id="fileInput" accept="image/*" hidden>
+<script type="module" src="./js/main.js"></script>
 </body>
 </html>
-
