@@ -1,62 +1,61 @@
-/* js/chat.js (v18.0 - TIMEOUT PROTECTED & FAIL-SAFE) */
+/* js/chat.js (v18.2 - FINAL SIMPLE) */
+/* - "Caynana yazıyor..." YOK
+   - Loading balonu YOK
+   - Mesajlar zeminsiz değil (CSS hallediyor)
+   - Double bind riskine karşı input+buton clone
+*/
 
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
 let isBusy = false;
 const ROLE_USER = "user";
-const ROLE_BOT = "bot"; // CSS ile uyumlu: .msg-bubble.bot
+const ROLE_BOT = "bot";
 
 export function initChat() {
-  console.log("Chat Modülü Aktif v18.0 (Fail-Safe)");
+  console.log("Chat Modülü Aktif v18.2 (FINAL SIMPLE)");
+
+  // Üst rozet: sadece "Dinliyor"
+  setCaynanaStatus();
+
   const sendBtn = document.getElementById("sendBtn");
   const input = document.getElementById("text");
-  
-  setCaynanaStatus("idle");
 
-  if (sendBtn) {
+  // ✅ Buton: clone (listener birikmesini bitirir)
+  if (sendBtn && sendBtn.parentNode) {
     const newBtn = sendBtn.cloneNode(true);
     sendBtn.parentNode.replaceChild(newBtn, sendBtn);
     newBtn.addEventListener("click", () => { if (!isBusy) sendMessage(); });
   }
-  
-  if (input) {
-    input.addEventListener("keydown", (e) => { 
-        if (e.key === "Enter" && !isBusy) sendMessage(); 
+
+  // ✅ Input: clone (KRİTİK — Enter iki kere gitmesin)
+  if (input && input.parentNode) {
+    const newInput = input.cloneNode(true);
+    input.parentNode.replaceChild(newInput, input);
+    newInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !isBusy) sendMessage();
     });
   }
 }
 
-function getToken() { return localStorage.getItem("auth_token") || ""; }
+function getToken() {
+  return localStorage.getItem("auth_token") || "";
+}
 
-/* UI Status Helper */
-function setCaynanaStatus(state) {
+// ✅ "Yazıyor" yok — rozet hep dinliyor
+function setCaynanaStatus() {
   const badge = document.getElementById("caynanaSpeaking");
-  const dot = document.querySelector("#notifBtn .notif-dot");
   if (!badge) return;
-
-  if (state === "typing") {
-    badge.classList.add("is-typing");
-    badge.innerHTML = `<i class="fa-solid fa-pen-nib"></i> Caynana yazıyor...`;
-    if (dot) dot.classList.add("is-typing");
-  } else if (state === "replied") {
-    badge.classList.remove("is-typing");
-    badge.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Caynana dinliyor...`;
-    if (dot) {
-        dot.classList.remove("flash");
-        void dot.offsetWidth; // Trigger reflow
-        dot.classList.add("flash");
-    }
-  } else {
-    badge.classList.remove("is-typing");
-    badge.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Caynana dinliyor...`;
-  }
+  badge.classList.remove("is-typing");
+  badge.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Caynana dinliyor...`;
 }
 
 function scrollChatToBottom() {
   const container = document.getElementById("chatContainer");
   if (container) {
-     requestAnimationFrame(() => { container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' }); });
+    requestAnimationFrame(() => {
+      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    });
   }
 }
 
@@ -70,9 +69,6 @@ async function sendMessage() {
   const token = getToken();
   if (!token) { triggerAuth("Giriş yap evladım."); return; }
 
-  // 1. Temizlik: Eskiden kalan loading varsa sil
-  removeLoading();
-
   isBusy = true;
   if (input) { input.disabled = true; input.style.opacity = "0.5"; }
 
@@ -80,24 +76,16 @@ async function sendMessage() {
   if (input) input.value = "";
 
   const mode = window.currentAppMode || "chat";
-  
-  setCaynanaStatus("typing");
-  addLoading("Caynana yazıyor...");
-
-  // 🔥 TIMEOUT KONTROLÜ (40 saniye)
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 40000);
 
   try {
     const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
       body: JSON.stringify({ message: txt, mode, persona: "normal" }),
-      signal: controller.signal // Bağlantıyı kesme yetkisi
     });
-    
-    clearTimeout(timeoutId); // Zamanında geldiyse iptali durdur
-    removeLoading(); // Yükleniyor balonunu sil
 
     if (res.status === 401) { triggerAuth("Süren dolmuş."); return; }
     if (!res.ok) { addBubble("Sunucu hatası evladım.", ROLE_BOT); return; }
@@ -107,23 +95,16 @@ async function sendMessage() {
     const products = Array.isArray(data?.data) ? data.data : [];
 
     typeWriterBubble(botText, ROLE_BOT, () => {
-      setCaynanaStatus("replied");
       if (products.length > 0) setTimeout(() => renderProducts(products), 250);
     });
 
   } catch (err) {
-    clearTimeout(timeoutId);
-    removeLoading(); // Hata olsa bile sil
     console.error(err);
-    if (err.name === 'AbortError') {
-        addBubble("Evladım internetin mi yavaş? Cevap gelmedi.", ROLE_BOT);
-    } else {
-        addBubble("Bağlantı koptu evladım.", ROLE_BOT);
-    }
+    addBubble("Bağlantı koptu evladım.", ROLE_BOT);
   } finally {
     isBusy = false;
-    if (input) { input.disabled = false; input.style.opacity = "1"; input.focus(); }
-    setTimeout(() => setCaynanaStatus("idle"), 500);
+    const input2 = document.getElementById("text");
+    if (input2) { input2.disabled = false; input2.style.opacity = "1"; input2.focus(); }
   }
 }
 
@@ -133,11 +114,12 @@ function addBubble(text, role) {
 
   const wrap = document.createElement("div");
   wrap.className = "msg-row " + role;
-  
+
   const bubble = document.createElement("div");
   bubble.className = "msg-bubble " + role;
-  
-  bubble.textContent = ""; 
+
+  // güvenli metin + satır sonları
+  bubble.textContent = "";
   const parts = String(text).split("\n");
   parts.forEach((part, idx) => {
     bubble.appendChild(document.createTextNode(part));
@@ -156,21 +138,21 @@ function typeWriterBubble(text, role, cb) {
 
   const wrap = document.createElement("div");
   wrap.className = "msg-row " + role;
+
   const bubble = document.createElement("div");
-  bubble.className = "msg-bubble " + role; // .msg-bubble.bot
+  bubble.className = "msg-bubble " + role;
 
   wrap.appendChild(bubble);
   container.appendChild(wrap);
 
   const s = String(text);
   let i = 0;
-  const speed = 12; 
+  const speed = 12;
 
   function step() {
     if (i >= s.length) { if (cb) cb(); return; }
     const ch = s.charAt(i);
-    if (ch === "\n") bubble.appendChild(document.createElement("br"));
-    else bubble.appendChild(document.createTextNode(ch));
+    bubble.appendChild(ch === "\n" ? document.createElement("br") : document.createTextNode(ch));
     i++;
     scrollChatToBottom();
     setTimeout(step, speed);
@@ -178,41 +160,10 @@ function typeWriterBubble(text, role, cb) {
   step();
 }
 
-/* 🔥 LOADING: Hem ID hem Class ile Garanti Silme */
-function addLoading(text) {
-  const container = document.getElementById("chatContainer");
-  if (!container) return;
-  
-  // Önce temizle
-  removeLoading();
-
-  const wrap = document.createElement("div");
-  wrap.className = "msg-row bot loading-bubble-wrap"; // Sınıf
-  wrap.id = "globalLoadingBubble"; // ID
-
-  const bubble = document.createElement("div");
-  bubble.className = "msg-bubble bot";
-  bubble.innerHTML = `${text} <i class="fa-solid fa-pen-nib fa-beat-fade" style="margin-left:5px; font-size:12px;"></i>`;
-
-  wrap.appendChild(bubble);
-  container.appendChild(wrap);
-  scrollChatToBottom();
-}
-
-function removeLoading() {
-  // 1. ID ile sil
-  const elById = document.getElementById("globalLoadingBubble");
-  if (elById) elById.remove();
-
-  // 2. Class ile sil (Artıklar kalmasın)
-  document.querySelectorAll('.loading-bubble-wrap').forEach(el => el.remove());
-}
-
 function safeUrl(url) {
   try {
     const u = new URL(url, window.location.origin);
-    if (u.protocol === "http:" || u.protocol === "https:") return u.href;
-    return "#";
+    return (u.protocol === "http:" || u.protocol === "https:") ? u.href : "#";
   } catch { return "#"; }
 }
 
@@ -224,27 +175,67 @@ function renderProducts(products) {
     setTimeout(() => {
       const wrap = document.createElement("div");
       wrap.className = "msg-row bot";
+
       const card = document.createElement("div");
       card.className = "product-card";
 
-      const source = document.createElement("div"); source.className = "pc-source"; source.textContent = "Trendyol";
-      const imgWrap = document.createElement("div"); imgWrap.className = "pc-img-wrap";
-      const img = document.createElement("img"); img.className = "pc-img"; img.src = p.image || PLACEHOLDER_IMG; img.onerror = ()=>{img.src=PLACEHOLDER_IMG};
+      const source = document.createElement("div");
+      source.className = "pc-source";
+      source.textContent = "Trendyol";
+
+      const imgWrap = document.createElement("div");
+      imgWrap.className = "pc-img-wrap";
+
+      const img = document.createElement("img");
+      img.className = "pc-img";
+      img.alt = "Ürün görseli";
+      img.src = (p?.image || "").toString().trim() || PLACEHOLDER_IMG;
+      img.onerror = () => { img.src = PLACEHOLDER_IMG; };
       imgWrap.appendChild(img);
 
-      const content = document.createElement("div"); content.className = "pc-content";
-      const title = document.createElement("div"); title.className = "pc-title"; title.textContent = p.title || "Ürün";
-      const info = document.createElement("div"); info.className = "pc-info-row";
-      info.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${p.reason || 'İncele'}`;
+      const content = document.createElement("div");
+      content.className = "pc-content";
 
-      const bottom = document.createElement("div"); bottom.className = "pc-bottom-row";
-      const price = document.createElement("div"); price.className = "pc-price"; price.textContent = p.price || "Fiyat Gör";
-      const btn = document.createElement("a"); btn.className = "pc-btn-mini"; btn.href = safeUrl(p.url); btn.target = "_blank"; btn.textContent = "Ürüne Git";
-      
-      bottom.appendChild(price); bottom.appendChild(btn);
-      content.appendChild(title); content.appendChild(info); content.appendChild(bottom);
-      
-      card.appendChild(source); card.appendChild(imgWrap); card.appendChild(content);
+      const title = document.createElement("div");
+      title.className = "pc-title";
+      title.textContent = (p?.title || "Ürün").toString();
+
+      // ✅ innerHTML yok (güvenli)
+      const info = document.createElement("div");
+      info.className = "pc-info-row";
+      const icon = document.createElement("i");
+      icon.className = "fa-solid fa-circle-check";
+      const reason = document.createElement("span");
+      reason.textContent = (p?.reason || "İncele").toString();
+      info.appendChild(icon);
+      info.appendChild(document.createTextNode(" "));
+      info.appendChild(reason);
+
+      const bottom = document.createElement("div");
+      bottom.className = "pc-bottom-row";
+
+      const price = document.createElement("div");
+      price.className = "pc-price";
+      price.textContent = (p?.price || "Fiyat Gör").toString();
+
+      const btn = document.createElement("a");
+      btn.className = "pc-btn-mini";
+      btn.href = safeUrl((p?.url || "#").toString());
+      btn.target = "_blank";
+      btn.rel = "noopener noreferrer";
+      btn.textContent = "Ürüne Git";
+
+      bottom.appendChild(price);
+      bottom.appendChild(btn);
+
+      content.appendChild(title);
+      content.appendChild(info);
+      content.appendChild(bottom);
+
+      card.appendChild(source);
+      card.appendChild(imgWrap);
+      card.appendChild(content);
+
       wrap.appendChild(card);
       container.appendChild(wrap);
       scrollChatToBottom();
