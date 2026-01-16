@@ -1,25 +1,18 @@
-/* js/chat.js - CLEAN RESTORE */
-
-// Kilitlenmeyi önlemek için adresi elle yazıyoruz
-const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com"; 
+/* js/chat.js (v9.1 - CLEAN IMAGE HANDLING) */
+import { BASE_DOMAIN } from "./main.js";
 
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Görsel+Yok";
 
 export function initChat() {
-  console.log("Chat Modülü Başlatıldı");
   const sendBtn = document.getElementById("sendBtn");
   const input = document.getElementById("text");
-  
   if (sendBtn) {
     const newBtn = sendBtn.cloneNode(true);
     sendBtn.parentNode.replaceChild(newBtn, sendBtn);
     newBtn.addEventListener("click", sendMessage);
   }
-  
   if (input) {
-    input.onkeydown = (e) => { 
-        if (e.key === "Enter") sendMessage(); 
-    };
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") sendMessage(); });
   }
 }
 
@@ -47,7 +40,6 @@ async function sendMessage() {
     });
 
     removeById(loadingId);
-    
     if (res.status === 401) { triggerAuth("Evladım süren dolmuş, tekrar giriş yapıver."); return; }
     if (!res.ok) { addBubble("Tansiyonum düştü evladım. (Sunucu Hatası)", "ai"); return; }
 
@@ -56,7 +48,6 @@ async function sendMessage() {
     const products = Array.isArray(data.data) ? data.data : [];
 
     typeWriterBubble(botText, "ai", () => {
-      // Mesaj bitince ürün varsa kartları bas
       if ((mode === "shopping" || products.length > 0) && products.length) {
         setTimeout(() => renderProducts(products), 500);
       }
@@ -64,7 +55,6 @@ async function sendMessage() {
 
   } catch (err) {
     removeById(loadingId);
-    console.error(err);
     addBubble("İnternet gitti galiba evladım.", "ai");
   }
 }
@@ -128,7 +118,7 @@ function typeWriterBubble(text, role, callback) {
   tick();
 }
 
-// 🌟 ÜRÜN KARTI ÇİZME (Resimler Net, Yapı Sağlam) 🌟
+// 🌟 DÜZELTİLMİŞ KART YAPISI (CONTAIN IMAGE) 🌟
 function renderProducts(products) {
   const container = document.getElementById("chatContainer");
 
@@ -143,9 +133,8 @@ function renderProducts(products) {
       const url = p.url || "#";
       const title = p.title || "Ürün";
       let price = p.price || "Fiyat Gör";
-      const reason = p.reason || "İncelemeye değer.";
+      const reason = p.reason || "Bunu beğendim.";
 
-      // Kart HTML'i
       card.innerHTML = `
         <div class="pc-img-wrap">
           <img src="${img}" class="pc-img" onerror="this.src='${PLACEHOLDER_IMG}'">
