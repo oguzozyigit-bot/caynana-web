@@ -1,15 +1,13 @@
-/* js/main.js (v10.1 - FINAL STABLE) */
-export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com"; // Render adresin
+/* js/main.js (v4.1 - PREMIUM CARDS LOGIC) */
+export const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 
 import { initAuth, checkLoginStatus } from './auth.js';
 import { initChat } from './chat.js';
-import { initUi } from './ui_modals.js';
+import { initUi, setupPersonaModal, setupNotifications } from './ui_modals.js';
 import { initProfile } from './profile.js';
 
-// MODÜLLER
-const MODULE_ORDER = [
-    'chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'
-];
+// --- MODÜL SIRALAMASI ---
+const MODULE_ORDER = ['chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'];
 
 const MODE_CONFIG = {
     'chat':     { title: "Caynana ile<br>İki Lafın Belini Kır.", desc: "Hadi gel evladım, anlat bakalım.", color: "#FFC107", wit: "Benim zamanımda...", icon: "fa-comments" },
@@ -35,45 +33,29 @@ const chatHistory = {};
 
 function initDock() {
     const dock = document.getElementById('dock');
-    if (!dock) {
-        console.error("⚠️ HATA: #dock elementi HTML'de bulunamadı!");
-        return;
-    }
     dock.innerHTML = '';
-    
     MODULE_ORDER.forEach(key => {
         const conf = MODE_CONFIG[key];
         const item = document.createElement('div');
         item.className = 'dock-item';
         item.setAttribute('data-mode', key);
         item.onclick = () => setHeroMode(key);
-        
-        item.innerHTML = `
-            <div class="dock-icon"><i class="fa-solid ${conf.icon}"></i></div>
-            <div class="dock-label">${key.toUpperCase()}</div>
-        `;
+        item.innerHTML = `<div class="dock-icon"><i class="fa-solid ${conf.icon}"></i></div><div class="dock-label">${key.toUpperCase()}</div>`;
         dock.appendChild(item);
     });
-    console.log("✅ Dock ikonları yüklendi.");
 }
 
 export const setHeroMode = (mode) => {
     const prevMode = window.currentAppMode || 'chat';
     const container = document.getElementById('chatContainer');
-    if (container) chatHistory[prevMode] = container.innerHTML;
+    chatHistory[prevMode] = container.innerHTML;
 
     window.currentAppMode = mode;
     const cfg = MODE_CONFIG[mode] || MODE_CONFIG['chat'];
     
-    // UI Güncelleme
-    const titleEl = document.getElementById('heroTitle');
-    const descEl = document.getElementById('heroDesc');
-    const witEl = document.getElementById('suggestionText');
-    
-    if(titleEl) titleEl.innerHTML = cfg.title;
-    if(descEl) descEl.innerHTML = cfg.desc;
-    if(witEl) witEl.innerText = cfg.wit;
-    
+    document.getElementById('heroTitle').innerHTML = cfg.title;
+    document.getElementById('heroDesc').innerHTML = cfg.desc;
+    document.getElementById('suggestionText').innerText = cfg.wit;
     document.documentElement.style.setProperty('--primary', cfg.color);
     
     updateFooterBars(mode);
@@ -81,15 +63,10 @@ export const setHeroMode = (mode) => {
     const img = document.getElementById('heroImage');
     const targetSrc = HERO_IMAGES[mode] || HERO_IMAGES['chat'];
     if(img) {
-        img.style.opacity = '0.1';
-        setTimeout(() => { 
-            img.src = targetSrc; 
-            img.onload = () => { img.style.opacity = '1'; };
-            setTimeout(() => { img.style.opacity = '1'; }, 100);
-        }, 200);
+        img.style.opacity = '0.4';
+        setTimeout(() => { img.src = targetSrc; img.style.opacity = '1'; }, 250);
     }
     
-    // Aktif İkon
     document.querySelectorAll('.dock-item').forEach(el => el.classList.remove('active'));
     const activeDock = document.querySelector(`.dock-item[data-mode="${mode}"]`);
     if(activeDock) {
@@ -97,20 +74,17 @@ export const setHeroMode = (mode) => {
         activeDock.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
 
-    if (container) {
-        container.innerHTML = chatHistory[mode] || '';
-        container.scrollTop = container.scrollHeight;
-    }
+    container.innerHTML = chatHistory[mode] || '';
+    container.scrollTop = container.scrollHeight;
 
-    // Kamera Butonu Kontrolü
     const stdInput = document.getElementById('stdInputArea');
     const falInput = document.getElementById('falInputArea');
     if (mode === 'fal') {
-        if(stdInput) stdInput.style.display = 'none';
-        if(falInput) falInput.style.display = 'flex';
+        stdInput.style.display = 'none';
+        falInput.style.display = 'flex';
     } else {
-        if(stdInput) stdInput.style.display = 'flex';
-        if(falInput) falInput.style.display = 'none';
+        stdInput.style.display = 'flex';
+        falInput.style.display = 'none';
     }
 };
 
@@ -125,23 +99,53 @@ function updateFooterBars(currentMode) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log("🚀 Uygulama Başlatılıyor...");
-    initDock(); 
-    setHeroMode('chat'); 
+// --- ÜRÜN KARTLARI RENDER (MERCEDES UPDATE) ---
+// Bu fonksiyonu chat.js kullanıyor ama mantığı burada tutuyoruz
+// Not: chat.js'de bu fonksiyonun aynısı varsa onu güncelleyin.
+// Şimdilik burası sadece modül yönetimi. chat.js'yi güncellemek daha doğru olur.
 
-    // Eventler
-    const camBtn = document.getElementById('camBtn');
-    if(camBtn) camBtn.addEventListener('click', () => document.getElementById('fileInput').click());
+function setupGestures() {
+    const zone = document.getElementById('app');
+    let touchStartX = 0;
+    let lastTap = 0;
+    zone.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+    zone.addEventListener('touchend', e => {
+        const touchEndX = e.changedTouches[0].screenX;
+        if (touchStartX - touchEndX > 60) navigateModule(1);
+        if (touchEndX - touchStartX > 60) navigateModule(-1);
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+        if (tapLength < 300 && tapLength > 0) { navigateModule(1); e.preventDefault(); }
+        lastTap = currentTime;
+    });
+    zone.addEventListener('dblclick', () => navigateModule(1));
+}
+
+function navigateModule(direction) {
+    const current = window.currentAppMode || 'chat';
+    let idx = MODULE_ORDER.indexOf(current);
+    idx += direction;
+    if (idx >= MODULE_ORDER.length) idx = 0;
+    if (idx < 0) idx = MODULE_ORDER.length - 1;
+    setHeroMode(MODULE_ORDER[idx]);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log("🚀 Caynana Ultimate V4.1 Başlatılıyor...");
+    initDock(); setupGestures();
+    
+    document.getElementById('camBtn').addEventListener('click', () => document.getElementById('fileInput').click());
+    document.getElementById('falCamBtn').addEventListener('click', () => document.getElementById('fileInput').click());
     
     const vBtn = document.getElementById('voiceToggleBtn');
-    if(vBtn) {
-        vBtn.addEventListener('click', () => {
-            window.isVoiceOn = !window.isVoiceOn;
-            const vIcon = document.getElementById('voiceIcon');
-            vIcon.className = window.isVoiceOn ? "fa-solid fa-volume-high" : "fa-solid fa-volume-xmark";
-        });
-    }
+    vBtn.addEventListener('click', () => {
+        window.isVoiceOn = !window.isVoiceOn;
+        document.getElementById('voiceIcon').className = window.isVoiceOn ? "fa-solid fa-volume-high" : "fa-solid fa-volume-xmark";
+        vBtn.style.background = window.isVoiceOn ? "var(--primary)" : "";
+        vBtn.style.color = window.isVoiceOn ? "#000" : "#fff";
+    });
+
+    setHeroMode('chat'); 
 
     try {
         if (typeof initUi === 'function') initUi();
@@ -149,5 +153,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         await checkLoginStatus(); 
         if (typeof initProfile === 'function') initProfile();
         if (typeof initChat === 'function') initChat();
-    } catch (e) { console.error("Başlatma Hatası:", e); }
+    } catch (e) { console.error(e); }
 });
