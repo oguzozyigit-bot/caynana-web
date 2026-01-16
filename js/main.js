@@ -1,4 +1,4 @@
-/* js/main.js (v26.0 - GOOGLE ACTIVE & FULL SYSTEM) */
+/* js/main.js (v26.0 - GOOGLE LOGIN INTEGRATED & FULL SYSTEM) */
 
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
@@ -234,6 +234,11 @@ window.handleGoogleLogin = () => {
         return;
     }
 
+    if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("YAPISTIR")) {
+        alert("Başkanım, js/main.js dosyasına Google Client ID yapıştırılmamış!");
+        return;
+    }
+
     const btn = document.querySelector('.btn-google');
     const oldText = btn.innerHTML;
     
@@ -279,10 +284,11 @@ async function verifyGoogleTokenOnBackend(accessToken, btn, oldText) {
             
             // UI Güncelle
             document.getElementById('authModal').style.display = 'none';
-            addBotMessage(" Hoş geldin evladım! Girişini yaptım, artık seni tanıyorum. Ne lazımdı?");
+            addBotMessage("Ooo hoş geldin evladım! Girişini yaptım, artık seni tanıyorum. Ne lazımdı?");
             
             resetGoogleBtn(btn, oldText);
         } else {
+            console.error("Backend Hatası:", data);
             throw new Error(data.message || "Sunucu girişi reddetti.");
         }
 
