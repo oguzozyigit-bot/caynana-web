@@ -1,4 +1,4 @@
-/* js/main.js (v30.0 - ULTIMATE CAYNANA EXPERIENCE) */
+/* js/main.js (v32.0 - FINAL STABLE & FULL FEATURES) */
 
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
@@ -9,7 +9,7 @@ let currentPersona = "normal";
 let voiceEnabled = false;
 const chatHistory = {};
 
-// --- KONFIGURASYON ---
+// MODÜL AYARLARI
 const MODE_CONFIG = {
     'chat': { title: "Caynana ile<br>Dertleş.", desc: "Hadi gel evladım, anlat bakalım.", color: "#E6C25B", icon: "fa-comments", showCam: false, showMic: true },
     'shopping': { title: "Paranı Çarçur Etme<br>Bana Sor.", desc: "En sağlamını bulurum.", color: "#81C784", icon: "fa-bag-shopping", showCam: true, showMic: true },
@@ -24,12 +24,13 @@ const MODE_CONFIG = {
 const MODULE_ORDER = ['chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'];
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v30.0 Started");
+    console.log("🚀 Caynana v32.0 Final Started");
     initDock();
     setAppMode('chat');
     checkLoginStatus(); 
-    initSwipeDetection(); // Kaydırma Özelliği
+    initSwipeDetection();
     
+    // Google Init
     if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID) {
         try {
             google.accounts.id.initialize({
@@ -44,10 +45,44 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("text").addEventListener("keydown", (e) => { if(e.key==="Enter") sendMessage(); });
 });
 
-// --- UI & NAVIGASYON ---
+// 🔥 GLOBAL FONKSİYONLAR (HAMBURGER MENÜ İÇİN ŞART) 🔥
+window.openDrawer = () => { document.getElementById('drawerMask').style.display='flex'; };
+window.closeDrawer = () => { document.getElementById('drawerMask').style.display='none'; };
+window.triggerAuth = (msg) => { addBotMessage(msg); document.getElementById("authModal").style.display="flex"; };
+window.handleGoogleLogin = () => { google.accounts.id.prompt(); };
+window.clearCurrentChat = () => { document.getElementById('chatContainer').innerHTML=''; addBotMessage(MODE_CONFIG[window.currentAppMode].desc); };
+
+// KİŞİLİK & SES
+window.changePersona = (p) => { 
+    currentPersona = p; 
+    alert(`Kaynana Modu: ${p.toUpperCase()}\nArtık buna göre konuşacak.`); 
+    window.closeDrawer(); 
+};
+window.toggleVoice = () => {
+    voiceEnabled = !voiceEnabled;
+    const i = document.getElementById('voiceIcon');
+    i.className = voiceEnabled ? "fa-solid fa-volume-high" : "fa-solid fa-volume-xmark";
+    i.style.color = voiceEnabled ? "#4CAF50" : "#fff";
+};
+
+// YENİ: KAYNANA YORUM YAP (SESLİ KOMUT TETİKLEME)
+window.triggerCommentary = () => {
+    if(!localStorage.getItem("auth_token")) { window.triggerAuth("Önce giriş yap evladım."); return; }
+    
+    const badge = document.getElementById("caynanaSpeaking");
+    badge.style.display = "block";
+    badge.innerHTML = `<i class="fa-solid fa-lips fa-beat"></i> Yorum Yapıyor...`;
+    
+    // Simülasyon (Backend'e "commentary" isteği gidecek)
+    setTimeout(() => {
+        addBotMessage("Ay ben ne diyeyim şimdi buna... (Sesli Yorum Çalınıyor...)");
+        badge.style.display = "none";
+    }, 2000);
+};
+
+// --- MOD & UI ---
 function initDock() {
     const dock = document.getElementById('dock');
-    if (!dock) return;
     dock.innerHTML = ''; 
     MODULE_ORDER.forEach(key => {
         const conf = MODE_CONFIG[key];
@@ -61,24 +96,23 @@ function initDock() {
 }
 
 function setAppMode(mode) {
-    // 1. Eski geçmişi kaydet
     const currentContainer = document.getElementById('chatContainer');
     const oldMode = window.currentAppMode || 'chat';
     if(currentContainer) chatHistory[oldMode] = currentContainer.innerHTML;
 
-    // 2. Yeni moda geç
     window.currentAppMode = mode;
     const cfg = MODE_CONFIG[mode];
     
-    // 3. UI Güncellemeleri
     document.getElementById('heroTitle').innerHTML = cfg.title;
     document.getElementById('heroDesc').innerHTML = cfg.desc;
     document.documentElement.style.setProperty('--primary', cfg.color);
     
-    // Top Bar İkonu
-    document.getElementById('currentModeIcon').innerHTML = `<i class="fa-solid ${cfg.icon}"></i>`;
+    // Top Bar Mod İkonu
+    const modeIcon = document.getElementById('currentModeIcon');
+    modeIcon.innerHTML = `<i class="fa-solid ${cfg.icon}"></i>`;
+    modeIcon.style.background = cfg.color;
 
-    // Resim Değişimi
+    // Resim
     const heroImg = document.getElementById('heroImage');
     heroImg.style.opacity = '0';
     setTimeout(() => {
@@ -87,284 +121,196 @@ function setAppMode(mode) {
         heroImg.onerror = () => { heroImg.src = './images/hero-chat.png'; heroImg.style.opacity='1'; };
     }, 200);
 
-    // Dock Aktiflik
     document.querySelectorAll('.dock-item').forEach(el => {
         el.classList.remove('active');
         if(el.dataset.mode === mode) el.classList.add('active');
     });
     updateFooterBars(mode);
 
-    // 4. Input Alanı Ayarları (Kamera/Mikrofon Gizle/Göster)
+    // GİZLEME AYARLARI
     document.getElementById('falInputArea').style.display = (cfg.specialInput === 'fal') ? 'flex' : 'none';
     document.getElementById('stdInputArea').style.display = (cfg.specialInput === 'fal') ? 'none' : 'flex';
     document.getElementById('dietActions').style.display = (cfg.specialInput === 'diet') ? 'flex' : 'none';
-    
     document.getElementById('camBtn').style.display = cfg.showCam ? 'flex' : 'none';
     document.getElementById('micBtn').style.display = cfg.showMic ? 'flex' : 'none';
 
-    // 5. İçeriği Yükle
     currentContainer.innerHTML = '';
     
     if (mode === 'diet') {
-        // Diyet Modu Özel Mantığı
         loadDietContent();
     } else if (chatHistory[mode]) {
         currentContainer.innerHTML = chatHistory[mode];
         setTimeout(() => currentContainer.scrollTo({ top: currentContainer.scrollHeight, behavior: 'instant' }), 10);
     } else {
-        // Yeni başlangıç mesajı (Hitaplı)
         const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-        const hitap = user.hitap || "Evladım";
-        let welcomeMsg = `Gel ${hitap}, ne var ne yok?`;
-        
-        // Modlara göre karşılama (Basit)
-        if(mode === 'shopping') welcomeMsg = `Paraları saçma ${hitap}, ne alacaksın?`;
-        if(mode === 'fal') welcomeMsg = `Kapat fincanı ${hitap}, soğusun gel.`;
-        
-        addBotMessage(welcomeMsg);
+        addBotMessage(`Gel ${user.hitap || 'evladım'}, modumuz değişti.`);
     }
 }
 
-// --- DİYET MODÜLÜ MANTIĞI ---
+// --- OTURUM YÖNETİMİ ---
+function checkLoginStatus() {
+    const raw = localStorage.getItem("user_info");
+    const menu = document.querySelector('.menu-list');
+    const bar = document.getElementById('userInfoBar');
+    
+    if (raw) {
+        const u = JSON.parse(raw);
+        bar.classList.add('visible'); 
+        document.getElementById('headerAvatar').src = u.picture || PLACEHOLDER_IMG;
+        document.getElementById('headerHitap').innerText = (u.hitap || "DAMAT").toUpperCase();
+        document.getElementById('headerName').innerText = u.name || "";
+
+        menu.innerHTML = `
+            <a href="pages/profil.html" class="menu-item highlight" style="border:1px solid var(--primary);"><i class="fa-solid fa-user-pen"></i> Profil</a>
+            <a href="pages/hakkimizda.html" class="menu-item link-item"><i class="fa-solid fa-circle-info"></i> Hakkımızda</a>
+            <a href="pages/gizlilik.html" class="menu-item link-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik Politikası</a>
+            <div style="margin-top:15px; border-top:1px solid #333;"></div>
+            <div class="menu-item link-item" onclick="window.handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Çıkış</div>
+            <div class="menu-item link-item" onclick="window.handleDeleteAccount()" style="color:#f44;"><i class="fa-solid fa-trash-can"></i> Sil</div>
+        `;
+    } else {
+        bar.classList.remove('visible'); 
+        menu.innerHTML = `<div class="menu-item highlight" onclick="document.getElementById('authModal').style.display='flex'"><i class="fa-solid fa-user-plus"></i> Giriş Yap</div>`;
+    }
+}
+
+window.handleLogout = () => { localStorage.clear(); window.location.reload(); };
+window.handleDeleteAccount = () => { if(confirm("Hesabın silinecek?")) { localStorage.clear(); window.location.reload(); } };
+
+// --- DİYET & SAĞLIK ---
+window.generateDietList = (force) => { generateDietList(force); };
+window.showBmiStatus = () => {
+    const p = JSON.parse(localStorage.getItem("user_info") || "{}").profile;
+    if(p) alert(`Boy: ${p.height}cm\nKilo: ${p.weight}kg\nYaş: ${p.age}`);
+};
+
 function loadDietContent() {
     const user = JSON.parse(localStorage.getItem("user_info") || "{}");
     const container = document.getElementById('chatContainer');
+    if (!user.profile || !user.profile.weight) { addBotMessage("Önce profilini doldur."); return; }
     
-    // Profil eksikse uyar
-    if (!user.profile || !user.profile.weight || !user.profile.height) {
-        addBotMessage(`Aman ${user.hitap || 'evladım'}, boyunu kilonu bilmeden sana ne yedireyim? Git profilini doldur gel.`);
-        return;
-    }
-
-    // Tarih Kontrolü (Günde 1 menü)
     const today = new Date().toDateString();
-    const storedDiet = localStorage.getItem("daily_diet");
-    const storedDate = localStorage.getItem("diet_date");
-
-    if (storedDiet && storedDate === today) {
-        // Zaten var, yükle
-        addBotMessage(`Bugünkü listen burada ${user.hitap}. Sakın kaçamak yapma!`);
-        container.innerHTML += storedDiet;
-    } else {
-        // Yeni liste oluştur
-        generateDietList(false);
-    }
+    if (localStorage.getItem("daily_diet") && localStorage.getItem("diet_date") === today) {
+        addBotMessage(`Bugünkü listen hazır ${user.hitap}.`);
+        container.innerHTML += localStorage.getItem("daily_diet");
+    } else { generateDietList(false); }
 }
 
 function generateDietList(forceNew) {
     const user = JSON.parse(localStorage.getItem("user_info") || "{}");
     const p = user.profile;
+    const bmi = (p.weight / ((p.height/100)**2)).toFixed(1);
     
-    // BMI Hesapla
-    const heightM = p.height / 100;
-    const bmi = (p.weight / (heightM * heightM)).toFixed(1);
-    let status = "Normal";
-    if(bmi > 25) status = "Biraz toplu";
-    if(bmi > 30) status = "Aman dikkat";
-
-    // Basit Liste Oluştur (İlerde AI yapacak)
-    const menus = [
-        `
-        <div class="diet-card">
-            <div class="diet-title">🍳 Sabah</div>
-            <div class="diet-content">1 Haşlanmış yumurta, bol yeşillik, 2 zeytin. Ekmek yok!</div>
-        </div>
-        <div class="diet-card">
-            <div class="diet-title">🍲 Öğle</div>
-            <div class="diet-content">Mercimek çorbası, yağsız salata. Kola içme su iç.</div>
-        </div>
-        <div class="diet-card">
-            <div class="diet-title">🥗 Akşam</div>
-            <div class="diet-content">Izgara tavuk (derisi yok), yoğurt.</div>
-        </div>
-        `
-    ];
+    const menuHTML = `
+    <div class="info-card">
+        <div class="info-header"><i class="fa-solid fa-carrot"></i> Caynana Diyet Menüsü</div>
+        <b>Sabah:</b> 1 Haşlanmış Yumurta, 2 Ceviz, Bol Yeşillik.<br>
+        <b>Öğle:</b> Izgara Köfte (3 adet), Ayran.<br>
+        <b>Akşam:</b> Zeytinyağlı Pırasa, Yoğurt.<br><br>
+        <i>Endeksin: ${bmi}. Ona göre ye!</i>
+    </div>`;
     
-    const dietHtml = menus[0]; // Rastgelelik eklenebilir
-    
-    // Kaydet
-    localStorage.setItem("daily_diet", dietHtml);
+    localStorage.setItem("daily_diet", menuHTML);
     localStorage.setItem("diet_date", new Date().toDateString());
-
-    const container = document.getElementById('chatContainer');
-    if(forceNew) container.innerHTML = '';
     
-    addBotMessage(`Vücut Kitle Endeksin: <b>${bmi}</b> (${status}). Al sana bugünkü listen:`);
-    container.innerHTML += dietHtml;
-    container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+    const c = document.getElementById('chatContainer');
+    if(forceNew) c.innerHTML = '';
+    addBotMessage(`Endeksin: ${bmi}. İşte bugünkü listen:`);
+    c.innerHTML += menuHTML;
+    c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' });
 }
-
-function showBmiStatus() {
-    const user = JSON.parse(localStorage.getItem("user_info") || "{}");
-    const p = user.profile;
-    if(!p) return;
-    const heightM = p.height / 100;
-    const bmi = (p.weight / (heightM * heightM)).toFixed(1);
-    alert(`Boy: ${p.height}, Kilo: ${p.weight}\nEndeks: ${bmi}\n\nCaynana Diyor ki: ${bmi > 25 ? "Boğazını tut biraz!" : "İyisin iyi, maşallah."}`);
-}
-
-// --- KAYDIRMA (SWIPE) ALGILAMA ---
-function initSwipeDetection() {
-    let touchStartX = 0;
-    let touchEndX = 0;
-    const mainArea = document.getElementById('main');
-
-    mainArea.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
-    mainArea.addEventListener('touchend', e => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-    });
-
-    function handleSwipe() {
-        const threshold = 50;
-        if (touchEndX < touchStartX - threshold) changeModule(1); // Sola kaydır -> İleri
-        if (touchEndX > touchStartX + threshold) changeModule(-1); // Sağa kaydır -> Geri
-    }
-}
-
-function changeModule(dir) {
-    const currentIdx = MODULE_ORDER.indexOf(window.currentAppMode);
-    let nextIdx = currentIdx + dir;
-    if(nextIdx >= MODULE_ORDER.length) nextIdx = 0;
-    if(nextIdx < 0) nextIdx = MODULE_ORDER.length - 1;
-    setAppMode(MODULE_ORDER[nextIdx]);
-}
-
-// --- KİŞİLİK & SES ---
-window.changePersona = (persona) => {
-    currentPersona = persona;
-    alert(`Kaynana Modu Değişti: ${persona.toUpperCase()} \nArtık ona göre konuşacak!`);
-    document.getElementById('drawerMask').style.display='none';
-};
-
-window.toggleVoice = () => {
-    voiceEnabled = !voiceEnabled;
-    const icon = document.getElementById('voiceIcon');
-    icon.className = voiceEnabled ? "fa-solid fa-volume-high" : "fa-solid fa-volume-xmark";
-    icon.style.color = voiceEnabled ? "#4CAF50" : "#fff";
-};
-
-// --- OTURUM YÖNETİMİ ---
-function checkLoginStatus() {
-    const rawUser = localStorage.getItem("user_info");
-    const menuList = document.querySelector('.menu-list');
-    const welcomeHeader = document.getElementById('headerWelcome');
-    const headerAvatar = document.getElementById('headerAvatar');
-
-    if (rawUser) {
-        const user = JSON.parse(rawUser);
-        const displayName = user.hitap || user.name || "Misafir";
-        const shortName = displayName.length > 15 ? displayName.substring(0, 12) + "..." : displayName;
-
-        // Sub Header Güncelle
-        if(welcomeHeader) welcomeHeader.innerHTML = `Hoş geldin, <b>${shortName}</b>`;
-        if(headerAvatar) headerAvatar.src = user.picture || PLACEHOLDER_IMG;
-
-        // Menü
-        if(menuList) {
-            menuList.innerHTML = `
-                <a href="pages/profil.html" class="menu-item highlight" style="background: rgba(230, 194, 91, 0.15); border-color: var(--primary);"><i class="fa-solid fa-user-pen"></i> Profil (Güncelle)</a>
-                <a href="pages/hakkimizda.html" class="menu-item link-item"><i class="fa-solid fa-circle-info"></i> Hakkımızda</a>
-                <a href="pages/faq.html" class="menu-item link-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
-                <a href="pages/iletisim.html" class="menu-item link-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
-                <a href="pages/gizlilik.html" class="menu-item link-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik Politikası</a>
-            `;
-        }
-    } else {
-        if(welcomeHeader) welcomeHeader.innerHTML = "Misafir Girişi";
-        if(menuList) {
-            menuList.innerHTML = `
-                <div class="menu-item highlight" onclick="document.getElementById('authModal').style.display='flex'"><i class="fa-solid fa-user-plus"></i> Giriş Yap / Üye Ol</div>
-                <a href="pages/hakkimizda.html" class="menu-item link-item"><i class="fa-solid fa-circle-info"></i> Hakkımızda</a>
-            `;
-        }
-    }
-}
-
-window.handleLogout = () => { localStorage.clear(); window.location.reload(); };
-window.handleDeleteAccount = () => { if(confirm("Tüm verilerin silinecek?")) { localStorage.clear(); window.location.reload(); } };
 
 // --- MESAJLAŞMA ---
 async function sendMessage() {
     if(isBusy) return;
-    const input = document.getElementById("text");
-    const txt = input.value.trim();
+    const txt = document.getElementById("text").value.trim();
     if(!txt) return;
-    if(!localStorage.getItem("auth_token")) { triggerAuth("Önce giriş yap evladım."); return; }
+    if(!localStorage.getItem("auth_token")) { window.triggerAuth("Giriş yap önce."); return; }
     
-    isBusy = true; input.disabled = true; input.style.opacity = "0.5";
+    isBusy = true; 
+    document.getElementById("text").value = "";
     addBubble(txt, 'user');
-    input.value = "";
     
-    // UI Feedback
     const badge = document.getElementById("caynanaSpeaking");
-    badge.innerHTML = `<i class="fa-solid fa-pen-nib"></i> Caynana yazıyor...`;
-    badge.classList.add("is-typing");
-    addLoading("Caynana düşünüyor...");
+    badge.style.display = "block";
+    badge.innerHTML = `<i class="fa-solid fa-pen-nib"></i> Yazıyor...`;
+    
+    addLoading("Düşünüyor...");
 
     try {
-        const user = JSON.parse(localStorage.getItem("user_info") || "{}");
+        const u = JSON.parse(localStorage.getItem("user_info") || "{}");
         const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
-            method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${localStorage.getItem("auth_token")}` },
-            body: JSON.stringify({ 
-                message: txt, 
-                mode: window.currentAppMode, 
-                persona: currentPersona, // Seçilen kişilik
-                user_name: user.hitap || "Evladım" 
-            })
+            method: "POST", headers: { "Content-Type":"application/json", "Authorization":`Bearer ${localStorage.getItem("auth_token")}` },
+            body: JSON.stringify({ message: txt, mode: window.currentAppMode, persona: currentPersona, user_name: u.hitap })
         });
-        
         removeLoading();
-        if (!res.ok) { addBotMessage("Tansiyonum düştü, sonra gel."); isBusy = false; input.disabled=false; input.style.opacity="1"; return; }
+        if(!res.ok) throw new Error();
         
         const data = await res.json();
-        const botText = (data?.assistant_text ?? "...").toString();
+        const ans = data.assistant_text || "...";
         
-        // Ses Çalma (Frontend Simülasyonu - Backend entegrasyonu lazım)
-        if(voiceEnabled) playAudioSim(botText);
+        if(voiceEnabled) {
+            badge.innerHTML = `<i class="fa-solid fa-volume-high fa-beat"></i> Konuşuyor...`;
+            setTimeout(() => badge.style.display="none", 5000); 
+        } else { badge.style.display="none"; }
 
-        typeWriterBubble(botText, () => {
-            badge.classList.remove("is-typing");
-            badge.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Caynana dinliyor...`;
-            if (Array.isArray(data?.data) && data.data.length > 0) setTimeout(() => renderProducts(data.data), 250);
-        });
+        // ALIŞVERİŞ İSE DETAYLI KART GÖSTER
+        if (window.currentAppMode === 'shopping') {
+            const shopHTML = `<div class="info-card"><div class="info-header"><i class="fa-solid fa-tag"></i> Kaynana Tavsiyesi</div>${ans}<br><br><b>Neden Almalısın?</b><br>Kaliteli mal, fiyatı da uygun.</div>`;
+            document.getElementById('chatContainer').innerHTML += `<div class="msg-row bot">${shopHTML}</div>`;
+        } else {
+            typeWriterBubble(ans);
+        }
 
-    } catch(err) {
-        removeLoading(); addBotMessage("Bağlantı koptu.");
-    } finally {
-        isBusy = false; input.disabled = false; input.style.opacity = "1"; input.focus();
-    }
+        if(data.data) setTimeout(() => renderProducts(data.data), 500);
+
+    } catch(e) { removeLoading(); addBotMessage("Hata oluştu."); }
+    finally { isBusy = false; }
 }
 
-function playAudioSim(text) {
-    const badge = document.getElementById("caynanaSpeaking");
-    badge.innerHTML = `<i class="fa-solid fa-volume-high fa-beat"></i> Caynana Konuşuyor...`;
-    // Burada normalde backend'den gelen base64 ses çalınır.
-    // Şimdilik sadece UI tepkisi veriyoruz.
-    setTimeout(() => {
-         badge.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Caynana dinliyor...`;
-    }, 5000); // 5 sn konuşuyormuş gibi yap
+// --- YARDIMCILAR ---
+function addBubble(t, r) { const c=document.getElementById("chatContainer"); c.innerHTML+=`<div class="msg-row ${r}"><div class="msg-bubble ${r}">${t}</div></div>`; c.scrollTop=c.scrollHeight; }
+function addBotMessage(t) { const c=document.getElementById("chatContainer"); c.innerHTML+=`<div class="msg-row bot"><div class="msg-bubble bot">${t}</div></div>`; c.scrollTop=c.scrollHeight; }
+function typeWriterBubble(t, cb) { 
+    const c=document.getElementById("chatContainer"); const id="b"+Date.now();
+    c.innerHTML+=`<div class="msg-row bot"><div class="msg-bubble bot" id="${id}"></div></div>`; 
+    const el=document.getElementById(id); let i=0; 
+    function step(){ if(i>=t.length){if(cb)cb();return;} el.innerHTML+=t.charAt(i); i++; c.scrollTop=c.scrollHeight; setTimeout(step,10); } step(); 
 }
-
-// --- STANDART FONKSİYONLAR ---
-function addBubble(text, role) { const c=document.getElementById("chatContainer"); const w=document.createElement("div"); w.className="msg-row "+role; w.innerHTML=`<div class="msg-bubble ${role}">${text}</div>`; c.appendChild(w); c.scrollTo({top:c.scrollHeight,behavior:'smooth'}); }
-function addBotMessage(text) { const c=document.getElementById("chatContainer"); c.innerHTML+=`<div class="msg-row bot"><div class="msg-bubble bot">${text}</div></div>`; c.scrollTo({top:c.scrollHeight,behavior:'smooth'}); }
-function typeWriterBubble(text, cb) { 
-    const c=document.getElementById("chatContainer"); 
-    const w=document.createElement("div"); w.className="msg-row bot"; 
-    const b=document.createElement("div"); b.className="msg-bubble bot"; 
-    w.appendChild(b); c.appendChild(w); 
-    let i=0; function step(){ if(i>=text.length){if(cb)cb();return;} b.innerHTML+=text.charAt(i); i++; c.scrollTo({top:c.scrollHeight,behavior:'smooth'}); setTimeout(step,10); } step(); 
-}
-function addLoading(t) { const c=document.getElementById("chatContainer"); removeLoading(); c.innerHTML+=`<div class="msg-row bot loading-bubble-wrap"><div class="msg-bubble bot">${t} <i class="fa-solid fa-pen-nib fa-fade"></i></div></div>`; c.scrollTo({top:c.scrollHeight,behavior:'smooth'}); }
+function addLoading(t) { const c=document.getElementById("chatContainer"); removeLoading(); c.innerHTML+=`<div class="msg-row bot loading-bubble-wrap"><div class="msg-bubble bot">${t} <i class="fa-solid fa-spinner fa-spin"></i></div></div>`; c.scrollTop=c.scrollHeight; }
 function removeLoading() { document.querySelectorAll('.loading-bubble-wrap').forEach(el=>el.remove()); }
-function updateFooterBars(mode) { /* Çizgi renkleri */ const idx=MODULE_ORDER.indexOf(mode); for(let i=0;i<4;i++){ const t=MODULE_ORDER[(idx+i)%9]; document.getElementById(`line${i+1}`).style.background=MODE_CONFIG[t].color; } }
-window.triggerAuth = (msg) => { addBotMessage(msg); document.getElementById("authModal").style.display = "flex"; };
-window.handleGoogleLogin = () => { google.accounts.id.prompt(); };
-function parseJwt(token) { try{return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')))}catch(e){return{}} }
+function updateFooterBars(mode) { const idx=MODULE_ORDER.indexOf(mode); for(let i=0;i<4;i++){ document.getElementById(`line${i+1}`).style.background=MODE_CONFIG[MODULE_ORDER[(idx+i)%9]].color; } }
+function initSwipeDetection() {
+    let ts = 0;
+    const m = document.getElementById('main');
+    m.addEventListener('touchstart', e => { ts = e.changedTouches[0].screenX; });
+    m.addEventListener('touchend', e => {
+        const te = e.changedTouches[0].screenX;
+        if (te < ts - 50) changeModule(1);
+        if (te > ts + 50) changeModule(-1);
+    });
+}
+function changeModule(dir) {
+    let idx = MODULE_ORDER.indexOf(window.currentAppMode) + dir;
+    if(idx >= MODULE_ORDER.length) idx = 0;
+    if(idx < 0) idx = MODULE_ORDER.length - 1;
+    setAppMode(MODULE_ORDER[idx]);
+}
+function parseJwt(t) { try{return JSON.parse(decodeURIComponent(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')))}catch(e){return{}} }
 async function handleGoogleResponse(r) { 
-    const u=parseJwt(r.credential); localStorage.setItem("user_info",JSON.stringify({name:u.name,picture:u.picture,hitap:u.given_name})); 
+    const u=parseJwt(r.credential); 
+    const user={name:u.name, picture:u.picture, hitap:u.given_name};
+    localStorage.setItem("user_info",JSON.stringify(user));
     try{ const res=await fetch(`${BASE_DOMAIN}/api/auth/google`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({token:r.credential})}); const d=await res.json(); if(d.token) localStorage.setItem("auth_token",d.token); }catch(e){}
     window.location.href="pages/profil.html"; 
 }
-window.clearCurrentChat = () => { document.getElementById('chatContainer').innerHTML=''; addBotMessage(MODE_CONFIG[window.currentAppMode].desc); };
+function renderProducts(products) {
+    const container = document.getElementById("chatContainer");
+    products.slice(0, 5).forEach((p, index) => {
+        setTimeout(() => {
+            const wrap = document.createElement("div"); wrap.className = "msg-row bot";
+            wrap.innerHTML = `<div class="product-card"><div class="pc-source">Trendyol</div><div class="pc-img-wrap"><img src="${p.image || PLACEHOLDER_IMG}" class="pc-img" onerror="this.src='${PLACEHOLDER_IMG}'"></div><div class="pc-content"><div class="pc-title">${p.title || "Ürün"}</div><div class="pc-info-row"><i class="fa-solid fa-circle-check"></i> ${p.reason || 'İncele'}</div><div class="pc-bottom-row"><div class="pc-price">${p.price || "Fiyat Gör"}</div><a href="${p.url}" target="_blank" class="pc-btn-mini">Ürüne Git</a></div></div></div>`;
+            container.appendChild(wrap); container.scrollTop=container.scrollHeight;
+        }, index * 260);
+    });
+}
