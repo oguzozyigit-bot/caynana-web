@@ -46,7 +46,17 @@ body { display: flex; align-items: center; justify-content: center; }
 .msg-row.bot { justify-content: flex-start; }
 .msg-bubble { max-width: 88%; padding: 14px 16px; border-radius: 18px; font-size: 15px; line-height: 1.6; }
 .msg-bubble.user { background: var(--primary); color: #000; font-weight: 700; border-bottom-right-radius: 4px; }
-.msg-bubble.bot { background: rgba(255, 255, 255, 0.15); color: #fff; backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); border-bottom-left-radius: 4px; }
+/* css/app.css içindeki ilgili kısım */
+
+.msg-bubble.bot { 
+    background: rgba(255, 255, 255, 0.25); /* Daha opak beyaz (0.15'ten 0.25'e) */
+    color: #fff; 
+    backdrop-filter: blur(25px); /* Daha güçlü bulanıklık (12px'ten 25px'e) */
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Kenarlık da biraz daha belirgin */
+    border-bottom-left-radius: 4px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
 
 #bottom { position: absolute; left: 0; right: 0; bottom: 0; z-index: 40; background: rgba(15, 15, 15, 0.95); backdrop-filter: blur(25px); border-top-left-radius: 28px; border-top-right-radius: 28px; padding: 20px 16px 8px 16px; box-shadow: 0 -10px 50px rgba(0,0,0,0.7); }
 #suggestionText { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #000; padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 900; box-shadow: 0 4px 15px var(--primary); white-space: nowrap; pointer-events: none; }
