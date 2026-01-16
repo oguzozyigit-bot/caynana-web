@@ -128,3 +128,29 @@ html, body { height: 100%; width: 100%; background: #111; font-family: var(--fon
 .persona-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
 .persona-option { background: #2a2a2a; padding: 12px; border-radius: 8px; text-align: center; font-size: 12px; cursor: pointer; border: 1px solid #333; color: #ddd; }
 .persona-option.selected { border-color: var(--primary); background: rgba(230, 194, 91, 0.15); color: var(--primary); font-weight: 700; }
+/* --- ALT SAYFALAR İÇİN SCROLL TAMİRİ (v43.0) --- */
+
+/* App kutusunun içindeki sayfa taşıyıcısı */
+.page-container {
+    flex: 1; /* Kalan tüm boşluğu kapla */
+    height: 100%; /* Yüksekliği garantiye al */
+    overflow-y: auto; /* Dikey kaydırmayı aç */
+    -webkit-overflow-scrolling: touch; /* Mobilde yağ gibi kaysın */
+    
+    padding-top: 80px; /* Üst barın altında kalsın */
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 50px; /* Alt boşluk */
+    
+    scrollbar-width: none; /* Çubuğu gizle (Firefox) */
+}
+
+/* Scroll çubuğunu gizle (Chrome/Safari) */
+.page-container::-webkit-scrollbar { 
+    display: none; 
+}
+
+/* Eğer profil sayfası body'si farklı davranıyorsa garantiye al */
+body:has(.page-container) #app {
+    overflow: hidden; /* Dışarısı kilitli */
+}
