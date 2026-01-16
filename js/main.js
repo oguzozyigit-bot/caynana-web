@@ -4,7 +4,7 @@ const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
 // 🔥 BURAYA RENDER'DAKİ GOOGLE CLIENT ID'Yİ YAPIŞTIR 🔥
-const GOOGLE_CLIENT_ID = "BURAYA_RENDERDAKI_GOOGLE_CLIENT_ID_YAPISTIR"; 
+const GOOGLE_CLIENT_ID = "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com"; 
 
 let isBusy = false;
 const chatHistory = {};
