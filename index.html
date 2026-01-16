@@ -108,29 +108,31 @@
     </div>
 
     <div id="authModal" class="modalMask">
-        <div class="authBox" style="text-align: center;">
-            <div class="close-btn-abs" onclick="document.getElementById('authModal').style.display='none'">
-                <i class="fa-solid fa-xmark"></i>
-            </div>
+    <div class="authBox" style="text-align: center;">
+        <div class="close-btn-abs" onclick="document.getElementById('authModal').style.display='none'">
+            <i class="fa-solid fa-xmark"></i>
+        </div>
+        
+        <h2 style="margin-bottom: 5px; color:#fff;">Hoş Geldin</h2>
+        <p style="font-size: 12px; color: #aaa; margin-bottom: 25px;">Devam etmek için bir yöntem seç.</p>
+
+        <div class="social-buttons">
+            <button class="social-btn btn-google" onclick="handleGoogleLogin()">
+                <i class="fa-brands fa-google"></i> Google ile Bağlan
+            </button>
             
-            <h2 style="margin-bottom: 5px; color:#fff;">Hoş Geldin</h2>
-            <p style="font-size: 12px; color: #aaa; margin-bottom: 25px;">Devam etmek için bir yöntem seç.</p>
+            <button class="social-btn btn-apple">
+                <i class="fa-brands fa-apple"></i> Apple ile Bağlan
+            </button>
+        </div>
 
-            <div class="social-buttons">
-                <button class="social-btn btn-google">
-                    <i class="fa-brands fa-google"></i> Google ile Bağlan
-                </button>
-                
-                <button class="social-btn btn-apple">
-                    <i class="fa-brands fa-apple"></i> Apple ile Bağlan
-                </button>
-            </div>
-
-            <div class="auth-note" style="margin-top: 20px;">
-                Giriş yaparak <b>Kullanıcı Sözleşmesi</b>'ni kabul etmiş sayılırsınız.
-            </div>
+        <div class="auth-note" style="margin-top: 25px;">
+            Giriş yaparak 
+            <a href="pages/sozlesme.html" class="auth-link">Kullanıcı Sözleşmesi</a>'ni 
+            kabul etmiş sayılırsınız.
         </div>
     </div>
+</div>
 
     <input type="file" id="fileInput" style="display: none;" accept="image/*">
 
@@ -138,3 +140,4 @@
 
 </body>
 </html>
+
