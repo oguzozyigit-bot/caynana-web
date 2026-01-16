@@ -1,4 +1,4 @@
-/* js/main.js (v28.0 - MEMBER MANAGEMENT SYSTEM) */
+/* js/main.js (v29.0 - AVATAR FIX & FULL PROFILE) */
 
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
@@ -23,12 +23,11 @@ const MODE_CONFIG = {
 const MODULE_ORDER = ['chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'];
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v28.0 System Ready");
+    console.log("🚀 Caynana v29.0 (Avatar Fixed)");
     initDock();
     setAppMode('chat');
-    checkLoginStatus(); // 🔥 GİRİŞ KONTROLÜ BAŞLAT 🔥
+    checkLoginStatus(); 
     
-    // Google Init
     if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID) {
         try {
             google.accounts.id.initialize({
@@ -50,44 +49,39 @@ function checkLoginStatus() {
     const slogan = document.querySelector('.brand-slogan');
     
     if (rawUser) {
-        // --- KULLANICI GİRİŞ YAPMIŞ ---
         const user = JSON.parse(rawUser);
         const userName = user.hitap || user.name || "Evladım";
 
-        // 1. Ana Sayfa Sloganını Değiştir
+        // Slogan Değişimi
         if(slogan) {
             slogan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#4CAF50;"></i> Hoş geldin, <b>${userName}</b>`;
             slogan.style.color = "#fff";
         }
 
-        // 2. Menüyü Güncelle (Profil + Çıkış + Sil)
+        // Menü Güncellemesi
         if(menuList) {
             menuList.innerHTML = `
                 <a href="pages/profil.html" class="menu-item highlight" style="background: rgba(230, 194, 91, 0.15); border-color: var(--primary);">
                     <i class="fa-solid fa-user-pen"></i> Profil (Güncelle)
                 </a>
-
                 <a href="pages/hakkimizda.html" class="menu-item link-item"><i class="fa-solid fa-circle-info"></i> Hakkımızda</a>
                 <a href="pages/faq.html" class="menu-item link-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
                 <a href="pages/iletisim.html" class="menu-item link-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
                 <a href="pages/gizlilik.html" class="menu-item link-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik Politikası</a>
-
+                
                 <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;"></div>
-
+                
                 <div class="menu-item link-item" onclick="handleLogout()">
                     <i class="fa-solid fa-right-from-bracket"></i> Güvenli Çıkış
                 </div>
-
                 <div class="menu-item link-item" onclick="handleDeleteAccount()" style="color: #ff4444;">
                     <i class="fa-solid fa-trash-can"></i> Hesabımı Sil
                 </div>
             `;
         }
-
     } else {
-        // --- MİSAFİR MODU ---
+        // Misafir Modu
         if(slogan) slogan.innerHTML = "Yapay Zekânın Geleneksel Aklı";
-        
         if(menuList) {
             menuList.innerHTML = `
                 <div class="menu-item highlight" onclick="document.getElementById('authModal').style.display='flex'">
@@ -102,28 +96,14 @@ function checkLoginStatus() {
     }
 }
 
-// ÇIKIŞ YAPMA
-window.handleLogout = () => {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("user_info");
-    window.location.reload();
-};
-
-// HESAP SİLME (ÖNEMLİ)
+window.handleLogout = () => { localStorage.removeItem("auth_token"); localStorage.removeItem("user_info"); window.location.reload(); };
 window.handleDeleteAccount = () => {
-    // Emin misin sorusu
-    if(confirm("Başkanım, emin misin? Tüm profil bilgilerin ve geçmişin silinecek. Bu işlemin geri dönüşü yok!")) {
-        // İkinci teyit (Yanlışlıkla basmasınlar)
-        if(confirm("Son kararın mı? Seni özleriz bak...")) {
-            // Silme işlemi
-            localStorage.clear();
-            alert("Hesabın başarıyla silindi. Kendine iyi bak evladım.");
-            window.location.reload();
-        }
+    if(confirm("Başkanım, emin misin? Tüm profil bilgilerin silinecek.")) {
+        if(confirm("Son kararın mı? Geri dönüşü yok.")) { localStorage.clear(); alert("Hesap silindi."); window.location.reload(); }
     }
 };
 
-/* ... DOCK & UI (STANDART KODLAR) ... */
+/* ... DOCK & UI ... */
 function initDock() {
     const dock = document.getElementById('dock');
     if (!dock) return;
@@ -177,7 +157,6 @@ function updateFooterBars(currentMode) {
         if(lines[i]) lines[i].style.background = MODE_CONFIG[targetMode].color;
     }
 }
-
 async function sendMessage() {
     if(isBusy) return;
     const input = document.getElementById("text");
@@ -216,7 +195,6 @@ async function sendMessage() {
         setTimeout(() => setCaynanaStatus("idle"), 1000);
     }
 }
-
 function addBubble(text, role) {
     const container = document.getElementById("chatContainer");
     const wrap = document.createElement("div"); wrap.className = "msg-row " + role;
@@ -280,28 +258,37 @@ function setCaynanaStatus(state) {
     else { badge.classList.remove("is-typing"); badge.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Caynana dinliyor...`; }
 }
 window.clearCurrentChat = clearCurrentChat;
-window.triggerAuth = (msg) => {
-    addBotMessage(msg);
-    document.getElementById("authModal").style.display = "flex";
-};
+window.triggerAuth = (msg) => { addBotMessage(msg); document.getElementById("authModal").style.display = "flex"; };
 
-// 🔥 GOOGLE GİRİŞ (JWT) 🔥
+// 🔥 GOOGLE GİRİŞİ BAŞLAT 🔥
 window.handleGoogleLogin = () => {
     const btn = document.querySelector('.btn-google');
     if(btn) { btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor...`; btn.disabled = true; }
-
-    google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed()) {
-            if(btn) { btn.innerHTML = 'Tekrar Dene'; btn.disabled=false; }
-        }
-    });
+    google.accounts.id.prompt((n) => { if(n.isNotDisplayed() && btn) { btn.innerHTML='Tekrar Dene'; btn.disabled=false; } });
 };
+
+// 🔥 JWT ÇÖZÜCÜ (MAYMUNCUK) 🔥
+function parseJwt(token) {
+    try {
+        var base64Url = token.split('.')[1];
+        var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch(e) { return {}; }
+}
 
 async function handleGoogleResponse(response) {
     console.log("🟢 Google JWT:", response);
     const credential = response.credential;
+    
+    // 1. TOKEN'I KENDİMİZ ÇÖZÜYORUZ (SUNUCUYA GÜVENMEDEN)
+    const googleUser = parseJwt(credential);
+    console.log("🔓 Çözülen Google Verisi:", googleUser);
+
     try {
-        const payload = { token: credential, credential: credential, id_token: credential, google_token: credential };
+        const payload = { token: credential, credential: credential };
         const res = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
             method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
         });
@@ -310,12 +297,22 @@ async function handleGoogleResponse(response) {
 
         if (data.token) {
             localStorage.setItem("auth_token", data.token);
-            // KULLANICI BİLGİSİNİ KAYDET
-            const userData = data.user || { name: "Misafir", picture: PLACEHOLDER_IMG };
+
+            // 2. AVATAR GARANTİLEME (Google'dan gelen resmi öncelikli al)
+            const userPic = googleUser.picture || (data.user && data.user.picture) || PLACEHOLDER_IMG;
+            const userName = googleUser.name || (data.user && data.user.name) || "Misafir";
+            
+            // Kullanıcı objesini oluştur
+            const userData = {
+                ...(data.user || {}), // Backend verileri
+                name: userName,       // Garantili isim
+                picture: userPic      // Garantili resim
+            };
+
             localStorage.setItem("user_info", JSON.stringify(userData));
 
             document.getElementById('authModal').style.display = 'none';
-            // Sayfayı yenile ki menüler güncellensin
+            // Profil sayfasına git
             window.location.href = "pages/profil.html"; 
         }
     } catch (err) {
