@@ -1,4 +1,4 @@
-/* js/main.js (v45.0 - ALL IN ONE STABLE VERSION) */
+/* js/main.js (v46.0 - SPEAK BUTTON FIXED) */
 
 // --- 1. AYARLAR VE SABİTLER ---
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
@@ -27,14 +27,13 @@ window.currentAppMode = 'chat';
 
 // --- 3. BAŞLATMA ---
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v45.0 (All-in-One) Started");
+    console.log("🚀 Caynana v46.0 (Button Fix) Started");
     
-    initDock(); // Modülleri yükle
-    setAppMode('chat'); // İlk açılış
-    updateUIForUser(); // Giriş kontrolü
-    initSwipeDetection(); // Kaydırma
+    initDock(); 
+    setAppMode('chat'); 
+    updateUIForUser(); 
+    initSwipeDetection();
     
-    // Google Giriş
     if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID) {
         try {
             google.accounts.id.initialize({
@@ -45,14 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch(e) { console.error(e); }
     }
 
-    // Tuşlar
     const sendBtn = document.getElementById("sendBtn");
     const textInput = document.getElementById("text");
     if(sendBtn) sendBtn.addEventListener("click", sendMessage);
     if(textInput) textInput.addEventListener("keydown", (e) => { if(e.key==="Enter") sendMessage(); });
 });
 
-// --- 4. SOHBET VE ZEKÂ (CHAT LOGIC) ---
+// --- 4. SOHBET VE ZEKÂ ---
 const SAFETY_PATTERNS = {
     suicide: /intihar|ölmek istiyorum|bileklerimi|kendimi asıcam/i,
     substance: /uyuşturucu|bonzai|kokain|esrar/i,
@@ -83,7 +81,6 @@ function generateSystemContext(persona, userName, userGender, maritalStatus) {
 }
 
 async function fetchBotResponse(userMessage, mode, persona) {
-    // Güvenlik
     if (SAFETY_PATTERNS.suicide.test(userMessage)) return { assistant_text: "Aman evladım ağzından yel alsın! Git bir elini yüzünü yıka.", audio_data: null };
     if (SAFETY_PATTERNS.explicit.test(userMessage)) return { assistant_text: "Terbiyesizleşme! Karşında anan yaşında kadın var!", audio_data: null };
 
@@ -100,7 +97,7 @@ async function fetchBotResponse(userMessage, mode, persona) {
             message: userMessage, 
             system_instruction: systemPrompt,
             mode: "chat", 
-            use_voice: true, // SES İSTEĞİ
+            use_voice: true, 
             persona: persona 
         })
     });
@@ -109,7 +106,7 @@ async function fetchBotResponse(userMessage, mode, persona) {
     return await res.json();
 }
 
-// --- 5. MESAJ GÖNDERME VE SES ---
+// --- 5. MESAJ GÖNDERME VE SES (DÜZELTİLDİ) ---
 async function sendMessage() {
     if(isBusy) return;
     const txt = document.getElementById("text").value.trim();
@@ -128,18 +125,22 @@ async function sendMessage() {
         const ans = data.assistant_text || "...";
         
         typeWriter(ans, () => {
-            // Yazı bitince ses çal
             if (data.audio_data) playAudioResponse(data.audio_data);
             else if(badge) badge.style.display = "none";
 
-            // Konuştur Butonu Ekle
+            // 🔥 BUTON EKLEME KISMI (ARTIK KOŞULSUZ ŞARTSIZ EKLİYOR) 🔥
             const rows = document.querySelectorAll('.msg-row.bot');
             const lastRow = rows[rows.length - 1];
-            if(lastRow && data.audio_data) {
+            if(lastRow) {
+                // Ses verisi varsa onu koy, yoksa boş string koy
+                const audioContent = data.audio_data || "";
                 lastRow.querySelector('.msg-bubble').insertAdjacentHTML('beforeend', 
-                    `<div class="speak-btn-inline" onclick="window.replayLastAudio('${data.audio_data}')"><i class="fa-solid fa-volume-high"></i> Tekrar Oku</div>`
+                    `<div class="speak-btn-inline" onclick="window.replayLastAudio('${audioContent}')">
+                        <i class="fa-solid fa-volume-high"></i> Dinle
+                    </div>`
                 );
             }
+
             if(data.data) renderProducts(data.data);
         });
 
@@ -164,7 +165,7 @@ function playAudioResponse(base64Audio) {
     } catch (e) { console.error(e); }
 }
 
-// --- 6. UI YÖNETİMİ (DOCK, MODAL, HAMBURGER) ---
+// --- 6. UI YÖNETİMİ ---
 function initDock() {
     const dock = document.getElementById('dock');
     if(!dock) return;
@@ -182,7 +183,6 @@ function setAppMode(mode) {
     window.currentAppMode = mode;
     const cfg = MODE_CONFIG[mode];
     
-    // UI Güncelle
     document.getElementById('heroTitle').innerHTML = cfg.title;
     document.getElementById('heroDesc').innerHTML = cfg.desc;
     document.documentElement.style.setProperty('--primary', cfg.color);
@@ -195,12 +195,8 @@ function setAppMode(mode) {
         heroImg.onerror = () => { heroImg.src = './images/hero-chat.png'; heroImg.style.opacity='1'; };
     }, 200);
 
-    // Butonları Gizle/Göster
     const ids = ['falInputArea', 'stdInputArea', 'dietActions', 'astroActions'];
-    ids.forEach(id => {
-        const el = document.getElementById(id);
-        if(el) el.style.display = 'none';
-    });
+    ids.forEach(id => { const el = document.getElementById(id); if(el) el.style.display = 'none'; });
 
     if(cfg.specialInput === 'fal') document.getElementById('falInputArea').style.display = 'flex';
     else document.getElementById('stdInputArea').style.display = 'flex';
@@ -208,13 +204,11 @@ function setAppMode(mode) {
     if(cfg.specialInput === 'diet') document.getElementById('dietActions').style.display = 'flex';
     if(cfg.specialInput === 'astro') document.getElementById('astroActions').style.display = 'flex';
 
-    // Dock Aktiflik
     document.querySelectorAll('.dock-item').forEach(el => {
         el.classList.remove('active');
         if(el.innerHTML.includes(cfg.icon)) el.classList.add('active');
     });
 
-    // İçeriği Temizle
     const container = document.getElementById('chatContainer');
     container.innerHTML = '';
     if (mode === 'diet') loadDietContent();
@@ -222,8 +216,7 @@ function setAppMode(mode) {
     else addBotMessage(cfg.desc);
 }
 
-// --- 7. GLOBAL FONKSİYONLAR (WINDOW BINDING) ---
-// HTML'den onclick="window.fonksiyon()" diye çağrılanlar
+// --- 7. GLOBAL FONKSİYONLAR ---
 window.openDrawer = () => document.getElementById('drawerMask').style.display='flex';
 window.closeDrawer = () => document.getElementById('drawerMask').style.display='none';
 window.openPersonaModal = () => document.getElementById('personaModal').style.display='flex';
@@ -245,10 +238,16 @@ window.changePersona = (p) => {
     document.getElementById('personaModal').style.display='none';
     addBotMessage(`Mod değişti: <b>${p.toUpperCase()}</b>`);
 };
-window.replayLastAudio = (b64) => playAudioResponse(b64);
+// 🔥 SES TEKRAR OYNATMA (GÜVENLİ) 🔥
+window.replayLastAudio = (b64) => {
+    if(!b64 || b64 === "undefined" || b64 === "") {
+        alert("Ses verisi henüz gelmedi başkanım. Backend bağlanınca konuşacak.");
+    } else {
+        playAudioResponse(b64);
+    }
+};
 window.triggerAuth = (msg) => { addBotMessage(msg); document.getElementById("authModal").style.display="flex"; };
 
-// Özel Modüller
 window.generateDietList = () => loadDietContent();
 window.showZodiacFeatures = () => addBotMessage("Burç özellikleri çok yakında...");
 window.showBmiStatus = () => alert("Detaylı analiz hazırlanıyor...");
