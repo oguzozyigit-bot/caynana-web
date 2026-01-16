@@ -136,3 +136,29 @@ body { display: flex; align-items: center; justify-content: center; }
 .pc-price { font-size: 15px; font-weight: 800; color: #2e7d32; }
 .pc-btn-mini { background: #f5f5f5; color: #333 !important; text-decoration: none; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; transition: 0.2s; }
 .pc-source { position: absolute; top: 0; right: 0; background: #ff6f00; color: #fff; font-size: 8px; font-weight: 700; padding: 2px 6px; border-bottom-left-radius: 6px; }
+/* --- UX CİLASI (REVIEW SONRASI EKLENTİLER) --- */
+
+/* 1. iOS Klavye/Scroll Güvenliği */
+html { overflow: auto; /* iOS'ta sıkışmayı önler */ }
+body { overflow: hidden; /* Ana yapı sabit kalır */ }
+
+/* 2. Hayalet Scrollbar (Varlığı belli olsun ama rahatsız etmesin) */
+#chatContainer::-webkit-scrollbar {
+    width: 4px; /* Çok ince */
+}
+#chatContainer::-webkit-scrollbar-track {
+    background: transparent; 
+}
+#chatContainer::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1); /* Çok hafif gri */
+    border-radius: 4px;
+}
+/* Koyu modda scrollbar */
+@media (prefers-color-scheme: dark) {
+    #chatContainer::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.15);
+    }
+}
+
+/* 3. Okunabilirlik Kontrastı (Daha tok siyah) */
+.pc-title { color: #222 !important; } /* #333 yerine #222 */
