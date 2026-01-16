@@ -1,12 +1,9 @@
-/* js/chat.js - CLEAN RESTORE */
-
-// Kilitlenmeyi önlemek için adresi elle yazıyoruz
+/* js/chat.js (v15.0 - SOLID HTML STRUCTURE) */
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com"; 
-
-const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Görsel+Yok";
+const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
 export function initChat() {
-  console.log("Chat Modülü Başlatıldı");
+  console.log("Chat Modülü Aktif");
   const sendBtn = document.getElementById("sendBtn");
   const input = document.getElementById("text");
   
@@ -15,11 +12,8 @@ export function initChat() {
     sendBtn.parentNode.replaceChild(newBtn, sendBtn);
     newBtn.addEventListener("click", sendMessage);
   }
-  
   if (input) {
-    input.onkeydown = (e) => { 
-        if (e.key === "Enter") sendMessage(); 
-    };
+    input.onkeydown = (e) => { if (e.key === "Enter") sendMessage(); };
   }
 }
 
@@ -31,7 +25,7 @@ async function sendMessage() {
   if (!txt) return;
 
   const token = getToken();
-  if (!token) { triggerAuth("Evladım önce bir giriş yap, kim olduğunu bileyim."); return; }
+  if (!token) { triggerAuth("Giriş yap evladım."); return; }
 
   addBubble(txt, "user");
   input.value = "";
@@ -48,136 +42,78 @@ async function sendMessage() {
 
     removeById(loadingId);
     
-    if (res.status === 401) { triggerAuth("Evladım süren dolmuş, tekrar giriş yapıver."); return; }
-    if (!res.ok) { addBubble("Tansiyonum düştü evladım. (Sunucu Hatası)", "ai"); return; }
+    if (res.status === 401) { triggerAuth("Süren dolmuş."); return; }
+    if (!res.ok) { addBubble("Sunucu hatası evladım.", "ai"); return; }
 
     const data = await res.json();
-    const botText = data.assistant_text || "Hımm...";
+    const botText = data.assistant_text || "...";
     const products = Array.isArray(data.data) ? data.data : [];
 
     typeWriterBubble(botText, "ai", () => {
-      // Mesaj bitince ürün varsa kartları bas
-      if ((mode === "shopping" || products.length > 0) && products.length) {
-        setTimeout(() => renderProducts(products), 500);
+      if (products.length > 0) {
+        setTimeout(() => renderProducts(products), 300);
       }
     });
 
   } catch (err) {
     removeById(loadingId);
     console.error(err);
-    addBubble("İnternet gitti galiba evladım.", "ai");
+    addBubble("Bağlantı koptu evladım.", "ai");
   }
 }
 
-function triggerAuth(msg) {
-    addBubble(msg, "ai");
-    const authModal = document.getElementById('authModal');
-    if (authModal) authModal.style.display = 'flex';
-}
-
-function addBubble(text, role = "ai") {
-  const container = document.getElementById("chatContainer");
-  const wrap = document.createElement("div");
-  wrap.className = "msg-row " + (role === "user" ? "user" : "bot");
-  const bubble = document.createElement("div");
-  bubble.className = "msg-bubble " + (role === "user" ? "user" : "bot");
-  bubble.innerHTML = escapeHtml(text).replace(/\n/g, "<br>");
-  wrap.appendChild(bubble);
-  container.appendChild(wrap);
-  container.scrollTo(0, container.scrollHeight);
-}
-
-function addLoading(text) {
-  const container = document.getElementById("chatContainer");
-  const id = "ldr_" + Date.now();
-  const wrap = document.createElement("div");
-  wrap.className = "msg-row bot";
-  wrap.id = id;
-  const bubble = document.createElement("div");
-  bubble.className = "msg-bubble bot";
-  bubble.style.opacity = "0.7"; bubble.style.fontStyle = "italic";
-  bubble.innerHTML = text;
-  wrap.appendChild(bubble);
-  container.appendChild(wrap);
-  container.scrollTo(0, container.scrollHeight);
-  return id;
-}
-
-function removeById(id) { const el = document.getElementById(id); if (el) el.remove(); }
-
-function typeWriterBubble(text, role, callback) {
-  const container = document.getElementById("chatContainer");
-  const wrap = document.createElement("div");
-  wrap.className = "msg-row bot";
-  const bubble = document.createElement("div");
-  bubble.className = "msg-bubble bot";
-  bubble.innerHTML = "";
-  wrap.appendChild(bubble);
-  container.appendChild(wrap);
-
-  let i = 0; const speed = 20;
-  function tick() {
-    if (i < text.length) {
-      const ch = text.charAt(i++);
-      if (ch === "\n") bubble.innerHTML += "<br>";
-      else bubble.innerHTML += escapeHtml(ch);
-      container.scrollTo(0, container.scrollHeight);
-      setTimeout(tick, speed);
-    } else { if (callback) callback(); }
-  }
-  tick();
-}
-
-// 🌟 ÜRÜN KARTI ÇİZME (Resimler Net, Yapı Sağlam) 🌟
+// 🌟 YENİ KART HTML'İ (SADE & NET) 🌟
 function renderProducts(products) {
   const container = document.getElementById("chatContainer");
-
   products.slice(0, 5).forEach((p, index) => {
     setTimeout(() => {
       const card = document.createElement("div");
       card.className = "product-card";
-
-      let img = p.image;
-      if (!img || img === "") img = PLACEHOLDER_IMG;
       
-      const url = p.url || "#";
+      const img = p.image || PLACEHOLDER_IMG;
       const title = p.title || "Ürün";
-      let price = p.price || "Fiyat Gör";
-      const reason = p.reason || "İncelemeye değer.";
-
-      // Kart HTML'i
+      const price = p.price || "Fiyat Gör";
+      const url = p.url || "#";
+      const reason = p.reason || "İncele";
+      
       card.innerHTML = `
+        <div class="pc-source">Trendyol</div>
         <div class="pc-img-wrap">
           <img src="${img}" class="pc-img" onerror="this.src='${PLACEHOLDER_IMG}'">
-          <div class="pc-source-badge">Trendyol</div>
         </div>
         <div class="pc-content">
-            <div class="pc-title">${escapeHtml(title)}</div>
-            
-            <div class="pc-reason-tag">
-                <i class="fa-solid fa-comment-dots"></i> ${escapeHtml(reason)}
+            <div class="pc-title">${title}</div>
+            <div class="pc-info-row">
+                <i class="fa-solid fa-circle-check"></i> <span>${reason}</span>
             </div>
-            
-            <div style="display:flex; justify-content:space-between; align-items:end;">
-                <div class="pc-price">${escapeHtml(price)}</div>
-                <a href="${url}" target="_blank" class="pc-btn-mini">
-                    İncele <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
-                </a>
+            <div class="pc-bottom-row">
+                <div class="pc-price">${price}</div>
+                <a href="${url}" target="_blank" class="pc-btn-mini">Ürüne Git</a>
             </div>
         </div>
       `;
-
+      
       const wrap = document.createElement("div");
       wrap.className = "msg-row bot";
-      wrap.style.display = "block";
       wrap.appendChild(card);
-
       container.appendChild(wrap);
       container.scrollTo(0, container.scrollHeight);
-    }, index * 400);
+    }, index * 300);
   });
 }
 
-function escapeHtml(s) {
-  return (s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+function triggerAuth(msg) { addBubble(msg, "ai"); document.getElementById('authModal').style.display = 'flex'; }
+function addBubble(text, role) {
+  const container = document.getElementById("chatContainer");
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row " + role;
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble " + role;
+  bubble.innerHTML = text.replace(/\n/g, "<br>");
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  container.scrollTo(0, container.scrollHeight);
 }
+function addLoading(text) { return addBubble(text, "bot"); }
+function removeById(id) { const el = document.getElementById(id); if (el) el.remove(); }
+function typeWriterBubble(text, role, cb) { addBubble(text, role); if(cb) cb(); }
