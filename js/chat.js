@@ -1,139 +1,186 @@
-# app/models/chat.py (v10.0 - NEUTRAL & OBJECTIVE PERSONA)
-import os
-import requests
-from typing import Optional, List, Dict, Any
-from fastapi import APIRouter, Header, HTTPException, Request
-from pydantic import BaseModel
+/* js/chat.js (v10.2 - CIRCULAR DEPENDENCY FIX) */
 
-try:
-    from openai import OpenAI
-except Exception:
-    OpenAI = None
+// 1. KİLİTLENMEYİ ÇÖZEN HAMLE: import satırını kaldırdık.
+// Adresi direkt buraya tanımlıyoruz.
+const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com"; 
 
-# --- AYARLAR ---
-SERPAPI_KEY = os.getenv("SERPAPI_KEY") or os.getenv("SERPAPI_API_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Görsel+Yok";
 
-client = OpenAI(api_key=OPENAI_API_KEY) if (OpenAI and OPENAI_API_KEY) else None
-router = APIRouter()
-
-class ChatRequest(BaseModel):
-    message: str = ""
-    mode: str = "chat"
-    persona: str = "normal"
-
-class ChatResponse(BaseModel):
-    assistant_text: str
-    speech_text: str = ""
-    data: List[Dict[str, Any]] = []
-
-# --- PERSONA AYARLARI (GÜNCELLENDİ) ---
-SYSTEM_PROMPTS = {
-    "default": "Sen CAYNANA'sın. Geleneksel Türk kaynanası. Samimi ama otoriter. 'Evladım' diye hitap et.",
-    
-    # ALIŞVERİŞ MODU İÇİN YENİ TARAFSIZ PERSONA
-    "shopping": """
-    Sen CAYNANA'sın. Alışveriş asistanısın.
-    KURALLAR:
-    1. Asla 'Google'dan buldum', 'İnternete baktım' deme. Sadece 'Buldum', 'Çıkardım' de.
-    2. Ürünleri ne göklere çıkar ne de yerin dibine sok. OBJEKTİF ve TEMKİNLİ ol.
-    3. 'Harika', 'Mükemmel' gibi abartılı kelimeler yasak.
-    4. 'Fena durmuyor', 'İş görür gibi', 'Fiyatı ortalama', 'Kumaşına dikkat et', 'Yorumlarına bakmak lazım' gibi dengeli konuş.
-    5. Satıcı ağzıyla konuşma, alıcıyı koruyan tecrübeli kadın gibi konuş.
-    """
+export function initChat() {
+  console.log("Chat Modülü Başlatıldı");
+  const sendBtn = document.getElementById("sendBtn");
+  const input = document.getElementById("text");
+  
+  if (sendBtn) {
+    // Eski listener'ları temizlemek için klonluyoruz
+    const newBtn = sendBtn.cloneNode(true);
+    sendBtn.parentNode.replaceChild(newBtn, sendBtn);
+    newBtn.addEventListener("click", sendMessage);
+  }
+  
+  if (input) {
+    // Enter tuşu desteği (önceki listener'ı kaldırmaya gerek yok, üstüne yazar)
+    input.onkeydown = (e) => { 
+        if (e.key === "Enter") sendMessage(); 
+    };
+  }
 }
 
-# --- ARAMA MOTORU (Google Web Search - En Stabil Olan) ---
-def search_products_google_web(query: str) -> List[Dict[str, Any]]:
-    if not SERPAPI_KEY:
-        print("⚠️ HATA: SERPAPI_KEY bulunamadı!")
-        return []
+function getToken() { return localStorage.getItem("auth_token") || ""; }
 
-    try:
-        # Arama motoru Google ama kullanıcıya hissettirmiyoruz.
-        params = {
-            "engine": "google",
-            "q": f"site:trendyol.com {query}", 
-            "gl": "tr",
-            "hl": "tr",
-            "api_key": SERPAPI_KEY,
-            "num": 6
-        }
-        
-        resp = requests.get("https://serpapi.com/search", params=params)
-        data = resp.json()
-        
-        results = []
-        if "organic_results" in data:
-            for item in data["organic_results"]:
-                link = item.get("link", "")
-                # Sadece Trendyol ürün linklerini al
-                if "trendyol.com" in link and "/p/" in link: 
-                    
-                    # Fiyatı çekmeye çalış
-                    price = "Fiyat Gör"
-                    if "rich_snippet" in item and "top" in item["rich_snippet"]:
-                        extensions = item["rich_snippet"]["top"].get("extensions", [])
-                        for ext in extensions:
-                            if "TL" in ext:
-                                price = ext
-                                break
-                    
-                    img = item.get("thumbnail", "https://via.placeholder.com/200?text=Resim+Yok")
-                    
-                    # Temiz Başlık
-                    title = item.get("title", "Ürün").replace(" - Trendyol", "").split("|")[0].strip()
+async function sendMessage() {
+  const input = document.getElementById("text");
+  const txt = (input?.value || "").trim();
+  if (!txt) return;
 
-                    results.append({
-                        "title": title,
-                        "price": price,
-                        "image": img,
-                        "url": link,
-                        "source": "Trendyol",
-                        # KART ÜZERİNDEKİ NOT (Tarafsız)
-                        "reason": "İncelemeye değer, bir bak." 
-                    })
-        return results
+  const token = getToken();
+  if (!token) { triggerAuth("Evladım önce bir giriş yap, kim olduğunu bileyim."); return; }
 
-    except Exception as e:
-        print(f"Hata: {e}")
-        return []
+  // Kullanıcı mesajını ekle
+  addBubble(txt, "user");
+  input.value = "";
 
-# --- ENDPOINT ---
-@router.post("/chat", response_model=ChatResponse)
-async def api_chat(req: ChatRequest, authorization: Optional[str] = Header(default=None)):
-    user_msg = (req.message or "").strip()
-    mode = req.mode or "chat"
+  const mode = window.currentAppMode || "chat";
+  const loadingId = addLoading("Caynana yazıyor...");
+
+  try {
+    const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ message: txt, mode, persona: "normal" }),
+    });
+
+    removeById(loadingId);
     
-    reply = "Bir şey diyemedim evladım."
-    product_data = []
+    if (res.status === 401) { triggerAuth("Evladım süren dolmuş, tekrar giriş yapıver."); return; }
+    if (!res.ok) { addBubble("Tansiyonum düştü evladım. (Sunucu Hatası)", "ai"); return; }
 
-    # 1. ALIŞVERİŞ MODU
-    if mode == "shopping" and len(user_msg) > 1:
-        product_data = search_products_google_web(user_msg)
-        
-        if product_data:
-            # Yapay Zeka Mesajı (Tarafsız Başlangıç)
-            reply = f"Evladım senin için baktım, '{user_msg}' için şunlar çıktı karşıma. Ne çok pahalı ne çok ucuz, bir incele bakalım işini görür mü?"
-        else:
-            reply = "Evladım aradım taradım ama tam istediğin gibi bir şey denk gelmedi. Başka türlü mü yazsak?"
+    const data = await res.json();
+    const botText = data.assistant_text || "Hımm...";
+    const products = Array.isArray(data.data) ? data.data : [];
 
-    # 2. OPENAI YORUMU (Ürünler üzerine konuşsun)
-    if client and (not product_data or mode != "shopping"):
-        sys_msg = SYSTEM_PROMPTS.get(mode, SYSTEM_PROMPTS["default"])
-        try:
-            if product_data:
-                # Ürün isimlerini ver ki spesifik yorum yapabilsin
-                titles = [p['title'] for p in product_data]
-                sys_msg += f"\nBulunan Ürün Listesi: {titles}. Bu ürünlere dengeli, ne öven ne yeren, objektif yorum yap."
+    typeWriterBubble(botText, "ai", () => {
+      // Mesaj bittikten sonra ürün varsa göster
+      if ((mode === "shopping" || products.length > 0) && products.length) {
+        setTimeout(() => renderProducts(products), 500);
+      }
+    });
+
+  } catch (err) {
+    removeById(loadingId);
+    console.error(err);
+    addBubble("İnternet gitti galiba evladım.", "ai");
+  }
+}
+
+function triggerAuth(msg) {
+    addBubble(msg, "ai");
+    const authModal = document.getElementById('authModal');
+    if (authModal) authModal.style.display = 'flex';
+}
+
+function addBubble(text, role = "ai") {
+  const container = document.getElementById("chatContainer");
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row " + (role === "user" ? "user" : "bot");
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble " + (role === "user" ? "user" : "bot");
+  bubble.innerHTML = escapeHtml(text).replace(/\n/g, "<br>");
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  container.scrollTo(0, container.scrollHeight);
+}
+
+function addLoading(text) {
+  const container = document.getElementById("chatContainer");
+  const id = "ldr_" + Date.now();
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row bot";
+  wrap.id = id;
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble bot";
+  bubble.style.opacity = "0.7"; bubble.style.fontStyle = "italic";
+  bubble.innerHTML = text;
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  container.scrollTo(0, container.scrollHeight);
+  return id;
+}
+
+function removeById(id) { const el = document.getElementById(id); if (el) el.remove(); }
+
+function typeWriterBubble(text, role, callback) {
+  const container = document.getElementById("chatContainer");
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row bot";
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble bot";
+  bubble.innerHTML = "";
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+
+  let i = 0; const speed = 20;
+  function tick() {
+    if (i < text.length) {
+      const ch = text.charAt(i++);
+      if (ch === "\n") bubble.innerHTML += "<br>";
+      else bubble.innerHTML += escapeHtml(ch);
+      container.scrollTo(0, container.scrollHeight);
+      setTimeout(tick, speed);
+    } else { if (callback) callback(); }
+  }
+  tick();
+}
+
+// KART YAPISI (Contain Image - Net Görüntü)
+function renderProducts(products) {
+  const container = document.getElementById("chatContainer");
+
+  products.slice(0, 5).forEach((p, index) => {
+    setTimeout(() => {
+      const card = document.createElement("div");
+      card.className = "product-card";
+
+      let img = p.image;
+      if (!img || img === "") img = PLACEHOLDER_IMG;
+      
+      const url = p.url || "#";
+      const title = p.title || "Ürün";
+      let price = p.price || "Fiyat Gör";
+      const reason = p.reason || "İncelemeye değer.";
+
+      card.innerHTML = `
+        <div class="pc-img-wrap">
+          <img src="${img}" class="pc-img" onerror="this.src='${PLACEHOLDER_IMG}'">
+          <div class="pc-source-badge">Trendyol</div>
+        </div>
+        <div class="pc-content">
+            <div class="pc-title">${escapeHtml(title)}</div>
             
-            completion = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "system", "content": sys_msg},{"role": "user", "content": user_msg}],
-                max_tokens=250
-            )
-            reply = completion.choices[0].message.content.strip()
-        except Exception as e:
-            reply = f"Tansiyonum düştü evladım, sonra konuşalım. ({str(e)})"
+            <div class="pc-reason-tag">
+                <i class="fa-solid fa-comment-dots"></i> ${escapeHtml(reason)}
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:end;">
+                <div class="pc-price">${escapeHtml(price)}</div>
+                <a href="${url}" target="_blank" class="pc-btn-mini">
+                    İncele <i class="fa-solid fa-chevron-right" style="font-size:9px;"></i>
+                </a>
+            </div>
+        </div>
+      `;
 
-    return ChatResponse(assistant_text=reply, speech_text=reply, data=product_data)
+      const wrap = document.createElement("div");
+      wrap.className = "msg-row bot";
+      wrap.style.display = "block";
+      wrap.appendChild(card);
+
+      container.appendChild(wrap);
+      container.scrollTo(0, container.scrollHeight);
+    }, index * 400);
+  });
+}
+
+function escapeHtml(s) {
+  return (s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+}
