@@ -1,153 +1,262 @@
-/* css/app.css (v18.0 - FAIL-SAFE VISIBILITY) */
+/* js/chat.js (v18.1 - FINAL FAIL-SAFE JS) */
 
-:root {
-  --primary: #E6C25B;
-  --font: 'Outfit', sans-serif;
-  --app-bg: #000;
-  --bottom-h: 220px;
+const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
+const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
+
+let isBusy = false;
+const ROLE_USER = "user";
+const ROLE_BOT = "bot";
+
+export function initChat() {
+  console.log("Chat Modülü Aktif v18.1 (Garantili)");
+  const sendBtn = document.getElementById("sendBtn");
+  const input = document.getElementById("text");
+  
+  setCaynanaStatus("idle");
+
+  if (sendBtn) {
+    const newBtn = sendBtn.cloneNode(true);
+    sendBtn.parentNode.replaceChild(newBtn, sendBtn);
+    newBtn.addEventListener("click", () => { if (!isBusy) sendMessage(); });
+  }
+  
+  if (input) {
+    input.addEventListener("keydown", (e) => { 
+        if (e.key === "Enter" && !isBusy) sendMessage(); 
+    });
+  }
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+function getToken() { return localStorage.getItem("auth_token") || ""; }
 
-html, body { height: 100%; width: 100%; background: #000; font-family: var(--font); overflow: hidden; }
-body { display: flex; align-items: center; justify-content: center; }
+function setCaynanaStatus(state) {
+  const badge = document.getElementById("caynanaSpeaking");
+  const dot = document.querySelector("#notifBtn .notif-dot");
+  if (!badge) return;
 
-#app {
-  width: 100%; height: 100dvh; max-width: 480px; position: relative;
-  display: flex; flex-direction: column; background: var(--app-bg); overflow: hidden;
-  box-shadow: 0 0 50px rgba(0,0,0,0.5);
+  if (state === "typing") {
+    badge.classList.add("is-typing");
+    badge.innerHTML = `<i class="fa-solid fa-pen-nib"></i> Caynana yazıyor...`;
+    if (dot) dot.classList.add("is-typing");
+  } else if (state === "replied") {
+    badge.classList.remove("is-typing");
+    badge.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Caynana dinliyor...`;
+    if (dot) {
+        dot.classList.remove("flash");
+        void dot.offsetWidth; 
+        dot.classList.add("flash");
+    }
+  } else {
+    badge.classList.remove("is-typing");
+    badge.innerHTML = `<i class="fa-solid fa-comment-dots"></i> Caynana dinliyor...`;
+  }
 }
 
-#heroImage { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
-#heroOverlay { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.95) 100%); }
-
-* --- BOT BALON: BUZLU CAM (OKUNUR + PREMIUM) --- */
-.msg-bubble.bot{
-  background: rgba(255,255,255,0.82);            /* buzlu cam */
-  backdrop-filter: blur(18px) saturate(140%);
-  -webkit-backdrop-filter: blur(18px) saturate(140%);
-  color: #0a0a0a;
-  font-weight: 600;
-  border: 1px solid rgba(255,255,255,0.45);
-  box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+function scrollChatToBottom() {
+  const container = document.getElementById("chatContainer");
+  if (container) {
+     requestAnimationFrame(() => { container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' }); });
+  }
 }
 
-/* Eski "Caynana yazıyor..." chat balonu artık kullanılmayacak ama kalırsa da cam gibi dursun */
-#globalLoadingWrap .msg-bubble.bot{
-  background: rgba(255,255,255,0.70);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  color: #111;
+async function sendMessage() {
+  if (isBusy) return;
+
+  const input = document.getElementById("text");
+  const txt = (input?.value || "").trim();
+  if (!txt) return;
+
+  const token = getToken();
+  if (!token) { triggerAuth("Giriş yap evladım."); return; }
+
+  // 1. Temizlik
+  removeLoading();
+
+  isBusy = true;
+  if (input) { input.disabled = true; input.style.opacity = "0.5"; }
+
+  addBubble(txt, ROLE_USER);
+  if (input) input.value = "";
+
+  const mode = window.currentAppMode || "chat";
+  
+  setCaynanaStatus("typing");
+  addLoading("Caynana yazıyor...");
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 40000);
+
+  try {
+    const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ message: txt, mode, persona: "normal" }),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    removeLoading(); // 🔥 KESİN TEMİZLİK
+
+    if (res.status === 401) { triggerAuth("Süren dolmuş."); return; }
+    if (!res.ok) { addBubble("Sunucu hatası evladım.", ROLE_BOT); return; }
+
+    const data = await res.json();
+    const botText = (data?.assistant_text ?? "...").toString();
+    const products = Array.isArray(data?.data) ? data.data : [];
+
+    typeWriterBubble(botText, ROLE_BOT, () => {
+      setCaynanaStatus("replied");
+      if (products.length > 0) setTimeout(() => renderProducts(products), 250);
+    });
+
+  } catch (err) {
+    clearTimeout(timeoutId);
+    removeLoading(); // 🔥 HATA OLSA BİLE TEMİZLE
+    console.error(err);
+    if (err.name === 'AbortError') {
+        addBubble("Evladım internetin mi yavaş? Cevap gelmedi.", ROLE_BOT);
+    } else {
+        addBubble("Bağlantı koptu evladım.", ROLE_BOT);
+    }
+  } finally {
+    isBusy = false;
+    if (input) { input.disabled = false; input.style.opacity = "1"; input.focus(); }
+    setTimeout(() => setCaynanaStatus("idle"), 500);
+  }
 }
 
-/* Eğer bazı cihazlarda blur desteklenmiyorsa fallback */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .msg-bubble.bot { background: rgba(255,255,255,0.95); }
+function addBubble(text, role) {
+  const container = document.getElementById("chatContainer");
+  if (!container) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row " + role;
+  
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble " + role;
+  
+  bubble.textContent = ""; 
+  const parts = String(text).split("\n");
+  parts.forEach((part, idx) => {
+    bubble.appendChild(document.createTextNode(part));
+    if (idx !== parts.length - 1) bubble.appendChild(document.createElement("br"));
+  });
+
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  scrollChatToBottom();
+  return bubble;
 }
 
-.brand-container { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; }
-.brand { font-size: 18px; font-weight: 900; color: #fff; line-height: 1; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-.brand i { color: var(--primary); margin-right: 4px; }
-.brand-slogan { font-size: 9px; font-weight: 600; color: rgba(255, 255, 255, 0.9); margin-top: 2px; }
+function typeWriterBubble(text, role, cb) {
+  const container = document.getElementById("chatContainer");
+  if (!container) return;
 
-.topActions { display: flex; gap: 8px; }
-.menu-btn { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.15); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); font-size: 14px; padding:0; }
-.menu-btn.relative { position: relative; }
-.notif-dot { position: absolute; top: 7px; right: 7px; width: 6px; height: 6px; background: #FF1744; border-radius: 50%; border: 1px solid #fff; }
-.notif-dot.flash { animation: flashDot 0.6s ease; }
-@keyframes flashDot { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); background: #fff; } }
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row " + role;
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble " + role;
 
-/* CHAT AREA */
-#main { position: relative; z-index: 10; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-#heroContent { margin-top: 80px; padding: 0 24px; pointer-events: none; animation: slideIn 0.6s ease; flex-shrink: 0; }
-@keyframes slideIn { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
 
-#heroTitle { font-size: 34px; font-weight: 800; line-height: 1.1; color: #fff; margin-bottom: 6px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-#heroDesc { font-size: 14px; font-weight: 600; color: #ddd; line-height: 1.4; border-left: 3px solid var(--primary); padding-left: 10px; }
-#caynanaSpeaking { margin-top: 8px; font-weight: 700; color: #222; display: inline-flex; align-items: center; gap: 8px; background: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 11px; transition: 0.3s; }
-#caynanaSpeaking.is-typing { background: #fff; color: #000; animation: pulse 1s infinite; }
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+  const s = String(text);
+  let i = 0;
+  const speed = 12; 
 
-#chatContainer {
-  flex: 1; overflow-y: auto;
-  padding: 20px 16px calc(var(--bottom-h) + env(safe-area-inset-bottom)) 16px;
-  display: flex; flex-direction: column; gap: 12px;
-  scrollbar-width: thin; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  function step() {
+    if (i >= s.length) { if (cb) cb(); return; }
+    const ch = s.charAt(i);
+    if (ch === "\n") bubble.appendChild(document.createElement("br"));
+    else bubble.appendChild(document.createTextNode(ch));
+    i++;
+    scrollChatToBottom();
+    setTimeout(step, speed);
+  }
+  step();
 }
 
-.msg-row { display: flex; width: 100%; animation: popIn 0.3s ease; }
-@keyframes popIn { from { transform: scale(0.98); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.msg-row.user { justify-content: flex-end; }
-.msg-row.bot, .msg-row.ai { justify-content: flex-start; }
+function addLoading(text) {
+  const container = document.getElementById("chatContainer");
+  if (!container) return;
+  
+  removeLoading(); // Varsa önce eskisini sil
 
-.msg-bubble { max-width: 88%; padding: 14px 16px; border-radius: 18px; font-size: 15px; line-height: 1.5; }
-.msg-bubble.user { background: var(--primary); color: #000; font-weight: 700; border-bottom-right-radius: 4px; }
+  const wrap = document.createElement("div");
+  wrap.className = "msg-row bot loading-bubble-wrap"; // İşaretli sınıf
+  
+  const bubble = document.createElement("div");
+  bubble.className = "msg-bubble bot";
+  bubble.innerHTML = `${text} <i class="fa-solid fa-pen-nib fa-beat-fade" style="margin-left:5px; font-size:12px;"></i>`;
 
-/* 🔥 KRİTİK DÜZELTME: Hem .bot hem .ai sınıflarını yakalar 🔥 */
-.msg-bubble.bot, .msg-bubble.ai {
-  background: rgba(255, 255, 255, 0.95) !important; /* %95 Opak Beyaz */
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  color: #000000 !important; /* Simsiyah Yazı */
-  font-weight: 500;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-bottom-left-radius: 4px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  wrap.appendChild(bubble);
+  container.appendChild(wrap);
+  scrollChatToBottom();
 }
 
-/* BOTTOM BAR */
-#bottom {
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 40;
-  background: rgba(18, 18, 18, 0.98); backdrop-filter: blur(10px);
-  border-top-left-radius: 24px; border-top-right-radius: 24px;
-  padding: 20px 16px calc(8px + env(safe-area-inset-bottom)) 16px;
-  box-shadow: 0 -5px 30px rgba(0,0,0,0.4);
-  border-top: 1px solid rgba(255,255,255,0.08);
+// 🔥 ACIMASIZ TEMİZLİK FONKSİYONU 🔥
+function removeLoading() {
+  // 1. İşaretli sınıfları sil
+  document.querySelectorAll('.loading-bubble-wrap').forEach(el => el.remove());
+  
+  // 2. Güvenlik önlemi: İçinde 'yazıyor' geçen veya animasyonlu ikon olan her şeyi bul ve sil
+  const chatContainer = document.getElementById("chatContainer");
+  if (chatContainer) {
+      const allBubbles = chatContainer.querySelectorAll('.msg-row.bot');
+      allBubbles.forEach(row => {
+          if (row.innerHTML.includes('fa-beat-fade') || row.innerText.includes('yazıyor')) {
+              row.remove();
+          }
+      });
+  }
 }
-#suggestionText { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #222; padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.2); white-space: nowrap; pointer-events: none; }
 
-.input-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.search-bar { flex: 1; height: 46px; background: rgba(255,255,255,0.08); border-radius: 14px; display: flex; align-items: center; padding: 0 12px; border: 1px solid rgba(255,255,255,0.1); }
-#text { flex: 1; border: none; background: transparent; font-size: 16px; color: #fff; outline: none; }
-#sendBtn { width: 46px; height: 46px; border-radius: 14px; border: none; background: var(--primary); color: #222; font-size: 18px; cursor: pointer; transition: 0.2s; }
-#sendBtn.is-busy { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
-.cam-btn { width: 46px; height: 46px; border-radius: 14px; background: rgba(255,255,255,0.08); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+function safeUrl(url) {
+  try {
+    const u = new URL(url, window.location.origin);
+    if (u.protocol === "http:" || u.protocol === "https:") return u.href;
+    return "#";
+  } catch { return "#"; }
+}
 
-#dockContainer { overflow-x: auto; margin-bottom: 8px; scrollbar-width: none; }
-#dock { display: flex; gap: 10px; padding: 0 4px; min-width: max-content; }
-.dock-item { opacity: 0.5; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 3px; width: 48px; flex-shrink: 0; cursor: pointer; }
-.dock-item.active { opacity: 1; transform: translateY(-3px); }
-.dock-icon { width: 42px; height: 42px; border-radius: 14px; background: rgba(255,255,255,0.1); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid rgba(255,255,255,0.05); }
-.dock-item.active .dock-icon { background: var(--primary); color: #222; border-color: transparent; }
-.dock-label { font-size: 8px; font-weight: 700; color: #bbb; }
-.dock-item.active .dock-label { color: #fff; }
+function renderProducts(products) {
+  const container = document.getElementById("chatContainer");
+  if (!container) return;
 
-.footer-sign { text-align: center; font-size: 9px; font-weight: 800; color: rgba(255,255,255,0.3); margin-bottom: 6px; }
-.oz-lines { display: flex; gap: 4px; height: 4px; width: 100%; margin-top: 2px; }
-.oz-lines span { flex: 1; border-radius: 2px; background: #333; transition: background 0.4s ease; }
+  products.slice(0, 5).forEach((p, index) => {
+    setTimeout(() => {
+      const wrap = document.createElement("div");
+      wrap.className = "msg-row bot";
+      const card = document.createElement("div");
+      card.className = "product-card";
 
-.modalMask { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
-#drawerMask { align-items: flex-start; justify-content: flex-start; }
-#drawer { width: 80%; height: 100%; background: #1a1a1a; padding: 25px; transform: translateX(-100%); animation: slideRight 0.3s forwards; color: #fff; border-right: 1px solid #333; }
-.drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-.close-btn { background: none; border: none; font-size: 24px; color: #888; cursor: pointer; }
-.menu-list { display: flex; flex-direction: column; gap: 12px; }
-.menu-item { padding: 16px; background: #222; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 12px; color: #ddd; }
-.authBox { width: 85%; background: #222; padding: 25px; border-radius: 20px; border: 1px solid #444; color: #fff; }
-.authInput { width: 100%; padding: 12px; background: #333; border: 1px solid #444; color: #fff; border-radius: 10px; margin-bottom: 12px; }
-.pc-btn { width: 100%; padding: 12px; background: var(--primary); color: #000; font-weight: 900; border: none; border-radius: 12px; cursor: pointer; display: block; text-decoration: none; text-align: center; }
+      const source = document.createElement("div"); source.className = "pc-source"; source.textContent = "Trendyol";
+      const imgWrap = document.createElement("div"); imgWrap.className = "pc-img-wrap";
+      const img = document.createElement("img"); img.className = "pc-img"; img.src = p.image || PLACEHOLDER_IMG; img.onerror = ()=>{img.src=PLACEHOLDER_IMG};
+      imgWrap.appendChild(img);
 
-/* KARTLAR */
-.product-card { background: #fff; border-radius: 12px; overflow: hidden; margin-top: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; height: 110px; border: 1px solid #e0e0e0; position: relative; }
-.pc-img-wrap { width: 110px; background: #fff; display: flex; align-items: center; justify-content: center; padding: 6px; border-right: 1px solid #f0f0f0; }
-.pc-img { width: 100%; height: 100%; object-fit: contain; }
-.pc-content { flex: 1; padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; }
-.pc-title { font-size: 13px; font-weight: 600; color: #222 !important; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 4px; }
-.pc-info-row { font-size: 10px; color: #777; display: flex; align-items: center; gap: 4px; }
-.pc-bottom-row { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
-.pc-price { font-size: 15px; font-weight: 800; color: #2e7d32; }
-.pc-btn-mini { background: #f5f5f5; color: #333 !important; text-decoration: none; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; transition: 0.2s; }
-.pc-source { position: absolute; top: 0; right: 0; background: #ff6f00; color: #fff; font-size: 8px; font-weight: 700; padding: 2px 6px; border-bottom-left-radius: 6px; }
+      const content = document.createElement("div"); content.className = "pc-content";
+      const title = document.createElement("div"); title.className = "pc-title"; title.textContent = p.title || "Ürün";
+      const info = document.createElement("div"); info.className = "pc-info-row";
+      info.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${p.reason || 'İncele'}`;
 
-#chatContainer::-webkit-scrollbar { width: 4px; }
-#chatContainer::-webkit-scrollbar-track { background: transparent; }
-#chatContainer::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.1); border-radius: 4px; }
+      const bottom = document.createElement("div"); bottom.className = "pc-bottom-row";
+      const price = document.createElement("div"); price.className = "pc-price"; price.textContent = p.price || "Fiyat Gör";
+      const btn = document.createElement("a"); btn.className = "pc-btn-mini"; btn.href = safeUrl(p.url); btn.target = "_blank"; btn.textContent = "Ürüne Git";
+      
+      bottom.appendChild(price); bottom.appendChild(btn);
+      content.appendChild(title); content.appendChild(info); content.appendChild(bottom);
+      
+      card.appendChild(source); card.appendChild(imgWrap); card.appendChild(content);
+      wrap.appendChild(card);
+      container.appendChild(wrap);
+      scrollChatToBottom();
+    }, index * 260);
+  });
+}
+
+function triggerAuth(msg) {
+  addBubble(msg, ROLE_BOT);
+  const m = document.getElementById("authModal");
+  if (m) m.style.display = "flex";
+}
