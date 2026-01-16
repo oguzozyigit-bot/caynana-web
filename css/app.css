@@ -44,15 +44,24 @@ body { display: flex; align-items: center; justify-content: center; }
 .msg-bubble { max-width: 88%; padding: 14px 16px; border-radius: 18px; font-size: 15px; line-height: 1.6; }
 .msg-bubble.user { background: var(--primary); color: #000; font-weight: 700; border-bottom-right-radius: 4px; }
 
-/* BUZLU CAM GÜNCELLEMESİ (DAHA FLU) */
+/* css/app.css içinde .msg-bubble.bot kısmını bul ve bununla değiştir */
+
 .msg-bubble.bot { 
-    background: rgba(255, 255, 255, 0.25); /* Biraz daha beyaz */
+    /* Daha şeffaf beyaz zemin */
+    background: rgba(255, 255, 255, 0.15); 
     color: #fff; 
-    backdrop-filter: blur(25px); /* BUZLU CAM GÜCÜ ARTIRILDI */
-    -webkit-backdrop-filter: blur(25px);
-    border: 1px solid rgba(255, 255, 255, 0.2); 
-    border-bottom-left-radius: 4px; 
-    text-shadow: 0 1px 2px rgba(0,0,0,0.5); /* Okunabilirlik için gölge */
+    
+    /* GÜÇLÜ BUZLU CAM */
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    
+    /* İnce parlak kenarlık (Cam hissi için) */
+    border: 1px solid rgba(255, 255, 255, 0.3); 
+    border-bottom-left-radius: 4px;
+    
+    /* Yazı okunabilirliği için hafif gölge */
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
 
 /* BOTTOM BAR */
