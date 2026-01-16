@@ -98,3 +98,43 @@ body { display: flex; align-items: center; justify-content: center; }
 .pc-info-row { font-size: 10px; color: #777; display: flex; align-items: center; gap: 4px; } .pc-bottom-row { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
 .pc-price { font-size: 15px; font-weight: 800; color: #2e7d32; } .pc-btn-mini { background: #f5f5f5; color: #333 !important; text-decoration: none; font-size: 11px; font-weight: 700; padding: 6px 10px; border-radius: 6px; border: 1px solid #ddd; transition: 0.2s; }
 .pc-source { position: absolute; top: 0; right: 0; background: #ff6f00; color: #fff; font-size: 8px; font-weight: 700; padding: 2px 6px; border-bottom-left-radius: 6px; }
+/* --- DRAWER (YAN MENÜ) DÜZELTMESİ --- */
+
+/* Maskenin z-index'ini artırıp blur'u biraz kıstım ki menü netleşsin */
+.modalMask {
+    z-index: 9999 !important; /* En üstte olsun */
+    backdrop-filter: blur(3px); /* Blur çok yoğun olmasın */
+    -webkit-backdrop-filter: blur(3px);
+    background: rgba(0, 0, 0, 0.6); /* Biraz daha koyuluk */
+}
+
+/* Menü Kutusunu Garantiye Alıyoruz */
+#drawer {
+    position: relative; /* Pozisyonu sabitle */
+    width: 80%;
+    height: 100%;
+    background: #1a1a1a;
+    padding: 25px;
+    
+    /* Başlangıçta solda gizli */
+    transform: translateX(-100%); 
+    
+    /* Animasyon Tanımı */
+    animation: slideMenuIn 0.3s ease-out forwards; 
+    
+    color: #fff;
+    border-right: 1px solid #333;
+    box-shadow: 5px 0 25px rgba(0,0,0,0.5); /* Gölge ekledim ki ayrışsın */
+}
+
+/* Animasyonun "Nereden Nereye" gideceğini elle yazdık */
+@keyframes slideMenuIn {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(0); }
+}
+
+/* Menü Kapatılırken Kullanılacak (İlerde lazım olur) */
+@keyframes slideMenuOut {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
