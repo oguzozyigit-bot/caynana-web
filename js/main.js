@@ -1,9 +1,9 @@
-/* js/main.js (v26.5 - PROFILE REDIRECT ADDED) */
+/* js/main.js (v28.0 - MEMBER MANAGEMENT SYSTEM) */
 
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
-// 🔥 BURAYA RENDER'DAKİ GOOGLE CLIENT ID'Yİ YAPIŞTIR 🔥
+// 🔥 RENDER GOOGLE CLIENT ID 🔥
 const GOOGLE_CLIENT_ID = "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com"; 
 
 let isBusy = false;
@@ -23,28 +23,107 @@ const MODE_CONFIG = {
 const MODULE_ORDER = ['chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'];
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Caynana v26.5 Started");
+    console.log("🚀 Caynana v28.0 System Ready");
     initDock();
     setAppMode('chat');
+    checkLoginStatus(); // 🔥 GİRİŞ KONTROLÜ BAŞLAT 🔥
     
-    // Google Kütüphanesi Yüklendiğinde Başlat
-    if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.includes("YAPISTIR")) {
+    // Google Init
+    if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID) {
         try {
             google.accounts.id.initialize({
                 client_id: GOOGLE_CLIENT_ID,
                 callback: handleGoogleResponse,
-                auto_select: false,
-                cancel_on_tap_outside: true
+                auto_select: false
             });
-            console.log("🟢 Google ID Servisi Hazır");
-        } catch(e) { console.error("Google Init Hatası:", e); }
+        } catch(e) { console.error("Google Init Error:", e); }
     }
 
     document.getElementById("sendBtn").addEventListener("click", sendMessage);
     document.getElementById("text").addEventListener("keydown", (e) => { if(e.key==="Enter") sendMessage(); });
 });
 
-/* ... DOCK & UI ... */
+// 🔥 OTURUM & MENÜ YÖNETİMİ 🔥
+function checkLoginStatus() {
+    const rawUser = localStorage.getItem("user_info");
+    const menuList = document.querySelector('.menu-list');
+    const slogan = document.querySelector('.brand-slogan');
+    
+    if (rawUser) {
+        // --- KULLANICI GİRİŞ YAPMIŞ ---
+        const user = JSON.parse(rawUser);
+        const userName = user.hitap || user.name || "Evladım";
+
+        // 1. Ana Sayfa Sloganını Değiştir
+        if(slogan) {
+            slogan.innerHTML = `<i class="fa-solid fa-circle-check" style="color:#4CAF50;"></i> Hoş geldin, <b>${userName}</b>`;
+            slogan.style.color = "#fff";
+        }
+
+        // 2. Menüyü Güncelle (Profil + Çıkış + Sil)
+        if(menuList) {
+            menuList.innerHTML = `
+                <a href="pages/profil.html" class="menu-item highlight" style="background: rgba(230, 194, 91, 0.15); border-color: var(--primary);">
+                    <i class="fa-solid fa-user-pen"></i> Profil (Güncelle)
+                </a>
+
+                <a href="pages/hakkimizda.html" class="menu-item link-item"><i class="fa-solid fa-circle-info"></i> Hakkımızda</a>
+                <a href="pages/faq.html" class="menu-item link-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
+                <a href="pages/iletisim.html" class="menu-item link-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
+                <a href="pages/gizlilik.html" class="menu-item link-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik Politikası</a>
+
+                <div style="margin-top:20px; border-top:1px solid #333; padding-top:10px;"></div>
+
+                <div class="menu-item link-item" onclick="handleLogout()">
+                    <i class="fa-solid fa-right-from-bracket"></i> Güvenli Çıkış
+                </div>
+
+                <div class="menu-item link-item" onclick="handleDeleteAccount()" style="color: #ff4444;">
+                    <i class="fa-solid fa-trash-can"></i> Hesabımı Sil
+                </div>
+            `;
+        }
+
+    } else {
+        // --- MİSAFİR MODU ---
+        if(slogan) slogan.innerHTML = "Yapay Zekânın Geleneksel Aklı";
+        
+        if(menuList) {
+            menuList.innerHTML = `
+                <div class="menu-item highlight" onclick="document.getElementById('authModal').style.display='flex'">
+                    <i class="fa-solid fa-user-plus"></i> Giriş Yap / Üye Ol
+                </div>
+                <a href="pages/hakkimizda.html" class="menu-item link-item"><i class="fa-solid fa-circle-info"></i> Hakkımızda</a>
+                <a href="pages/faq.html" class="menu-item link-item"><i class="fa-solid fa-circle-question"></i> S.S.S</a>
+                <a href="pages/iletisim.html" class="menu-item link-item"><i class="fa-solid fa-envelope"></i> İletişim</a>
+                <a href="pages/gizlilik.html" class="menu-item link-item"><i class="fa-solid fa-shield-halved"></i> Gizlilik Politikası</a>
+            `;
+        }
+    }
+}
+
+// ÇIKIŞ YAPMA
+window.handleLogout = () => {
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("user_info");
+    window.location.reload();
+};
+
+// HESAP SİLME (ÖNEMLİ)
+window.handleDeleteAccount = () => {
+    // Emin misin sorusu
+    if(confirm("Başkanım, emin misin? Tüm profil bilgilerin ve geçmişin silinecek. Bu işlemin geri dönüşü yok!")) {
+        // İkinci teyit (Yanlışlıkla basmasınlar)
+        if(confirm("Son kararın mı? Seni özleriz bak...")) {
+            // Silme işlemi
+            localStorage.clear();
+            alert("Hesabın başarıyla silindi. Kendine iyi bak evladım.");
+            window.location.reload();
+        }
+    }
+};
+
+/* ... DOCK & UI (STANDART KODLAR) ... */
 function initDock() {
     const dock = document.getElementById('dock');
     if (!dock) return;
@@ -206,91 +285,42 @@ window.triggerAuth = (msg) => {
     document.getElementById("authModal").style.display = "flex";
 };
 
-// 🔥 GOOGLE GİRİŞ (ID TOKEN) 🔥
+// 🔥 GOOGLE GİRİŞ (JWT) 🔥
 window.handleGoogleLogin = () => {
-    if (typeof google === 'undefined') { alert("Google servisi yüklenemedi. Sayfayı yenile."); return; }
-    if (!GOOGLE_CLIENT_ID || GOOGLE_CLIENT_ID.includes("YAPISTIR")) { alert("JS Dosyasında Client ID eksik!"); return; }
-
     const btn = document.querySelector('.btn-google');
-    if(btn) {
-        btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor...`;
-        btn.style.opacity = "0.7";
-        btn.disabled = true;
-    }
+    if(btn) { btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Bağlanıyor...`; btn.disabled = true; }
 
-    // Google Penceresini Aç
     google.accounts.id.prompt((notification) => {
-        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-            console.warn("Google Prompt açılamadı:", notification);
-            if(btn) { 
-                btn.innerHTML = '<i class="fa-brands fa-google"></i> Tekrar Dene'; 
-                btn.disabled=false; 
-                btn.style.opacity="1"; 
-            }
+        if (notification.isNotDisplayed()) {
+            if(btn) { btn.innerHTML = 'Tekrar Dene'; btn.disabled=false; }
         }
     });
 };
 
-// Google'dan Cevap Gelince Çalışır
 async function handleGoogleResponse(response) {
-    console.log("🟢 Google Credential (JWT) Alındı:", response);
+    console.log("🟢 Google JWT:", response);
     const credential = response.credential;
-
     try {
-        const payload = { 
-            token: credential,       
-            credential: credential,
-            id_token: credential,
-            google_token: credential 
-        };
-
+        const payload = { token: credential, credential: credential, id_token: credential, google_token: credential };
         const res = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
         });
-
         const data = await res.json();
-        
-        if (!res.ok) {
-            console.error("🔴 SUNUCU HATASI:", data);
-            throw new Error(data.message || data.error || "Sunucu girişi reddetti.");
-        }
+        if (!res.ok) throw new Error(data.message || "Giriş reddedildi.");
 
         if (data.token) {
-            console.log("🚀 Giriş Başarılı:", data);
-            
-            // 1. TOKEN KAYDET
             localStorage.setItem("auth_token", data.token);
-            
-            // 2. KULLANICI BİLGİSİNİ KAYDET
-            const userData = data.user || {
-                name: "Misafir",
-                picture: PLACEHOLDER_IMG,
-                id: "user_" + Math.floor(Math.random() * 10000)
-            };
+            // KULLANICI BİLGİSİNİ KAYDET
+            const userData = data.user || { name: "Misafir", picture: PLACEHOLDER_IMG };
             localStorage.setItem("user_info", JSON.stringify(userData));
 
-            // 3. UI TEMİZLE
             document.getElementById('authModal').style.display = 'none';
-            const btn = document.querySelector('.btn-google');
-            if(btn) {
-                btn.innerHTML = '<i class="fa-brands fa-google"></i> Google ile Bağlan';
-                btn.style.opacity = "1";
-                btn.disabled = false;
-            }
-
-            // 4. 🔥 DİREKT PROFİL SAYFASINA YÖNLENDİR 🔥
-            window.location.href = "pages/profil.html";
+            // Sayfayı yenile ki menüler güncellensin
+            window.location.href = "pages/profil.html"; 
         }
-
     } catch (err) {
-        alert("Giriş Yapılamadı: " + err.message);
+        alert("Hata: " + err.message);
         const btn = document.querySelector('.btn-google');
-        if(btn) {
-            btn.innerHTML = '<i class="fa-brands fa-google"></i> Google ile Bağlan';
-            btn.style.opacity = "1";
-            btn.disabled = false;
-        }
+        if(btn) { btn.innerHTML = 'Google ile Bağlan'; btn.disabled = false; }
     }
 }
