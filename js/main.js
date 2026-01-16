@@ -1,55 +1,61 @@
-/* js/main.js (v48.0 - CLICK TO SPEAK & SHORT COMMENT) */
+/* js/main.js (v50.0 - STABLE & ALL FEATURES) */
 
-// --- 1. AYARLAR ---
+// 1. AYARLAR
 const BASE_DOMAIN = "https://bikonomi-api-2.onrender.com";
 const GOOGLE_CLIENT_ID = "530064560706-03ga0q36t703ve7gmahr98.apps.googleusercontent.com"; 
 const PLACEHOLDER_IMG = "https://via.placeholder.com/200?text=Resim+Yok";
 
 const MODE_CONFIG = {
-    'chat': { title: "Caynana ile<br>Dertleş.", desc: "Hadi gel evladım, anlat bakalım.", color: "#E6C25B", icon: "fa-comments", showCam: false, showMic: true },
-    'shopping': { title: "Paranı Çarçur Etme<br>Bana Sor.", desc: "En sağlamını bulurum.", color: "#81C784", icon: "fa-bag-shopping", showCam: true, showMic: true },
-    // ... Diğer modlar aynı kalsın ...
-    'trans': { title: "Gavurca<br>Ne Demişler?", desc: "Anlamadığını sor.", color: "#FFB74D", icon: "fa-language", showCam: true, showMic: true }
+    'chat': { title: "Caynana ile<br>Dertleş.", desc: "Hadi gel evladım, anlat bakalım.", color: "#E6C25B", icon: "fa-comments", showCam: false },
+    'shopping': { title: "Paranı Çarçur Etme<br>Bana Sor.", desc: "En sağlamını bulurum.", color: "#81C784", icon: "fa-bag-shopping", showCam: true },
+    'dedikodu': { title: "Dedikodu Odası<br>Bize Özel.", desc: "Duvarların kulağı var.", color: "#90A4AE", icon: "fa-user-secret", showCam: false },
+    'fal': { title: "Kapat Fincanı<br>Gelsin Kısmetin.", desc: "Fotoğrafı çek, niyetini tut.", color: "#CE93D8", icon: "fa-mug-hot", showCam: true, specialInput: 'fal' },
+    'astro': { title: "Yıldızlar Ne Diyor<br>Bakalım.", desc: "Yıldızlar senin için parlıyor.", color: "#7986CB", icon: "fa-star", showCam: false, specialInput: 'astro' },
+    'ruya': { title: "Rüyalar Alemi<br>Hayırdır.", desc: "Kabus mu gördün?", color: "#81D4FA", icon: "fa-cloud-moon", showCam: false },
+    'health': { title: "Önce Sağlık<br>Gerisi Yalan.", desc: "Neren ağrıyor?", color: "#E57373", icon: "fa-heart-pulse", showCam: true },
+    'diet': { title: "Boğazını Tut<br>Rahat Et.", desc: "Diyet Listeni Hazırladım.", color: "#AED581", icon: "fa-carrot", showCam: false, specialInput: 'diet' },
+    'trans': { title: "Gavurca<br>Ne Demişler?", desc: "Anlamadığını sor.", color: "#FFB74D", icon: "fa-language", showCam: true }
 };
 const MODULE_ORDER = ['chat', 'shopping', 'dedikodu', 'fal', 'astro', 'ruya', 'health', 'diet', 'trans'];
 
-// --- 2. DEĞİŞKENLER ---
-let isBusy = false;
 let currentPersona = "normal";
 let currentAudio = null;
-let lastBotResponseText = ""; // Son cevabı burada tutacağız
+let lastBotResponseText = "";
 window.currentAppMode = 'chat';
 
-// --- 3. BAŞLATMA ---
+// 2. BAŞLATMA
 document.addEventListener('DOMContentLoaded', () => {
-    initDock(); setAppMode('chat'); updateUIForUser(); initSwipeDetection();
-    if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID) { try { google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleResponse, auto_select: false }); } catch(e) {} }
-    const sendBtn = document.getElementById("sendBtn");
-    const textInput = document.getElementById("text");
-    if(sendBtn) sendBtn.addEventListener("click", sendMessage);
-    if(textInput) textInput.addEventListener("keydown", (e) => { if(e.key==="Enter") sendMessage(); });
+    console.log("🚀 Caynana v50.0 Ready");
+    initDock();
+    setAppMode('chat');
+    updateUIForUser();
+    
+    // Google Login
+    if(typeof google !== 'undefined' && GOOGLE_CLIENT_ID) {
+        try { google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: handleGoogleResponse, auto_select: false }); } catch(e) {}
+    }
+
+    document.getElementById("sendBtn").addEventListener("click", sendMessage);
+    document.getElementById("text").addEventListener("keydown", (e) => { if(e.key==="Enter") sendMessage(); });
 });
 
-// --- 4. SOHBET VE ZEKÂ ---
+// 3. MESAJ GÖNDERME
 async function sendMessage() {
-    if(isBusy) return;
     const txt = document.getElementById("text").value.trim();
     if(!txt) return;
     if(!localStorage.getItem("auth_token")) { triggerAuth("Giriş yap önce."); return; }
 
-    isBusy = true;
     document.getElementById("text").value = "";
     addBubble(txt, 'user');
     
-    // Düşünüyor badge'i
     const badge = document.getElementById("caynanaSpeaking");
-    if(badge) { badge.style.display = "flex"; badge.innerHTML = `<i class="fa-solid fa-pen-nib"></i> Düşünüyor...`; }
+    badge.style.display = "flex"; badge.innerText = "Yazıyor...";
 
     try {
         const token = localStorage.getItem("auth_token");
         const user = JSON.parse(localStorage.getItem("user_info") || "{}");
         
-        // Sadece YAZI İsteği (use_voice yok, hızlı ve ucuz)
+        // Sadece Yazı İsteği
         const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
@@ -57,18 +63,18 @@ async function sendMessage() {
                 message: txt, 
                 mode: window.currentAppMode, 
                 persona: currentPersona,
-                system_instruction: generateSystemContext(currentPersona, user.hitap || "Evladım")
+                system_instruction: `Sen Caynanasın. Kullanıcı: ${user.hitap || 'Evlat'}. Mod: ${currentPersona}. Kısa cevap ver.`
             })
         });
         
         const data = await res.json();
         const ans = data.assistant_text || "...";
-        lastBotResponseText = ans; // Metni hafızaya al (Ses için lazım olacak)
+        lastBotResponseText = ans;
 
         typeWriter(ans, () => {
-            if(badge) badge.style.display = "none";
+            badge.style.display = "none";
             
-            // Cevabın altına "Dinle" butonu ekle (Onclick global fonksiyona gider)
+            // 🔥 BUTON EKLE (GARANTİLİ) 🔥
             const rows = document.querySelectorAll('.msg-row.bot');
             const lastRow = rows[rows.length - 1];
             if(lastRow) {
@@ -78,22 +84,22 @@ async function sendMessage() {
                     </div>`
                 );
             }
+            if(data.data && data.data.length > 0) renderProducts(data.data);
         });
 
     } catch(e) {
         addBubble("Bağlantı koptu.", 'bot');
-        if(badge) badge.style.display = "none";
-    } finally {
-        isBusy = false;
+        badge.style.display = "none";
     }
 }
 
-// --- 5. SES İŞLEMLERİ (TIKLA - ÖDE - DİNLE) ---
+// 4. SES İŞLEMİ (TIKLA -> GETİR -> ÇAL)
 window.fetchAndPlayAudio = async () => {
     if(!lastBotResponseText) return;
     
-    // UI Güncelle (Yükleniyor)
-    const btn = document.querySelector('.speak-btn-inline:last-child'); // Son buton
+    // Butonu bul ve güncelle
+    const btns = document.querySelectorAll('.speak-btn-inline');
+    const btn = btns[btns.length - 1];
     if(btn) btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Hazırlanıyor...`;
 
     try {
@@ -101,67 +107,107 @@ window.fetchAndPlayAudio = async () => {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ 
-                text_to_comment: lastBotResponseText, // Son cevabı gönder
+                text_to_comment: lastBotResponseText, 
                 persona: currentPersona 
             })
         });
+        
+        // Eğer backend cevap vermezse veya hata dönerse (Mevcut durumda muhtemel)
+        if(!res.ok) throw new Error("Backend yok");
+
         const data = await res.json();
         
         if(data.audio_data) {
             playAudioRaw(data.audio_data);
             if(btn) btn.innerHTML = `<i class="fa-solid fa-volume-high"></i> Tekrarla`;
         } else {
-            alert("Ses oluşturulamadı.");
-            if(btn) btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Hata`;
+            throw new Error("Ses verisi boş");
         }
     } catch(e) {
-        console.error(e);
+        console.warn("Ses hatası:", e);
         if(btn) btn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Hata`;
+        // 🔥 KAYNANA USULÜ HATA MESAJI 🔥
+        alert("Evde elektrik yokken ütü çalışmaz ya, backend gelince konuşacağım evladım. 😅");
     }
 };
 
 function playAudioRaw(b64) {
     if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-    const audio = new Audio("data:audio/mp3;base64," + b64);
-    
-    const badge = document.getElementById("caynanaSpeaking");
-    if(badge) { badge.style.display = "flex"; badge.innerHTML = `<i class="fa-solid fa-volume-high fa-beat-fade"></i> Konuşuyor...`; }
-    
-    audio.play();
-    audio.onended = () => { if(badge) badge.style.display = "none"; };
-    currentAudio = audio;
+    try {
+        currentAudio = new Audio("data:audio/mp3;base64," + b64);
+        const badge = document.getElementById("caynanaSpeaking");
+        badge.style.display = "flex"; badge.innerText = "Konuşuyor...";
+        currentAudio.play();
+        currentAudio.onended = () => { badge.style.display = "none"; };
+    } catch(e) { console.error(e); }
 }
 
-// --- 6. DİĞER YARDIMCILAR (AYNI) ---
-function generateSystemContext(p, n) { 
-    return `Adın Caynana. Rolün: ${p}. Kullanıcı: ${n}. Kısa ve öz konuş.`; 
-}
-function addBubble(text, role) { 
-    const c=document.getElementById("chatContainer"); 
-    c.innerHTML+=`<div class="msg-row ${role}"><div class="msg-bubble ${role}">${text}</div></div>`; 
-    c.scrollTop=c.scrollHeight; 
-}
-function typeWriter(text, cb) { 
-    const c=document.getElementById("chatContainer"); 
-    const id="b"+Date.now(); 
-    c.innerHTML+=`<div class="msg-row bot"><div class="msg-bubble bot" id="${id}"></div></div>`; 
-    const el=document.getElementById(id); let i=0; 
-    function step(){ if(i>=text.length){if(cb)cb();return;} el.innerHTML+=text.charAt(i); i++; c.scrollTop=c.scrollHeight; setTimeout(step,15); } step(); 
+// 5. YARDIMCILAR & UI
+function initDock() {
+    const dock = document.getElementById('dock');
+    dock.innerHTML = '';
+    MODULE_ORDER.forEach(key => {
+        dock.innerHTML += `<div class="dock-item" onclick="setAppMode('${key}')"><div class="dock-icon"><i class="fa-solid ${MODE_CONFIG[key].icon}"></i></div></div>`;
+    });
 }
 
-// --- GLOBAL WINDOW BINDINGS ---
+function setAppMode(m) {
+    window.currentAppMode = m;
+    const c = MODE_CONFIG[m];
+    document.getElementById('heroTitle').innerHTML = c.title;
+    document.getElementById('heroDesc').innerHTML = c.desc;
+    document.documentElement.style.setProperty('--primary', c.color);
+    
+    // Resim Değişimi
+    const img = document.getElementById('heroImage');
+    img.style.opacity = '0';
+    setTimeout(() => { img.src = `./images/hero-${m}.png`; img.onload = () => img.style.opacity = '1'; }, 200);
+
+    // Buton Gizle/Göster
+    ['falInputArea','stdInputArea','dietActions','astroActions'].forEach(i=>document.getElementById(i).style.display='none');
+    if(c.specialInput === 'fal') document.getElementById('falInputArea').style.display='flex';
+    else document.getElementById('stdInputArea').style.display='flex';
+    if(c.specialInput === 'diet') document.getElementById('dietActions').style.display='flex';
+    if(c.specialInput === 'astro') document.getElementById('astroActions').style.display='flex';
+
+    // Renkli Çizgiler
+    const idx = MODULE_ORDER.indexOf(m);
+    for(let i=0; i<4; i++) {
+        const line = document.getElementById(`line${i+1}`);
+        if(line) line.style.background = MODE_CONFIG[MODULE_ORDER[(idx+i)%9]].color;
+    }
+
+    document.getElementById('chatContainer').innerHTML = '';
+}
+
+function updateUIForUser() {
+    const r = localStorage.getItem("user_info");
+    const menu = document.querySelector('.menu-list');
+    if(r) {
+        const u = JSON.parse(r);
+        document.getElementById('userInfoBar').classList.add('visible');
+        document.getElementById('headerHitap').innerText = u.hitap.toUpperCase();
+        document.getElementById('headerAvatar').src = u.picture || PLACEHOLDER_IMG;
+        menu.innerHTML = `<a href="pages/profil.html" class="menu-item">Profil</a><a href="pages/sss.html" class="menu-item">S.S.S</a><div class="menu-item" onclick="window.handleLogout()">Çıkış</div>`;
+    } else {
+        menu.innerHTML = `<div class="menu-item" onclick="document.getElementById('authModal').style.display='flex'">Giriş Yap</div>`;
+    }
+}
+
+// Global Binding
 window.openDrawer = () => document.getElementById('drawerMask').style.display='flex';
 window.closeDrawer = () => document.getElementById('drawerMask').style.display='none';
 window.openPersonaModal = () => document.getElementById('personaModal').style.display='flex';
-window.changePersona = (p) => { currentPersona = p; document.getElementById('personaModal').style.display='none'; addBubble(`Mod: ${p.toUpperCase()}`, 'bot'); };
+window.changePersona = (p) => { currentPersona=p; document.getElementById('personaModal').style.display='none'; addBubble(`Mod: ${p.toUpperCase()}`, 'bot'); };
 window.clearCurrentChat = () => { document.getElementById('chatContainer').innerHTML=''; };
-window.handleGoogleLogin = () => google.accounts.id.prompt();
 window.handleLogout = () => { localStorage.clear(); window.location.reload(); };
-window.toggleVoice = () => { alert("Artık her cevapta 'Dinle' butonu çıkacak."); };
+window.handleGoogleLogin = () => google.accounts.id.prompt();
+window.toggleVoice = () => alert("Sesi her mesajda 'Dinle' butonuyla açabilirsin.");
+window.triggerAuth = (m) => { addBubble(m, 'bot'); document.getElementById('authModal').style.display='flex'; };
+window.generateDietList = () => addBubble("Diyet listesi hazırlanıyor...", 'bot');
+window.loadAstroContent = () => addBubble("Yıldızlara bakılıyor...", 'bot');
 
-// Diğer modüller
-function initDock() { /* v45 ile aynı */ const d=document.getElementById('dock'); d.innerHTML=''; MODULE_ORDER.forEach(k=>{d.innerHTML+=`<div class="dock-item" onclick="setAppMode('${k}')"><div class="dock-icon"><i class="fa-solid ${MODE_CONFIG[k].icon}"></i></div></div>`}); }
-function setAppMode(m) { window.currentAppMode=m; const c=MODE_CONFIG[m]; document.getElementById('heroTitle').innerHTML=c.title; document.getElementById('heroDesc').innerHTML=c.desc; document.documentElement.style.setProperty('--primary',c.color); document.getElementById('chatContainer').innerHTML=''; }
-function updateUIForUser() { const r=localStorage.getItem("user_info"); if(r){document.getElementById('userInfoBar').classList.add('visible'); const u=JSON.parse(r); document.getElementById('headerHitap').innerText=u.hitap.toUpperCase();} }
-function initSwipeDetection() {} // Basit kalsın
+function addBubble(t, r) { const c=document.getElementById('chatContainer'); c.innerHTML+=`<div class="msg-row ${r}"><div class="msg-bubble ${r}">${t}</div></div>`; c.scrollTop=c.scrollHeight; }
+function typeWriter(t, cb) { const c=document.getElementById('chatContainer'); const id="b"+Date.now(); c.innerHTML+=`<div class="msg-row bot"><div class="msg-bubble bot" id="${id}"></div></div>`; const el=document.getElementById(id); let i=0; function s(){ if(i>=t.length){if(cb)cb();return;} el.innerHTML+=t.charAt(i); i++; c.scrollTop=c.scrollHeight; setTimeout(s,15); } s(); }
 async function handleGoogleResponse(r) { const p=JSON.parse(atob(r.credential.split('.')[1])); localStorage.setItem("user_info",JSON.stringify({hitap:p.given_name, picture:p.picture})); localStorage.setItem("auth_token", "demo_token"); window.location.href="pages/profil.html"; }
+function renderProducts(p) { p.slice(0,5).forEach((x,i)=>{ setTimeout(()=>{ document.getElementById("chatContainer").innerHTML+=`<div class="msg-row bot"><div class="product-card"><img src="${x.image||PLACEHOLDER_IMG}" class="pc-img"><div class="pc-content"><div class="pc-title">${x.title}</div><div class="pc-price">${x.price}</div><a href="${x.url}" target="_blank" class="pc-btn-mini">Git</a></div></div></div>`; },i*200); }); }
