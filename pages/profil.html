@@ -1,145 +1,222 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Profil Ayarları</title>
-    
-    <script>
-        // Eğer kullanıcı bilgisi yoksa, sayfayı gösterme direkt ana sayfaya at.
-        if (!localStorage.getItem("user_info")) {
-            window.location.replace("../index.html"); // .href yerine .replace kullandım ki "Geri" tuşu çalışmasın
-        }
-    </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Profil Ayarları</title>
+<style>
+  :root { --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --card-bg: #1a1a1a; }
+  body { margin: 0; padding: 0; background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+  .mobile-frame { width: 100%; max-width: 480px; height: 100%; background: var(--bg); display: flex; flex-direction: column; position: relative; }
+  @media (min-width: 500px) { .mobile-frame { height: 95vh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5vh; } }
 
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/app.css?v=56.0">
+  .header { padding: 20px; text-align: center; border-bottom: 1px solid #222; background: rgba(20,20,20,0.95); }
+  .header h2 { margin: 0; font-size: 18px; color: #fff; }
+  .header p { margin: 5px 0 0; font-size: 12px; color: #888; }
+
+  .scroll-content { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+  
+  .p-avatar-area { text-align: center; margin-bottom: 10px; }
+  .p-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; background: #222; }
+  
+  .section-title { font-size: 11px; color: var(--pistachio); font-weight: 700; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid #222; padding-bottom: 5px; letter-spacing: 1px; }
+  
+  .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
+  .form-label { font-size: 12px; color: #888; font-weight: 600; margin-left: 2px; }
+  .form-input, .form-select { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; outline: none; width: 100%; transition: 0.2s; }
+  .form-input:focus { border-color: var(--gold); background: #222; }
+  .form-input:disabled { opacity: 0.5; cursor: default; }
+
+  .save-btn { background: var(--gold); color: #000; border: none; padding: 16px; border-radius: 12px; font-weight: 800; font-size: 15px; width: 100%; cursor: pointer; margin-top: 20px; margin-bottom: 40px; }
+  
+  .id-copy-box { display: flex; align-items: center; gap: 10px; background: #111; padding: 10px; border-radius: 8px; border: 1px dashed #333; }
+  .id-text { flex: 1; font-family: monospace; color: var(--gold); font-size: 14px; }
+  .copy-btn { background: none; border: none; cursor: pointer; font-size: 16px; }
+
+  /* Dinamik Alanlar */
+  .conditional-field { display: none; animation: fadeIn 0.3s ease; border-left: 2px solid var(--gold); padding-left: 10px; margin-left: 5px; margin-bottom: 15px; }
+  .conditional-field.show { display: block; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(-5px);} to{opacity:1; transform:translateY(0);} }
+</style>
 </head>
 <body>
-    <div id="app">
-        <div id="topbar">
-            <div class="topbarGlass">
-                <div class="action-btn" onclick="window.location.href='../index.html'">
-                    <i class="fa-solid fa-arrow-left"></i>
-                </div>
-                <div class="brand-logo">PROFİL</div>
-                <div style="width:32px;"></div>
-            </div>
-        </div>
 
-        <div class="page-container">
-            <div style="text-align:center; margin-bottom:25px;">
-                <img id="userAvatar" src="https://via.placeholder.com/100" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--primary); object-fit:cover;">
-                <div style="font-size:11px; color:#666; margin-top:5px;">Google Hesabın</div>
-            </div>
+<div class="mobile-frame">
+  <div class="header">
+    <h2>Profil Ayarları</h2>
+    <p>Caynana seni daha iyi tanısın</p>
+  </div>
 
-            <div class="form-group">
-                <label class="form-label">Ad Soyad (Google'dan)</label>
-                <input type="text" id="fullname" class="form-input" disabled style="opacity:0.6; cursor:not-allowed;">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" style="color:var(--primary); font-weight:900;">Caynana Sana Nasıl Seslensin? (Max 10 Harf)</label>
-                <input type="text" id="hitap" class="form-input" maxlength="10" placeholder="Örn: Damat Bey">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Cinsiyet</label>
-                <select id="gender" class="form-select">
-                    <option value="">Seçiniz</option>
-                    <option value="Kadin">Kadın</option>
-                    <option value="Erkek">Erkek</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Doğum Tarihi</label>
-                <input type="date" id="birthDate" class="form-input">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Medeni Durum</label>
-                <select id="maritalStatus" class="form-select">
-                    <option value="Bekar">Bekar</option>
-                    <option value="Evli">Evli</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Çocuk Sayısı</label>
-                <select id="childCount" class="form-select" onchange="toggleChildNames()">
-                    <option value="0">Yok</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3+</option>
-                </select>
-            </div>
-
-            <div id="childNamesArea" class="form-group" style="display:none; background:#222; padding:15px; border-radius:12px; border:1px solid #333;">
-                <label class="form-label" style="color:#ddd;">Çocukların İsimleri</label>
-                <input type="text" id="childNames" class="form-input" placeholder="Örn: Ali, Ayşe">
-            </div>
-
-            <button class="save-btn" onclick="saveProfile()">
-                <i class="fa-solid fa-floppy-disk"></i> KAYDET VE ÇIK
-            </button>
-            <div style="height:50px;"></div>
-        </div>
+  <div class="scroll-content">
+    <div class="p-avatar-area">
+      <img id="formAvatar" class="p-avatar" src="" alt="Avatar">
+      <div style="font-size:11px; color:#666; margin-top:8px;">Google Hesabın</div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const rawUser = localStorage.getItem("user_info");
-            if(rawUser) {
-                const u = JSON.parse(rawUser);
-                const p = u.profile || {};
-                
-                document.getElementById('userAvatar').src = u.picture || "https://via.placeholder.com/100";
-                document.getElementById('fullname').value = p.fullname || u.name || "";
-                
-                if(u.hitap) document.getElementById('hitap').value = u.hitap;
-                if(p.gender) document.getElementById('gender').value = p.gender;
-                if(p.birthDate) document.getElementById('birthDate').value = p.birthDate;
-                if(p.maritalStatus) document.getElementById('maritalStatus').value = p.maritalStatus;
-                
-                if(p.childCount) { 
-                    document.getElementById('childCount').value = p.childCount; 
-                    toggleChildNames();
-                }
-                if(p.childNames) document.getElementById('childNames').value = p.childNames;
-            }
-        });
+    <div class="section-title">Mecburi Alanlar</div>
+    
+    <div class="form-group">
+      <label class="form-label">Caynana sana nasıl hitap etsin?</label>
+      <input type="text" id="formHitap" class="form-input" placeholder="Örn: Evladım, Aslanım, Reis">
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Caynana'ya bir isim ver</label>
+      <input type="text" id="formBotName" class="form-input" placeholder="Örn: Sultan Hanım, Şerife Teyze">
+    </div>
 
-        function toggleChildNames() {
-            const val = document.getElementById('childCount').value;
-            document.getElementById('childNamesArea').style.display = (val !== '0') ? 'block' : 'none';
-        }
+    <div class="form-group">
+      <label class="form-label">Ad Soyad (Google)</label>
+      <input type="text" id="formFullname" class="form-input" disabled>
+    </div>
 
-        function saveProfile() {
-            const hitap = document.getElementById('hitap').value.trim();
-            if(!hitap) { alert("Hitap ismi boş olamaz!"); return; }
+    <div class="form-group">
+      <label class="form-label">ID Numarası (Değişmez)</label>
+      <div class="id-copy-box">
+        <span id="formID" class="id-text">...</span>
+        <button class="copy-btn" onclick="copyID()">📋</button>
+      </div>
+    </div>
 
-            const profile = {
-                fullname: document.getElementById('fullname').value,
-                gender: document.getElementById('gender').value,
-                birthDate: document.getElementById('birthDate').value,
-                maritalStatus: document.getElementById('maritalStatus').value,
-                childCount: document.getElementById('childCount').value,
-                childNames: document.getElementById('childNames').value
-            };
+    <div class="form-group" style="flex-direction:row; gap:10px;">
+      <div style="flex:1;">
+        <label class="form-label">Doğum Tarihi</label>
+        <input type="date" id="formDob" class="form-input">
+      </div>
+      <div style="flex:1;">
+        <label class="form-label">Cinsiyet</label>
+        <select id="formGender" class="form-select">
+          <option value="">Seçiniz</option>
+          <option value="Kadın">Kadın</option>
+          <option value="Erkek">Erkek</option>
+        </select>
+      </div>
+    </div>
 
-            let u = JSON.parse(localStorage.getItem("user_info")) || {};
-            u.hitap = hitap;
-            u.profile = profile;
-            localStorage.setItem("user_info", JSON.stringify(u));
-            
-            const btn = document.querySelector('.save-btn');
-            btn.innerHTML = `<i class="fa-solid fa-check"></i> KAYDEDİLDİ`;
-            btn.style.background = "#4CAF50";
-            
-            setTimeout(() => { window.location.href = "../index.html"; }, 1000);
-        }
-    </script>
+    <div class="section-title">Detaylar (İlişkiyi Güçlendirir)</div>
+
+    <div class="form-group">
+      <label class="form-label">Medeni Durum</label>
+      <select id="formStatus" class="form-select" onchange="toggleMarriedFields()">
+        <option value="Bekar">Bekar</option>
+        <option value="Evli">Evli</option>
+      </select>
+    </div>
+
+    <div id="marriedFields" class="conditional-field">
+      <div class="form-group">
+        <label class="form-label">Eşinin Adı</label>
+        <input type="text" id="formSpouse" class="form-input" placeholder="Yenge/Enişte adı">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Çocuk Sayısı</label>
+      <select id="formChildCount" class="form-select" onchange="toggleChildFields()">
+        <option value="0">Yok</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3+</option>
+      </select>
+    </div>
+
+    <div id="childFields" class="conditional-field">
+      <div class="form-group">
+        <label class="form-label">Çocukların Adları ve Yaşları</label>
+        <input type="text" id="formChildDetails" class="form-input" placeholder="Örn: Ali (5), Ayşe (8)">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Tuttuğu Takım</label>
+      <input type="text" id="formTeam" class="form-input" placeholder="Örn: Beşiktaş">
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Yaşadığı İl</label>
+      <input type="text" id="formCity" class="form-input" placeholder="Örn: Ankara">
+    </div>
+
+    <button class="save-btn" onclick="saveProfile()">💾 KAYDET VE BAŞLA</button>
+  </div>
+</div>
+
+<script>
+  let currentUser = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // LocalStorage kontrol et
+    const data = localStorage.getItem('caynana_user_v8');
+    if(!data) {
+      // Veri yoksa ana sayfaya at (Login olmamış demektir)
+      window.location.href = '../index.html'; 
+      return;
+    }
+
+    currentUser = JSON.parse(data);
+    
+    // Verileri Doldur
+    document.getElementById('formAvatar').src = currentUser.avatar;
+    document.getElementById('formFullname').value = currentUser.fullname;
+    document.getElementById('formID').innerText = currentUser.id;
+
+    // Eğer daha önce doldurduysa onları da getir
+    if(currentUser.hitap) document.getElementById('formHitap').value = currentUser.hitap;
+    if(currentUser.botName) document.getElementById('formBotName').value = currentUser.botName;
+    if(currentUser.dob) document.getElementById('formDob').value = currentUser.dob;
+    if(currentUser.gender) document.getElementById('formGender').value = currentUser.gender;
+    // ... Diğer alanlar da buraya eklenebilir ...
+  });
+
+  function toggleMarriedFields() {
+    const val = document.getElementById('formStatus').value;
+    const div = document.getElementById('marriedFields');
+    val === 'Evli' ? div.classList.add('show') : div.classList.remove('show');
+  }
+
+  function toggleChildFields() {
+    const val = document.getElementById('formChildCount').value;
+    const div = document.getElementById('childFields');
+    val !== '0' ? div.classList.add('show') : div.classList.remove('show');
+  }
+
+  function copyID() {
+    navigator.clipboard.writeText(currentUser.id);
+    alert("ID Kopyalandı!");
+  }
+
+  function saveProfile() {
+    // Mecburi Alan Kontrolü
+    const hitap = document.getElementById('formHitap').value;
+    const botName = document.getElementById('formBotName').value;
+    const dob = document.getElementById('formDob').value;
+    const gender = document.getElementById('formGender').value;
+
+    if(!hitap || !botName || !dob || !gender) {
+      alert("Lütfen mecburi alanları doldur evladım.");
+      return;
+    }
+
+    // Objeyi Güncelle
+    currentUser.hitap = hitap;
+    currentUser.botName = botName;
+    currentUser.dob = dob;
+    currentUser.gender = gender;
+    currentUser.maritalStatus = document.getElementById('formStatus').value;
+    currentUser.spouse = document.getElementById('formSpouse').value;
+    currentUser.childCount = document.getElementById('formChildCount').value;
+    currentUser.childDetails = document.getElementById('formChildDetails').value;
+    currentUser.team = document.getElementById('formTeam').value;
+    currentUser.city = document.getElementById('formCity').value;
+    
+    // Kilit Nokta: Profil Tamamlandı
+    currentUser.isProfileCompleted = true;
+
+    localStorage.setItem('caynana_user_v8', JSON.stringify(currentUser));
+
+    // Ana Sayfaya Dön
+    window.location.href = '../index.html';
+  }
+</script>
 </body>
 </html>
