@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
-<title>Caynana AI v6.1</title>
+<title>Caynana AI v6.2</title>
 <style>
   :root {
     --bg-outer: #000000;
@@ -47,8 +47,8 @@
   }
   .left-controls { display: flex; gap: 15px; align-items: center; }
   .hamb-btn { background: none; border: none; cursor: pointer; color: #aaa; font-size: 24px; padding: 0; }
-  .mini-eye-btn { background: none; border: 1px solid #333; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--gold); font-size: 16px; opacity: 0.5; transition: 0.3s; }
-  .mini-eye-btn.active { opacity: 1; background: var(--gold); color: #000; box-shadow: 0 0 10px var(--gold); }
+  
+  /* Logo Area */
   .brand-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 40px; flex: 1;}
   .logo-area { display: flex; align-items: center; gap: 8px; }
   .brand-name { font-weight: 700; font-size: 16px; color: #fff; }
@@ -104,26 +104,18 @@
   .mobile-frame.mumbling .mouth { transform: scaleX(1.15); border-color: #ff5722; }
   .close-track-btn { margin-top: 10px; background: rgba(198, 40, 40, 0.2); color: #ef9a9a; border: 1px solid rgba(198, 40, 40, 0.5); padding: 5px 14px; border-radius: 20px; font-size: 11px; cursor: pointer; }
 
-  /* --- 3. CHAT AREA (Scrollbar Gizlendi) --- */
+  /* CHAT AREA - SCROLL HIDE & WORD BREAK */
   .chat-area {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px 16px;
-    display: flex; flex-direction: column; gap: 16px;
-    scroll-behavior: smooth;
-    /* Firefox */
-    scrollbar-width: none;
-    /* IE/Edge */
-    -ms-overflow-style: none;
+    flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
   }
-  /* Webkit (Chrome, Safari, Opera) */
-  .chat-area::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
-  }
+  .chat-area::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
-  .bubble { max-width: 85%; padding: 12px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; position: relative; animation: pop 0.2s ease; }
+  .bubble { 
+    max-width: 85%; padding: 12px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; position: relative; animation: pop 0.2s ease;
+    word-wrap: break-word; word-break: break-word; /* Taşmayı önler */
+  }
   @keyframes pop { from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
   .bubble.bot { align-self: flex-start; background: #1c1c1c; border-left: 3px solid var(--gold); color: #ddd; border-top-left-radius: 4px; }
   .bubble.user { align-self: flex-end; background: #222; border-right: 3px solid var(--pistachio); color: #fff; border-top-right-radius: 4px; text-align: right; }
@@ -133,11 +125,11 @@
   .product-card:active { transform: scale(0.98); }
   @keyframes slideIn { from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
   .p-img { width: 60px; height: 60px; background: #333; border-radius: 10px; flex-shrink: 0; display:flex; align-items:center; justify-content:center; font-size:24px;}
-  .p-info { flex: 1; }
-  .p-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+  .p-info { flex: 1; min-width: 0; /* İçerik taşmasını önler */ }
+  .p-title { font-size: 14px; font-weight: 600; color: #fff; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .p-price { font-size: 15px; color: var(--gold); font-weight: 700; }
   .p-source { font-size: 10px; color: #888; }
-  .p-comment { margin-top: 6px; font-size: 11px; color: #ccc; font-style: italic; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px; }
+  .p-comment { margin-top: 6px; font-size: 11px; color: #ccc; font-style: italic; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 4px; word-wrap: break-word; }
   .product-card.recommend { border: 1px solid var(--pistachio); box-shadow: 0 0 10px rgba(190, 242, 100, 0.1); }
   .product-card.recommend .p-comment { color: var(--pistachio); }
   .product-card.expensive { border: 1px solid #d32f2f; }
@@ -156,7 +148,16 @@
   .send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--pistachio); color: #000; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(190, 242, 100, 0.3); }
   .send-btn:active { transform: scale(0.9); }
   .send-btn svg { width: 20px; height: 20px; fill: #000; transform: translateX(-2px) translateY(1px); }
-  textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; resize: none; padding: 10px; max-height: 100px; min-height: 24px; font-family: inherit; }
+  
+  /* TEXTAREA - SCROLL HIDE & WORD BREAK */
+  textarea {
+    flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; resize: none; padding: 10px; max-height: 100px; min-height: 24px; font-family: inherit;
+    scrollbar-width: none; /* FF */
+    word-break: break-all; /* Uzun kelimeleri kırar */
+    word-wrap: break-word;
+  }
+  textarea::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
   .footer { text-align: center; font-size: 9px; color: #444; margin-top: 2px; }
   .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 4000; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(5px); display:flex; justify-content: flex-start;}
   .menu-overlay.open { opacity: 1; pointer-events: auto; }
@@ -173,15 +174,14 @@
     <div class="menu-sidebar">
       <a href="#" class="menu-item">Hesabım</a>
       <a href="#" class="menu-item">Ayarlar</a>
-      <a href="#" class="menu-item" style="color:var(--gold)">Caynana v6.1</a>
+      <a href="#" class="menu-item" style="color:var(--gold)">Caynana v6.2</a>
     </div>
   </div>
 
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
-      <button class="mini-eye-btn" id="miniEyeBtn" title="Gözleri Aç/Kapa">👁️</button>
-    </div>
+      </div>
     <div class="brand-wrapper" id="brandWrapper">
       <div class="logo-area">
         <svg class="seesaw-svg" viewBox="0 0 40 20">
@@ -256,7 +256,6 @@
   const brandWrapper = document.getElementById('brandWrapper');
   const openTrackBtn = document.getElementById('openTrackBtn');
   const closeTrackBtn = document.getElementById('closeTrackBtn');
-  const miniEyeBtn = document.getElementById('miniEyeBtn');
   const camBtn = document.getElementById('camBtn');
   const micBtn = document.getElementById('micBtn');
   const sendBtn = document.getElementById('sendBtn');
@@ -272,7 +271,7 @@
   let idleTimer = null;
   const IDLE_LIMIT = 10000;
 
-  // CAYNANA DATABASE (Simülasyon)
+  // CAYNANA DATABASE
   const productDB = {
     'telefon': [
       { name: 'iPhone 15 Pro Max', price: 98000, source: 'TeknoStore', img: '📱' },
@@ -289,36 +288,28 @@
     ]
   };
 
-  // --- CHARACTER LOGIC ---
   function analyzeProduct(product) {
     let mood = 'normal';
     let comment = '';
     let styleClass = '';
-
     if (product.price > 50000) {
-      mood = 'angry';
-      styleClass = 'expensive';
+      mood = 'angry'; styleClass = 'expensive';
       const r = Math.random();
-      if(r < 0.3) comment = "Ocağına incir ağacı mı dikeceksin? Bu fiyat ne!";
-      else if(r < 0.6) comment = "Evladım sen banka mı soydun? Uzak dur bundan.";
+      if(r < 0.3) comment = "Ocağına incir ağacı mı dikeceksin?";
+      else if(r < 0.6) comment = "Evladım sen banka mı soydun?";
       else comment = "Buna bu parayı veren aklını peynir ekmekle yemiştir.";
     } 
     else if (product.price < 2000) {
-      mood = 'happy';
-      styleClass = 'recommend';
+      mood = 'happy'; styleClass = 'recommend';
       const r = Math.random();
-      if(r < 0.3) comment = "Bak bu kelepir! Hemen al, kaçırma.";
-      else if(r < 0.6) comment = "Sudan ucuz. İnşallah defolu değildir.";
-      else comment = "İşte akıllı alışveriş budur. Aferin.";
+      if(r < 0.3) comment = "Bak bu kelepir! Hemen al.";
+      else if(r < 0.6) comment = "Sudan ucuz.";
+      else comment = "İşte akıllı alışveriş budur.";
     } 
     else if (product.name.includes('iPhone') || product.name.includes('Mac')) {
-      mood = 'shock';
-      comment = "İsmi var diye para saçma. Alo desin yeter.";
+      mood = 'shock'; comment = "İsmi var diye para saçma.";
     }
-    else {
-      mood = 'normal';
-      comment = "Eh işte, fiyatı makul. Alınabilir.";
-    }
+    else { mood = 'normal'; comment = "Eh işte, fiyatı makul."; }
     return { mood, comment, styleClass };
   }
 
@@ -386,14 +377,13 @@
   function toggleTracking(active) {
     isTracking = active;
     if(active) {
-      frame.classList.add('tracking-active'); miniEyeBtn.classList.add('active'); resetIdle();
+      frame.classList.add('tracking-active'); resetIdle();
     } else {
-      frame.classList.remove('tracking-active'); miniEyeBtn.classList.remove('active'); stopCamera(); clearTimeout(idleTimer); frame.classList.remove('sleeping'); setMood('normal');
+      frame.classList.remove('tracking-active'); stopCamera(); clearTimeout(idleTimer); frame.classList.remove('sleeping'); setMood('normal');
     }
   }
   openTrackBtn.addEventListener('click', () => toggleTracking(true));
   closeTrackBtn.addEventListener('click', () => toggleTracking(false));
-  miniEyeBtn.addEventListener('click', () => toggleTracking(!isTracking));
 
   // --- MESAJ & MONİTÖR ---
   async function sendMessage() {
@@ -405,16 +395,18 @@
     frame.classList.remove('mumbling');
     if(isTracking) { setGaze(0, 0.8); setTimeout(()=>setGaze(0,0), 300); }
     await sleep(600);
-    processQuery(txt);
+    // YAZARAK GÖNDERİLDİĞİ İÇİN VOICE = FALSE
+    processQuery(txt, false);
   }
 
-  async function processQuery(txt) {
+  async function processQuery(txt, isVoice) {
     const t = txt.toLowerCase();
     let found = false;
     for (const key in productDB) {
       if (t.includes(key)) {
         found = true;
-        await botReply(`Bak senin için şunları buldum... Ama fiyatlara dikkat et!`, true);
+        // VOICE parametresi burada kullanılıyor
+        await botReply(`Bak senin için şunları buldum... Ama fiyatlara dikkat et!`, isVoice);
         const products = productDB[key];
         for (const p of products) {
           const analysis = analyzeProduct(p);
@@ -431,7 +423,8 @@
       if(t.includes('merhaba')) ans = "Sana da merhaba evladım.";
       else if(t.includes('takip')) ans = "Gözüm üzerinde, sakın hata yapma.";
       else ans = "Bunu hafızaya attım. Başka ne lazım?";
-      await botReply(ans, true);
+      // VOICE parametresi burada kullanılıyor
+      await botReply(ans, isVoice);
     }
   }
 
@@ -456,10 +449,15 @@
     chat.appendChild(d); scrollChat(); 
   }
 
+  // --- BOT REPLY ---
   async function botReply(txt, voice) {
     brandWrapper.classList.add('tilt-right');
     if(voice) speak(txt);
-    else if(isTracking) { frame.classList.add('speaking'); setTimeout(() => frame.classList.remove('speaking'), 1500); }
+    else if(isTracking) { 
+      // Ses yoksa sadece dudak oynat (sessiz)
+      frame.classList.add('speaking'); 
+      setTimeout(() => frame.classList.remove('speaking'), 1500); 
+    }
 
     const b = document.createElement('div'); b.className = 'bubble bot'; chat.appendChild(b);
     for(let c of txt) { b.innerText += c; scrollChat(); await sleep(30); }
@@ -475,6 +473,7 @@
     window.speechSynthesis.speak(u);
   }
 
+  // Input Events
   msgInput.addEventListener('input', () => {
     resetIdle();
     msgInput.style.height = 'auto'; msgInput.style.height = Math.min(msgInput.scrollHeight, 100) + 'px';
@@ -529,6 +528,7 @@
     }
   }
 
+  // --- MİKROFON ---
   micBtn.addEventListener('click', () => {
     if(!isTracking) toggleTracking(true);
     resetIdle();
@@ -538,7 +538,12 @@
     const r = new SR(); r.lang = 'tr-TR';
     micBtn.classList.add('active'); isMicListening = true;
     r.onstart = () => brandWrapper.classList.add('tilt-left');
-    r.onresult = (ev) => { const t = ev.results[0][0].transcript; addBubble(t, 'user'); processQuery(t); };
+    r.onresult = (ev) => { 
+      const t = ev.results[0][0].transcript; 
+      addBubble(t, 'user'); 
+      // MİKROFON İLE GELDİĞİ İÇİN VOICE = TRUE
+      processQuery(t, true); 
+    };
     r.onend = () => { micBtn.classList.remove('active'); isMicListening = false; brandWrapper.classList.remove('tilt-left'); };
     r.start();
   });
