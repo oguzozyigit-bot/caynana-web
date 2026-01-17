@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
-<title>Caynana AI v8.1</title>
+<title>Caynana AI v8.1 Fixed</title>
 <style>
-  /* --- TEMEL CSS (Değişmedi) --- */
+  /* --- TEMEL CSS --- */
   :root { --bg-outer: #000; --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --glass: rgba(20, 20, 20, 0.98); --border: rgba(255, 255, 255, 0.12); --lip-color: #d84315; --card-bg: #1a1a1a; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; background: var(--bg-outer); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); overflow: hidden; display: flex; align-items: center; justify-content: center; }
@@ -27,7 +27,7 @@
   .agreement-box input { width: 18px; height: 18px; accent-color: var(--gold); }
   .agreement-box a { color: var(--gold); text-decoration: none; border-bottom: 1px dotted var(--gold); }
 
-  /* --- MENU & DİĞERLERİ (Mevcut yapıyı korudum) --- */
+  /* --- MENU & DİĞERLERİ --- */
   .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 5000; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(5px); display:flex; justify-content: flex-start;}
   .menu-overlay.open { opacity: 1; pointer-events: auto; }
   .menu-sidebar { width: 270px; height: 100%; background: #161616; padding: 60px 20px 20px; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; border-right: 1px solid #333; box-shadow: 5px 0 30px rgba(0,0,0,0.5); }
@@ -39,7 +39,7 @@
   .delete-account { color: #ff5252; font-size: 13px; cursor: pointer; padding: 10px; text-align: center; border: 1px solid #ff5252; border-radius: 8px; transition: 0.2s; }
   .menu-version { text-align: center; font-size: 10px; color: #555; margin-top: 20px; }
 
-  /* --- GÖRSEL BİLEŞENLER (Face, Chat, Dock - Korundu) --- */
+  /* --- GÖRSEL BİLEŞENLER --- */
   .topbar { flex: 0 0 70px; background: var(--glass); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 3000; }
   .left-controls { display: flex; gap: 15px; align-items: center; }
   .hamb-btn { background: none; border: none; cursor: pointer; color: #aaa; font-size: 24px; padding: 0; }
@@ -49,10 +49,17 @@
   .slogan { font-size: 10px; color: #888; margin-top: 2px; }
   .seesaw-svg { width: 36px; height: 18px; overflow: visible; }
   .seesaw-bar { transform-origin: 18px 14px; transition: transform 0.4s; }
+  .tilt-left .seesaw-bar { transform: rotate(-15deg); }
+  .tilt-right .seesaw-bar { transform: rotate(15deg); }
+
+  /* Face Container - Düzeltildi */
   .face-container { flex: 0 0 0px; background: linear-gradient(to bottom, var(--bg), transparent); overflow: hidden; transition: flex-basis 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2500; }
   .mobile-frame.tracking-active .face-container { flex-basis: 180px; }
   .face-panel-inner { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: translateY(-30px); transition: 0.4s; }
+  
+  /* Kritik Fix: active class gelince görünür olsun */
   .mobile-frame.tracking-active .face-panel-inner { opacity: 1; transform: translateY(0); }
+
   .eyes-row { display: flex; gap: 24px; margin-bottom: 10px; }
   .eye { width: 90px; height: 65px; position: relative; --lidTop:0%; --lidBot:0%; --gx:0px; --gy:0px; transition: 0.1s; }
   .brow { position: absolute; top: -14px; left: 0; width: 100%; height: 16px; background: #222; border-radius: 99px; transform-origin: center; transition: 0.3s; box-shadow: 0 3px 6px rgba(0,0,0,0.5); }
@@ -67,21 +74,27 @@
   .mouth { width: 40px; height: 10px; border-top: 3px solid var(--lip-color); border-radius: 50% 50% 0 0; position: absolute; top: 8px; transition: 0.15s; opacity: 0.9; }
   .mouth::after { content:''; position: absolute; bottom: -5px; left: 15%; width: 70%; height: 3px; background: rgba(216, 67, 21, 0.3); border-radius: 0 0 10px 10px; transition: 0.15s; }
   .close-track-btn { margin-top: 10px; background: rgba(198, 40, 40, 0.2); color: #ef9a9a; border: 1px solid rgba(198, 40, 40, 0.5); padding: 5px 14px; border-radius: 20px; font-size: 11px; cursor: pointer; }
+  
+  /* Chat */
   .chat-area { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; scrollbar-width: none; }
   .chat-area::-webkit-scrollbar { display: none; }
   .bubble { max-width: 85%; padding: 12px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; position: relative; animation: pop 0.2s ease; word-wrap: break-word; }
+  @keyframes pop { from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
   .bubble.bot { align-self: flex-start; background: #1c1c1c; border-left: 3px solid var(--gold); color: #ddd; border-top-left-radius: 4px; min-height: 40px;}
   .bubble.user { align-self: flex-end; background: #222; border-right: 3px solid var(--pistachio); color: #fff; border-top-right-radius: 4px; text-align: right; }
-  .cursor::after { content: '|'; animation: blinkCursor 0.8s infinite; margin-left: 2px; color: var(--gold); }
-  @keyframes blinkCursor { 50% { opacity: 0; } }
+  
+  /* Input Dock - İkon Rengi Düzeltildi */
   .input-dock { flex: 0 0 auto; background: var(--glass); padding: 10px 16px 25px 16px; z-index: 3000; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; }
   .track-trigger-row { display: flex; justify-content: center; width: 100%; transition: 0.3s; height: 36px; overflow: hidden; }
   .mobile-frame.tracking-active .track-trigger-row { height: 0; margin: 0; opacity: 0; pointer-events: none; }
   .main-track-btn { background: rgba(255, 179, 0, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 8px 24px; border-radius: 24px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 0 15px rgba(255, 179, 0, 0.1); animation: pulseBtn 2s infinite; display: flex; align-items: center; gap: 8px; }
-  @keyframes pulseBtn { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
   .dock-inner { display: flex; align-items: flex-end; gap: 8px; background: #1a1a1a; border: 1px solid #333; border-radius: 24px; padding: 6px; }
   .icon-btn { width: 42px; height: 42px; border-radius: 50%; border: none; background: transparent; color: #888; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: 0.2s; }
+  .icon-btn svg { width: 22px; height: 22px; stroke: #888; stroke-width: 2; fill: none; transition: 0.2s; } /* Rengi #888 yaptım */
+  .icon-btn:hover svg { stroke: var(--gold); }
+  .icon-btn.active { color: var(--gold); background: rgba(255,179,0,0.15); }
   .send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--pistachio); color: #000; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(190, 242, 100, 0.3); }
+  .send-btn svg { stroke: #000; fill:none; width:22px; height:22px; }
   textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; resize: none; padding: 10px; max-height: 100px; min-height: 24px; font-family: inherit; scrollbar-width: none; }
   #camVideo { display: none; }
 </style>
@@ -95,15 +108,8 @@
       <div class="login-logo">Caynana<span>.AI</span></div>
       <div style="font-size:13px; color:#888;">Geleneksel aklın dijital hali</div>
       <br>
-      
-      <button class="auth-btn btn-google" id="googleBtn" onclick="handleLogin('google')">
-        Google ile Giriş Yap
-      </button>
-      
-      <button class="auth-btn btn-apple" id="appleBtn" onclick="handleLogin('apple')">
-        Apple ile Giriş Yap
-      </button>
-
+      <button class="auth-btn btn-google" id="googleBtn" onclick="handleLogin('google')">Google ile Giriş Yap</button>
+      <button class="auth-btn btn-apple" id="appleBtn" onclick="handleLogin('apple')">Apple ile Giriş Yap</button>
       <div class="agreement-box">
         <input type="checkbox" id="agreementCheck" onchange="toggleAuthButtons()">
         <label for="agreementCheck"><a href="#">Kullanıcı sözleşmesini</a> okudum, kabul ediyorum.</label>
@@ -121,7 +127,6 @@
         <a class="menu-item" href="pages/iletisim.html">✉️ İletişim</a>
         <a class="menu-item" onclick="logout()">🛡️ Güvenli Çıkış</a>
       </div>
-      
       <div class="menu-footer-actions">
         <div class="delete-account" onclick="deleteAccount()">Hesabımı Kalıcı Olarak Sil</div>
         <div class="menu-version">@CaynanaAI By Ozyigits 2026 v8.1</div>
@@ -195,7 +200,6 @@
   const menuOverlay = document.getElementById('menuOverlay');
   const hambBtn = document.getElementById('hambBtn');
   
-  // v7 DOM
   const frame = document.getElementById('mobileFrame');
   const msgInput = document.getElementById('msgInput');
   const eyeL = document.getElementById('eyeL');
@@ -210,48 +214,34 @@
   /* --- AUTH FLOW --- */
   document.addEventListener('DOMContentLoaded', () => {
     const user = JSON.parse(localStorage.getItem('caynana_user_v8'));
-    
     if(user && user.isProfileCompleted) {
-      // 1. Durum: Giriş Yapmış ve Profili Tam -> Sohbet Başlasın
       loginOverlay.classList.remove('active');
       initChat(user);
     } else if (user && !user.isProfileCompleted) {
-      // 2. Durum: Giriş Yapmış ama Profil Eksik -> Profil Sayfasına At
       window.location.href = 'pages/profil.html';
-    } else {
-      // 3. Durum: Giriş Yapmamış -> Login Overlay Aktif Kalsın
     }
   });
 
-  // Checkbox Kontrolü
   function toggleAuthButtons() {
     if(check.checked) {
-      googleBtn.classList.add('enabled');
-      appleBtn.classList.add('enabled');
+      googleBtn.classList.add('enabled'); appleBtn.classList.add('enabled');
     } else {
-      googleBtn.classList.remove('enabled');
-      appleBtn.classList.remove('enabled');
+      googleBtn.classList.remove('enabled'); appleBtn.classList.remove('enabled');
     }
   }
 
-  // Giriş Yap Butonu
   function handleLogin(provider) {
     if(!check.checked) return;
-    
-    // SİMÜLASYON: Google'dan veri gelmiş gibi
     const mockData = {
       fullname: "Misafir Kullanıcı",
       avatar: "https://ui-avatars.com/api/?name=Misafir&background=ffb300&color=000&size=128",
       id: "CYN-" + Math.floor(10000000 + Math.random() * 90000000),
-      isProfileCompleted: false // Profil henüz doldurulmadı
+      isProfileCompleted: false
     };
-
-    // Geçici olarak kaydet ve Profil sayfasına yönlendir
     localStorage.setItem('caynana_user_v8', JSON.stringify(mockData));
     window.location.href = 'pages/profil.html';
   }
 
-  /* --- CHAT BAŞLANGICI --- */
   function initChat(user) {
     if(chat.children.length === 0) {
       const div = document.createElement('div');
@@ -261,51 +251,105 @@
     }
   }
 
-  function logout() {
-    localStorage.removeItem('caynana_user_v8');
-    location.reload(); 
-  }
+  function logout() { localStorage.removeItem('caynana_user_v8'); location.reload(); }
+  function deleteAccount() { if(confirm("Hesabını silmek istediğine emin misin?")) logout(); }
 
-  function deleteAccount() {
-    if(confirm("Hesabını silmek istediğine emin misin? Caynana seni unutacak.")) {
-      logout();
-    }
-  }
-
-  // Menü
   hambBtn.addEventListener('click', () => menuOverlay.classList.add('open'));
   menuOverlay.addEventListener('click', (e) => { if(e.target === menuOverlay) menuOverlay.classList.remove('open'); });
 
-  /* --- MEVCUT SİSTEMLER (v7 Göz/Chat Mantığı) --- */
-  // (Burada v7.0'daki gibi fare takibi, input animasyonları, MediaPipe kodları aynen çalışır)
-  
+  /* --- GÖZ & KAMERA --- */
   let isTracking = false;
   let isCameraOn = false;
   let faceMesh, camera;
-  
-  function addBubble(txt, type) {
-    const d = document.createElement('div'); d.className = `bubble ${type}`; d.innerText = txt; 
-    chat.appendChild(d); chat.scrollTop = chat.scrollHeight; 
-  }
+  let idleTimer = null;
+  const IDLE_LIMIT = 10000;
 
-  msgInput.addEventListener('keydown', (e)=>{
-    if(e.key==='Enter' && !e.shiftKey){
-      e.preventDefault();
-      const txt = msgInput.value.trim();
-      if(!txt) return;
-      addBubble(txt, 'user');
-      msgInput.value='';
-      // Basit cevap simülasyonu
-      setTimeout(()=>{
-        const u = JSON.parse(localStorage.getItem('caynana_user_v8'));
-        const name = u ? u.hitap : "Evladım";
-        addBubble("Anlaşıldı " + name + ", bunu not ettim.", 'bot');
-      }, 800);
-    }
+  // Mouse Move
+  window.addEventListener('pointermove', (e) => {
+    resetIdle();
+    if(!isTracking || isCameraOn || frame.classList.contains('sleeping')) return;
+    const rect = frame.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+    setGaze(x, y);
   });
 
-  // (FaceMesh ve Göz Takip Kodlarının Devamı Burada Olmalı - Yer Tasarrufu İçin Kısaltıldı, v7'deki ile aynı)
-  // ...
+  function setGaze(x, y) {
+    if(frame.classList.contains('sleeping')) return;
+    const gx = Math.min(Math.max(x * 20, -20), 20);
+    const gy = Math.min(Math.max(y * 15, -15), 15);
+    [eyeL, eyeR].forEach(e => { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); });
+  }
+
+  function resetIdle() {
+    if (!isTracking) return;
+    clearTimeout(idleTimer);
+    if (frame.classList.contains('sleeping')) {
+      frame.classList.remove('sleeping');
+    }
+    idleTimer = setTimeout(() => {
+      if(!isTracking) return;
+      frame.classList.add('sleeping');
+    }, IDLE_LIMIT);
+  }
+
+  // Toggle Tracking (FIXED)
+  function toggleTracking(active) {
+    isTracking = active;
+    if(active) {
+      frame.classList.add('tracking-active'); resetIdle();
+    } else {
+      frame.classList.remove('tracking-active'); stopCamera(); clearTimeout(idleTimer); frame.classList.remove('sleeping');
+    }
+  }
+  openTrackBtn.addEventListener('click', () => toggleTracking(true));
+  closeTrackBtn.addEventListener('click', () => toggleTracking(false));
+
+  // Chat
+  async function sendMessage() {
+    const txt = msgInput.value.trim();
+    if(!txt) return;
+    resetIdle();
+    const d = document.createElement('div'); d.className = 'bubble user'; d.innerText = txt;
+    chat.appendChild(d); chat.scrollTop = chat.scrollHeight;
+    msgInput.value = '';
+    msgInput.blur();
+    setTimeout(()=>{
+      const u = JSON.parse(localStorage.getItem('caynana_user_v8'));
+      const name = u ? u.hitap : "Evladım";
+      const b = document.createElement('div'); b.className = 'bubble bot'; b.innerText = "Anlaşıldı " + name + ", bunu not ettim.";
+      chat.appendChild(b); chat.scrollTop = chat.scrollHeight;
+    }, 800);
+  }
+
+  msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
+  sendBtn.addEventListener('click', sendMessage);
+
+  // Camera
+  camBtn.addEventListener('click', () => { if(!isTracking) toggleTracking(true); if(isCameraOn) stopCamera(); else startCamera(); });
+
+  async function startCamera() {
+    if(isCameraOn) return;
+    if(!faceMesh) {
+      faceMesh = new FaceMesh.FaceMesh({locateFile: f=>`https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${f}`});
+      faceMesh.setOptions({maxNumFaces:1, refineLandmarks:true});
+      faceMesh.onResults(onFace);
+    }
+    try {
+      camera = new Camera(camVideo, { onFrame: async()=>{ await faceMesh.send({image:camVideo}); }, width:640, height:480 });
+      await camera.start(); isCameraOn = true; camBtn.classList.add('active');
+    } catch(e) { console.log(e); }
+  }
+  function stopCamera() { isCameraOn = false; camBtn.classList.remove('active'); }
+
+  function onFace(res) {
+    if(!isTracking || !isCameraOn || frame.classList.contains('sleeping')) return;
+    if(res.multiFaceLandmarks && res.multiFaceLandmarks.length>0) {
+      const lm = res.multiFaceLandmarks[0];
+      const nose = lm[1];
+      setGaze(-(nose.x-0.5)*3, (nose.y-0.5)*3);
+    }
+  }
 </script>
 </body>
 </html>
