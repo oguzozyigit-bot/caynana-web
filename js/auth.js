@@ -1,87 +1,114 @@
-import { GOOGLE_CLIENT_ID } from "./config.js";
+import { GOOGLE_CLIENT_ID, STORAGE_KEY } from "./config.js";
 
-export function initAuth({ onAuthed }){
-  const token = localStorage.getItem("auth_token");
-  if (token) {
-    markAuthed(true);
-    if (onAuthed) onAuthed(getUserInfo());
-  } else {
-    markAuthed(false);
-    showLoginModal(onAuthed);
-  }
+let tokenClient;
 
-  // Google GIS init
-  window.google?.accounts?.id?.initialize({
-    client_id: GOOGLE_CLIENT_ID,
-    callback: (resp) => {
-      localStorage.setItem("auth_token", resp.credential);
-      const info = decodeJwt(resp.credential);
-      // ID sabit (sub)
-      const user_info = getUserInfo() || {};
-      user_info.id = info.sub;
-      user_info.email = info.email;
-      user_info.name = info.name || info.email || "Kullanıcı";
-      user_info.avatar = info.picture || "";
-      // profil objesi
-      user_info.profile = user_info.profile || {};
-      localStorage.setItem("user_info", JSON.stringify(user_info));
-      hideLoginModal();
-      markAuthed(true);
-      if (onAuthed) onAuthed(user_info);
+/**
+ * 1. Google İstemcisini Başlat
+ * Sayfa yüklendiğinde bu fonksiyon çalışır ve Google kütüphanesini hazırlar.
+ */
+export function initAuth() {
+    // Google Kütüphanesi yüklü mü kontrol et
+    if (window.google) {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: GOOGLE_CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+            callback: (tokenResponse) => {
+                if (tokenResponse && tokenResponse.access_token) {
+                    fetchGoogleProfile(tokenResponse.access_token);
+                }
+            },
+        });
+        console.log("🔒 Auth System: Ready");
+    } else {
+        console.error("🔴 Auth System: Google Library not found");
     }
-  });
 }
 
-function decodeJwt(token){
-  const payload = token.split(".")[1];
-  const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"));
-  return JSON.parse(decodeURIComponent(escape(json)));
+/**
+ * 2. Giriş İşlemini Tetikle (HTML Butonundan Çağrılır)
+ * @param {string} provider - 'google' veya 'apple'
+ */
+export function handleLogin(provider) {
+    // Sözleşme Checkbox Kontrolü
+    const check = document.getElementById('agreementCheck');
+    if (check && !check.checked) {
+        alert("Lütfen önce kullanıcı sözleşmesini onayla evladım.");
+        return;
+    }
+
+    if (provider === 'google') {
+        if (tokenClient) {
+            tokenClient.requestAccessToken(); // Google Penceresini Aç
+        } else {
+            alert("Google servisi yükleniyor, az bekle...");
+        }
+    } else if (provider === 'apple') {
+        alert("Apple girişi yakında geliyor. Şimdilik Google'dan devam et.");
+    }
 }
 
-export function getUserInfo(){
-  try { return JSON.parse(localStorage.getItem("user_info") || "{}"); }
-  catch { return {}; }
+/**
+ * 3. Google Profil Verisini Çek ve Kaydet
+ * @param {string} accessToken 
+ */
+function fetchGoogleProfile(accessToken) {
+    fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+    })
+    .then(r => r.json())
+    .then(data => {
+        console.log("✅ Google Profile:", data);
+
+        // Mevcut kullanıcıyı kontrol et (ID değişmesin diye)
+        const existingUser = getUserInfo();
+        
+        // Yeni Kullanıcı Objesi
+        const userData = {
+            ...existingUser, // Varsa eski verileri koru
+            id: existingUser.id || "CYN-" + data.sub.substr(0, 10), // ID Sabit
+            fullname: data.name,
+            email: data.email,
+            avatar: data.picture,
+            provider: 'google',
+            // Eğer daha önce profil tamamlanmadıysa false kalır
+            isProfileCompleted: existingUser.isProfileCompleted || false 
+        };
+
+        // LocalStorage'a yaz
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+        
+        // Yönlendirme Mantığı
+        // Her giriş yapanı bir kere Profil sayfasına atalım ki teyit etsin
+        window.location.href = 'pages/profil.html';
+    })
+    .catch(err => {
+        console.error("Auth Error:", err);
+        alert("Giriş yaparken bir hata oldu evladım.");
+    });
 }
 
-export function logout(){
-  localStorage.removeItem("auth_token");
-  localStorage.removeItem("user_info");
-  location.reload();
+/**
+ * 4. Kullanıcı Bilgisini Getir (Helper)
+ */
+export function getUserInfo() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    } catch {
+        return {};
+    }
 }
 
-function markAuthed(ok){
-  const dot = document.getElementById("authDot");
-  if (!dot) return;
-  dot.style.background = ok ? "#55d38a" : "#777";
+/**
+ * 5. Çıkış Yap
+ */
+export function logout() {
+    if (confirm("Beni bırakıp gidiyor musun?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        // Ana sayfaya (Login ekranına) dön
+        window.location.href = window.location.origin + '/index.html'; 
+    }
 }
 
-function showLoginModal(onAuthed){
-  // Tek ekranı “kilitleyen” basit modal
-  let modal = document.getElementById("loginModal");
-  if (!modal){
-    modal = document.createElement("div");
-    modal.id = "loginModal";
-    modal.style.cssText = `
-      position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:10000;
-      display:flex; align-items:center; justify-content:center; padding:16px;`;
-    modal.innerHTML = `
-      <div style="width:min(420px,100%); background:#0b0b0b; border:1px solid #222; border-radius:18px; padding:16px;">
-        <div style="font-weight:800; color:#ffb300; margin-bottom:8px;">CAYNANA.AI</div>
-        <div style="color:#ddd; margin-bottom:14px;">Devam etmek için Google ile giriş yap.</div>
-        <div id="gBtn"></div>
-      </div>`;
-    document.body.appendChild(modal);
-  }
-  // Button render
-  setTimeout(() => {
-    window.google?.accounts?.id?.renderButton(
-      document.getElementById("gBtn"),
-      { theme: "outline", size: "large", text: "continue_with", shape: "pill" }
-    );
-  }, 200);
-}
-
-function hideLoginModal(){
-  const modal = document.getElementById("loginModal");
-  if (modal) modal.remove();
-}
+// Global Erişim (HTML onclick için)
+window.handleLogin = handleLogin;
+window.logout = logout;
