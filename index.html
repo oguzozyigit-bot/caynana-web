@@ -2,103 +2,300 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caynana.AI</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --amber: #FFB300;
+            --amber-glow: rgba(255, 179, 0, 0.5);
+            --phone-frame: #111;
+            --text-gray: #888;
+        }
 
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+        body {
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+        }
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link rel="stylesheet" href="css/app.css?v=55.0">
+        /* --- TELEFON KASASI --- */
+        .phone-mockup {
+            width: 100%;
+            max-width: 400px; /* Mobilde tam ekran */
+            height: 100%;
+            max-height: 850px;
+            background-color: var(--bg-color);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Masaüstünde telefon çerçevesi olsun */
+        @media (min-width: 500px) {
+            .phone-mockup {
+                height: 780px;
+                border-radius: 45px;
+                box-shadow: 0 0 0 12px var(--phone-frame), 0 20px 50px rgba(0,0,0,0.6);
+            }
+        }
+
+        /* --- ÜST KISIM (HEADER) --- */
+        .header {
+            height: 140px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, rgba(255,179,0,0.08) 0%, #000 70%);
+            flex-shrink: 0;
+            padding-top: 20px;
+        }
+
+        /* Hamburger Menü */
+        .menu-btn {
+            position: absolute;
+            left: 25px;
+            top: 40px;
+            font-size: 24px;
+            color: #444; /* Silik gri */
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .menu-btn:hover { color: var(--amber); }
+
+        /* Gözler */
+        .eye-container {
+            display: flex;
+            gap: 16px;
+        }
+
+        .eye {
+            width: 75px;
+            height: 50px;
+            background-color: #000;
+            border: 2px solid var(--amber);
+            border-radius: 50% 50% 40% 40%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 12px var(--amber-glow), inset 0 0 5px var(--amber-glow);
+            transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .pupil {
+            width: 24px;
+            height: 24px;
+            background-color: var(--amber);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 8px var(--amber);
+        }
+
+        /* Göz Kapakları */
+        .lid-top {
+            position: absolute; left: 0; top: 0; width: 100%; height: 0%;
+            background-color: var(--bg-color); z-index: 2; transition: height 0.3s;
+        }
+
+        /* Modlar */
+        .eye.suspicious { border-radius: 10px 10px 40% 40%; height: 40px; }
+        .eye.suspicious .lid-top { height: 55%; }
+        
+        .eye.shock { height: 60px; width: 85px; border-radius: 50%; }
+        .eye.shock .pupil { width: 14px; height: 14px; }
+
+        .eye.rolling .pupil { transform: translate(-50%, -85%); } /* Yukarı bakış */
+
+        @keyframes blink { 0%, 95%, 100% { height: 0%; } 98% { height: 100%; } }
+        .blinking .lid-top { animation: blink 5s infinite; }
+
+        /* --- SOHBET ALANI --- */
+        .chat-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        /* Scrollbar gizleme */
+        .chat-area::-webkit-scrollbar { display: none; }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .caynana-msg {
+            align-self: flex-start;
+            color: #ddd;
+            border-left: 2px solid var(--amber);
+            background: linear-gradient(90deg, rgba(255,179,0,0.05) 0%, transparent 100%);
+        }
+
+        .user-msg {
+            align-self: flex-end;
+            background-color: #222;
+            color: #fff;
+            border-bottom-right-radius: 4px;
+        }
+
+        /* --- ALT BAR (INPUT DOCK) --- */
+        .input-dock {
+            padding: 15px 20px 25px 20px;
+            background: linear-gradient(to top, #000 80%, rgba(0,0,0,0) 100%);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .icon-btn {
+            font-size: 22px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            filter: grayscale(100%);
+            transition: filter 0.3s, transform 0.2s;
+        }
+        .icon-btn:hover { filter: grayscale(0%); transform: scale(1.1); }
+        
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .chat-input {
+            width: 100%;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 25px;
+            padding: 12px 15px;
+            color: white;
+            font-size: 15px;
+            outline: none;
+            box-sizing: border-box; /* Padding taşmasını önler */
+        }
+        .chat-input:focus { border-color: var(--amber); }
+
+    </style>
 </head>
 <body>
 
-    <div id="app">
-        <img id="heroImage" src="./images/hero-chat.png" alt="Hero">
-        <div id="heroOverlay"></div>
+    <div class="phone-mockup">
+        
+        <div class="header">
+            <div class="menu-btn">☰</div>
 
-        <div id="topbar">
-            <div class="topbarGlass">
-                <div class="brand-container">
-                    <div class="brand-logo"><i class="fa-solid fa-bolt"></i> CAYNANA</div>
-                    <div class="brand-slogan">Yapay Zekânın Geleneksel Aklı</div>
-                </div>
-                <div class="top-actions">
-                    <div class="action-btn" onclick="openPersonaModal()"><i class="fa-solid fa-masks-theater"></i></div>
-                    <div class="action-btn" onclick="clearCurrentChat()"><i class="fa-solid fa-trash-can"></i></div>
-                    <div class="action-btn" onclick="openDrawer()"><i class="fa-solid fa-bars"></i></div>
-                </div>
+            <div class="eye-container">
+                <div class="eye left blinking"><div class="lid-top"></div><div class="pupil"></div></div>
+                <div class="eye right blinking"><div class="lid-top"></div><div class="pupil"></div></div>
             </div>
         </div>
 
-        <div id="userInfoBar">
-            <div class="user-pill" onclick="window.location.href='pages/profil.html'">
-                <div class="user-welcome-text" id="headerHitap">MİSAFİR</div>
-                <img id="headerAvatar" src="https://via.placeholder.com/40" class="user-avatar-mini">
+        <div class="chat-area" id="chatArea">
+            <div class="message caynana-msg">
+                Ooo kimleri görüyorum... <br>
+                Yine ne derdin var, dökül bakalım?
             </div>
         </div>
 
-        <div id="main">
-            <div id="heroContent">
-                <div id="heroTitle">Caynana ile<br>Dertleş.</div>
-                <div id="heroDesc">Hadi gel evladım, anlat bakalım.</div>
-                <div id="caynanaSpeaking"><i class="fa-solid fa-comment-dots"></i> Dinliyor...</div>
-            </div>
-            <div id="chatContainer"></div>
-        </div>
-
-        <div id="bottom">
-            <div id="dietActions" style="display:none; gap:10px; margin-bottom:10px; justify-content:center;">
-                <button class="pc-btn-mini" onclick="generateDietList()"><i class="fa-solid fa-rotate"></i> Liste Oluştur</button>
-            </div>
-            <div id="astroActions" style="display:none; gap:10px; margin-bottom:10px; justify-content:center;">
-                <button class="pc-btn-mini" style="background:#4a3b69;" onclick="loadAstroContent()"><i class="fa-solid fa-star"></i> Yorumla</button>
-            </div>
-
-            <div class="input-wrapper" id="stdInputArea">
-                <div class="cam-btn"><i class="fa-solid fa-camera"></i></div>
-                <div class="search-bar"><input type="text" id="text" placeholder="Bir şey yaz..." autocomplete="off"></div>
-                <button id="sendBtn"><i class="fa-solid fa-location-arrow"></i></button>
-            </div>
+        <div class="input-dock">
+            <button class="icon-btn" title="Fotoğraf Gönder">📷</button>
             
-            <div class="fal-input-area" id="falInputArea" style="display:none;">
-                <div class="big-cam-btn"><i class="fa-solid fa-camera fa-2x"></i><span>Fincanı Çek</span></div>
+            <div class="input-wrapper">
+                <input type="text" class="chat-input" id="userInput" placeholder="Caynana'ya yaz..." autocomplete="off">
             </div>
 
-            <div id="dockContainer"><div id="dock"></div></div>
-            
-            <div class="footer-sign">@CaynanaAI By Ozyigits</div>
-            <div class="oz-lines"><span id="line1"></span><span id="line2"></span><span id="line3"></span><span id="line4"></span></div>
+            <button class="icon-btn" title="Sesli Mesaj">🎙️</button>
         </div>
+
     </div>
 
-    <div id="drawerMask" class="modalMask">
-        <div id="drawer">
-            <div class="drawer-header" style="display:flex; justify-content:space-between; margin-bottom:20px; color:#fff;">
-                <h2>Menü</h2>
-                <div onclick="closeDrawer()" style="cursor:pointer;"><i class="fa-solid fa-xmark"></i></div>
-            </div>
-            <div class="menu-list"></div>
-            <div class="menu-footer"><span>v55.0 - Gold Master</span></div>
-        </div>
-    </div>
+    <script>
+        const eyes = document.querySelectorAll('.eye');
+        const input = document.getElementById('userInput');
+        const chatArea = document.getElementById('chatArea');
 
-    <div id="personaModal" class="modalMask" style="justify-content:center; align-items:center;">
-        <div class="authBox" style="border:1px solid var(--primary);">
-            <div class="close-btn-abs" onclick="document.getElementById('personaModal').style.display='none'"><i class="fa-solid fa-xmark"></i></div>
-            <h3 style="color:var(--primary); text-align:center; margin-bottom:15px;">Ruh Hali Seç</h3>
-            <div class="persona-grid">
-                <div class="persona-option" onclick="changePersona('anne')">🥰 Anne</div>
-                <div class="persona-option selected" onclick="changePersona('normal')">👵 Normal</div>
-                <div class="persona-option" onclick="changePersona('huysuz')">😒 Huysuz</div>
-                <div class="persona-option" onclick="changePersona('sinirli')">😡 Sinirli</div>
-            </div>
-        </div>
-    </div>
+        // Göz Takibi
+        document.querySelector('.phone-mockup').addEventListener('mousemove', (e) => {
+            eyes.forEach(eye => {
+                const pupil = eye.querySelector('.pupil');
+                const rect = eye.getBoundingClientRect();
+                const x = (e.clientX - rect.left - rect.width/2) / 10;
+                const y = (e.clientY - rect.top - rect.height/2) / 10;
+                if (!eye.classList.contains('rolling')) {
+                    pupil.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+                }
+            });
+        });
 
-    <script src="js/main.js?v=55.0"></script>
+        // Mod Değiştirme
+        function setMood(mood) {
+            eyes.forEach(eye => {
+                eye.classList.remove('suspicious', 'shock', 'rolling', 'blinking');
+                eye.querySelector('.pupil').style.transform = 'translate(-50%, -50%)'; // Reset
+                
+                if (mood === 'normal') eye.classList.add('blinking');
+                else eye.classList.add(mood);
+
+                if (mood === 'rolling') setTimeout(() => setMood('normal'), 2500);
+            });
+        }
+
+        // Mesajlaşma Simülasyonu
+        input.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && input.value.trim() !== '') {
+                const text = input.value;
+                addMessage(text, 'user-msg');
+                input.value = '';
+
+                // Yapay Zeka Cevap Simülasyonu
+                setTimeout(() => {
+                    let response = "";
+                    const lowerText = text.toLowerCase();
+
+                    if (lowerText.includes("para") || lowerText.includes("borç")) {
+                        setMood('suspicious');
+                        response = "Bak doğru söyle, o parayı nereye harcadın? Bana dürüst ol.";
+                    } else if (lowerText.includes("elti") || lowerText.includes("görümce")) {
+                        setMood('rolling');
+                        response = "Ay sabah sabah... Yine ne yaptı o kadın? Sabır Allah'ım.";
+                    } else if (lowerText.includes("koca") || lowerText.includes("terk")) {
+                        setMood('shock');
+                        response = "Neeey? Ciddi misin kız? Sakın ağlama, anlat çabuk!";
+                    } else {
+                        setMood('normal');
+                        response = "Eee, sonra? Anlat dinliyorum.";
+                    }
+                    addMessage(response, 'caynana-msg');
+                }, 800);
+            }
+        });
+
+        function addMessage(text, className) {
+            const div = document.createElement('div');
+            div.className = `message ${className}`;
+            div.innerHTML = text;
+            chatArea.appendChild(div);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        setMood('normal'); // Başlangıç
+    </script>
 </body>
 </html>
