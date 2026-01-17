@@ -1,4 +1,4 @@
-/* js/chat.js (v45.0 - BACKEND-DRIVEN CAYNANA ENGINE) */
+/* js/chat.js (v45.1 - BACKEND-DRIVEN + SAFER ERROR HANDLING) */
 
 import { BASE_DOMAIN } from './config.js';
 
@@ -9,12 +9,7 @@ const SAFETY_PATTERNS = {
   explicit: /s[iı]k|yarak|a[nm]cık|orospu|fahişe/i
 };
 
-/**
- * ✅ Artık system prompt'u FRONTEND üretmiyor.
- * Motor backend'de: intent + yakınlık puanı + şive + dil katmanı.
- * Frontend sadece mesaj + meta gönderir.
- */
-export async function fetchBotResponse(userMessage, mode, persona) {
+export async function fetchBotResponse(userMessage, mode = "chat", persona = "default") {
   // Acil fren (frontend) — backend'e gitmeden döndür
   if (SAFETY_PATTERNS.suicide.test(userMessage)) {
     return { assistant_text: "Aman evladım ağzından yel alsın! Şimdi bir bardak su iç, bir nefes al. Gerekirse bir yakınına hemen yaz.", audio: null };
@@ -35,9 +30,9 @@ export async function fetchBotResponse(userMessage, mode, persona) {
 
   const payload = {
     message: userMessage,
-    mode: "chat", // ✅ Tek ekran
+    mode: mode || "chat",
     persona: persona || "default",
-    use_voice: true,
+    use_voice: false, // ✅ v1: backend audio üretmüyor, şimdilik kapalı
     user_meta: {
       hitap: user.hitap || "Evladım",
       gender: p.gender || null,
@@ -56,17 +51,27 @@ export async function fetchBotResponse(userMessage, mode, persona) {
       body: JSON.stringify(payload)
     });
 
+    // JSON parse (hata body’si de gelebilir)
+    const data = await res.json().catch(() => null);
+
     if (!res.ok) {
-      return { assistant_text: "Evladım bir şeyler aksadı… bir daha dene, ben buradayım.", audio: null };
+      // Backend hata mesajı varsa göster
+      const detail = (data && (data.detail || data.error || data.message)) ? ` (${data.detail || data.error || data.message})` : "";
+      return {
+        assistant_text: `Evladım bir şeyler aksadı${detail}. Bir daha dene, ben buradayım.`,
+        audio: null
+      };
     }
 
-    return await res.json(); // {assistant_text, audio, intent, yp, used_model}
+    // Beklenen: {assistant_text, audio, intent, yp, used_model}
+    return data || { assistant_text: "Evladım… cevap gelmedi gibi. Bir daha dene.", audio: null };
+
   } catch (e) {
     return { assistant_text: "Evladım bağlantı gitti gibi… bir daha dene, ben buradayım.", audio: null };
   }
 }
 
-// --- UI Yardımcıları (Senin standart yapı) ---
+// --- UI Yardımcıları (Standart) ---
 export function addBubble(text, role) {
   const c = document.getElementById('chatContainer');
   const div = document.createElement("div");
@@ -74,6 +79,7 @@ export function addBubble(text, role) {
   div.innerHTML = `<div class="msg-bubble ${role}">${text}</div>`;
   c.appendChild(div);
   c.scrollTo({ top: c.scrollHeight, behavior: 'smooth' });
+  return div; // ✅ isteyen silsin diye döndürdüm
 }
 
 export function typeWriter(text, callback) {
