@@ -1,50 +1,145 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Caynana.AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="../css/app.css?v=25.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>İletişim</title>
+<style>
+  /* --- TEMEL AYARLAR --- */
+  :root { 
+    --bg: #0e0e0e; 
+    --text: #ececec; 
+    --gold: #ffb300; 
+    --pistachio: #bef264; 
+    --card-bg: #1a1a1a; 
+  }
+  
+  body { 
+    margin: 0; padding: 0; 
+    background: #000; 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    color: var(--text); 
+    display: flex; justify-content: center; 
+    height: 100vh; overflow: hidden; 
+  }
+
+  .mobile-frame { 
+    width: 100%; max-width: 480px; height: 100%; 
+    background: var(--bg); 
+    display: flex; flex-direction: column; 
+    position: relative; 
+  }
+  @media (min-width: 500px) { 
+    .mobile-frame { 
+      height: 95vh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5vh; 
+      box-shadow: 0 0 50px rgba(255, 255, 255, 0.05);
+    } 
+  }
+
+  /* --- HEADER --- */
+  .header { 
+    padding: 15px 20px; 
+    border-bottom: 1px solid #222; 
+    background: rgba(20,20,20,0.95); 
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    display: flex; align-items: center; gap: 15px;
+  }
+  .back-btn {
+    background: none; border: none; color: var(--gold); 
+    font-size: 24px; cursor: pointer; padding: 0; margin-top: -2px;
+  }
+  .header-title { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+
+  /* --- İÇERİK ALANI --- */
+  .content-area { 
+    flex: 1; overflow-y: auto; padding: 30px 20px; 
+    display: flex; flex-direction: column; align-items: center; text-align: center; gap: 30px;
+  }
+
+  /* İkon */
+  .contact-icon {
+    font-size: 40px; margin-bottom: 10px;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float { 0%{transform:translateY(0)} 50%{transform:translateY(-10px)} 100%{transform:translateY(0)} }
+
+  .intro-text { font-size: 15px; color: #ccc; line-height: 1.6; max-width: 90%; }
+  
+  /* Kart */
+  .contact-card {
+    width: 100%; background: #161616; border: 1px solid #333; border-radius: 20px;
+    padding: 25px; display: flex; flex-direction: column; align-items: center; gap: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+
+  .company-name { font-size: 13px; color: #666; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
+  
+  .email-box {
+    background: #000; border: 1px dashed var(--gold); border-radius: 12px;
+    padding: 15px 20px; width: 100%;
+  }
+  .email-link { 
+    color: var(--gold); font-size: 16px; font-weight: 700; text-decoration: none; 
+    font-family: monospace; letter-spacing: 0.5px;
+  }
+
+  .action-btn {
+    background: var(--pistachio); color: #000; border: none; 
+    padding: 14px 30px; border-radius: 30px; font-weight: 700; font-size: 14px;
+    cursor: pointer; transition: 0.2s; text-decoration: none; display: inline-block;
+    box-shadow: 0 5px 15px rgba(190, 242, 100, 0.2);
+  }
+  .action-btn:active { transform: scale(0.96); }
+
+  /* Footer İmza */
+  .footer-sign { 
+    margin-top: auto; text-align: center; padding: 20px; 
+    border-top: 1px solid #222; color: #888; font-size: 11px; width: 100%;
+  }
+  .footer-sign span { color: var(--gold); font-weight: 600; }
+
+</style>
 </head>
 <body>
 
-    <div class="sub-page-header">
-        <a href="../index.html" class="back-btn-fixed">
-            <i class="fa-solid fa-chevron-left"></i>
-        </a>
-        
-        <div class="header-logo">
-            <i class="fa-solid fa-bolt"></i> CAYNANA
-        </div>
+<div class="mobile-frame">
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div class="header-title">İletişim</div>
+  </div>
+
+  <div class="content-area">
+    
+    <div>
+      <div class="contact-icon">📩</div>
+      <div class="intro-text">
+        Caynana her zaman seni dinler.<br>
+        Bir derdin, önerin veya teknik bir sorunun varsa bize ulaşmaktan çekinme.
+      </div>
     </div>
 
-    <div class="page-container">
-        
-        <h2>Hakkımızda</h2> <p>
-            Caynana.AI, yapay zekanın soğuk dünyasına, Anadolu irfanının sıcaklığını getiren bir projedir. 
-            Biz sadece kod yazmıyoruz, gönül köprüleri kuruyoruz.
-        </p>
+    <div class="contact-card">
+      <div class="company-name">ITALKY TEKNOLOJİ A.Ş.</div>
+      
+      <div class="email-box">
+        <a href="mailto:support@caynana.ai" class="email-link">support@caynana.ai</a>
+      </div>
 
-        <p>
-            <b>Vizyonumuz:</b> Teknolojiyi herkesin anlayacağı dilden konuşturmak ve en karmaşık işleri bile 
-            bir fincan kahve içerken halledilebilecek kolaylığa getirmek.
-        </p>
+      <p style="font-size:12px; color:#888;">
+        Resmi iletişim kanalımız bu e-posta adresidir.
+      </p>
 
-        <div style="margin-top: 30px; padding: 20px; background: #1a1a1a; border-radius: 12px; border: 1px solid #333;">
-            <h4 style="color: #fff; margin-bottom: 10px;">Bize Ulaşın</h4>
-            <p style="font-size: 13px; color: #888; margin: 0;">
-                Düzce Teknopark<br>
-                destek@caynana.ai
-            </p>
-        </div>
-
-        <div style="text-align: center; margin-top: 40px; opacity: 0.4; font-size: 11px;">
-            @CaynanaAI By Ozyigits<br>2026
-        </div>
-
+      <a href="mailto:support@caynana.ai" class="action-btn">Bize E-Posta Gönder</a>
     </div>
+
+    <div class="footer-sign">
+      @CaynanaAI By Ozyigit's<br>
+      <span>2026 v8.2</span>
+    </div>
+
+  </div>
+</div>
 
 </body>
 </html>
