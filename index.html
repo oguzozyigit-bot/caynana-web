@@ -13,9 +13,7 @@
   --text: #e0e0e0;
   --drawer-bg: #141414;
 }
-
 *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
-
 body{
   margin: 0;
   background: #000;
@@ -27,7 +25,6 @@ body{
   overflow: hidden;
   color: var(--text);
 }
-
 .phone{
   width: 100%;
   max-width: 420px;
@@ -39,7 +36,6 @@ body{
   position: relative;
   overflow: hidden;
 }
-
 @media(min-width: 500px){
   .phone{
     border-radius: 40px;
@@ -56,24 +52,33 @@ body{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 14px;
   z-index: 50;
 }
-
+.leftTop{display:flex; gap:10px; align-items:center;}
 .menuBtn {
   background: none; border: none;
   font-size: 24px; color: #666; cursor: pointer;
-  padding: 5px;
-  transition: 0.3s;
+  padding: 6px;
+  transition: 0.25s;
 }
 .menuBtn:hover { color: var(--amber); }
 
-.brand { opacity: 0; }
-.authDot {
-  width: 8px; height: 8px;
-  background: #444;
-  border-radius: 50%;
+.camBtn{
+  border: 1px solid #222;
+  background: #0d0d0d;
+  color: #888;
+  border-radius: 14px;
+  padding: 8px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.2s;
 }
+.camBtn:hover{ color: var(--amber); border-color: #333; }
+.camBtn.on{ color: var(--amber); box-shadow: 0 0 10px rgba(255,179,0,0.15); }
+
+.brand { opacity:0; }
+.authDot { width: 8px; height: 8px; background: #444; border-radius: 50%; }
 .authDot.active { background: var(--amber); box-shadow: 0 0 5px var(--amber); }
 
 /* --- DRAWER --- */
@@ -141,70 +146,121 @@ body{
 .header{
   height: 210px;
   display: flex; justify-content: center; align-items: center;
-  background: radial-gradient(circle at center, rgba(255,179,0,0.10) 0%, #000 72%);
+  background: radial-gradient(circle at center, rgba(255,179,0,0.10) 0%, #000 74%);
   position: relative; z-index: 10; flex-shrink: 0;
   margin-top: 20px;
 }
-
-/* Kadın gözü vibe */
 .eyes-container{
-  display: flex;
-  gap: 24px;
+  display:flex;
+  gap: 26px;
   transform: scale(0.92);
 }
 
+/* Kadın hissi: stilize badem göz + eyeliner + kirpik + kaş */
 .eye-wrapper{
   width: 150px;
   height: 110px;
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  transform-origin:center;
 }
 
-/* Kaş */
 .brow{
-  position: absolute;
+  position:absolute;
   top: 0px;
   left: 50%;
-  transform: translateX(-50%) rotate(-6deg);
-  width: 116px;
-  height: 26px;
+  transform: translateX(-50%);
+  width: 118px;
+  height: 28px;
   z-index: 30;
-  filter: drop-shadow(0 3px 8px rgba(0,0,0,0.75));
-  opacity: 0.96;
+  opacity: .95;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,0.75));
 }
 .brow::before{
   content:"";
   position:absolute; inset:0;
-  border-radius: 40px;
   background:
-    radial-gradient(140px 40px at 50% 78%, rgba(0,0,0,0) 58%, rgba(10,10,10,0.95) 62%, rgba(0,0,0,0) 72%),
-    radial-gradient(140px 40px at 50% 80%, rgba(0,0,0,0) 58%, rgba(35,35,35,0.9) 62%, rgba(0,0,0,0) 74%);
-  clip-path: polygon(0% 70%, 12% 42%, 28% 24%, 46% 18%, 66% 22%, 84% 38%, 100% 66%, 100% 100%, 0% 100%);
+    radial-gradient(140px 40px at 50% 78%, rgba(0,0,0,0) 55%, rgba(10,10,10,0.98) 62%, rgba(0,0,0,0) 72%),
+    radial-gradient(140px 40px at 50% 80%, rgba(0,0,0,0) 55%, rgba(35,35,35,0.85) 61%, rgba(0,0,0,0) 72%);
+  clip-path: polygon(0% 75%, 10% 45%, 28% 26%, 48% 18%, 66% 24%, 84% 40%, 100% 70%, 100% 100%, 0% 100%);
+  border-radius: 999px;
+  opacity: .95;
 }
 .brow::after{
   content:"";
   position:absolute;
-  right: 4px; top: 10px;
+  right: 4px; top: 13px;
   width: 28px; height: 10px;
   background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.95));
-  border-radius: 10px;
+  border-radius: 999px;
   transform: rotate(-10deg);
-  opacity: 0.85;
+  opacity: .85;
 }
 
-/* Kirpik */
-.lashes{
+/* Eye frame */
+.eye-frame{
   position:absolute;
-  top: 22px;
+  top: 32px;
   left: 50%;
   transform: translateX(-50%);
-  width: 160px;
-  height: 62px;
-  z-index: 22;
+  width: 150px;
+  height: 80px;
+  border-radius: 58% 58% 45% 45% / 70% 70% 46% 46%;
+  border: 3px solid rgba(255,255,255,0.95);
+  background: rgba(0,0,0,0.33);
+  z-index: 10;
+  box-shadow:
+    0 0 4px rgba(255,255,255,0.85),
+    0 0 14px rgba(255,179,0,0.85),
+    0 0 30px rgba(255,179,0,0.65),
+    inset 0 -14px 20px rgba(0,0,0,0.85),
+    inset 0 10px 12px rgba(255,255,255,0.06);
+}
+
+/* Eyeliner */
+.eyeliner{
+  position:absolute;
+  top: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 156px;
+  height: 46px;
+  z-index: 16;
   pointer-events:none;
-  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.8));
+  opacity: .90;
+}
+.eyeliner::before{
+  content:"";
+  position:absolute; inset:0;
+  background:
+    radial-gradient(160px 64px at 50% 95%, rgba(0,0,0,0) 52%, rgba(0,0,0,0.98) 60%, rgba(0,0,0,0) 70%),
+    linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.92) 22%, rgba(0,0,0,0.92) 78%, rgba(0,0,0,0) 100%);
+  clip-path: polygon(0% 86%, 8% 62%, 22% 44%, 42% 34%, 60% 36%, 78% 46%, 92% 64%, 100% 82%, 100% 100%, 0% 100%);
+}
+.eyeliner::after{
+  content:"";
+  position:absolute;
+  right:-6px; top: 22px;
+  width: 30px; height: 10px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.96), rgba(0,0,0,0));
+  border-radius: 999px;
+  transform: rotate(-14deg);
+}
+
+/* Lashes */
+.lashes{
+  position:absolute;
+  top: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 164px;
+  height: 62px;
+  z-index: 20;
+  pointer-events:none;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.75));
+  opacity: .92;
 }
 .lashes::before{
   content:"";
@@ -214,163 +270,126 @@ body{
       105deg,
       rgba(0,0,0,0) 0px,
       rgba(0,0,0,0) 7px,
-      rgba(255,255,255,0.09) 8px,
-      rgba(255,255,255,0.09) 9px,
+      rgba(255,255,255,0.10) 8px,
+      rgba(255,255,255,0.10) 9px,
       rgba(0,0,0,0) 10px,
       rgba(0,0,0,0) 14px
     );
-  opacity: 0.65;
-  mask-image: radial-gradient(160px 88px at 50% 92%, rgba(0,0,0,0) 50%, rgba(0,0,0,1) 64%);
+  mask-image: radial-gradient(160px 86px at 50% 94%, rgba(0,0,0,0) 50%, rgba(0,0,0,1) 62%);
 }
 .lashes::after{
   content:"";
-  position:absolute; left: 10px; right: 10px; top: 10px; bottom: 0;
-  border-top: 3px solid rgba(0,0,0,0.92);
+  position:absolute;
+  left:10px; right:10px; top: 10px; bottom: 0;
+  border-top: 3px solid rgba(0,0,0,0.9);
   border-radius: 0 0 70px 70px;
   transform: rotate(-2deg);
-  opacity: 0.8;
+  opacity: .78;
 }
 
-/* Eyeliner */
-.eyeliner{
-  position: absolute;
-  top: 34px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 154px;
-  height: 44px;
-  z-index: 18;
-  pointer-events:none;
-}
-.eyeliner::before{
-  content:"";
-  position:absolute; inset:0;
-  background:
-    radial-gradient(150px 60px at 50% 100%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.95) 62%, rgba(0,0,0,0) 72%),
-    linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.9) 24%, rgba(0,0,0,0.9) 76%, rgba(0,0,0,0) 100%);
-  clip-path: polygon(0% 85%, 10% 58%, 25% 40%, 46% 33%, 64% 36%, 80% 46%, 92% 62%, 100% 80%, 100% 100%, 0% 100%);
-  opacity: 0.85;
-}
-.eyeliner::after{
-  content:"";
-  position:absolute;
-  right: -8px; top: 20px;
-  width: 28px; height: 10px;
-  background: linear-gradient(90deg, rgba(0,0,0,0.95), rgba(0,0,0,0));
-  border-radius: 10px;
-  transform: rotate(-12deg);
-  opacity: 0.92;
-}
-
-/* Badem göz çerçevesi */
-.eye-frame{
-  position: absolute;
-  top: 30px; left: 50%;
-  transform: translateX(-50%);
-  width: 150px;
-  height: 82px;
-  border-radius: 58% 58% 45% 45% / 70% 70% 45% 45%;
-  border: 3px solid rgba(255,255,255,0.95);
-  background: rgba(0,0,0,0.35);
-  z-index: 10;
-  box-shadow:
-    0 0 4px rgba(255,255,255,0.85),
-    0 0 12px rgba(255,179,0,0.85),
-    0 0 26px rgba(255,179,0,0.7),
-    inset 0 -10px 18px rgba(0,0,0,0.85),
-    inset 0 0 16px rgba(255,179,0,0.45);
-}
-
-/* Iris (daha canlı) */
+/* Iris glow ring */
 .iris{
   position:absolute;
   top: 56px;
   left: 50%;
   transform: translateX(-50%);
-  width: 48px; height: 48px;
+  width: 46px; height: 46px;
   border-radius: 50%;
   background:
-    radial-gradient(circle at 35% 35%, rgba(255,179,0,0.55) 0%, rgba(255,179,0,0.18) 28%, rgba(0,0,0,0.0) 60%),
-    radial-gradient(circle at 55% 70%, rgba(255,145,0,0.28) 0%, rgba(0,0,0,0) 55%),
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0) 58%);
-  border: 2px solid rgba(255,255,255,0.35);
+    radial-gradient(circle at 35% 35%, rgba(255,179,0,0.55) 0%, rgba(255,179,0,0.18) 30%, rgba(0,0,0,0.0) 62%),
+    radial-gradient(circle at 60% 70%, rgba(255,145,0,0.25) 0%, rgba(0,0,0,0) 55%);
+  border: 2px solid rgba(255,255,255,0.30);
   box-shadow: 0 0 18px rgba(255,179,0,0.35);
   z-index: 11;
   pointer-events:none;
-  opacity: 0.96;
+  opacity: .95;
 }
 
-/* Pupil (kapsayıcı) */
+/* Pupil container (move this) */
 .pupil{
   position:absolute;
-  top: 66px;
+  top: 64px;
   left: 50%;
   transform: translateX(-50%);
   width: 26px; height: 26px;
   border-radius: 50%;
-  background: #000;
+  background:#000;
   border: 2px solid rgba(255,255,255,0.95);
   box-shadow: 0 0 12px rgba(255,179,0,0.9);
-  z-index: 16;
-  overflow: hidden;
+  z-index: 18;
+  overflow:hidden;
   transition: transform 0.08s linear;
 }
 .pupil::after{
   content:"";
   position:absolute; inset:0;
   border-radius:50%;
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.09) 25%, rgba(0,0,0,0) 55%);
+  background: radial-gradient(circle at 28% 28%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 25%, rgba(0,0,0,0) 55%);
   pointer-events:none;
 }
 
-/* Göz içinde göz */
+/* Eye within eye */
 .mini-eye{
   position:absolute;
   left:50%; top:50%;
   width: 14px; height: 9px;
   transform: translate(-50%,-50%);
-  border-radius: 55% 55% 45% 45% / 70% 70% 45% 45%;
+  border-radius: 58% 58% 45% 45% / 70% 70% 46% 46%;
   border: 1px solid rgba(255,255,255,0.92);
   background: rgba(0,0,0,0.55);
-  box-shadow:
-    0 0 2px rgba(255,255,255,0.7),
-    0 0 6px rgba(255,179,0,0.75),
-    inset 0 0 6px rgba(255,179,0,0.35);
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  box-shadow: 0 0 2px rgba(255,255,255,0.7), 0 0 6px rgba(255,179,0,0.75), inset 0 0 6px rgba(255,179,0,0.35);
+  display:flex; align-items:center; justify-content:center;
   opacity: 0.96;
 }
 .mini-pupil{
   width: 4px; height: 4px;
   border-radius: 50%;
-  background: #000;
+  background:#000;
   border: 1px solid rgba(255,255,255,0.9);
   box-shadow: 0 0 4px rgba(255,179,0,0.95);
   transition: transform 0.08s linear;
 }
+@keyframes breathe {
+  0%,100%{ transform: translate(-50%,-50%) scale(1); }
+  50%{ transform: translate(-50%,-50%) scale(1.06); }
+}
+.mini-eye{ animation: breathe 2.8s ease-in-out infinite; }
 
-/* Kapak (blink) */
+/* Lid: controlled by CSS var so we can wink per-eye */
 .lid{
-  position: absolute;
+  position:absolute;
   top: 30px;
   left: 50%;
   transform: translateX(-50%);
-  width: 170px;
-  height: 0%;
+  width: 168px;
+  height: var(--lidH, 0%);
   background: var(--bg);
-  z-index: 25;
+  z-index: 26;
   border-bottom: 2px solid #111;
-  transition: height 0.08s linear;
   border-radius: 60px;
+  transition: height 0.10s linear;
 }
 
-/* Tek göz kırpma için zorla kapama */
-.eye-wrapper.force-blink .lid{ height: 84% !important; }
+/* smooth idle */
+@keyframes browIdle{
+  0%,100%{ transform: translateX(-50%) translateY(0); }
+  50%{ transform: translateX(-50%) translateY(-1px); }
+}
+.eye-wrapper.idle .brow{ animation: browIdle 3.2s ease-in-out infinite; }
+
+/* moods (still usable from chat) */
+.eye-wrapper.suspicious{ }
+.eye-wrapper.suspicious .brow{ transform: translateX(-50%) translateY(5px) rotate(-4deg); }
+.eye-wrapper.suspicious .eye-frame{ box-shadow: 0 0 4px rgba(255,255,255,0.75), 0 0 10px rgba(255,179,0,0.7), 0 0 22px rgba(255,179,0,0.55), inset 0 -14px 20px rgba(0,0,0,0.88), inset 0 10px 12px rgba(255,255,255,0.05); }
+
+.eye-wrapper.shock .brow{ transform: translateX(-50%) translateY(-4px) rotate(2deg); }
+.eye-wrapper.shock{ transform: translateY(-2px); }
+.eye-wrapper.shock .eye-frame{ transform: translateX(-50%) scale(1.06); }
+.eye-wrapper.shock .lashes{ transform: translateX(-50%) scaleY(1.05); }
 
 /* --- CHAT --- */
 .chat-area{
-  flex: 1; padding: 20px; display: flex; flex-direction: column; gap: 15px;
+  flex: 1; padding: 20px; display:flex; flex-direction:column; gap: 15px;
   overflow-y: auto; scroll-behavior: smooth;
 }
 .chat-area::-webkit-scrollbar{ width: 0; }
@@ -381,55 +400,40 @@ body{
 .msg.user{ align-self: flex-end; background: #222; color: #fff; border-bottom-right-radius: 4px; }
 .typing-indicator{ font-size: 12px; color: #666; margin-left: 15px; display: none; }
 
-/* --- INPUT --- */
 .input-dock{
-  padding: 15px 20px 30px 20px; background: linear-gradient(to top, var(--bg) 80%, transparent);
-  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+  padding: 15px 20px 30px 20px;
+  background: linear-gradient(to top, var(--bg) 80%, transparent);
+  display:flex; align-items:center; gap:12px; flex-shrink:0;
 }
-.icon-btn{
-  width: 44px; height: 44px;
-  border: none; background: #111; border-radius: 50%;
-  color: #888; font-size: 20px; cursor: pointer; transition: 0.2s;
-}
+.icon-btn{ width: 44px; height: 44px; border:none; background:#111; border-radius:50%; color:#888; font-size:20px; cursor:pointer; transition:0.2s; }
 .icon-btn:hover{ color: var(--amber); }
-.icon-btn.active{
-  color: var(--amber);
-  box-shadow: 0 0 0 1px rgba(255,179,0,0.35), 0 0 14px rgba(255,179,0,0.25);
-}
-.input-wrapper{ flex: 1; }
-input{
-  width: 100%;
-  background: #111;
-  border: 1px solid #333;
-  border-radius: 25px;
-  padding: 14px 20px;
-  color: #fff;
-  font-size: 16px;
-  outline: none;
-  transition: 0.3s;
-}
+.input-wrapper{ flex:1; }
+input{ width:100%; background:#111; border:1px solid #333; border-radius:25px; padding:14px 20px; color:#fff; font-size:16px; outline:none; transition:0.3s; }
 input:focus{ border-color: var(--amber); }
 
-/* Mood */
-.blink .lid{ animation: blink 4s infinite; }
-@keyframes blink{ 0%,96%,100%{height:0%} 98%{height:84%} }
-.suspicious .brow{ transform: translateX(-50%) translateY(5px) rotate(-10deg); }
-.shock .brow{ transform: translateX(-50%) translateY(-8px) rotate(-4deg); }
-.rolling .brow{ transform: translateX(-50%) rotate(10deg); }
-.rolling .pupil{ animation: roll 1.7s ease-in-out; }
-@keyframes roll{
-  0%{transform:translateX(-50%) translate(0,0)}
-  50%{transform:translateX(-50%) translate(0,-14px)}
-  100%{transform:translateX(-50%) translate(0,0)}
+/* tiny helper status */
+.statusPill{
+  position:absolute;
+  top: 68px;
+  right: 14px;
+  z-index: 60;
+  font-size: 11px;
+  color:#777;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid #222;
+  border-radius: 999px;
+  padding: 6px 10px;
+  backdrop-filter: blur(4px);
 }
+.statusPill.on{ color: #ffd27a; border-color: rgba(255,179,0,0.25); box-shadow: 0 0 14px rgba(255,179,0,0.08); }
 
-/* Kamera gizli video */
-#camVideo{
-  position: absolute;
+/* hidden camera elements */
+#camVideo, #camCanvas{
+  position:absolute;
+  left:-9999px; top:-9999px;
   width: 1px; height: 1px;
   opacity: 0;
-  pointer-events: none;
-  left: -9999px; top: -9999px;
+  pointer-events:none;
 }
 </style>
 </head>
@@ -438,13 +442,17 @@ input:focus{ border-color: var(--amber); }
 <div class="phone" id="phone">
 
   <header class="topbar">
-    <button id="menuBtn" class="menuBtn" aria-label="Menü">☰</button>
+    <div class="leftTop">
+      <button id="menuBtn" class="menuBtn" aria-label="Menü">☰</button>
+      <button id="camBtn" class="camBtn" title="Kamera ile takip">🎥 Takip</button>
+    </div>
     <div class="brand"></div>
     <div id="authDot" class="authDot" title="Giriş durumu"></div>
   </header>
 
-  <div id="drawerMask" class="drawerMask"></div>
+  <div id="statusPill" class="statusPill">Takip: Kapalı</div>
 
+  <div id="drawerMask" class="drawerMask"></div>
   <aside id="drawer" class="drawer">
     <div class="drawerHead">
       <div class="drawerTitle">Caynana</div>
@@ -461,20 +469,18 @@ input:focus{ border-color: var(--amber); }
 
     <button id="openProfileBtn" class="drawerItem">👤 Profil</button>
     <button id="openLoginBtn" class="drawerItem">🔐 Google ile giriş</button>
-
     <hr class="drawerHr">
-
     <button id="aboutBtn" class="drawerItem">ℹ️ Hakkımızda</button>
     <button id="faqBtn" class="drawerItem">❓ SSS</button>
     <button id="contactBtn" class="drawerItem">✉️ İletişim</button>
     <button id="privacyBtn" class="drawerItem">🔒 Gizlilik</button>
-
     <button id="logoutBtn" class="drawerItem danger">🚪 Çıkış</button>
   </aside>
 
   <div class="header">
     <div class="eyes-container">
-      <div class="eye-wrapper blink" id="eyeL">
+
+      <div class="eye-wrapper idle" id="eyeL">
         <div class="brow"></div>
         <div class="lashes"></div>
         <div class="eyeliner"></div>
@@ -486,7 +492,7 @@ input:focus{ border-color: var(--amber); }
         </div>
       </div>
 
-      <div class="eye-wrapper blink" id="eyeR">
+      <div class="eye-wrapper idle" id="eyeR">
         <div class="brow"></div>
         <div class="lashes"></div>
         <div class="eyeliner"></div>
@@ -497,6 +503,7 @@ input:focus{ border-color: var(--amber); }
           <div class="mini-eye"><div class="mini-pupil"></div></div>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -509,84 +516,140 @@ input:focus{ border-color: var(--amber); }
   <div class="typing-indicator" id="typing">Caynana yazıyor...</div>
 
   <div class="input-dock">
-    <button class="icon-btn" id="camBtn" title="Kamera ile takip">📷</button>
+    <button class="icon-btn">📷</button>
     <div class="input-wrapper">
       <input type="text" id="userInput" placeholder="Caynana'ya yaz..." autocomplete="off">
     </div>
     <button class="icon-btn">🎙️</button>
   </div>
 
-  <video id="camVideo" autoplay playsinline></video>
+  <!-- camera hidden -->
+  <video id="camVideo" playsinline autoplay muted></video>
+  <canvas id="camCanvas"></canvas>
+
 </div>
 
+<!-- MediaPipe FaceMesh (CDN) -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+
 <script>
-/* --- DRAWER --- */
+/* ---------------------------
+   DRAWER
+---------------------------- */
 const menuBtn = document.getElementById('menuBtn');
 const drawer = document.getElementById('drawer');
 const mask = document.getElementById('drawerMask');
 const closeBtn = document.getElementById('drawerClose');
 
 function toggleDrawer(open) {
-  if(open) { drawer.classList.add('open'); mask.classList.add('open'); }
-  else { drawer.classList.remove('open'); mask.classList.remove('open'); }
+  drawer.classList.toggle('open', !!open);
+  mask.classList.toggle('open', !!open);
 }
 menuBtn.addEventListener('click', () => toggleDrawer(true));
 closeBtn.addEventListener('click', () => toggleDrawer(false));
 mask.addEventListener('click', () => toggleDrawer(false));
 
-/* --- GÖZ & CHAT --- */
-const phone = document.getElementById("phone");
-const eyeL = document.getElementById("eyeL");
-const eyeR = document.getElementById("eyeR");
-const eyes = [eyeL, eyeR];
+/* ---------------------------
+   EYES DOM
+---------------------------- */
+const phone = document.getElementById('phone');
+const eyeL = document.getElementById('eyeL');
+const eyeR = document.getElementById('eyeR');
+const pupils = phone.querySelectorAll('.pupil');
+const miniPupils = phone.querySelectorAll('.mini-pupil');
+const lids = phone.querySelectorAll('.lid');
 
-const pupils = document.querySelectorAll(".pupil");
-const miniPupils = document.querySelectorAll(".mini-pupil");
+function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
 
+/* pupil move (UI space) */
+function setGaze(nx, ny){
+  // nx, ny: -1..1
+  const px = clamp(nx * 14, -14, 14);
+  const py = clamp(ny * 10, -10, 10);
+
+  pupils[0].style.transform = `translateX(-50%) translate(${px}px, ${py}px)`;
+  pupils[1].style.transform = `translateX(-50%) translate(${px}px, ${py}px)`;
+
+  const mx = clamp(-px * 0.35, -4, 4);
+  const my = clamp(-py * 0.35, -3, 3);
+  miniPupils[0].style.transform = `translate(${mx}px, ${my}px)`;
+  miniPupils[1].style.transform = `translate(${mx}px, ${my}px)`;
+}
+
+/* lid control (0..1) */
+function setLid(eyeEl, t){
+  // t: 0=open, 1=closed
+  const h = clamp(t, 0, 1) * 82;
+  eyeEl.style.setProperty('--lidH', h.toFixed(1) + '%');
+}
+
+function winkLeft(){
+  setLid(eyeL, 1);
+  setTimeout(()=>setLid(eyeL, 0), 140);
+}
+function winkRight(){
+  setLid(eyeR, 1);
+  setTimeout(()=>setLid(eyeR, 0), 140);
+}
+function blinkBoth(){
+  setLid(eyeL, 1); setLid(eyeR, 1);
+  setTimeout(()=>{ setLid(eyeL, 0); setLid(eyeR, 0); }, 140);
+}
+
+/* fallback: mouse/touch tracking */
+function trackFromPointer(x, y){
+  const rect = phone.getBoundingClientRect();
+  const cx = rect.left + rect.width/2;
+  const cy = rect.top + 120; // header bias
+  const nx = clamp((x - cx) / (rect.width/2), -1, 1);
+  const ny = clamp((y - cy) / (rect.height/2), -1, 1);
+  setGaze(nx, ny);
+}
+phone.addEventListener('mousemove', e => { if(!cameraOn) trackFromPointer(e.clientX, e.clientY); });
+phone.addEventListener('touchmove', e => {
+  if(cameraOn) return;
+  if(!e.touches || !e.touches[0]) return;
+  trackFromPointer(e.touches[0].clientX, e.touches[0].clientY);
+}, {passive:true});
+
+/* ---------------------------
+   CHAT (same vibe)
+---------------------------- */
 const input = document.getElementById("userInput");
 const chatArea = document.getElementById("chatArea");
 const typingIndicator = document.getElementById("typing");
 
-function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
-
-function trackEyes(screenX, screenY) {
-  eyes.forEach((eye, i) => {
-    if(!eye.classList.contains("rolling")){
-      const rect = eye.getBoundingClientRect();
-      const cx = rect.left + rect.width/2;
-      const cy = rect.top + rect.height/2;
-
-      const dx = (screenX - cx) / 11;
-      const dy = (screenY - cy) / 11;
-
-      const px = clamp(dx, -14, 14);
-      const py = clamp(dy, -10, 10);
-
-      pupils[i].style.transform = `translateX(-50%) translate(${px}px, ${py}px)`;
-
-      const mx = clamp(-px * 0.35, -4, 4);
-      const my = clamp(-py * 0.35, -3, 3);
-      miniPupils[i].style.transform = `translate(${mx}px, ${my}px)`;
-    }
-  });
+function addMessage(text, type) {
+  const div = document.createElement("div");
+  div.className = `msg ${type}`;
+  div.innerHTML = text;
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
 }
 
-/* mouse/touch fallback */
-phone.addEventListener("mousemove", (e) => { if(!cameraRunning) trackEyes(e.clientX, e.clientY); });
-phone.addEventListener("touchmove", (e) => {
-  if(cameraRunning) return;
-  if(!e.touches || !e.touches[0]) return;
-  trackEyes(e.touches[0].clientX, e.touches[0].clientY);
-},{passive:true});
-
-function setMood(mood) {
-  eyes.forEach((e, i) => {
-    e.classList.remove("blink", "suspicious", "shock", "rolling");
-    pupils[i].style.transform = "translateX(-50%) translate(0,0)";
-    miniPupils[i].style.transform = "translate(0,0)";
-    if(mood === "normal") e.classList.add("blink"); else e.classList.add(mood);
+function setMood(mood){
+  [eyeL, eyeR].forEach(e=>{
+    e.classList.remove('idle','suspicious','shock');
+    e.classList.add('idle');
   });
-  if(mood === "rolling") setTimeout(() => setMood("normal"), 1800);
+
+  if(mood === 'suspicious'){ eyeL.classList.add('suspicious'); eyeR.classList.add('suspicious'); }
+  if(mood === 'shock'){ eyeL.classList.add('shock'); eyeR.classList.add('shock'); }
+}
+
+function generateResponse(text) {
+  const lower = text.toLowerCase();
+  let response = "", mood = "normal";
+
+  if (lower.includes("para")) { mood = "suspicious"; response = "O parayı harcarken bana mı sordun? Bak ben burada boşuna mı göz kırpıyorum?"; }
+  else if (lower.includes("elti")) { mood = "suspicious"; response = "Elti mi? Heh… Tamam, sakince anlat… ama sakince.";}
+  else if (lower.includes("koca")) { mood = "shock"; response = "Neeey? Dur dur… Bana bir saniye ver. Şimdi bu işte bir şey var.";}
+  else { response = "Hadi devam et… dinliyorum. Gözümü senden ayırmıyorum zaten."; }
+
+  setMood(mood);
+  addMessage(response, "caynana");
 }
 
 input.addEventListener("keypress", (e) => {
@@ -600,223 +663,181 @@ input.addEventListener("keypress", (e) => {
     setTimeout(() => {
       typingIndicator.style.display = "none";
       generateResponse(text);
-    }, 800);
+    }, 650);
   }
 });
 
-function addMessage(text, type) {
-  const div = document.createElement("div");
-  div.className = `msg ${type}`;
-  div.innerHTML = text;
-  chatArea.appendChild(div);
-  chatArea.scrollTop = chatArea.scrollHeight;
-}
+/* ---------------------------
+   CAMERA FACE TRACK (MediaPipe)
+---------------------------- */
+const camBtn = document.getElementById('camBtn');
+const statusPill = document.getElementById('statusPill');
+const videoEl = document.getElementById('camVideo');
 
-function generateResponse(text) {
-  const lower = text.toLowerCase();
-  let response = "", mood = "normal";
+let faceMesh = null;
+let camera = null;
+let cameraOn = false;
 
-  if (lower.includes("para")) { mood = "suspicious"; response = "O parayı harcarken bana mı sordun? Tutumlu ol biraz."; }
-  else if (lower.includes("elti")) { mood = "rolling"; response = "Ay yine mi o? Vallahi şiştim, anlat ne yaptı?"; }
-  else if (lower.includes("koca")) { mood = "shock"; response = "Neeey? Ciddi misin? Sakın alttan alma!"; }
-  else { response = "Ee sonra? Devam et, dinliyorum."; }
+/* FaceMesh landmark indices for eyes (MediaPipe FaceMesh) */
+const LEFT_EYE = { // user's left eye (on screen right if mirrored)
+  p1: 33,   // outer corner
+  p2: 133,  // inner corner
+  top: 159,
+  bottom: 145
+};
+const RIGHT_EYE = {
+  p1: 362,
+  p2: 263,
+  top: 386,
+  bottom: 374
+};
 
-  setMood(mood);
-  addMessage(response, "caynana");
-}
-
-setMood("normal");
-</script>
-
-<!-- Kamera ile yüz takibi + tek göz kırpma (MediaPipe Face Landmarker) -->
-<script type="module">
-/*
-Kaynak yaklaşım: MediaPipe Face Landmarker web örnekleri + FilesetResolver/FaceLandmarker CDN kullanım mantığı. 0
-*/
-import vision from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3";
-const { FaceLandmarker, FilesetResolver } = vision;
-
-const camBtn = document.getElementById("camBtn");
-const video = document.getElementById("camVideo");
-const phone = document.getElementById("phone");
-const eyeL = document.getElementById("eyeL");
-const eyeR = document.getElementById("eyeR");
-
-let faceLandmarker = null;
-let cameraRunning = false;
-window.cameraRunning = false;
-
-let rafId = null;
-let stream = null;
-
-/* blink stabilitesi için */
-let leftBlinkHold = 0;
-let rightBlinkHold = 0;
-
-function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
-
-function lmAvg(lms, idxs){
-  let x=0,y=0;
-  for(const i of idxs){ x += lms[i].x; y += lms[i].y; }
-  return { x: x/idxs.length, y: y/idxs.length };
-}
-
+/* Helpers */
 function dist(a,b){
-  const dx = a.x-b.x, dy = a.y-b.y;
-  return Math.hypot(dx,dy);
+  const dx = a.x - b.x, dy = a.y - b.y;
+  return Math.hypot(dx, dy);
 }
 
-/* FaceMesh indeksleri (Face Landmarker 478 landmark seti ile uyumlu pratik indeksler) */
-const LEFT_EYE_TOP = 159, LEFT_EYE_BOT = 145, LEFT_EYE_L = 33, LEFT_EYE_R = 133;
-const RIGHT_EYE_TOP = 386, RIGHT_EYE_BOT = 374, RIGHT_EYE_L = 362, RIGHT_EYE_R = 263;
-const NOSE_TIP = 1;
-
-/* iris noktaları */
-const LEFT_IRIS = [468,469,470,471,472];
-const RIGHT_IRIS = [473,474,475,476,477];
-
-async function ensureModel(){
-  if(faceLandmarker) return;
-
-  const filesetResolver = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm"
-  );
-
-  faceLandmarker = await FaceLandmarker.createFromOptions(filesetResolver, {
-    baseOptions: {
-      modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
-      delegate: "GPU"
-    },
-    runningMode: "VIDEO",
-    numFaces: 1
-  });
+/* Eye openness ratio: vertical / horizontal */
+function eyeOpenRatio(lm, eye){
+  const a = lm[eye.top], b = lm[eye.bottom], c = lm[eye.p1], d = lm[eye.p2];
+  const v = dist(a,b);
+  const h = dist(c,d) || 1e-6;
+  return v / h;
 }
 
-function setEyeBlink(eyeEl, isClosed){
-  if(isClosed) eyeEl.classList.add("force-blink");
-  else eyeEl.classList.remove("force-blink");
-}
+/* Smoothing */
+let smoothX = 0, smoothY = 0;
+function smoothTo(target, cur, k){ return cur + (target - cur) * k; }
 
-function trackEyes(screenX, screenY) {
-  const pupils = document.querySelectorAll(".pupil");
-  const miniPupils = document.querySelectorAll(".mini-pupil");
-  const eyes = [eyeL, eyeR];
+/* wink state */
+let leftClosedFrames = 0;
+let rightClosedFrames = 0;
+let lastWinkAt = 0;
 
-  eyes.forEach((eye, i) => {
-    if(!eye.classList.contains("rolling")){
-      const rect = eye.getBoundingClientRect();
-      const cx = rect.left + rect.width/2;
-      const cy = rect.top + rect.height/2;
-
-      const dx = (screenX - cx) / 11;
-      const dy = (screenY - cy) / 11;
-
-      const px = clamp(dx, -14, 14);
-      const py = clamp(dy, -10, 10);
-
-      pupils[i].style.transform = `translateX(-50%) translate(${px}px, ${py}px)`;
-      const mx = clamp(-px * 0.35, -4, 4);
-      const my = clamp(-py * 0.35, -3, 3);
-      miniPupils[i].style.transform = `translate(${mx}px, ${my}px)`;
-    }
-  });
+function updateStatus(on){
+  cameraOn = on;
+  camBtn.classList.toggle('on', on);
+  statusPill.classList.toggle('on', on);
+  statusPill.textContent = on ? 'Takip: Kamera Açık' : 'Takip: Kapalı (Mouse/Touch)';
 }
 
 async function startCamera(){
-  await ensureModel();
+  if(cameraOn) return;
 
-  stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "user" },
-    audio: false
-  });
-
-  video.srcObject = stream;
-  await video.play();
-
-  cameraRunning = true;
-  window.cameraRunning = true;
-  camBtn.classList.add("active");
-
-  loop();
-}
-
-function stopCamera(){
-  cameraRunning = false;
-  window.cameraRunning = false;
-  camBtn.classList.remove("active");
-
-  if(rafId) cancelAnimationFrame(rafId);
-  rafId = null;
-
-  if(stream){
-    stream.getTracks().forEach(t => t.stop());
-    stream = null;
-  }
-  video.srcObject = null;
-
-  setEyeBlink(eyeL, false);
-  setEyeBlink(eyeR, false);
-}
-
-function loop(){
-  if(!cameraRunning) return;
-
-  const now = performance.now();
-  const results = faceLandmarker.detectForVideo(video, now);
-
-  if(results && results.faceLandmarks && results.faceLandmarks.length){
-    const lms = results.faceLandmarks[0];
-
-    /* yüz merkezini ekrana map et -> gözler seni takip etsin */
-    const nose = lms[NOSE_TIP];
-    const phoneRect = phone.getBoundingClientRect();
-
-    const screenX = phoneRect.left + nose.x * phoneRect.width;
-    const screenY = phoneRect.top + nose.y * phoneRect.height;
-
-    trackEyes(screenX, screenY);
-
-    /* tek göz kırpma (eye openness ratio) */
-    const lTop = lms[LEFT_EYE_TOP], lBot = lms[LEFT_EYE_BOT], lL = lms[LEFT_EYE_L], lR = lms[LEFT_EYE_R];
-    const rTop = lms[RIGHT_EYE_TOP], rBot = lms[RIGHT_EYE_BOT], rL = lms[RIGHT_EYE_L], rR = lms[RIGHT_EYE_R];
-
-    const lOpen = dist(lTop,lBot) / (dist(lL,lR) + 1e-6);
-    const rOpen = dist(rTop,rBot) / (dist(rL,rR) + 1e-6);
-
-    /* eşikler: kişiye göre ufak oynar */
-    const BLINK_THR = 0.18;
-
-    const lClosed = lOpen < BLINK_THR;
-    const rClosed = rOpen < BLINK_THR;
-
-    /* jitter azalt: kapalıyken 2 frame tut */
-    if(lClosed) leftBlinkHold = Math.min(3, leftBlinkHold + 1);
-    else leftBlinkHold = Math.max(0, leftBlinkHold - 1);
-
-    if(rClosed) rightBlinkHold = Math.min(3, rightBlinkHold + 1);
-    else rightBlinkHold = Math.max(0, rightBlinkHold - 1);
-
-    setEyeBlink(eyeL, leftBlinkHold >= 2);
-    setEyeBlink(eyeR, rightBlinkHold >= 2);
-
-    /* (Bonus) iris merkezini istersen ileride daha “tam göz takibi” için kullanabiliriz */
-    // const lIris = lmAvg(lms, LEFT_IRIS);
-    // const rIris = lmAvg(lms, RIGHT_IRIS);
+  if(!faceMesh){
+    faceMesh = new FaceMesh.FaceMesh({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+    });
+    faceMesh.setOptions({
+      maxNumFaces: 1,
+      refineLandmarks: true,
+      minDetectionConfidence: 0.6,
+      minTrackingConfidence: 0.6
+    });
+    faceMesh.onResults(onFaceResults);
   }
 
-  rafId = requestAnimationFrame(loop);
-}
-
-camBtn.addEventListener("click", async () => {
   try{
-    if(!cameraRunning) await startCamera();
-    else stopCamera();
+    camera = new Camera(videoEl, {
+      onFrame: async () => {
+        await faceMesh.send({image: videoEl});
+      },
+      width: 640,
+      height: 480
+    });
+    await camera.start();
+    updateStatus(true);
   }catch(err){
-    console.error(err);
-    stopCamera();
-    alert("Kamera açılamadı. HTTPS/localhost şart. Tarayıcı izinlerini kontrol et.");
+    console.log('Kamera baslatilamadi:', err);
+    updateStatus(false);
+    addMessage("Kamerayı açamadım. Sorun değil; mouse/touch ile takip ederim.", "caynana");
   }
+}
+
+async function stopCamera(){
+  if(!cameraOn) return;
+  try{
+    if(camera && camera.stop) camera.stop();
+  }catch(e){}
+  updateStatus(false);
+}
+
+camBtn.addEventListener('click', async ()=>{
+  if(cameraOn) await stopCamera();
+  else await startCamera();
 });
+
+/* Face results: gaze + blink */
+function onFaceResults(results){
+  if(!results.multiFaceLandmarks || !results.multiFaceLandmarks[0]) return;
+  const lm = results.multiFaceLandmarks[0];
+
+  /* Face center: use nose tip (1) and between eyes feel */
+  const nose = lm[1];
+  // Normalize to -1..1 in camera coords (0..1). Video is not shown, but we assume typical.
+  // center at 0.5,0.5 => 0
+  let nx = (nose.x - 0.5) * 2; // -1..1
+  let ny = (nose.y - 0.45) * 2; // bias slightly up
+
+  // Smooth + invert x (mirror feel)
+  nx = -nx;
+
+  smoothX = smoothTo(nx, smoothX, 0.22);
+  smoothY = smoothTo(ny, smoothY, 0.22);
+
+  setGaze(clamp(smoothX, -1, 1), clamp(smoothY, -1, 1));
+
+  /* Blink / Wink detection */
+  const l = eyeOpenRatio(lm, LEFT_EYE);
+  const r = eyeOpenRatio(lm, RIGHT_EYE);
+
+  // thresholds: tweakable
+  const CLOSED_T = 0.18;   // below => closed
+  const OPEN_T   = 0.22;   // above => open (hysteresis)
+
+  const lClosed = (l < CLOSED_T);
+  const rClosed = (r < CLOSED_T);
+  const lOpen = (l > OPEN_T);
+  const rOpen = (r > OPEN_T);
+
+  // drive lids live (gives organic feel)
+  // map ratio to lid: smaller ratio => more closed
+  const map = (val) => clamp((OPEN_T - val) / (OPEN_T - 0.12), 0, 1); // 0..1
+  setLid(eyeL, map(l));
+  setLid(eyeR, map(r));
+
+  // wink recognition (needs a few frames)
+  leftClosedFrames  = lClosed ? leftClosedFrames + 1 : Math.max(0, leftClosedFrames - 1);
+  rightClosedFrames = rClosed ? rightClosedFrames + 1 : Math.max(0, rightClosedFrames - 1);
+
+  const now = Date.now();
+  const cooldown = 450;
+
+  // Left wink: left closed for a bit while right open
+  if(now - lastWinkAt > cooldown){
+    if(leftClosedFrames >= 2 && rOpen){
+      lastWinkAt = now;
+      // mirror the user's wink: if user left closes -> our left closes
+      winkLeft();
+    } else if(rightClosedFrames >= 2 && lOpen){
+      lastWinkAt = now;
+      winkRight();
+    } else if(leftClosedFrames >= 2 && rightClosedFrames >= 2){
+      lastWinkAt = now;
+      blinkBoth();
+    }
+  }
+}
+
+/* Auto: start camera once (nice default). If user hates it, button shuts it off. */
+startCamera();
+
+/* ---------------------------
+   OPTIONAL: Manual test wink
+---------------------------- */
+// setTimeout(()=>winkLeft(), 1200);
+
 </script>
 
 </body>
