@@ -213,3 +213,12 @@ function updateUI(p, lockedId, avatarUrl) {
 function isProfileValid(p, lockedId) {
   return !!(lockedId && p && p.hitap && p.gender && p.maritalStatus);
 }
+// ... (Mevcut kodların altına ekle) ...
+
+// Profil Sayfasından Çıkış Yapma (Döngüyü Kırmak İçin)
+window.logoutFromProfile = function() {
+    if(confirm("Profil oluşturmayı iptal edip çıkış yapmak istiyor musun?")) {
+        localStorage.removeItem(STORAGE_KEY); // Hafızayı sil
+        window.location.href = '../index.html'; // Ana sayfaya (Login'e) dön
+    }
+}
