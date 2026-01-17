@@ -1,9 +1,9 @@
+/* js/auth.js - HAFIZA KORUMALI SÜRÜM */
 import { GOOGLE_CLIENT_ID, STORAGE_KEY } from "./config.js";
 
 let tokenClient;
 let currentMode = 'login'; // 'login' veya 'signup'
 
-// 1. Google İstemcisini Başlat
 export function initAuth() {
     if (window.google) {
         tokenClient = google.accounts.oauth2.initTokenClient({
@@ -18,11 +18,10 @@ export function initAuth() {
     }
 }
 
-// 2. Butona Tıklayınca (Login veya Signup Ayırımı)
 export function handleLogin(provider, mode) {
-    currentMode = mode; // Niyetimiz ne? (Giriş mi Kayıt mı)
-
-    // A) KAYIT OL MODU (Sözleşme Zorunlu)
+    currentMode = mode; // Niyetimiz ne?
+    
+    // ÜYE OL ise Sözleşme Şart
     if (currentMode === 'signup') {
         const check = document.getElementById('agreementCheck');
         if (check && !check.checked) {
@@ -30,108 +29,76 @@ export function handleLogin(provider, mode) {
             return;
         }
     }
-    
-    // B) GİRİŞ YAP MODU (Sözleşme Yok - Direkt Google)
+
     if (provider === 'google') {
-        if (tokenClient) {
-            tokenClient.requestAccessToken();
-        } else {
-            alert("Google servisi hazırlanıyor, az bekle...");
-        }
-    } else {
-        alert("Apple yakında geliyor.");
+        if(tokenClient) tokenClient.requestAccessToken();
+    } else if (provider === 'apple') {
+        window.location.href = 'pages/apple-yakinda.html';
     }
 }
 
-// 3. Google Verisi Gelince Ne Yapacağız?
 function fetchGoogleProfile(accessToken) {
     fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
         headers: { 'Authorization': `Bearer ${accessToken}` }
     })
     .then(r => r.json())
     .then(googleData => {
-        // --- KRİTİK NOKTA: VERİ KORUMA ---
         
-        // 1. Mevcut (Eski) Veriyi Çek
+        // 1. MEVCUT HAFIZAYI OKU (SİLMEDEN!)
         let storedUser = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-        
-        // 2. Google ID Kontrolü (Başkasının verisini yüklemeyelim)
         const newGoogleID = "CYN-" + googleData.sub.substr(0, 10);
-        
-        // Eğer LocalStorage'da veri var ama ID'ler farklıysa -> Sıfırla (Yeni hesap)
-        if(storedUser.id && storedUser.id !== newGoogleID) {
-            storedUser = {}; 
-        }
 
-        // 3. Mantık Çatalı
+        // 2. KULLANICIYI BİRLEŞTİR (MERGE) - ESKİ VERİYİ KORU
+        // Burası çok önemli: storedUser'ı önce yayıyoruz ki 'hitap', 'botName' kaybolmasın.
+        const updatedUser = {
+            ...storedUser, 
+            id: newGoogleID,
+            fullname: googleData.name, // Google adını güncelle
+            email: googleData.email,   // Email güncelle
+            avatar: googleData.picture,// Resim güncelle
+            provider: 'google'
+        };
+
+        // 3. SENARYOLAR
         if (currentMode === 'login') {
-            // --- GİRİŞ SENARYOSU ---
-            if (!storedUser.id || !storedUser.isProfileCompleted) {
-                // Kaydı yoksa veya profil yarım kalmışsa içeri alma!
-                alert("Seni tanıyamadım evladım. Önce 'Üye Ol' butonundan kayıt aç.");
-                return; // DUR.
+            // GİRİŞ MODU: İçeride "Profil Tamamlandı" mührü var mı?
+            if (!updatedUser.isProfileCompleted) {
+                alert("Seni tanıyamadım evladım. Daha önce profil oluşturmamışsın. Lütfen 'ÜYE OL' butonunu kullan.");
+                return; 
             }
             
-            // Kayıt var, sadece Google bilgilerini (Avatar/Email) güncelle, HİTAP'A DOKUNMA
-            storedUser.fullname = googleData.name;
-            storedUser.avatar = googleData.picture;
-            storedUser.email = googleData.email;
-            
-            // Kaydet ve Sohbeti Başlat
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(storedUser));
-            
-            // Perdeyi kaldır ve konuşmaya başla
+            // Tanıdık, veriyi güncelle ve içeri al
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
             document.getElementById('loginOverlay').classList.remove('active');
             
-            // index.html'deki startChat fonksiyonunu tetikle (Hitap ile)
-            if(window.startChat) window.startChat(storedUser);
+            // Sohbeti hafızadaki isimle başlat
+            if(window.startChat) window.startChat(updatedUser);
 
         } else {
-            // --- KAYIT (SIGNUP) SENARYOSU ---
-            
-            // Eğer zaten üyeyse uyarı ver ama yine de güncelle
-            if (storedUser.isProfileCompleted) {
-                if(confirm("Sen zaten üyesin evladım. Giriş yapılsın mı?")) {
+            // KAYIT MODU:
+            if (updatedUser.isProfileCompleted) {
+                if(confirm("Sen zaten bizim evlatsın. Giriş yapılsın mı?")) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
                     document.getElementById('loginOverlay').classList.remove('active');
-                    if(window.startChat) window.startChat(storedUser);
+                    if(window.startChat) window.startChat(updatedUser);
                     return;
                 }
             }
-
-            // Yeni Kullanıcı Objesi Oluştur (Eski verileri koruyarak merge et)
-            const newUser = {
-                ...storedUser, // Varsa eski ayarları koru
-                id: newGoogleID,
-                fullname: googleData.name,
-                email: googleData.email,
-                avatar: googleData.picture,
-                provider: 'google',
-                isProfileCompleted: storedUser.isProfileCompleted || false // Silme!
-            };
-
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
-            
-            // Profil sayfasına yönlendir (Kayıt tamamlamak için)
+            // Yeni kayıt ise profil sayfasına gönder
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
             window.location.href = 'pages/profil.html';
         }
     })
     .catch(err => {
-        console.error(err);
-        alert("Google ile bağlantı kuramadık.");
+        console.error("Google Hatası:", err);
     });
 }
 
-// Helper: Kullanıcı Bilgisi
-export function getUserInfo() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-}
-
-// Helper: Çıkış
 export function logout() {
     if (confirm("Beni bırakıp gidiyor musun?")) {
-        // Tamamen silme ki geri gelince hatırlayalım (İsteğe bağlı)
-        // Ama güvenlik için çıkışta temizlemek iyidir:
-        localStorage.removeItem(STORAGE_KEY); 
+        // Çıkışta hafızayı silmeyelim ki geri gelince hatırlasın istersen
+        // Ama güvenlik için genelde silinir. Sen silme dediğin için yorum satırı yapıyorum:
+        // localStorage.removeItem(STORAGE_KEY); 
         window.location.reload();
     }
 }
