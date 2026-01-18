@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
-<title>Caynana AI v13.0 Hibrit</title>
+<title>Caynana AI v13.0 Hibrit Final</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <style>
@@ -27,8 +27,12 @@
   
   .seesaw-svg { width: 36px; height: 18px; overflow: visible; }
   .seesaw-bar { transform-origin: 20px 8px; transition: transform 0.4s; }
-  .tilt-left .seesaw-bar { transform: rotate(-15deg); }
-  .tilt-right .seesaw-bar { transform: rotate(15deg); }
+  
+  /* KONUŞMA ANİMASYONU (YENİ) */
+  .brand-wrapper.talking .seesaw-bar { animation: talkWiggle 0.4s infinite alternate ease-in-out; }
+  @keyframes talkWiggle { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+
+  .tilt-left .seesaw-bar { transform: rotate(-15deg); } /* Düşünürken */
 
   /* --- GÖZLER --- */
   .face-container { flex: 0 0 0px; background: linear-gradient(to bottom, var(--bg), transparent); overflow: hidden; transition: flex-basis 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2500; }
@@ -37,19 +41,24 @@
   .mobile-frame.tracking-active .face-panel-inner { opacity: 1; transform: translateY(0); }
 
   .eyes-row { display: flex; gap: 24px; margin-bottom: 10px; }
-  .eye { width: 90px; height: 65px; position: relative; --lidTop:0%; --lidBot:0%; --gx:0px; --gy:0px; transition: 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+  .eye { width: 90px; height: 65px; position: relative; --lidTop:0%; --lidBot:0%; --gx:0px; --gy:0px; transition: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
   .brow { position: absolute; top: -14px; left: 0; width: 100%; height: 16px; background: #222; border-radius: 99px; transform-origin: center; transition: 0.3s; box-shadow: 0 3px 6px rgba(0,0,0,0.5); }
   .sclera { width: 100%; height: 100%; background: #e0e0e0; border-radius: 50%; overflow: hidden; position: relative; border: 2px solid #1a1a1a; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
   .iris { width: 32px; height: 32px; background: radial-gradient(circle, #5d4037 0%, #281a16 100%); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(calc(-50% + var(--gx)), calc(-50% + var(--gy))); border: 1px solid rgba(255,255,255,0.25); transition: transform 0.1s linear; }
   .pupil { width: 10px; height: 10px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
   .reflection { position: absolute; top: 6px; right: 6px; width: 4px; height: 4px; background: #fff; border-radius: 50%; opacity: 0.9; }
-  .lid-top, .lid-bot { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.1s; }
+  
+  .lid-top, .lid-bot { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.3s ease-in-out; }
   .lid-top { top: 0; height: var(--lidTop); border-bottom: 2px solid #222; }
   .lid-bot { bottom: 0; height: var(--lidBot); border-top: 2px solid #222; }
 
-  .mobile-frame.sleeping .eyes-row { animation: sleepBreath 3s infinite ease-in-out; opacity: 0.7; }
-  .mobile-frame.sleeping .brow { transform: translateY(10px) rotate(5deg); transition: 1s; }
-  @keyframes sleepBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.96) translateY(2px); } }
+  /* UYKU EFEKTİ */
+  .mobile-frame.sleeping .eyes-row { animation: sleepBreath 4s infinite ease-in-out; opacity: 0.6; }
+  .mobile-frame.sleeping .brow { transform: translateY(8px) rotate(5deg); transition: 1s; }
+  @keyframes sleepBreath { 
+    0%, 100% { transform: scale(1); } 
+    50% { transform: scale(0.95) translateY(2px); } 
+  }
 
   .mouth-wrapper { width: 60px; height: 26px; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 8px; }
   .mouth { width: 40px; height: 10px; border-top: 3px solid var(--lip-color); border-radius: 50% 50% 0 0; position: absolute; top: 8px; transition: 0.15s; opacity: 0.9; }
@@ -78,7 +87,7 @@
   .send-btn svg { stroke: #000; fill:none; width:22px; height:22px; }
   textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; resize: none; padding: 10px; max-height: 100px; min-height: 24px; font-family: inherit; scrollbar-width: none; }
 
-  /* FOOTER - EN ALTTA */
+  /* FOOTER */
   .footer-container { text-align: center; width: 100%; padding: 15px 0; background: #000; border-top: 1px solid #222; margin-top: auto; }
   .footer-container span { font-size: 12px; color: #aaa; font-weight: 600; letter-spacing: 0.5px; opacity: 0.9; }
   .footer-ver { font-size: 10px; color: #666; font-family: monospace; margin-top: 4px; }
@@ -92,8 +101,6 @@
   .auth-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; opacity: 0.5; pointer-events: none; filter: grayscale(1); }
   .auth-btn.enabled { opacity: 1; pointer-events: auto; filter: grayscale(0); }
   .btn-google { background: #fff; color: #333; } 
-  .btn-apple { background: #111; color: #fff; border: 1px solid #333; }
-  
   .agreement-box { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #888; justify-content: center; margin-top: 10px; text-align: left; }
   .agreement-box input { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
   .login-footer-links { margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; border-top: 1px solid #222; padding-top: 20px; }
@@ -140,9 +147,6 @@
         <a href="pages/gizlilik.html">Gizlilik</a>
         <a href="pages/sozlesme.html">Kullanım</a>
         <a href="pages/iletisim.html">İletişim</a>
-      </div>
-      <div style="margin-top:15px; font-size:11px; color:#888; line-height:1.4;">
-        Üyelik ücretsizdir.<br>CaynanaAI'yi ücretsiz kullanabilirsiniz.
       </div>
       <div style="margin-top:20px; border-top:1px solid #222; padding-top:15px;">
         <div style="font-weight:600; color:#aaa; font-size:12px;">@CaynanaAI By Ozyigits</div>
@@ -225,13 +229,13 @@
 
 <video id="camVideo" autoplay playsinline muted></video>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
 <script type="module">
   import { initAuth, handleLogin, logout } from './js/auth.js';
-  // YENİ: CHAT MOTORUNU İÇERİ ALIYORUZ
-  import { fetchTextResponse, fetchVoiceResponse, typeWriter, addUserBubble } from './js/chat.js';
+  import { fetchTextResponse, fetchVoiceResponse, addUserBubble } from './js/chat.js';
   
   window.handleLogin = handleLogin;
   window.logout = logout;
@@ -242,111 +246,175 @@
     if(check.checked) { btn.classList.add('enabled'); } else { btn.classList.remove('enabled'); }
   };
 
-  // BOTUN LOGO ANİMASYONUNU CHAT.JS'DEN TETİKLEMEK İÇİN
-  window.botTalkAnim = function() {
+  // --- DAKTİLO & KONUŞMA ANİMASYONU ---
+  window.typeWriter = function(text, elementId = 'chat') {
+    const chatDiv = document.getElementById(elementId);
+    if(!chatDiv) return;
+
+    // LOGO SALLANSIN (Konuşuyor)
     const brandWrapper = document.getElementById('brandWrapper');
-    brandWrapper.classList.add('tilt-right');
-    brandWrapper.classList.remove('tilt-left');
-    setTimeout(() => brandWrapper.classList.remove('tilt-right'), 2000);
+    brandWrapper.classList.add('talking');
+    
+    const bubbleRow = document.createElement("div");
+    bubbleRow.className = "bubble bot";
+    chatDiv.appendChild(bubbleRow);
+
+    let i = 0;
+    const speed = 20;
+
+    function type() {
+      if (i < text.length) {
+        bubbleRow.innerHTML += text.charAt(i);
+        i++;
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+        setTimeout(type, speed);
+      } else {
+        // Konuşma Bitti, Logo dursun
+        brandWrapper.classList.remove('talking');
+      }
+    }
+    type();
   };
 
   window.onload = function() { 
     initAuth(); 
     checkSession(); 
-    isTracking = true; // Otomatik takip
+    isTracking = true; 
     document.getElementById('mobileFrame').classList.add('tracking-active');
-    startLifeCycle(); 
+    
+    // Rastgele Bakış Atma Başlat
+    setInterval(autoLookBehavior, AUTO_LOOK_FREQ);
+    resetIdle();
   };
 
   function checkSession() {
     const user = JSON.parse(localStorage.getItem('caynana_user_v8'));
     if(user && user.isProfileCompleted && user.isSessionActive) {
       document.getElementById('loginOverlay').classList.remove('active');
-      
-      // İlk Karşılama
       setTimeout(() => {
-        typeWriter(`Hoş geldin ${user.hitap || user.fullname}. Ben ${user.botName || 'Caynana'}.`);
+        window.typeWriter(`Hoş geldin ${user.hitap || user.fullname}. Ben ${user.botName || 'Caynana'}.`);
       }, 500);
     }
   }
 
-  // --- ANA MESAJLAŞMA FONKSİYONU (YENİ BEYİN) ---
+  // --- MESAJ GÖNDERME ---
   async function sendMessage() {
     const txt = document.getElementById('msgInput').value.trim();
     if(!txt) return;
 
-    // 1. Kullanıcı Baloncuğu
     addUserBubble(txt);
-    
-    // UI Temizliği
     document.getElementById('msgInput').value = '';
     document.getElementById('msgInput').blur();
     
-    // Logo Sola Yatsın (Düşünüyor...)
+    // Sola yat (Düşünüyor)
     const brandWrapper = document.getElementById('brandWrapper');
     brandWrapper.classList.add('tilt-left');
 
-    // 2. BACKEND'E SOR (GEMINI)
     const response = await fetchTextResponse(txt);
     
-    // Düşünme bitti
     brandWrapper.classList.remove('tilt-left');
+    window.typeWriter(response.text);
 
-    // 3. CEVABI YAZ (GEMINI)
-    typeWriter(response.text);
-
-    // 4. SESLENDİR? (Eğer Takip Açıksa -> OPENAI)
-    // Maliyet koruması: Sadece 'isTracking' true ise konuşsun.
     if(isTracking && !response.error) {
-       await fetchVoiceResponse(response.text); // Backend bunu kısaltıp okuyacak
+       await fetchVoiceResponse(response.text); 
     }
   }
 
-  // Event Listeners
   document.getElementById('sendBtn').addEventListener('click', sendMessage);
   document.getElementById('msgInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
 
-  // --- DİĞER UI (Gözler, Menü vs.) ---
   const menuOverlay = document.getElementById('menuOverlay');
   const hambBtn = document.getElementById('hambBtn');
   hambBtn.addEventListener('click', () => menuOverlay.classList.add('open'));
   menuOverlay.addEventListener('click', (e) => { if(e.target === menuOverlay) menuOverlay.classList.remove('open'); });
 
-  /* YAŞAM DÖNGÜSÜ & GÖZ ZEKA */
-  let isTracking = false, isCameraOn = false, idleTimer = null, mouseIdleTimer = null, isMouseActive = false;
-  const IDLE_LIMIT = 8000; 
+  /* --- YENİ YAŞAM DÖNGÜSÜ (UYKU, ODAK, RASTGELE BAKIŞ) --- */
+  let isTracking = false;
+  let isMouseActive = false;
+  
+  let sleepTimer = null;       // 30 saniye sayacı
+  let gazeTimer = null;        // 2 saniye odak sayacı
+  
+  const SLEEP_DELAY = 30000;   // 30 Sn (Uyku)
+  const GAZE_DELAY = 2000;     // 2 Sn (Ortaya bak)
+  const AUTO_LOOK_FREQ = 5000; // 5 Sn (Sağa sola bak)
+
   const eyeL = document.getElementById('eyeL'), eyeR = document.getElementById('eyeR'), frame = document.getElementById('mobileFrame');
 
-  function startLifeCycle() { setInterval(() => { if(!frame.classList.contains('sleeping')) blink(); }, Math.random() * 3000 + 3000); }
-  function blink() { setLids(100); setTimeout(() => setLids(0), 150); }
-  async function goSleep() { if(frame.classList.contains('sleeping')) return; await blink(); await new Promise(r => setTimeout(r, 300)); await blink(); await new Promise(r => setTimeout(r, 300)); frame.classList.add('sleeping'); setLids(100, 100); }
-  function wakeUp() { if(!frame.classList.contains('sleeping')) return; frame.classList.remove('sleeping'); setLids(0, 0); resetIdle(); }
-  function resetIdle() { if (!isTracking) return; clearTimeout(idleTimer); if (frame.classList.contains('sleeping')) wakeUp(); idleTimer = setTimeout(goSleep, IDLE_LIMIT); }
-
+  // Fare hareket edince
   window.addEventListener('pointermove', (e) => {
-    resetIdle();
-    if(!isTracking || isCameraOn || frame.classList.contains('sleeping')) return;
-    isMouseActive = true; clearTimeout(mouseIdleTimer);
+    if(!isTracking || frame.classList.contains('sleeping')) {
+       // Uyuyorsa uyan
+       if(frame.classList.contains('sleeping')) wakeUp();
+    }
+    
+    resetIdle(); // Uyku sayacını sıfırla (30sn başa sar)
+    
+    isMouseActive = true;
+    clearTimeout(gazeTimer); // Ortaya dönme sayacını iptal et, çünkü hareket var
+
+    // Gözleri Fareye Çevir
     const rect = frame.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
     setGaze(x, y);
-    mouseIdleTimer = setTimeout(() => { isMouseActive = false; setGaze(0, 0); }, 2000);
+
+    // 2 Saniye durursa ortaya dön
+    gazeTimer = setTimeout(() => {
+        isMouseActive = false;
+        centerEyes(); 
+    }, GAZE_DELAY);
   });
+
+  function resetIdle() {
+    clearTimeout(sleepTimer);
+    sleepTimer = setTimeout(goSleep, SLEEP_DELAY);
+  }
+
+  function goSleep() {
+    if(frame.classList.contains('sleeping')) return;
+    frame.classList.add('sleeping');
+    // Gözleri kapat
+    setLids(100, 100);
+  }
+
+  function wakeUp() {
+    frame.classList.remove('sleeping');
+    setLids(0, 0); // Gözleri aç
+    resetIdle();
+  }
+
+  function centerEyes() {
+    setGaze(0, 0);
+  }
+
+  // Otomatik Rastgele Bakış (Mouse yoksa ve uyumuyorsa)
+  function autoLookBehavior() {
+    if (isMouseActive || frame.classList.contains('sleeping') || !isTracking) return;
+
+    // Hafif sağa sola bakış at
+    const rX = (Math.random() - 0.5) * 0.8; // -0.4 ile 0.4 arası
+    const rY = (Math.random() - 0.5) * 0.5; 
+    setGaze(rX, rY);
+
+    // 1 sn sonra merkeze dön
+    setTimeout(() => setGaze(0, 0), 1000);
+  }
 
   function setGaze(x, y) {
     const gx = Math.min(Math.max(x * 20, -20), 20);
     const gy = Math.min(Math.max(y * 15, -15), 15);
     [eyeL, eyeR].forEach(e => { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); });
   }
+  
   function setLids(top, bot=0) { [eyeL, eyeR].forEach(e => { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); }); }
 
-  document.getElementById('openTrackBtn').addEventListener('click', ()=>{ isTracking=true; frame.classList.add('tracking-active'); resetIdle(); });
+  document.getElementById('openTrackBtn').addEventListener('click', ()=>{ isTracking=true; frame.classList.add('tracking-active'); wakeUp(); });
   document.getElementById('closeTrackBtn').addEventListener('click', ()=>{ isTracking=false; frame.classList.remove('tracking-active'); });
   document.getElementById('camBtn').addEventListener('click', ()=>{ 
-    if(!isTracking) { isTracking=true; frame.classList.add('tracking-active'); }
     const btn = document.getElementById('camBtn'); btn.classList.toggle('active');
   });
+
 </script>
 </body>
 </html>
