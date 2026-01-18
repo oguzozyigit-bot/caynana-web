@@ -6,6 +6,12 @@
 <title>Profil Ayarları</title>
 <style>
   :root { --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --card-bg: #1a1a1a; }
+  
+  /* --- GLOBAL SCROLL GİZLEME (KESİN ÇÖZÜM) --- */
+  /* Tüm elementlerde scrollbar'ı yok et */
+  * { scrollbar-width: none; /* Firefox */ -ms-overflow-style: none; /* IE/Edge */ }
+  *::-webkit-scrollbar { display: none; width: 0; height: 0; background: transparent; /* Chrome/Safari */ }
+
   body { margin: 0; padding: 0; background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
   
   .mobile-frame { width: 100%; max-width: 480px; height: 100%; background: var(--bg); display: flex; flex-direction: column; position: relative; }
@@ -17,27 +23,25 @@
   
   .logout-btn { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #ff5252; cursor: pointer; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 8px; }
   
-  /* GİZLİ SCROLL (İstediğin Özellik) */
-  .scroll-content { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; scrollbar-width: none; /* Firefox */ }
-  .scroll-content::-webkit-scrollbar { display: none; /* Chrome */ }
+  .scroll-content { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
 
   .p-avatar-area { text-align: center; margin-bottom: 10px; }
-  /* AVATAR DÜZELTMESİ: Object-fit ve background eklendi */
+  /* Avatar Çerçevesi */
   .p-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; background: #222; }
   
   .section-title { font-size: 11px; color: var(--pistachio); font-weight: 700; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 8px; }
   .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 5px; }
   .form-label { font-size: 12px; color: #aaa; font-weight: 600; margin-left: 4px; }
   
-  /* INPUTLARA ÇERÇEVE (İstediğin Özellik) */
+  /* INPUT ÇERÇEVE VE STİL */
   .form-input, .form-select { background: #1a1a1a; border: 1px solid #444; color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; outline: none; width: 100%; transition: 0.2s; font-family: inherit; }
   .form-input:focus, .form-select:focus { border-color: var(--gold); background: #222; }
-  .form-input:disabled { opacity: 0.5; background: #111; color: #666; border-color: #333; }
+  .form-input:disabled { opacity: 0.7; background: #111; color: #888; border-color: #333; font-weight: 500; }
   
   .row-group { display: flex; gap: 15px; }
   .row-group > div { flex: 1; min-width: 0; } 
 
-  /* TARİH KUTULARI (Apple Tarzı) */
+  /* TARİH KUTULARI */
   .date-row { display: flex; gap: 8px; }
   .date-row select { flex: 1; padding: 14px 5px; background: #1a1a1a; color: white; border: 1px solid #444; border-radius: 12px; font-size: 13px; appearance: none; text-align: center; }
 
@@ -63,7 +67,7 @@
 
   <div class="scroll-content">
     <div class="p-avatar-area">
-      <img id="formAvatar" class="p-avatar" src="https://via.placeholder.com/100" referrerpolicy="no-referrer" alt="Avatar">
+      <img id="formAvatar" class="p-avatar" src="https://via.placeholder.com/100" referrerpolicy="no-referrer" onerror="this.src='https://via.placeholder.com/100?text=Avatar'" alt="Avatar">
       <div style="font-size:11px; color:#666; margin-top:8px;" id="emailDisplay">Email Yükleniyor...</div>
     </div>
 
@@ -173,7 +177,7 @@
 <script type="module">
     import { BASE_DOMAIN } from '../js/config.js';
 
-    // 1. Tarih Kutularını Otomatik Doldur
+    // 1. Tarih Kutularını Doldur
     const dS = document.getElementById('daySelect');
     const yS = document.getElementById('yearSelect');
     for(let i=1; i<=31; i++) dS.innerHTML += `<option value="${i<10?'0'+i:i}">${i}</option>`;
@@ -191,55 +195,65 @@
         if(val !== '0') div.classList.add('show'); else div.classList.remove('show');
     };
 
-    // 3. SAYFA AÇILINCA (Verileri Çek ve Doldur)
+    // 3. SAYFA YÜKLENİNCE (Google Verisi Öncelikli)
     window.onload = async function() {
+        // LocalStorage'ı oku
         const user = JSON.parse(localStorage.getItem('caynana_user_v8') || "{}");
+        
         if(!user.id) {
             alert("Giriş yapmamışsın!");
             window.location.href = '../index.html';
             return;
         }
 
-        // HIZLI AVATAR YÜKLEME
-        if (user.picture) document.getElementById('formAvatar').src = user.picture;
-        else if (user.photoURL) document.getElementById('formAvatar').src = user.photoURL;
+        // --- AVATAR ve İSİM İÇİN KESİN ÇÖZÜM ---
+        // Profil resmini doğrudan Google verisinden alıyoruz
+        const avatarImg = document.getElementById('formAvatar');
+        if (user.picture && user.picture.startsWith('http')) {
+            avatarImg.src = user.picture;
+        } else if (user.photoURL) {
+            avatarImg.src = user.photoURL; 
+        }
         
-        document.getElementById('formFullname').value = user.name || user.fullname || "İsimsiz";
+        // İsim de Google'dan gelsin
+        const googleName = user.name || user.fullname || user.given_name || "Misafir";
+        document.getElementById('formFullname').value = googleName;
+        
         document.getElementById('formID').innerText = user.id;
         document.getElementById('emailDisplay').innerText = user.email || "Email Yok";
 
-        // ÖNCE TELEFONDAKİ VERİYİ GÖSTER (Sıfır Bekleme)
-        fillFormFields(user); 
+        // ÖNCE TELEFONDAKİ KAYITLI PROFİLİ GÖSTER (Hız İçin)
+        fillFormFields(user);
 
-        // SONRA SUNUCUDAN EN GÜNCELİNİ ÇEK VE GÜNCELLE
+        // SONRA SUNUCUDAN EN GÜNCELİNİ ÇEK
         try {
             const url = `${BASE_DOMAIN}/api/profile/get?user_id=${user.id}&email=${user.email || ""}`;
             const res = await fetch(url);
             const data = await res.json();
 
             if (data.found && data.meta) {
-                fillFormFields(data.meta); // Sunucu verisiyle tazele
+                fillFormFields(data.meta);
             }
-        } catch(e) { console.log("Profil senkron hatası (Önemli değil, yerel veri kullanılıyor):", e); }
+        } catch(e) { console.log("Profil senkron hatası:", e); }
     };
 
-    // FORM DOLDURMA MOTORU (Data Loss Fix)
+    // FORM DOLDURMA MOTORU
     function fillFormFields(data) {
         if(data.hitap) document.getElementById('formHitap').value = data.hitap;
         if(data.gender) document.getElementById('formGender').value = data.gender;
         if(data.region) document.getElementById('formCity').value = data.region;
         
-        // EVLİ/BEKAR DURUMUNU DÜZELTEN KOD
+        // Evli/Bekar Durumu
         if(data.marital_status) {
             document.getElementById('formStatus').value = data.marital_status;
-            toggleMarriedFields(); // Alanı açmayı unutma!
+            toggleMarriedFields(); // Alanı aç
         }
         if(data.spouse_name) document.getElementById('formSpouse').value = data.spouse_name;
         
-        // ÇOCUK DURUMUNU DÜZELTEN KOD
+        // Çocuk Durumu
         if(data.child_count) {
             document.getElementById('formChildCount').value = data.child_count;
-            toggleChildFields(); // Alanı açmayı unutma!
+            toggleChildFields(); // Alanı aç
         }
         if(data.child_names) document.getElementById('formChildNames').value = data.child_names;
         if(data.child_ages) document.getElementById('formChildAges').value = data.child_ages;
@@ -247,7 +261,7 @@
         if(data.team) document.getElementById('formTeam').value = data.team;
         if(data.bot_name) document.getElementById('formBotName').value = data.bot_name;
 
-        // TARİHİ PARÇALA VE KUTULARA KOY
+        // Tarih
         if(data.birth_date) {
             const p = data.birth_date.split('.');
             if(p.length===3) { 
@@ -258,25 +272,16 @@
         }
     }
 
-    // 4. KAYDET
+    // 4. KAYDET (Verileri Koruyarak)
     window.saveProfile = async function() {
         const d = document.getElementById('daySelect').value;
         const m = document.getElementById('monthSelect').value;
         const y = document.getElementById('yearSelect').value;
         const fullDate = (d && m && y) ? `${d}.${m}.${y}` : "";
         
+        // Mevcut kullanıcıyı al (Google verilerini korumak için)
         const user = JSON.parse(localStorage.getItem('caynana_user_v8') || "{}");
         
-        // Form verilerini al
-        const formStatus = document.getElementById('formStatus').value;
-        const formSpouse = document.getElementById('formSpouse').value;
-        const formChildCount = document.getElementById('formChildCount').value;
-        const formChildNames = document.getElementById('formChildNames').value;
-        const formChildAges = document.getElementById('formChildAges').value;
-        const formTeam = document.getElementById('formTeam').value;
-        const formBotName = document.getElementById('formBotName').value;
-
-        // Backend'e gidecek paket (Tüm detaylar dahil)
         const payload = {
             user_id: user.id,
             meta: {
@@ -286,14 +291,13 @@
                 region: document.getElementById('formCity').value,
                 birth_date: fullDate,
                 
-                // EKSTRA VERİLER (Bunlar raw_data'ya gidecek)
-                marital_status: formStatus,
-                spouse_name: formSpouse,
-                child_count: formChildCount,
-                child_names: formChildNames,
-                child_ages: formChildAges,
-                team: formTeam,
-                bot_name: formBotName
+                marital_status: document.getElementById('formStatus').value,
+                spouse_name: document.getElementById('formSpouse').value,
+                child_count: document.getElementById('formChildCount').value,
+                child_names: document.getElementById('formChildNames').value,
+                child_ages: document.getElementById('formChildAges').value,
+                team: document.getElementById('formTeam').value,
+                bot_name: document.getElementById('formBotName').value
             }
         };
 
@@ -306,18 +310,19 @@
             const result = await res.json();
             
             if(result.ok) {
-                // TELEFON HAFIZASINI DA GÜNCELLE (Böylece bir dahaki sefere 0 saniyede açılır)
+                // LocalStorage'ı güncelle (Google verileri + Yeni profil verileri)
+                // Object.assign, user nesnesindeki mevcut (Google) verileri ezmez, sadece yenileri ekler/günceller.
                 Object.assign(user, payload.meta); 
                 user.isProfileCompleted = true;
                 localStorage.setItem('caynana_user_v8', JSON.stringify(user));
 
-                // İSTEDİĞİN MESAJ
+                // MESAJ DEĞİŞİKLİĞİ
                 alert("Bilgileriniz başarıyla güncellendi.");
                 window.location.href = "../index.html"; 
             } else {
                 alert("Hata: " + result.detail);
             }
-        } catch(e) { alert("Sunucu hatası, ama yerel kayıt yapıldı."); }
+        } catch(e) { alert("Sunucu hatası."); }
     };
 
     window.logoutFromProfile = function() {
