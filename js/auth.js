@@ -1,4 +1,4 @@
-/* js/auth.js - HAFIZA KORUMALI SÜRÜM */
+/* js/auth.js - HAFIZA KORUMALI & ÇIKIŞ FIX */
 import { GOOGLE_CLIENT_ID, STORAGE_KEY } from "./config.js";
 
 let tokenClient;
@@ -19,9 +19,8 @@ export function initAuth() {
 }
 
 export function handleLogin(provider, mode) {
-    currentMode = mode; // Niyetimiz ne?
+    currentMode = mode; 
     
-    // ÜYE OL ise Sözleşme Şart
     if (currentMode === 'signup') {
         const check = document.getElementById('agreementCheck');
         if (check && !check.checked) {
@@ -44,38 +43,41 @@ function fetchGoogleProfile(accessToken) {
     .then(r => r.json())
     .then(googleData => {
         
-        // 1. MEVCUT HAFIZAYI OKU (SİLMEDEN!)
+        // 1. MEVCUT HAFIZAYI OKU
         let storedUser = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
         const newGoogleID = "CYN-" + googleData.sub.substr(0, 10);
 
-        // 2. KULLANICIYI BİRLEŞTİR (MERGE) - ESKİ VERİYİ KORU
-        // Burası çok önemli: storedUser'ı önce yayıyoruz ki 'hitap', 'botName' kaybolmasın.
+        // 2. KULLANICIYI BİRLEŞTİR (MERGE)
+        // storedUser'ı önce yayıyoruz ki eski ayarlar (hitap, botName) silinmesin
         const updatedUser = {
             ...storedUser, 
-            id: newGoogleID,
-            fullname: googleData.name, // Google adını güncelle
-            email: googleData.email,   // Email güncelle
-            avatar: googleData.picture,// Resim güncelle
+            id: storedUser.id || newGoogleID, // Varsa eski ID'yi koru
+            fullname: googleData.name, 
+            email: googleData.email,   
+            avatar: googleData.picture,
             provider: 'google'
         };
 
         // 3. SENARYOLAR
         if (currentMode === 'login') {
-            // GİRİŞ MODU: İçeride "Profil Tamamlandı" mührü var mı?
+            // GİRİŞ MODU
             if (!updatedUser.isProfileCompleted) {
-                alert("Seni tanıyamadım evladım. Daha önce profil oluşturmamışsın. Lütfen 'ÜYE OL' butonunu kullan.");
+                alert("Seni tanıyamadım evladım. Kaydın yok veya profilin yarım kalmış. Lütfen 'ÜYE OL' butonuna bas.");
                 return; 
             }
             
-            // Tanıdık, veriyi güncelle ve içeri al
+            // Veriyi güncelle ve içeri al
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
-            document.getElementById('loginOverlay').classList.remove('active');
             
-            // Sohbeti hafızadaki isimle başlat
+            // Overlay varsa kaldır
+            const overlay = document.getElementById('loginOverlay');
+            if(overlay) overlay.classList.remove('active');
+            
+            // Sohbeti başlat (index.html'deki fonksiyonu tetikle)
             if(window.startChat) window.startChat(updatedUser);
 
         } else {
-            // KAYIT MODU:
+            // KAYIT MODU
             if (updatedUser.isProfileCompleted) {
                 if(confirm("Sen zaten bizim evlatsın. Giriş yapılsın mı?")) {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
@@ -84,7 +86,7 @@ function fetchGoogleProfile(accessToken) {
                     return;
                 }
             }
-            // Yeni kayıt ise profil sayfasına gönder
+            // Yeni kayıt -> Profile git
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
             window.location.href = 'pages/profil.html';
         }
@@ -94,11 +96,10 @@ function fetchGoogleProfile(accessToken) {
     });
 }
 
+// Çıkış Fonksiyonu (Artık çalışacak)
 export function logout() {
     if (confirm("Beni bırakıp gidiyor musun?")) {
-        // Çıkışta hafızayı silmeyelim ki geri gelince hatırlasın istersen
-        // Ama güvenlik için genelde silinir. Sen silme dediğin için yorum satırı yapıyorum:
-        // localStorage.removeItem(STORAGE_KEY); 
-        window.location.reload();
+        localStorage.removeItem(STORAGE_KEY); 
+        window.location.href = window.location.origin + '/index.html'; // Tam yenileme
     }
 }
