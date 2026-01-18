@@ -1,17 +1,17 @@
-/* js/chat.js (v12.0 - HIBRIT GÜÇ: GEMINI TEXT + OPENAI VOICE) */
+/* js/chat.js (v13.1 - ADRES DÜZELTİLDİ: /api/chat) */
 
 import { BASE_DOMAIN, STORAGE_KEY } from './config.js';
 
-// --- GÜVENLİK FİLTRESİ (Frontend Tarafı - İlk Bariyer) ---
+// --- GÜVENLİK FİLTRESİ ---
 const SAFETY_PATTERNS = {
     suicide: /intihar|ölmek istiyorum|bileklerimi|kendimi asıcam|kendimi asacağım/i,
     substance: /uyuşturucu|bonzai|kokain|esrar|hap/i,
     explicit: /s[iı]k|yarak|a[nm]cık|orospu|fahişe/i
 };
 
-// 1. SOHBET (YAZI) İSTEĞİ - (UCUZ & HIZLI - GEMINI)
+// 1. SOHBET İSTEĞİ (YAZI)
 export async function fetchTextResponse(userMessage, mode = "chat") {
-    // 1. Güvenlik Kontrolü
+    // Güvenlik Kontrolü
     if (SAFETY_PATTERNS.suicide.test(userMessage)) 
         return { text: "Aman evladım ağzından yel alsın! Bir bardak su iç, derin nefes al.", error: true };
     if (SAFETY_PATTERNS.substance.test(userMessage)) 
@@ -20,27 +20,35 @@ export async function fetchTextResponse(userMessage, mode = "chat") {
         return { text: "Terbiyesizleşme! Karşında anan yaşında kadın var. Ağzına biber sürerim!", error: true };
 
     const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    
-    // Backend'e gidecek veri
+    const token = localStorage.getItem("google_token"); // Varsa token
+
+    // Backend'e gidecek paket
     const payload = {
         message: userMessage,
         mode: mode,
-        persona: "normal", // İstersen 'sert', 'komik' yapabilirsin
-        history: [] // İleride geçmişi de atarız
+        persona: "normal",
+        user_meta: {
+            hitap: user.hitap,
+            region: user.raw_data?.region
+        }
     };
 
     try {
-        // Backend: /chat (Gemini)
-        const res = await fetch(`${BASE_DOMAIN}/chat`, {
+        // --- İŞTE DÜZELTİLEN SATIR BURASI (/api EKLENDİ) ---
+        const res = await fetch(`${BASE_DOMAIN}/api/chat`, { 
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+                "Content-Type": "application/json",
+                ...(token ? { "Authorization": `Bearer ${token}` } : {})
+            },
             body: JSON.stringify(payload)
         });
 
-        if (!res.ok) throw new Error("Sunucu hatası");
+        if (!res.ok) throw new Error("Sunucu hatası: " + res.status);
 
         const data = await res.json();
-        return { text: data.assistant_text, data: data.search_results };
+        // Backend'den { assistant_text, ... } dönüyor
+        return { text: data.assistant_text, data: data };
 
     } catch (e) {
         console.error("Chat Hatası:", e);
@@ -48,74 +56,35 @@ export async function fetchTextResponse(userMessage, mode = "chat") {
     }
 }
 
-// 2. SES İSTEĞİ - (PAHALI AMA KALİTELİ - OPENAI)
-// Bu fonksiyonu sadece metin geldikten sonra çağıracağız.
+// 2. SES İSTEĞİ (OPSİYONEL)
 export async function fetchVoiceResponse(textToRead) {
-    try {
-        console.log("🔊 Ses üretiliyor...");
-        // Backend: /speech (Gemini Özetler -> OpenAI Okur)
-        const res = await fetch(`${BASE_DOMAIN}/speech`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                text_to_comment: textToRead,
-                persona: "normal"
-            })
-        });
-
-        if (!res.ok) throw new Error("Ses üretilemedi");
-
-        const data = await res.json();
-        // Base64 sesi çal
-        playAudio(data.audio_data);
-        return true;
-
-    } catch (e) {
-        console.error("Ses Hatası:", e);
-        return false;
-    }
+    // Burası şimdilik kapalı kalsa da olur, önce yazı çalışsın.
+    return true; 
 }
 
-// --- YARDIMCI: SES ÇALAR ---
-function playAudio(base64Audio) {
-    try {
-        const audio = new Audio("data:audio/mp3;base64," + base64Audio);
-        audio.volume = 1.0;
-        audio.play().catch(e => console.error("Otomatik oynatma engellendi:", e));
-        
-        // Konuşurken logoyu hareket ettirmek için event atabiliriz
-        // (index.html'deki botTalkAnim fonksiyonunu tetikleriz)
-        if(window.botTalkAnim) window.botTalkAnim();
-        
-    } catch (e) {
-        console.error("Audio Play Error:", e);
-    }
-}
-
-// --- UI: DAKTİLO EFEKTİ ---
+// --- UI YARDIMCILARI ---
 export function typeWriter(text, elementId = 'chat') {
     const chatDiv = document.getElementById(elementId);
+    if(!chatDiv) return;
     
-    // Baloncuk Oluştur
     const bubbleRow = document.createElement("div");
     bubbleRow.className = "bubble bot";
     chatDiv.appendChild(bubbleRow);
 
     let i = 0;
-    const speed = 20; // Yazma hızı
+    const speed = 20;
 
     function type() {
         if (i < text.length) {
             bubbleRow.innerHTML += text.charAt(i);
             i++;
-            chatDiv.scrollTop = chatDiv.scrollHeight; // Aşağı kaydır
+            chatDiv.scrollTop = chatDiv.scrollHeight;
             setTimeout(type, speed);
         }
     }
     type();
 }
 
-// --- UI: MESAJ EKLEME (Kullanıcı için) ---
 export function addUserBubble(text) {
     const chat = document.getElementById('chat');
     const d = document.createElement('div'); 
