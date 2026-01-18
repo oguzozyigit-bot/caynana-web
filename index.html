@@ -388,18 +388,19 @@
   };
 
   // App’e giriş
-  window.enterApp = function(){
-    document.getElementById('loginOverlay').classList.remove('active');
-    window.hideTermsOverlay();
+  // App’e giriş (FIXED)
+window.enterApp = function () {
+  document.getElementById('loginOverlay')?.classList.remove('active');
+  window.hideTermsOverlay?.();
 
-    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    const who = user.hitap || user.fullname || user.name || "Evladım";
-    const bot = user.bot_name || user.botName || "Caynana";
+  const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  const who = user.hitap || user.fullname || user.name || "Evladım";
+  const bot = user.bot_name || user.botName || "Caynana";
 
-    setTimeout(() => { window.typeWriter(`Hoş geldin ${who}. Ben ${bot}.`); }, 400);
-      }
-    }, 1500);
-  };
+  setTimeout(() => {
+    window.typeWriter(`Hoş geldin ${who}. Ben ${bot}.`);
+  }, 400);
+};
 
   // --- KAMERA (TOGGLE) ---
   let isTracking = false;
