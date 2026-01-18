@@ -1,4 +1,4 @@
-/* js/auth.js - FINAL STABLE */
+/* js/auth.js - HAFIZA KORUMALI (SOFT LOGOUT) */
 import { GOOGLE_CLIENT_ID, STORAGE_KEY } from "./config.js";
 
 let tokenClient;
@@ -31,7 +31,7 @@ export function handleLogin(provider, mode) {
 
     if (provider === 'google') {
         if(tokenClient) tokenClient.requestAccessToken();
-        else alert("Google servisi yüklenemedi. Sayfayı yenile.");
+        else alert("Google servisi bekleniyor...");
     } else {
         window.location.href = 'pages/apple-yakinda.html';
     }
@@ -43,49 +43,59 @@ function fetchGoogleProfile(accessToken) {
     })
     .then(r => r.json())
     .then(googleData => {
+        // 1. MEVCUT VERİYİ OKU (SİLMEDEN!)
         let storedUser = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
         const newGoogleID = "CYN-" + googleData.sub.substr(0, 10);
 
+        // 2. VERİLERİ GÜNCELLE (Merge)
         const updatedUser = {
             ...storedUser, 
             id: storedUser.id || newGoogleID, 
             fullname: googleData.name, 
             email: googleData.email,   
             avatar: googleData.picture,
-            provider: 'google'
+            provider: 'google',
+            isSessionActive: true // GİRİŞ BAŞARILI, OTURUM AÇIK
         };
 
+        // 3. SENARYOLAR
         if (currentMode === 'login') {
+            // GİRİŞ MODU: Sadece profil tamamlanmışsa içeri al
             if (!updatedUser.isProfileCompleted) {
-                alert("Seni tanıyamadım evladım. Önce 'ÜYE OL' butonuna basmalısın.");
+                alert("Seni tanıyamadım evladım. Kaydın yok. Lütfen 'ÜYE OL' butonuna bas.");
                 return; 
             }
+            
+            // Kaydet ve İçeri Al
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
-            window.location.href = 'index.html'; // Ana sayfaya git (Redirect loop önlemek için)
+            window.location.href = 'index.html'; // Sayfayı yenile ve gir
 
         } else {
+            // KAYIT MODU
             if (updatedUser.isProfileCompleted) {
-                if(confirm("Zaten kayıtlısın. Giriş yapılsın mı?")) {
+                if(confirm("Zaten bizimlesin evladım. Giriş yapılsın mı?")) {
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
                     window.location.href = 'index.html';
                     return;
                 }
             }
+            // Yeni Kayıt -> Profile
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedUser));
             window.location.href = 'pages/profil.html';
         }
     })
     .catch(err => {
-        console.error("Google Hatası:", err);
-        alert("Bağlantı hatası oluştu.");
+        console.error("Auth Error:", err);
     });
 }
 
-// Global Çıkış Fonksiyonu
+// --- KRİTİK GÜNCELLEME: SOFT LOGOUT ---
+// Veriyi silmez, sadece "isSessionActive = false" yapar.
 export function logout() {
-    if (confirm("Çıkış yapmak istiyor musun?")) {
-        localStorage.removeItem(STORAGE_KEY); 
-        localStorage.clear(); // Temizlik
-        window.location.href = '/index.html'; 
+    if (confirm("Oturumu kapatmak istiyor musun? (Bilgilerin silinmez)")) {
+        let user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        user.isSessionActive = false; // Sadece oturumu düşür
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+        window.location.href = '/index.html';
     }
 }
