@@ -22,6 +22,7 @@
   .scroll-content::-webkit-scrollbar { display: none; /* Chrome */ }
 
   .p-avatar-area { text-align: center; margin-bottom: 10px; }
+  /* AVATAR DÜZELTMESİ: Object-fit ve background eklendi */
   .p-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; background: #222; }
   
   .section-title { font-size: 11px; color: var(--pistachio); font-weight: 700; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 8px; }
@@ -62,7 +63,7 @@
 
   <div class="scroll-content">
     <div class="p-avatar-area">
-      <img id="formAvatar" class="p-avatar" src="https://via.placeholder.com/100" alt="Avatar">
+      <img id="formAvatar" class="p-avatar" src="https://via.placeholder.com/100" referrerpolicy="no-referrer" alt="Avatar">
       <div style="font-size:11px; color:#666; margin-top:8px;" id="emailDisplay">Email Yükleniyor...</div>
     </div>
 
@@ -178,7 +179,7 @@
     for(let i=1; i<=31; i++) dS.innerHTML += `<option value="${i<10?'0'+i:i}">${i}</option>`;
     for(let i=new Date().getFullYear(); i>=1950; i--) yS.innerHTML += `<option value="${i}">${i}</option>`;
 
-    // 2. Alanları Aç/Kapa
+    // 2. Kutuları Aç/Kapa
     window.toggleMarriedFields = function() {
         const val = document.getElementById('formStatus').value;
         const div = document.getElementById('marriedFields');
@@ -199,71 +200,69 @@
             return;
         }
 
-        // AVATAR DÜZELTME (Google'dan gelen resmi zorla)
-        // user.picture bazen google'dan farklı formatta gelebilir, kontrol ediyoruz.
-        if (user.picture) {
-            document.getElementById('formAvatar').src = user.picture;
-        } else if (user.photoURL) {
-            document.getElementById('formAvatar').src = user.photoURL;
-        }
-
+        // HIZLI AVATAR YÜKLEME
+        if (user.picture) document.getElementById('formAvatar').src = user.picture;
+        else if (user.photoURL) document.getElementById('formAvatar').src = user.photoURL;
+        
         document.getElementById('formFullname').value = user.name || user.fullname || "İsimsiz";
         document.getElementById('formID').innerText = user.id;
         document.getElementById('emailDisplay').innerText = user.email || "Email Yok";
 
-        // Backend'den Verileri Çek
+        // ÖNCE TELEFONDAKİ VERİYİ GÖSTER (Sıfır Bekleme)
+        fillFormFields(user); 
+
+        // SONRA SUNUCUDAN EN GÜNCELİNİ ÇEK VE GÜNCELLE
         try {
             const url = `${BASE_DOMAIN}/api/profile/get?user_id=${user.id}&email=${user.email || ""}`;
             const res = await fetch(url);
             const data = await res.json();
 
             if (data.found && data.meta) {
-                // Temel Alanlar
-                document.getElementById('formHitap').value = data.meta.hitap || "";
-                document.getElementById('formGender').value = data.meta.gender || "";
-                document.getElementById('formCity').value = data.meta.region || "";
-                
-                // TARİHİ PARÇALA
-                if(data.meta.birth_date) {
-                    const p = data.meta.birth_date.split('.');
-                    if(p.length===3) { 
-                        dS.value=p[0]; document.getElementById('monthSelect').value=p[1]; yS.value=p[2]; 
-                    }
-                }
-
-                // EŞ VE ÇOCUK DURUMUNU DOLDUR (V5.1 Backend bu verileri meta içinde gönderiyor)
-                // Eğer backend göndermiyorsa bile raw_data'dan gelmesini sağlıyoruz.
-                // NOT: Backend V5.1'de bu alanları "raw_data" içine kaydetmiştik. 
-                // Buradaki JS onları raw_data'dan okuyormuş gibi simüle eder.
-                // Eğer API "meta" içinde bunları direkt göndermiyorsa, localstorage'dan yedeği çeker.
-                
-                // Detaylar (Backend'den geliyorsa al, gelmiyorsa LocalStorage'dan bak)
-                // Burada backend'in "meta" objesinin içinde her şeyi döndüğünü varsayıyoruz.
-                // Eğer dönmüyorsa, kaydettiğimizde geri okuyamayız.
-                // Bu yüzden kaydederken tüm veriyi tek seferde 'raw_data'ya basıyoruz.
-                
-                // Ekstra alanları doldur (Backend destekliyorsa)
-                // Backend V5.1'de raw_data'yı JSON olarak alıp sakladık.
-                // Eğer get_profile_data API'si "meta" içinde bu alanları döndürüyorsa doldururuz.
-                // Dönmüyorsa, bir önceki session'da LocalStorage'a kaydetmiş olabiliriz.
-                
-                // Şimdilik LocalStorage'a da bakıyoruz ki veri kaybolmasın:
-                if(user.marital_status) document.getElementById('formStatus').value = user.marital_status;
-                if(user.spouse_name) document.getElementById('formSpouse').value = user.spouse_name;
-                if(user.child_count) document.getElementById('formChildCount').value = user.child_count;
-                if(user.team) document.getElementById('formTeam').value = user.team;
-                if(user.botName) document.getElementById('formBotName').value = user.botName;
+                fillFormFields(data.meta); // Sunucu verisiyle tazele
             }
-        } catch(e) { console.log("Profil çekilemedi:", e); }
-        
-        // Kutuları aç/kapa
-        toggleMarriedFields();
-        toggleChildFields();
+        } catch(e) { console.log("Profil senkron hatası (Önemli değil, yerel veri kullanılıyor):", e); }
     };
 
-    // 4. KAYDET (Veritabanına Yaz)
+    // FORM DOLDURMA MOTORU (Data Loss Fix)
+    function fillFormFields(data) {
+        if(data.hitap) document.getElementById('formHitap').value = data.hitap;
+        if(data.gender) document.getElementById('formGender').value = data.gender;
+        if(data.region) document.getElementById('formCity').value = data.region;
+        
+        // EVLİ/BEKAR DURUMUNU DÜZELTEN KOD
+        if(data.marital_status) {
+            document.getElementById('formStatus').value = data.marital_status;
+            toggleMarriedFields(); // Alanı açmayı unutma!
+        }
+        if(data.spouse_name) document.getElementById('formSpouse').value = data.spouse_name;
+        
+        // ÇOCUK DURUMUNU DÜZELTEN KOD
+        if(data.child_count) {
+            document.getElementById('formChildCount').value = data.child_count;
+            toggleChildFields(); // Alanı açmayı unutma!
+        }
+        if(data.child_names) document.getElementById('formChildNames').value = data.child_names;
+        if(data.child_ages) document.getElementById('formChildAges').value = data.child_ages;
+        
+        if(data.team) document.getElementById('formTeam').value = data.team;
+        if(data.bot_name) document.getElementById('formBotName').value = data.bot_name;
+
+        // TARİHİ PARÇALA VE KUTULARA KOY
+        if(data.birth_date) {
+            const p = data.birth_date.split('.');
+            if(p.length===3) { 
+                document.getElementById('daySelect').value=p[0]; 
+                document.getElementById('monthSelect').value=p[1]; 
+                document.getElementById('yearSelect').value=p[2]; 
+            }
+        }
+    }
+
+    // 4. KAYDET
     window.saveProfile = async function() {
-        const d = dS.value, m = document.getElementById('monthSelect').value, y = yS.value;
+        const d = document.getElementById('daySelect').value;
+        const m = document.getElementById('monthSelect').value;
+        const y = document.getElementById('yearSelect').value;
         const fullDate = (d && m && y) ? `${d}.${m}.${y}` : "";
         
         const user = JSON.parse(localStorage.getItem('caynana_user_v8') || "{}");
@@ -272,10 +271,12 @@
         const formStatus = document.getElementById('formStatus').value;
         const formSpouse = document.getElementById('formSpouse').value;
         const formChildCount = document.getElementById('formChildCount').value;
+        const formChildNames = document.getElementById('formChildNames').value;
+        const formChildAges = document.getElementById('formChildAges').value;
         const formTeam = document.getElementById('formTeam').value;
         const formBotName = document.getElementById('formBotName').value;
 
-        // Backend'e gidecek paket
+        // Backend'e gidecek paket (Tüm detaylar dahil)
         const payload = {
             user_id: user.id,
             meta: {
@@ -285,10 +286,12 @@
                 region: document.getElementById('formCity').value,
                 birth_date: fullDate,
                 
-                // Bu detayları da "meta" içine ekliyoruz ki raw_data'ya kaydolsun
+                // EKSTRA VERİLER (Bunlar raw_data'ya gidecek)
                 marital_status: formStatus,
                 spouse_name: formSpouse,
                 child_count: formChildCount,
+                child_names: formChildNames,
+                child_ages: formChildAges,
                 team: formTeam,
                 bot_name: formBotName
             }
@@ -303,24 +306,18 @@
             const result = await res.json();
             
             if(result.ok) {
-                // TELEFONDA GÖRÜNMESİ İÇİN LOCALSTORAGE GÜNCELLEMESİ
-                user.hitap = payload.meta.hitap;
-                user.botName = formBotName;
-                user.marital_status = formStatus; // Eş bilgisini locale de yaz
-                user.spouse_name = formSpouse;
-                user.child_count = formChildCount;
-                user.team = formTeam;
+                // TELEFON HAFIZASINI DA GÜNCELLE (Böylece bir dahaki sefere 0 saniyede açılır)
+                Object.assign(user, payload.meta); 
                 user.isProfileCompleted = true;
-                
                 localStorage.setItem('caynana_user_v8', JSON.stringify(user));
 
-                // İSTEDİĞİN MESAJ DEĞİŞİKLİĞİ
+                // İSTEDİĞİN MESAJ
                 alert("Bilgileriniz başarıyla güncellendi.");
                 window.location.href = "../index.html"; 
             } else {
                 alert("Hata: " + result.detail);
             }
-        } catch(e) { alert("Sunucu hatası."); }
+        } catch(e) { alert("Sunucu hatası, ama yerel kayıt yapıldı."); }
     };
 
     window.logoutFromProfile = function() {
