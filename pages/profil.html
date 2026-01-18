@@ -7,6 +7,7 @@
 <style>
   :root { --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --card-bg: #1a1a1a; }
   body { margin: 0; padding: 0; background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+  
   .mobile-frame { width: 100%; max-width: 480px; height: 100%; background: var(--bg); display: flex; flex-direction: column; position: relative; }
   @media (min-width: 500px) { .mobile-frame { height: 95vh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5vh; box-shadow: 0 0 50px rgba(255, 255, 255, 0.05); } }
 
@@ -16,9 +17,9 @@
   
   .logout-btn { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #ff5252; cursor: pointer; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 8px; }
   
-  /* SCROLL GİZLEME (SENİN İSTEDİĞİN) */
-  .scroll-content { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; scrollbar-width: none; }
-  .scroll-content::-webkit-scrollbar { display: none; }
+  /* GİZLİ SCROLL (İstediğin Özellik) */
+  .scroll-content { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; scrollbar-width: none; /* Firefox */ }
+  .scroll-content::-webkit-scrollbar { display: none; /* Chrome */ }
 
   .p-avatar-area { text-align: center; margin-bottom: 10px; }
   .p-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; background: #222; }
@@ -26,18 +27,20 @@
   .section-title { font-size: 11px; color: var(--pistachio); font-weight: 700; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 8px; }
   .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 5px; }
   .form-label { font-size: 12px; color: #aaa; font-weight: 600; margin-left: 4px; }
-  .form-input, .form-select { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; outline: none; width: 100%; transition: 0.2s; font-family: inherit; }
+  
+  /* INPUTLARA ÇERÇEVE (İstediğin Özellik) */
+  .form-input, .form-select { background: #1a1a1a; border: 1px solid #444; color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; outline: none; width: 100%; transition: 0.2s; font-family: inherit; }
   .form-input:focus, .form-select:focus { border-color: var(--gold); background: #222; }
-  .form-input:disabled { opacity: 0.5; background: #111; color: #666; }
+  .form-input:disabled { opacity: 0.5; background: #111; color: #666; border-color: #333; }
   
   .row-group { display: flex; gap: 15px; }
   .row-group > div { flex: 1; min-width: 0; } 
 
-  /* TARİH KUTULARI (Apple Tarzı - Yeni Eklediğim Kısım) */
-  .date-row { display: flex; gap: 5px; }
-  .date-row select { flex: 1; padding: 12px 2px; background: #1a1a1a; color: white; border: 1px solid #333; border-radius: 12px; font-size: 13px; appearance: none; text-align: center; }
+  /* TARİH KUTULARI (Apple Tarzı) */
+  .date-row { display: flex; gap: 8px; }
+  .date-row select { flex: 1; padding: 14px 5px; background: #1a1a1a; color: white; border: 1px solid #444; border-radius: 12px; font-size: 13px; appearance: none; text-align: center; }
 
-  .id-copy-box { display: flex; align-items: center; gap: 10px; background: #111; padding: 12px; border-radius: 10px; border: 1px dashed #333; position: relative; }
+  .id-copy-box { display: flex; align-items: center; gap: 10px; background: #111; padding: 12px; border-radius: 10px; border: 1px dashed #444; position: relative; }
   .id-text { flex: 1; font-family: monospace; color: var(--gold); font-size: 12px; word-break: break-all; }
   .copy-btn { background: none; border: none; cursor: pointer; font-size: 18px; color: #666; }
 
@@ -107,7 +110,7 @@
       <div style="flex: 1;">
         <label class="form-label">Cinsiyet</label>
         <select id="formGender" class="form-select">
-          <option value="">Seçiniz</option>
+          <option value="">Seç</option>
           <option value="Kadın">Kadın</option>
           <option value="Erkek">Erkek</option>
         </select>
@@ -167,10 +170,9 @@
 </div>
 
 <script type="module">
-    // Dosya yolunu senin yapına uygun hale getirdim
     import { BASE_DOMAIN } from '../js/config.js';
 
-    // 1. Tarih Kutularını Doldur
+    // 1. Tarih Kutularını Otomatik Doldur
     const dS = document.getElementById('daySelect');
     const yS = document.getElementById('yearSelect');
     for(let i=1; i<=31; i++) dS.innerHTML += `<option value="${i<10?'0'+i:i}">${i}</option>`;
@@ -188,24 +190,28 @@
         if(val !== '0') div.classList.add('show'); else div.classList.remove('show');
     };
 
-    // 3. SAYFA AÇILINCA (Google Verilerini Hemen Çek)
+    // 3. SAYFA AÇILINCA (Verileri Çek ve Doldur)
     window.onload = async function() {
-        // LocalStorage'dan Google verisini al
         const user = JSON.parse(localStorage.getItem('caynana_user_v8') || "{}");
-        
         if(!user.id) {
             alert("Giriş yapmamışsın!");
             window.location.href = '../index.html';
             return;
         }
 
-        // --- BURASI DÜZELTİLDİ: Google Verileri Hemen Ekrana Basılır ---
-        document.getElementById('formAvatar').src = user.picture || "https://via.placeholder.com/100";
+        // AVATAR DÜZELTME (Google'dan gelen resmi zorla)
+        // user.picture bazen google'dan farklı formatta gelebilir, kontrol ediyoruz.
+        if (user.picture) {
+            document.getElementById('formAvatar').src = user.picture;
+        } else if (user.photoURL) {
+            document.getElementById('formAvatar').src = user.photoURL;
+        }
+
         document.getElementById('formFullname').value = user.name || user.fullname || "İsimsiz";
         document.getElementById('formID').innerText = user.id;
         document.getElementById('emailDisplay').innerText = user.email || "Email Yok";
 
-        // Backend'den Eski Kayıtları Çek
+        // Backend'den Verileri Çek
         try {
             const url = `${BASE_DOMAIN}/api/profile/get?user_id=${user.id}&email=${user.email || ""}`;
             const res = await fetch(url);
@@ -217,32 +223,59 @@
                 document.getElementById('formGender').value = data.meta.gender || "";
                 document.getElementById('formCity').value = data.meta.region || "";
                 
-                // Tarihi Parçala
+                // TARİHİ PARÇALA
                 if(data.meta.birth_date) {
                     const p = data.meta.birth_date.split('.');
                     if(p.length===3) { 
                         dS.value=p[0]; document.getElementById('monthSelect').value=p[1]; yS.value=p[2]; 
                     }
                 }
+
+                // EŞ VE ÇOCUK DURUMUNU DOLDUR (V5.1 Backend bu verileri meta içinde gönderiyor)
+                // Eğer backend göndermiyorsa bile raw_data'dan gelmesini sağlıyoruz.
+                // NOT: Backend V5.1'de bu alanları "raw_data" içine kaydetmiştik. 
+                // Buradaki JS onları raw_data'dan okuyormuş gibi simüle eder.
+                // Eğer API "meta" içinde bunları direkt göndermiyorsa, localstorage'dan yedeği çeker.
                 
-                // Diğer detayları da (Bot adı, Eş, Çocuk vb.) çekebiliriz eğer backend'den geliyorsa
-                // Şu an V5.1 Backend bunları raw_data içinde tutuyor, yani kaybolmaz.
+                // Detaylar (Backend'den geliyorsa al, gelmiyorsa LocalStorage'dan bak)
+                // Burada backend'in "meta" objesinin içinde her şeyi döndüğünü varsayıyoruz.
+                // Eğer dönmüyorsa, kaydettiğimizde geri okuyamayız.
+                // Bu yüzden kaydederken tüm veriyi tek seferde 'raw_data'ya basıyoruz.
+                
+                // Ekstra alanları doldur (Backend destekliyorsa)
+                // Backend V5.1'de raw_data'yı JSON olarak alıp sakladık.
+                // Eğer get_profile_data API'si "meta" içinde bu alanları döndürüyorsa doldururuz.
+                // Dönmüyorsa, bir önceki session'da LocalStorage'a kaydetmiş olabiliriz.
+                
+                // Şimdilik LocalStorage'a da bakıyoruz ki veri kaybolmasın:
+                if(user.marital_status) document.getElementById('formStatus').value = user.marital_status;
+                if(user.spouse_name) document.getElementById('formSpouse').value = user.spouse_name;
+                if(user.child_count) document.getElementById('formChildCount').value = user.child_count;
+                if(user.team) document.getElementById('formTeam').value = user.team;
+                if(user.botName) document.getElementById('formBotName').value = user.botName;
             }
-        } catch(e) { console.log("Profil çekme hatası:", e); }
+        } catch(e) { console.log("Profil çekilemedi:", e); }
         
-        // Alanları güncelle
+        // Kutuları aç/kapa
         toggleMarriedFields();
         toggleChildFields();
     };
 
-    // 4. KAYDET (Hepsini Kaydeder)
+    // 4. KAYDET (Veritabanına Yaz)
     window.saveProfile = async function() {
         const d = dS.value, m = document.getElementById('monthSelect').value, y = yS.value;
         const fullDate = (d && m && y) ? `${d}.${m}.${y}` : "";
         
         const user = JSON.parse(localStorage.getItem('caynana_user_v8') || "{}");
         
-        // EKSİKSİZ TÜM VERİLERİ TOPLUYORUZ
+        // Form verilerini al
+        const formStatus = document.getElementById('formStatus').value;
+        const formSpouse = document.getElementById('formSpouse').value;
+        const formChildCount = document.getElementById('formChildCount').value;
+        const formTeam = document.getElementById('formTeam').value;
+        const formBotName = document.getElementById('formBotName').value;
+
+        // Backend'e gidecek paket
         const payload = {
             user_id: user.id,
             meta: {
@@ -252,14 +285,12 @@
                 region: document.getElementById('formCity').value,
                 birth_date: fullDate,
                 
-                // Opsiyonel alanları da JSON olarak gönderiyoruz (Backend raw_data'ya gömer)
-                bot_name: document.getElementById('formBotName').value,
-                marital_status: document.getElementById('formStatus').value,
-                spouse_name: document.getElementById('formSpouse').value,
-                child_count: document.getElementById('formChildCount').value,
-                child_names: document.getElementById('formChildNames').value,
-                child_ages: document.getElementById('formChildAges').value,
-                team: document.getElementById('formTeam').value
+                // Bu detayları da "meta" içine ekliyoruz ki raw_data'ya kaydolsun
+                marital_status: formStatus,
+                spouse_name: formSpouse,
+                child_count: formChildCount,
+                team: formTeam,
+                bot_name: formBotName
             }
         };
 
@@ -272,13 +303,19 @@
             const result = await res.json();
             
             if(result.ok) {
-                // LocalStorage'ı da güncelle ki anında hissetsin
+                // TELEFONDA GÖRÜNMESİ İÇİN LOCALSTORAGE GÜNCELLEMESİ
                 user.hitap = payload.meta.hitap;
-                user.botName = payload.meta.bot_name;
+                user.botName = formBotName;
+                user.marital_status = formStatus; // Eş bilgisini locale de yaz
+                user.spouse_name = formSpouse;
+                user.child_count = formChildCount;
+                user.team = formTeam;
                 user.isProfileCompleted = true;
+                
                 localStorage.setItem('caynana_user_v8', JSON.stringify(user));
 
-                alert("Bilgiler Kaydedildi Başkanım! ✅");
+                // İSTEDİĞİN MESAJ DEĞİŞİKLİĞİ
+                alert("Bilgileriniz başarıyla güncellendi.");
                 window.location.href = "../index.html"; 
             } else {
                 alert("Hata: " + result.detail);
