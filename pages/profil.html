@@ -5,149 +5,53 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Profil Ayarları</title>
 <style>
-  /* --- TEMEL AYARLAR --- */
-  :root { 
-    --bg: #0e0e0e; 
-    --text: #ececec; 
-    --gold: #ffb300; 
-    --pistachio: #bef264; 
-    --card-bg: #1a1a1a; 
-  }
-  
-  body { 
-    margin: 0; padding: 0; 
-    background: #000; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-    color: var(--text); 
-    display: flex; justify-content: center; 
-    height: 100vh; overflow: hidden; 
-  }
+  :root { --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --card-bg: #1a1a1a; }
+  body { margin: 0; padding: 0; background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+  .mobile-frame { width: 100%; max-width: 480px; height: 100%; background: var(--bg); display: flex; flex-direction: column; position: relative; }
+  @media (min-width: 500px) { .mobile-frame { height: 95vh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5vh; box-shadow: 0 0 50px rgba(255, 255, 255, 0.05); } }
 
-  /* --- MOBİL KASA --- */
-  .mobile-frame { 
-    width: 100%; max-width: 480px; height: 100%; 
-    background: var(--bg); 
-    display: flex; flex-direction: column; 
-    position: relative; 
-  }
-  @media (min-width: 500px) { 
-    .mobile-frame { 
-      height: 95vh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5vh; 
-      box-shadow: 0 0 50px rgba(255, 255, 255, 0.05);
-    } 
-  }
-
-  /* --- HEADER --- */
-  .header { 
-    padding: 20px; text-align: center; 
-    border-bottom: 1px solid #222; 
-    background: rgba(20,20,20,0.95); 
-    backdrop-filter: blur(10px);
-    z-index: 10;
-    position: relative;
-  }
-  .header h2 { margin: 0; font-size: 18px; color: #fff; font-weight: 700; letter-spacing: 0.5px; }
+  .header { padding: 20px; text-align: center; border-bottom: 1px solid #222; background: rgba(20,20,20,0.95); backdrop-filter: blur(10px); z-index: 10; position: relative; }
+  .header h2 { margin: 0; font-size: 18px; color: #fff; font-weight: 700; }
   .header p { margin: 5px 0 0; font-size: 12px; color: #888; }
-
-  /* Çıkış Butonu (Sol Üst) */
-  .logout-btn {
-    position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; color: #ff5252; 
-    cursor: pointer; font-size: 12px; font-weight: 600;
-    display: flex; align-items: center; gap: 5px;
-    padding: 5px 10px; border-radius: 8px; transition: 0.2s;
-  }
-  .logout-btn:active { background: rgba(255, 82, 82, 0.1); }
-
-  /* --- SCROLL ALANI --- */
-  .scroll-content { 
-    flex: 1; overflow-y: auto; padding: 20px; 
-    display: flex; flex-direction: column; gap: 20px; 
-    scrollbar-width: none; 
-  }
-  .scroll-content::-webkit-scrollbar { display: none; }
   
-  /* --- AVATAR --- */
+  .logout-btn { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #ff5252; cursor: pointer; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 8px; }
+  
+  .scroll-content { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; scrollbar-width: none; }
   .p-avatar-area { text-align: center; margin-bottom: 10px; }
-  .p-avatar { 
-    width: 100px; height: 100px; 
-    border-radius: 50%; border: 3px solid var(--gold); 
-    object-fit: cover; background: #222; 
-    box-shadow: 0 0 20px rgba(255, 179, 0, 0.2);
-  }
+  .p-avatar { width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; background: #222; }
   
-  /* --- FORM ELEMANLARI --- */
-  .section-title { 
-    font-size: 11px; color: var(--pistachio); font-weight: 700; 
-    text-transform: uppercase; margin-bottom: 5px; 
-    border-bottom: 1px solid #222; padding-bottom: 8px; letter-spacing: 1px; 
-  }
-  
+  .section-title { font-size: 11px; color: var(--pistachio); font-weight: 700; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 8px; }
   .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 5px; }
   .form-label { font-size: 12px; color: #aaa; font-weight: 600; margin-left: 4px; }
+  .form-input, .form-select { background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; outline: none; width: 100%; transition: 0.2s; font-family: inherit; }
+  .form-input:focus, .form-select:focus { border-color: var(--gold); background: #222; }
+  .form-input:disabled { opacity: 0.5; background: #111; color: #666; }
   
-  .form-input, .form-select { 
-    background: #1a1a1a; border: 1px solid #333; color: #fff; 
-    padding: 14px; border-radius: 12px; font-size: 14px; 
-    outline: none; width: 100%; transition: 0.2s; 
-    font-family: inherit;
-  }
-  .form-input:focus, .form-select:focus { 
-    border-color: var(--gold); background: #222; 
-    box-shadow: 0 0 0 2px rgba(255, 179, 0, 0.1);
-  }
-  .form-input:disabled { opacity: 0.5; cursor: not-allowed; background: #111; color: #666; }
-  ::placeholder { color: #555; opacity: 1; }
+  /* YAN YANA KUTULAR İÇİN FLEX DÜZELTMESİ */
+  .row-group { display: flex; gap: 15px; }
+  .row-group > div { flex: 1; min-width: 0; } 
 
-  /* --- ID KUTUSU --- */
-  .id-copy-box { 
-    display: flex; align-items: center; gap: 10px; 
-    background: #111; padding: 12px; border-radius: 10px; 
-    border: 1px dashed #333; position: relative;
-  }
-  .id-text { flex: 1; font-family: monospace; color: var(--gold); font-size: 14px; letter-spacing: 1px; }
-  .copy-btn { 
-    background: none; border: none; cursor: pointer; font-size: 18px; color: #666; transition: 0.2s;
-  }
-  .copy-btn:hover { color: var(--gold); transform: scale(1.1); }
+  .id-copy-box { display: flex; align-items: center; gap: 10px; background: #111; padding: 12px; border-radius: 10px; border: 1px dashed #333; position: relative; }
+  .id-text { flex: 1; font-family: monospace; color: var(--gold); font-size: 14px; }
+  .copy-btn { background: none; border: none; cursor: pointer; font-size: 18px; color: #666; }
 
-  /* --- DİNAMİK ALANLAR --- */
-  .conditional-field { 
-    display: none; animation: fadeIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
-    border-left: 2px solid var(--gold); padding-left: 15px; margin-left: 5px; margin-bottom: 10px;
-  }
+  .conditional-field { display: none; animation: fadeIn 0.4s; border-left: 2px solid var(--gold); padding-left: 15px; margin-left: 5px; margin-bottom: 10px; }
   .conditional-field.show { display: block; }
-  
-  @keyframes fadeIn { 
-    from { opacity: 0; transform: translateY(-10px); } 
-    to { opacity: 1; transform: translateY(0); } 
-  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* --- BUTON --- */
-  .save-btn { 
-    background: var(--gold); color: #000; border: none; 
-    padding: 16px; border-radius: 14px; font-weight: 800; font-size: 15px; 
-    width: 100%; cursor: pointer; margin-top: 20px; margin-bottom: 40px; 
-    transition: 0.2s; box-shadow: 0 5px 20px rgba(255, 179, 0, 0.15);
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .save-btn:active { transform: scale(0.97); }
+  .save-btn { background: var(--gold); color: #000; border: none; padding: 16px; border-radius: 14px; font-weight: 800; font-size: 15px; width: 100%; cursor: pointer; margin-top: 20px; margin-bottom: 40px; }
 </style>
 </head>
 <body>
 
 <div class="mobile-frame">
   <div class="header">
-    <button class="logout-btn" onclick="logoutFromProfile()">
-      <span style="font-size:16px;">🚪</span> Çıkış
-    </button>
-    
+    <button class="logout-btn" onclick="logoutFromProfile()">🚪 Çıkış</button>
     <h2>Profil Ayarları</h2>
     <p>Caynana seni daha iyi tanısın</p>
   </div>
 
   <div class="scroll-content">
-    
     <div class="p-avatar-area">
       <img id="formAvatar" class="p-avatar" src="https://via.placeholder.com/100" alt="Avatar">
       <div style="font-size:11px; color:#666; margin-top:8px;">Google Hesabın</div>
@@ -157,7 +61,7 @@
     
     <div class="form-group">
       <label class="form-label">Caynana sana nasıl hitap etsin?</label>
-      <input type="text" id="formHitap" class="form-input" placeholder="Örn: Kızım, Gelinim, Damadım, Oğlum Ahmet">
+      <input type="text" id="formHitap" class="form-input" placeholder="Örn: Kızım, Gelinim, Damadım">
     </div>
     
     <div class="form-group">
@@ -178,12 +82,12 @@
       </div>
     </div>
 
-    <div class="form-group" style="flex-direction:row; gap:10px;">
-      <div style="flex:1;">
+    <div class="form-group row-group">
+      <div>
         <label class="form-label">Doğum Tarihi</label>
-        <input type="date" id="formDob" class="form-input">
+        <input type="tel" id="formDob" class="form-input" placeholder="GG.AA.YYYY" maxlength="10">
       </div>
-      <div style="flex:1;">
+      <div>
         <label class="form-label">Cinsiyet</label>
         <select id="formGender" class="form-select">
           <option value="">Seçiniz</option>
@@ -193,7 +97,7 @@
       </div>
     </div>
 
-    <div class="section-title" style="margin-top:10px;">Detaylar (İlişkiyi Güçlendirir)</div>
+    <div class="section-title" style="margin-top:10px;">Detaylar</div>
 
     <div class="form-group">
       <label class="form-label">Medeni Durum</label>
@@ -223,11 +127,11 @@
     <div id="childFields" class="conditional-field">
       <div class="form-group">
         <label class="form-label">Çocukların İsimleri</label>
-        <input type="text" id="formChildNames" class="form-input" placeholder="Örn: Ali, Ayşe, Mehmet">
+        <input type="text" id="formChildNames" class="form-input" placeholder="Örn: Ali, Ayşe">
       </div>
       <div class="form-group">
         <label class="form-label">Çocukların Yaşları</label>
-        <input type="text" id="formChildAges" class="form-input" placeholder="Örn: 5, 8, 12">
+        <input type="text" id="formChildAges" class="form-input" placeholder="Örn: 5, 8">
       </div>
     </div>
 
@@ -241,13 +145,10 @@
       <input type="text" id="formCity" class="form-input" placeholder="Örn: Ankara">
     </div>
 
-    <button class="save-btn" onclick="saveProfile()">
-      💾 KAYDET VE BAŞLA
-    </button>
+    <button class="save-btn" onclick="saveProfile()">💾 KAYDET VE BAŞLA</button>
   </div>
 </div>
 
 <script type="module" src="../js/profile.js"></script>
-
 </body>
 </html>
