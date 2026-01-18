@@ -35,8 +35,6 @@
   .brand-wrapper.thinking #orangeBall { animation: breathAnim 0.8s infinite alternate ease-in-out; transform-box: fill-box; transform-origin: center; }
   @keyframes breathAnim { from { transform: scale(1); filter: brightness(1); } to { transform: scale(1.5); filter: brightness(1.3); box-shadow: 0 0 10px var(--gold); } }
   
-  .tilt-left .seesaw-bar { transform: rotate(-15deg); } 
-
   /* --- BİLDİRİM --- */
   .notif-btn { background: none; border: none; position: relative; cursor: pointer; padding: 5px; display: flex; align-items: center; }
   .notif-btn svg { width: 26px; height: 26px; stroke: #aaa; fill: none; stroke-width: 2; transition: 0.2s; }
@@ -228,7 +226,7 @@
       <div style="font-size:11px; color:#666; padding-left:10px; margin-bottom:5px;">SON SOHBETLER</div>
       <div class="history-list" id="historyList"></div>
       <div class="menu-static-links">
-        <a class="menu-item" onclick="openFal()">☕ Kahve Falı</a>
+        <a class="menu-item" onclick="openFal(); toggleMenu();">☕ Kahve Falı</a>
         <a class="menu-item" href="pages/profil.html">👤 Profil Ayarları</a>
         <a class="menu-item" href="pages/hakkimizda.html">ℹ️ Hakkımızda</a>
         <a class="menu-item" href="pages/sss.html">❓ SSS</a>
@@ -309,7 +307,7 @@
 
   <div class="footer-container">
     <span>@CaynanaAI By Ozyigits</span>
-    <div class="footer-ver">2026 - v8.4</div>
+    <div class="footer-ver">2026 - v2.6</div>
   </div>
 </div>
 
@@ -395,13 +393,16 @@
       }
   };
 
-  // --- MİKROFON ---
+  // --- MİKROFON (Speech API Fix) ---
   window.startDictation = function() {
-    if (window.hasOwnProperty('webkitSpeechRecognition')) {
+    // Tarayıcı uyumluluğu kontrolü (iOS/Chrome)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
       const micBtn = document.getElementById('micBtn');
       micBtn.style.stroke = "#ffb300"; 
       
-      const recognition = new webkitSpeechRecognition();
+      const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.lang = "tr-TR";
@@ -412,7 +413,11 @@
         recognition.stop();
         sendMessage(); 
       };
-      recognition.onerror = function(e) { recognition.stop(); };
+      recognition.onerror = function(e) { 
+        console.error(e);
+        recognition.stop(); 
+        micBtn.style.stroke = "#aaa";
+      };
       recognition.onend = function() { micBtn.style.stroke = "#aaa"; }; 
     } else {
       alert("Tarayıcın sesi desteklemiyor evladım.");
@@ -434,6 +439,16 @@
       } catch(e) { console.error("Ses hatası:", e); }
   }
 
+  // --- MENÜ KONTROL ---
+  const menuOverlay = document.getElementById('menuOverlay');
+  window.toggleMenu = function() {
+      if(menuOverlay.classList.contains('open')) {
+          menuOverlay.classList.remove('open');
+      } else {
+          menuOverlay.classList.add('open');
+      }
+  };
+
   // --- DİĞER FONKSİYONLAR ---
   let currentSessionId = null;
   const historyListEl = document.getElementById('historyList');
@@ -453,11 +468,18 @@
   }
   window.deleteSession = function(id, btn) { if(confirm("Silinecek mi?")) btn.parentElement.remove(); };
   window.startNewChat = function() { if(confirm("Yeni sayfa?")) location.reload(); };
-  window.loadSession = function(id) { alert("Yükleniyor: " + id); toggleMenu(); };
+  window.loadSession = function(id) { alert("Yükleniyor: " + id); window.toggleMenu(); };
+  
   window.toggleNotif = function() {
       const dd = document.getElementById('notifDropdown');
       const badge = document.getElementById('notifBadge');
-      if(dd.style.display === 'flex') { dd.style.display = 'none'; } else { dd.style.display = 'flex'; badge.style.display = 'none'; }
+      
+      // Class toggle ile CSS animasyonu tetikle
+      dd.classList.toggle('show');
+      
+      if(dd.classList.contains('show')) {
+         badge.style.display = 'none';
+      }
   };
 
   window.typeWriter = function(text, elementId = 'chat') {
@@ -468,25 +490,40 @@
     const bubbleRow = document.createElement("div");
     bubbleRow.className = "bubble bot";
     chatDiv.appendChild(bubbleRow);
+    
     let i = 0; const speed = 20;
     function type() {
-      if (i < text.length) { bubbleRow.innerHTML += text.charAt(i); i++; chatDiv.scrollTop = chatDiv.scrollHeight; setTimeout(type, speed); } 
-      else { brandWrapper.classList.remove('talking'); }
+      if (i < text.length) { 
+        bubbleRow.innerHTML += text.charAt(i); 
+        i++; 
+        // Otomatik Scroll
+        chatDiv.scrollTop = chatDiv.scrollHeight; 
+        setTimeout(type, speed); 
+      } 
+      else { 
+        brandWrapper.classList.remove('talking'); 
+      }
     }
     type();
   };
 
   window.onload = function() { 
-    initAuth(); checkSession(); loadHistory(); 
-    setInterval(autoLookBehavior, AUTO_LOOK_FREQ); resetIdle();
+    if(typeof initAuth === 'function') initAuth(); 
+    checkSession(); 
+    loadHistory(); 
+    setInterval(autoLookBehavior, AUTO_LOOK_FREQ); 
+    resetIdle();
     setTimeout(() => { document.getElementById('notifBadge').style.display = 'block'; }, 3000);
   };
 
   function checkSession() {
-    const user = JSON.parse(localStorage.getItem('caynana_user_v8'));
-    if(user && user.isProfileCompleted && user.isSessionActive) {
-      document.getElementById('loginOverlay').classList.remove('active');
-      setTimeout(() => { window.typeWriter(`Hoş geldin ${user.hitap || user.fullname}. Ben ${user.botName || 'Caynana'}.`); }, 500);
+    const userStr = localStorage.getItem('caynana_user_v8');
+    if(userStr) {
+        const user = JSON.parse(userStr);
+        if(user && user.isProfileCompleted && user.isSessionActive) {
+          document.getElementById('loginOverlay').classList.remove('active');
+          setTimeout(() => { window.typeWriter(`Hoş geldin ${user.hitap || user.fullname}. Ben ${user.botName || 'Caynana'}.`); }, 500);
+        }
     }
   }
 
@@ -512,13 +549,17 @@
     }
   }
 
-  document.getElementById('sendBtn').addEventListener('click', sendMessage);
-  document.getElementById('msgInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
+  // Event Listeners (Null check eklendi)
+  const sendBtn = document.getElementById('sendBtn');
+  if(sendBtn) sendBtn.addEventListener('click', sendMessage);
+  
+  const msgInput = document.getElementById('msgInput');
+  if(msgInput) msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
 
-  const menuOverlay = document.getElementById('menuOverlay');
   const hambBtn = document.getElementById('hambBtn');
-  hambBtn.addEventListener('click', () => menuOverlay.classList.add('open'));
-  menuOverlay.addEventListener('click', (e) => { if(e.target === menuOverlay) menuOverlay.classList.remove('open'); });
+  if(hambBtn) hambBtn.addEventListener('click', () => window.toggleMenu());
+  
+  if(menuOverlay) menuOverlay.addEventListener('click', (e) => { if(e.target === menuOverlay) window.toggleMenu(); });
 
   /* GÖZ */
   let isTracking = false; let isMouseActive = false; let sleepTimer = null; let gazeTimer = null;
@@ -550,10 +591,15 @@
   }
   function setLids(top, bot=0) { [eyeL, eyeR].forEach(e => { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); }); }
 
-  document.getElementById('openTrackBtn').addEventListener('click', ()=>{ isTracking=true; frame.classList.add('tracking-active'); wakeUp(); });
-  document.getElementById('closeTrackBtn').addEventListener('click', ()=>{ isTracking=false; frame.classList.remove('tracking-active'); });
-  document.getElementById('camBtn').addEventListener('click', ()=>{ 
-    const btn = document.getElementById('camBtn'); btn.classList.toggle('active');
+  const openTrackBtn = document.getElementById('openTrackBtn');
+  if(openTrackBtn) openTrackBtn.addEventListener('click', ()=>{ isTracking=true; frame.classList.add('tracking-active'); wakeUp(); });
+  
+  const closeTrackBtn = document.getElementById('closeTrackBtn');
+  if(closeTrackBtn) closeTrackBtn.addEventListener('click', ()=>{ isTracking=false; frame.classList.remove('tracking-active'); });
+  
+  const camBtn = document.getElementById('camBtn');
+  if(camBtn) camBtn.addEventListener('click', ()=>{ 
+    camBtn.classList.toggle('active');
   });
 
 </script>
