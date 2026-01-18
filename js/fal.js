@@ -35,7 +35,7 @@ function updateStatus(text) {
     if(el) el.innerText = text;
 }
 
-// Fotoğraf Çekme İşlemi (HATA DÜZELTİLDİ)
+// Fotoğraf Çekme İşlemi
 export async function handleFalPhoto(fileInput) {
     const file = fileInput.files[0];
     if (!file) return;
@@ -50,15 +50,21 @@ export async function handleFalPhoto(fileInput) {
         if (photoCount === 0) {
             updateStatus("Dur bakayım bu fincan mı...");
             try {
+                // ADRES: /api/fal/check (Main.py içinde tanımlı artık)
                 const checkRes = await fetch(`${BASE_DOMAIN}/api/fal/check`, {
                     method: "POST", headers: {"Content-Type":"application/json"},
                     body: JSON.stringify({ image: base64 })
                 });
                 
-                // SUNUCU HATASI VARSA YAKALA
                 if (!checkRes.ok) {
-                    const errText = await checkRes.text();
-                    alert("Sunucu Hatası: " + errText); // Detaylı hatayı göster
+                    const errText = await checkRes.text(); // Detaylı hatayı al
+                    // JSON ise parse et
+                    try {
+                        const errJson = JSON.parse(errText);
+                        alert("Hata: " + (errJson.detail || errJson.message || errText));
+                    } catch {
+                        alert("Sunucu Hatası: " + errText);
+                    }
                     updateStatus("Hata oldu, tekrar dene.");
                     fileInput.value = ""; 
                     return;
@@ -66,7 +72,7 @@ export async function handleFalPhoto(fileInput) {
 
                 const checkData = await checkRes.json();
                 if (!checkData.ok) {
-                    alert(checkData.reason || "Bilinmeyen bir hata oluştu."); 
+                    alert(checkData.reason || "Bilinmeyen hata."); 
                     updateStatus("Düzgün çek şunu!");
                     fileInput.value = "";
                     return;
@@ -104,11 +110,14 @@ async function startFalAnalysis() {
     }, 2000);
 
     const user = JSON.parse(localStorage.getItem('caynana_user_v8') || "{}");
+    // ID yoksa demo ID kullan
+    const userId = user.id || "CYN-DEMO-USER";
+
     try {
         const res = await fetch(`${BASE_DOMAIN}/api/fal/read`, {
             method: "POST", headers: {"Content-Type":"application/json"},
             body: JSON.stringify({ 
-                user_id: user.id || "guest", 
+                user_id: userId, 
                 images: photos 
             })
         });
