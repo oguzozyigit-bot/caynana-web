@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
-<title>Caynana AI v13.0 Hibrit Final</title>
+<title>Caynana AI v2.1 Hibrit</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <style>
@@ -28,11 +28,35 @@
   .seesaw-svg { width: 36px; height: 18px; overflow: visible; }
   .seesaw-bar { transform-origin: 20px 8px; transition: transform 0.4s; }
   
-  /* KONUŞMA ANİMASYONU */
   .brand-wrapper.talking .seesaw-bar { animation: talkWiggle 0.4s infinite alternate ease-in-out; }
   @keyframes talkWiggle { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+  .tilt-left .seesaw-bar { transform: rotate(-15deg); } 
 
-  .tilt-left .seesaw-bar { transform: rotate(-15deg); } /* Düşünürken */
+  /* --- BİLDİRİM KUTUSU (YENİ) --- */
+  .notif-btn { background: none; border: none; position: relative; cursor: pointer; padding: 5px; display: flex; align-items: center; }
+  .notif-btn svg { width: 26px; height: 26px; stroke: #aaa; fill: none; stroke-width: 2; transition: 0.2s; }
+  .notif-btn:active svg { stroke: var(--pistachio); }
+  .badge { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; display: none; border: 1px solid #000; }
+
+  .notification-dropdown {
+    position: absolute; top: 70px; right: 10px; width: 300px;
+    background: #1c1c1c; border: 1px solid #333; border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 4000;
+    display: none; flex-direction: column; overflow: hidden;
+    animation: slideDown 0.2s ease;
+  }
+  .notification-dropdown.show { display: flex; }
+  @keyframes slideDown { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
+
+  .notif-header { padding: 12px; border-bottom: 1px solid #333; font-size: 13px; font-weight: bold; color: #fff; background: #222; }
+  .notif-list { max-height: 300px; overflow-y: auto; }
+  .notif-item { padding: 12px; border-bottom: 1px solid #2a2a2a; display: flex; gap: 10px; align-items: start; }
+  .notif-item:last-child { border-bottom: none; }
+  .notif-icon { font-size: 18px; }
+  .notif-content { flex: 1; }
+  .notif-title { font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 2px; }
+  .notif-desc { font-size: 11px; color: #aaa; line-height: 1.3; }
+  .notif-time { font-size: 10px; color: #666; margin-top: 4px; }
 
   /* --- GÖZLER --- */
   .face-container { flex: 0 0 0px; background: linear-gradient(to bottom, var(--bg), transparent); overflow: hidden; transition: flex-basis 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2500; }
@@ -47,7 +71,6 @@
   .iris { width: 32px; height: 32px; background: radial-gradient(circle, #5d4037 0%, #281a16 100%); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(calc(-50% + var(--gx)), calc(-50% + var(--gy))); border: 1px solid rgba(255,255,255,0.25); transition: transform 0.1s linear; }
   .pupil { width: 10px; height: 10px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
   .reflection { position: absolute; top: 6px; right: 6px; width: 4px; height: 4px; background: #fff; border-radius: 50%; opacity: 0.9; }
-  
   .lid-top, .lid-bot { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.3s ease-in-out; }
   .lid-top { top: 0; height: var(--lidTop); border-bottom: 2px solid #222; }
   .lid-bot { bottom: 0; height: var(--lidBot); border-top: 2px solid #222; }
@@ -55,10 +78,7 @@
   /* UYKU EFEKTİ */
   .mobile-frame.sleeping .eyes-row { animation: sleepBreath 4s infinite ease-in-out; opacity: 0.6; }
   .mobile-frame.sleeping .brow { transform: translateY(8px) rotate(5deg); transition: 1s; }
-  @keyframes sleepBreath { 
-    0%, 100% { transform: scale(1); } 
-    50% { transform: scale(0.95) translateY(2px); } 
-  }
+  @keyframes sleepBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95) translateY(2px); } }
 
   .mouth-wrapper { width: 60px; height: 26px; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 8px; }
   .mouth { width: 40px; height: 10px; border-top: 3px solid var(--lip-color); border-radius: 50% 50% 0 0; position: absolute; top: 8px; transition: 0.15s; opacity: 0.9; }
@@ -73,7 +93,6 @@
 
   /* --- DOCK & FOOTER --- */
   .input-dock { flex: 0 0 auto; background: var(--glass); padding: 5px 16px 15px 16px; z-index: 3000; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-  
   .track-trigger-row { display: flex; justify-content: center; width: 100%; transition: 0.3s; height: 36px; overflow: hidden; }
   .mobile-frame.tracking-active .track-trigger-row { height: 0; margin: 0; opacity: 0; pointer-events: none; }
   .main-track-btn { background: rgba(255, 179, 0, 0.1); border: 1px solid var(--gold); color: var(--gold); padding: 8px 24px; border-radius: 24px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 0 15px rgba(255, 179, 0, 0.1); animation: pulseBtn 2s infinite; display: flex; align-items: center; gap: 8px; }
@@ -102,7 +121,6 @@
   /* Giriş Butonları */
   .auth-btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; opacity: 0.5; pointer-events: none; filter: grayscale(1); margin-bottom: 8px; }
   .auth-btn.enabled { opacity: 1; pointer-events: auto; filter: grayscale(0); }
-  
   .btn-google { background: #fff; color: #333; border: 1px solid #ddd; } 
   .btn-apple { background: #000; color: #fff; border: 1px solid #333; }
   .auth-icon { width: 20px; height: 20px; }
@@ -113,16 +131,26 @@
   .login-footer-links a { color: #666; font-size: 11px; text-decoration: none; transition: 0.2s; }
   .login-footer-links a:hover { color: var(--gold); }
   
+  /* MENÜ ve GEÇMİŞ */
   .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 5000; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(5px); display:flex; justify-content: flex-start;}
   .menu-overlay.open { opacity: 1; pointer-events: auto; }
-  .menu-sidebar { width: 270px; height: 100%; background: #161616; padding: 60px 20px 20px; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; border-right: 1px solid #333; box-shadow: 5px 0 30px rgba(0,0,0,0.5); }
+  .menu-sidebar { width: 270px; height: 100%; background: #161616; padding: 20px 20px 20px; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; border-right: 1px solid #333; box-shadow: 5px 0 30px rgba(0,0,0,0.5); }
   .menu-overlay.open .menu-sidebar { transform: translateX(0); }
-  .menu-list { flex: 1; display: flex; flex-direction: column; gap: 0; }
-  .menu-item { color: #ccc; text-decoration: none; padding: 16px 10px; border-bottom: 1px solid #222; font-size: 15px; cursor: pointer; display: block; }
-  .menu-footer-actions { margin-top: auto; padding-top: 20px; border-top: 1px solid #333; }
-  .delete-account { color: #ff5252; font-size: 13px; cursor: pointer; padding: 10px; text-align: center; border: 1px solid #ff5252; border-radius: 8px; }
-  .menu-version { text-align: center; font-size: 10px; color: #555; margin-top: 20px; }
   
+  .sidebar-header { padding: 30px 0 20px 0; border-bottom: 1px solid #222; margin-bottom: 10px; }
+  .new-chat-btn { width: 100%; background: #333; color: var(--pistachio); border: 1px solid #444; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; margin-bottom: 15px; display:flex; justify-content:center; align-items:center; gap:8px; }
+  
+  .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px; }
+  .history-item { color: #ccc; padding: 12px 10px; border-radius: 8px; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+  .history-item:hover { background: #222; color: #fff; }
+  .history-item:hover .delete-chat-btn { display: block; }
+  .history-text { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 190px; }
+  .delete-chat-btn { display: none; background: none; border: none; color: #ff5252; cursor: pointer; font-size: 16px; padding: 0 5px; }
+
+  .menu-footer-actions { margin-top: auto; padding-top: 10px; border-top: 1px solid #333; }
+  .menu-item { color: #888; text-decoration: none; padding: 10px 0; display: block; font-size: 13px; transition: 0.2s; }
+  .menu-item:hover { color: var(--gold); }
+
   #camVideo { display: none; }
 </style>
 </head>
@@ -155,7 +183,7 @@
              Google ile Giriş
         </button>
         
-        <button class="auth-btn btn-apple enabled" style="opacity:1; filter:none;" onclick="alert('Apple Giriş yakında aktif olacak!')">
+        <button class="auth-btn btn-apple enabled" style="opacity:1; filter:none;" onclick="appleAlert()">
              <svg class="auth-icon" viewBox="0 0 24 24" fill="#fff"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24.02-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.57-.91 4.35-.68c.75.04 2.86.32 3.9 1.83-3.23 1.6-2.67 6.38 1.02 7.94-.75 1.49-1.81 2.97-2.89 4.01l-.22.25-.24-.12zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.54 4.33-3.74 4.25z"/></svg>
              Apple ile Giriş
         </button>
@@ -167,9 +195,15 @@
           <input type="checkbox" id="agreementCheck" onchange="toggleSignupBtn()">
           <label for="agreementCheck"><a href="pages/sozlesme.html">Sözleşmeyi</a> okudum.</label>
         </div>
+        
         <button class="auth-btn btn-google" id="signupBtn" onclick="handleLogin('google', 'signup')">
              <svg class="auth-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
              Google ile Üye Ol
+        </button>
+
+        <button class="auth-btn btn-apple" id="signupAppleBtn" style="margin-top:8px;" onclick="appleAlert()">
+             <svg class="auth-icon" viewBox="0 0 24 24" fill="#fff"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24.02-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.57-.91 4.35-.68c.75.04 2.86.32 3.9 1.83-3.23 1.6-2.67 6.38 1.02 7.94-.75 1.49-1.81 2.97-2.89 4.01l-.22.25-.24-.12zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.54 4.33-3.74 4.25z"/></svg>
+             Apple ile Üye Ol
         </button>
       </div>
 
@@ -177,29 +211,27 @@
         <a href="pages/hakkimizda.html">Hakkımızda</a>
         <a href="pages/sss.html">SSS</a>
         <a href="pages/gizlilik.html">Gizlilik</a>
-        <a href="pages/sozlesme.html">Kullanım</a>
-        <a href="pages/iletisim.html">İletişim</a>
       </div>
       <div style="margin-top:20px; border-top:1px solid #222; padding-top:15px;">
         <div style="font-weight:600; color:#aaa; font-size:12px;">@CaynanaAI By Ozyigits</div>
-        <div style="font-size:10px; color:#666; margin-top:2px;">2026 - v8.4</div>
       </div>
     </div>
   </div>
 
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
-      <div class="menu-list">
-        <a class="menu-item" href="pages/profil.html">👤 Profil / Giriş</a>
-        <a class="menu-item" href="pages/hakkimizda.html">ℹ️ Hakkımızda</a>
-        <a class="menu-item" href="pages/sss.html">❓ SSS</a>
-        <a class="menu-item" href="pages/gizlilik.html">🔒 Gizlilik</a>
-        <a class="menu-item" href="pages/iletisim.html">✉️ İletişim</a>
-        <a class="menu-item" onclick="logout()">🛡️ Güvenli Çıkış</a>
+      <div class="sidebar-header">
+         <button class="new-chat-btn" onclick="startNewChat()"><span>+</span> Yeni Sohbet Başlat</button>
       </div>
+      
+      <div style="font-size:11px; color:#666; padding-left:10px; margin-bottom:5px;">SON SOHBETLER</div>
+      <div class="history-list" id="historyList">
+         </div>
+
       <div class="menu-footer-actions">
-        <div class="delete-account" onclick="deleteAccount()">Hesabımı Kalıcı Olarak Sil</div>
-        <div class="menu-version">@CaynanaAI By Ozyigits 2026 v8.4</div>
+        <a class="menu-item" href="pages/profil.html">👤 Profil Ayarları</a>
+        <a class="menu-item" onclick="logout()">🛡️ Güvenli Çıkış</a>
+        <div class="menu-version">@CaynanaAI v2.1</div>
       </div>
     </div>
   </div>
@@ -220,18 +252,43 @@
       </div>
       <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
     </div>
+    
+    <button class="notif-btn" id="notifBtn" onclick="toggleNotif()">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+      <div class="badge" id="notifBadge"></div>
+    </button>
+  </div>
+  
+  <div class="notification-dropdown" id="notifDropdown">
+      <div class="notif-header">Bildirimler</div>
+      <div class="notif-list">
+          <div class="notif-item">
+              <div class="notif-icon">⚽</div>
+              <div class="notif-content">
+                  <div class="notif-title">Maç Sonucu</div>
+                  <div class="notif-desc">Oğlum, takımın yine yenildi. Ben sana dedim o defansla olmaz diye.</div>
+                  <div class="notif-time">10 dk önce</div>
+              </div>
+          </div>
+          <div class="notif-item">
+              <div class="notif-icon">🥗</div>
+              <div class="notif-content">
+                  <div class="notif-title">Akşam Yemeği</div>
+                  <div class="notif-desc">Bugün kabak yiyeceksin. Sakın dolabı açıp börekleri götürme!</div>
+                  <div class="notif-time">2 saat önce</div>
+              </div>
+          </div>
+      </div>
   </div>
 
   <div class="face-container">
     <div class="face-panel-inner" id="faceInner">
       <div class="eyes-row">
         <div class="eye" id="eyeL">
-          <div class="brow"></div>
           <div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div>
           <div class="lid-top"></div><div class="lid-bot"></div>
         </div>
         <div class="eye" id="eyeR">
-          <div class="brow"></div>
           <div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div>
           <div class="lid-top"></div><div class="lid-bot"></div>
         </div>
@@ -271,19 +328,87 @@
   
   window.handleLogin = handleLogin;
   window.logout = logout;
+  window.appleAlert = function() { alert("Acele etme evladım, hazırlanıyor. Şimdilik Google ile devam et."); };
   window.deleteAccount = function() { if(confirm("Hesabını silmek istediğine emin misin?")) logout(); };
   window.toggleSignupBtn = function() {
     const check = document.getElementById('agreementCheck');
     const btn = document.getElementById('signupBtn');
-    if(check.checked) { btn.classList.add('enabled'); } else { btn.classList.remove('enabled'); }
+    const appleBtn = document.getElementById('signupAppleBtn');
+    if(check.checked) { 
+        btn.classList.add('enabled'); 
+        appleBtn.classList.add('enabled');
+    } else { 
+        btn.classList.remove('enabled');
+        appleBtn.classList.remove('enabled');
+    }
   };
 
-  // --- DAKTİLO & KONUŞMA ANİMASYONU ---
+  // --- SOHBET GEÇMİŞİ YÖNETİMİ ---
+  let currentSessionId = null;
+  const historyListEl = document.getElementById('historyList');
+
+  // Geçmişi Yükle (Sahte Veri ile Gösterim - Auth tam olunca veritabanından çeker)
+  function loadHistory() {
+     // Normalde burada Supabase'den çekilir. Şimdilik örnek dolduruyoruz.
+     // Veritabanı bağlantın hazır olunca buraya 'supabase.from("sessions")...' kodu gelecek.
+     
+     // Örnek Liste (Silme özelliği testi için)
+     const dummyData = [
+         {id: 1, title: "Rüyamda Altın Gördüm"},
+         {id: 2, title: "Diyet Listesi Lazım"},
+         {id: 3, title: "Sevgilimden Ayrıldım"}
+     ];
+     renderHistory(dummyData);
+  }
+
+  function renderHistory(sessions) {
+      historyListEl.innerHTML = "";
+      sessions.forEach(s => {
+          const div = document.createElement('div');
+          div.className = "history-item";
+          div.innerHTML = `
+             <div class="history-text" onclick="loadSession(${s.id})">${s.title}</div>
+             <button class="delete-chat-btn" onclick="deleteSession(${s.id}, this)">🗑️</button>
+          `;
+          historyListEl.appendChild(div);
+      });
+  }
+
+  window.deleteSession = function(id, btn) {
+      if(confirm("Bu sohbeti sileyim mi?")) {
+          // Backend'den silme kodu buraya gelecek
+          btn.parentElement.remove(); // Listeden sil
+      }
+  };
+
+  window.startNewChat = function() {
+      if(confirm("Temiz bir sayfa açalım mı?")) {
+          location.reload(); 
+      }
+  };
+  
+  window.loadSession = function(id) {
+      alert("Bu sohbet yükleniyor: " + id);
+      toggleMenu();
+  };
+
+  // --- BİLDİRİM ---
+  window.toggleNotif = function() {
+      const dd = document.getElementById('notifDropdown');
+      const badge = document.getElementById('notifBadge');
+      if(dd.style.display === 'flex') {
+          dd.style.display = 'none';
+      } else {
+          dd.style.display = 'flex';
+          badge.style.display = 'none'; // Okundu say
+      }
+  };
+
+  // --- DAKTİLO & KONUŞMA ---
   window.typeWriter = function(text, elementId = 'chat') {
     const chatDiv = document.getElementById(elementId);
     if(!chatDiv) return;
 
-    // LOGO SALLANSIN (Konuşuyor)
     const brandWrapper = document.getElementById('brandWrapper');
     brandWrapper.classList.add('talking');
     
@@ -301,7 +426,6 @@
         chatDiv.scrollTop = chatDiv.scrollHeight;
         setTimeout(type, speed);
       } else {
-        // Konuşma Bitti, Logo dursun
         brandWrapper.classList.remove('talking');
       }
     }
@@ -311,18 +435,22 @@
   window.onload = function() { 
     initAuth(); 
     checkSession(); 
-    isTracking = true; 
-    document.getElementById('mobileFrame').classList.add('tracking-active');
+    loadHistory(); // Geçmişi Yükle
     
-    // Rastgele Bakış Atma Başlat
+    // Rastgele Bakış
     setInterval(autoLookBehavior, AUTO_LOOK_FREQ);
     resetIdle();
+    
+    // Örnek Bildirim Rozeti
+    setTimeout(() => { document.getElementById('notifBadge').style.display = 'block'; }, 3000);
   };
 
   function checkSession() {
     const user = JSON.parse(localStorage.getItem('caynana_user_v8'));
     if(user && user.isProfileCompleted && user.isSessionActive) {
       document.getElementById('loginOverlay').classList.remove('active');
+      document.getElementById('mobileFrame').classList.add('tracking-active');
+      isTracking = true;
       setTimeout(() => {
         window.typeWriter(`Hoş geldin ${user.hitap || user.fullname}. Ben ${user.botName || 'Caynana'}.`);
       }, 500);
@@ -334,11 +462,17 @@
     const txt = document.getElementById('msgInput').value.trim();
     if(!txt) return;
 
+    // YENİ ÖZELLİK: İlk mesajsa başlık yap
+    if(!currentSessionId) {
+        // Buraya veritabanına "Yeni Session Ekle" kodu gelecek
+        // Title = txt.substring(0, 30)
+        console.log("Yeni Sohbet Başlığı:", txt.substring(0,20) + "...");
+    }
+
     addUserBubble(txt);
     document.getElementById('msgInput').value = '';
     document.getElementById('msgInput').blur();
     
-    // Sola yat (Düşünüyor)
     const brandWrapper = document.getElementById('brandWrapper');
     brandWrapper.classList.add('tilt-left');
 
@@ -360,76 +494,44 @@
   hambBtn.addEventListener('click', () => menuOverlay.classList.add('open'));
   menuOverlay.addEventListener('click', (e) => { if(e.target === menuOverlay) menuOverlay.classList.remove('open'); });
 
-  /* --- YENİ YAŞAM DÖNGÜSÜ (UYKU, ODAK, RASTGELE BAKIŞ) --- */
+  /* --- GÖZ & UYKU --- */
   let isTracking = false;
   let isMouseActive = false;
+  let sleepTimer = null;
+  let gazeTimer = null;
   
-  let sleepTimer = null;       // 30 saniye sayacı
-  let gazeTimer = null;        // 2 saniye odak sayacı
-  
-  const SLEEP_DELAY = 30000;   // 30 Sn (Uyku)
-  const GAZE_DELAY = 2000;     // 2 Sn (Ortaya bak)
-  const AUTO_LOOK_FREQ = 5000; // 5 Sn (Sağa sola bak)
+  const SLEEP_DELAY = 30000;
+  const GAZE_DELAY = 2000;
+  const AUTO_LOOK_FREQ = 5000;
 
   const eyeL = document.getElementById('eyeL'), eyeR = document.getElementById('eyeR'), frame = document.getElementById('mobileFrame');
 
-  // Fare hareket edince
   window.addEventListener('pointermove', (e) => {
     if(!isTracking || frame.classList.contains('sleeping')) {
-       // Uyuyorsa uyan
        if(frame.classList.contains('sleeping')) wakeUp();
     }
-    
-    resetIdle(); // Uyku sayacını sıfırla (30sn başa sar)
-    
+    resetIdle();
     isMouseActive = true;
-    clearTimeout(gazeTimer); // Ortaya dönme sayacını iptal et, çünkü hareket var
+    clearTimeout(gazeTimer); 
 
-    // Gözleri Fareye Çevir
     const rect = frame.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
     setGaze(x, y);
 
-    // 2 Saniye durursa ortaya dön
-    gazeTimer = setTimeout(() => {
-        isMouseActive = false;
-        centerEyes(); 
-    }, GAZE_DELAY);
+    gazeTimer = setTimeout(() => { isMouseActive = false; centerEyes(); }, GAZE_DELAY);
   });
 
-  function resetIdle() {
-    clearTimeout(sleepTimer);
-    sleepTimer = setTimeout(goSleep, SLEEP_DELAY);
-  }
+  function resetIdle() { clearTimeout(sleepTimer); sleepTimer = setTimeout(goSleep, SLEEP_DELAY); }
+  function goSleep() { if(frame.classList.contains('sleeping')) return; frame.classList.add('sleeping'); setLids(100, 100); }
+  function wakeUp() { frame.classList.remove('sleeping'); setLids(0, 0); resetIdle(); }
+  function centerEyes() { setGaze(0, 0); }
 
-  function goSleep() {
-    if(frame.classList.contains('sleeping')) return;
-    frame.classList.add('sleeping');
-    // Gözleri kapat
-    setLids(100, 100);
-  }
-
-  function wakeUp() {
-    frame.classList.remove('sleeping');
-    setLids(0, 0); // Gözleri aç
-    resetIdle();
-  }
-
-  function centerEyes() {
-    setGaze(0, 0);
-  }
-
-  // Otomatik Rastgele Bakış (Mouse yoksa ve uyumuyorsa)
   function autoLookBehavior() {
     if (isMouseActive || frame.classList.contains('sleeping') || !isTracking) return;
-
-    // Hafif sağa sola bakış at
-    const rX = (Math.random() - 0.5) * 0.8; // -0.4 ile 0.4 arası
+    const rX = (Math.random() - 0.5) * 0.8; 
     const rY = (Math.random() - 0.5) * 0.5; 
     setGaze(rX, rY);
-
-    // 1 sn sonra merkeze dön
     setTimeout(() => setGaze(0, 0), 1000);
   }
 
@@ -438,7 +540,6 @@
     const gy = Math.min(Math.max(y * 15, -15), 15);
     [eyeL, eyeR].forEach(e => { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); });
   }
-  
   function setLids(top, bot=0) { [eyeL, eyeR].forEach(e => { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); }); }
 
   document.getElementById('openTrackBtn').addEventListener('click', ()=>{ isTracking=true; frame.classList.add('tracking-active'); wakeUp(); });
