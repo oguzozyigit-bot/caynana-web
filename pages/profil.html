@@ -4,501 +4,220 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Profil Ayarları</title>
+
 <style>
-  :root { --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --card-bg: #1a1a1a; }
-  * { scrollbar-width: none; -ms-overflow-style: none; }
-  *::-webkit-scrollbar { display: none; width: 0; height: 0; background: transparent; }
+:root{
+  --bg:#0e0e0e;--card:#161616;--text:#ececec;
+  --gold:#ffb300;--soft:#999;--border:#2a2a2a;
+}
+*{box-sizing:border-box; scrollbar-width:none;}
+*::-webkit-scrollbar{display:none}
+body{
+  margin:0;background:#000;color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;
+  display:flex;justify-content:center;height:100vh;overflow:hidden;
+}
+.mobile{
+  width:100%;max-width:480px;height:100%;
+  background:var(--bg);display:flex;flex-direction:column;
+}
+header{
+  padding:18px;text-align:center;border-bottom:1px solid var(--border);
+  background:rgba(18,18,18,.95)
+}
+header h1{margin:0;font-size:18px}
+header p{margin:6px 0 0;font-size:12px;color:var(--soft)}
 
-  body { margin: 0; padding: 0; background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+main{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:18px}
 
-  .mobile-frame { width: 100%; max-width: 480px; height: 100%; background: var(--bg); display: flex; flex-direction: column; position: relative; }
-  @media (min-width: 500px) { .mobile-frame { height: 95vh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5vh; box-shadow: 0 0 50px rgba(255, 255, 255, 0.05); } }
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;padding:14px;
+}
+.card small{color:#aaa;font-size:12px}
 
-  .header { padding: 20px; text-align: center; border-bottom: 1px solid #222; background: rgba(20,20,20,0.95); backdrop-filter: blur(10px); z-index: 10; position: relative; }
-  .header h2 { margin: 0; font-size: 18px; color: #fff; font-weight: 700; }
-  .header p { margin: 6px 0 0; font-size: 12px; color: #888; }
+.section{font-size:11px;color:#bef264;font-weight:700;margin:10px 0}
 
-  .logout-btn { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #ff5252; cursor: pointer; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 8px; }
+label{font-size:12px;color:#aaa}
+input,select{
+  width:100%;padding:14px;border-radius:12px;
+  background:#1c1c1c;border:1px solid #333;color:#fff;font-size:14px;
+}
+input:focus,select:focus{outline:none;border-color:var(--gold)}
 
-  .scroll-content { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+.row{display:flex;gap:10px}
+.row>div{flex:1}
 
-  .info-card{
-    background:#121212;border:1px solid #222;border-radius:14px;padding:14px;
-    line-height:1.35;
-  }
-  .info-card b{color:#fff}
-  .info-card .mini{font-size:12px;color:#9a9a9a;margin-top:8px}
-  .pill{
-    display:inline-flex; gap:6px; align-items:center;
-    font-size:11px; color:#111; background: var(--pistachio);
-    padding:4px 8px; border-radius:999px; font-weight:800;
-  }
+.date-row{display:flex;gap:6px}
+.date-row select{text-align:center;padding:12px}
 
-  .section-title { font-size: 11px; color: var(--pistachio); font-weight: 700; text-transform: uppercase; margin-bottom: 5px; border-bottom: 1px solid #222; padding-bottom: 8px; }
+.hidden{display:none}
 
-  .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 2px; }
-  .form-label { font-size: 12px; color: #aaa; font-weight: 600; margin-left: 4px; }
+.child-card{
+  border:1px dashed #333;border-radius:12px;padding:12px;
+  display:flex;flex-direction:column;gap:8px;
+}
 
-  .form-input, .form-select { background: #1a1a1a; border: 1px solid #444; color: #fff; padding: 14px; border-radius: 12px; font-size: 14px; outline: none; width: 100%; transition: 0.2s; font-family: inherit; }
-  .form-input:focus, .form-select:focus { border-color: var(--gold); background: #222; }
+button{
+  background:var(--gold);color:#000;font-weight:800;
+  border:none;border-radius:14px;padding:16px;font-size:15px;
+  cursor:pointer
+}
 
-  .row-group { display: flex; gap: 15px; }
-  .row-group > div { flex: 1; min-width: 0; }
-
-  .date-row { display: flex; gap: 8px; }
-  .date-row select { flex: 1; padding: 14px 5px; background: #1a1a1a; color: white; border: 1px solid #444; border-radius: 12px; font-size: 13px; appearance: none; text-align: center; }
-
-  .id-copy-box { display: flex; align-items: center; gap: 10px; background: #111; padding: 12px; border-radius: 10px; border: 1px dashed #444; position: relative; }
-  .id-text { flex: 1; font-family: monospace; color: var(--gold); font-size: 12px; word-break: break-all; }
-  .copy-btn { background: none; border: none; cursor: pointer; font-size: 18px; color: #666; }
-
-  .conditional-field { display: none; animation: fadeIn 0.4s; border-left: 2px solid var(--gold); padding-left: 15px; margin-left: 5px; margin-bottom: 8px; }
-  .conditional-field.show { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-
-  .child-row{
-    display:flex; gap:10px; align-items:center;
-    background:#121212;border:1px solid #262626;border-radius:14px;padding:10px;
-  }
-  .child-row input{flex: 1;}
-  .child-row .date-row{flex: 1.1;}
-  .child-row .mini{font-size:11px;color:#8a8a8a;margin-top:4px}
-
-  .save-btn { background: var(--gold); color: #000; border: none; padding: 16px; border-radius: 14px; font-weight: 800; font-size: 15px; width: 100%; cursor: pointer; margin-top: 10px; margin-bottom: 40px; }
+footer{
+  text-align:center;font-size:11px;color:#777;
+  padding:10px;border-top:1px solid #222
+}
 </style>
 </head>
+
 <body>
+<div class="mobile">
 
-<div class="mobile-frame">
-  <div class="header">
-    <button class="logout-btn" onclick="logoutFromProfile()">🚪 Çıkış</button>
-    <h2>Profil Ayarları</h2>
-    <p>Hepsi opsiyonel. Doldurursan Kaynana asistanın olur 🙂</p>
-  </div>
+<header>
+  <h1>Profil Ayarları</h1>
+  <p>Hiçbiri zorunlu değil. Doldurursan Kaynana asistanın olur.</p>
+</header>
 
-  <div class="scroll-content">
+<main>
 
-    <div class="info-card">
-      <div class="pill">🧿 Kaynana Asistan</div>
-      <div style="margin-top:10px;">
-        <b>Evladım, ben sana asistanlık yapmak istiyorum.</b><br>
-        Bu alanları doldurursan, günü gelince <b>bildirimle hatırlatırım</b>:
-        “Bugün eşinin doğum günü, unutma!” gibi…<br><br>
-        <b>Hiçbiri zorunlu değil.</b> Doldurursan günlük burç bildiriminden faydalanmak gibi düşün.
-        <div class="mini">İnan bana, bunlar hayat kurtarır. 😄</div>
-      </div>
+<div class="card">
+  <b>🧿 Kaynana diyor ki:</b><br><br>
+  Evladım bu bilgileri girersen günü gelince hatırlatırım.<br>
+  “Bugün eşinin doğum günü” demek <b>hayat kurtarır</b> 😄
+</div>
+
+<div class="card">
+  <div class="section">TERCİHLER</div>
+  <label>Nasıl hitap edeyim?</label>
+  <input id="hitap" placeholder="Kızım, Gelinim, Damadım">
+
+  <label style="margin-top:10px">Caynana adı</label>
+  <input id="bot_name" placeholder="Sultan Hanım">
+</div>
+
+<div class="card">
+  <div class="section">GENEL</div>
+
+  <label>Cinsiyet</label>
+  <select id="gender" onchange="toggleGender()">
+    <option value="">Seç</option>
+    <option value="Kadın">Kadın</option>
+    <option value="Erkek">Erkek</option>
+  </select>
+
+  <label style="margin-top:10px">Medeni Durum</label>
+  <select id="status" onchange="toggleMarried()">
+    <option value="">Seç</option>
+    <option value="Bekar">Bekar</option>
+    <option value="Evli">Evli</option>
+  </select>
+</div>
+
+<!-- REGL -->
+<div id="periodBox" class="card hidden">
+  <div class="section">REGL TAKİBİ (OPSİYONEL)</div>
+  <small>3 gün kala sorarım. “Evet” dersen döngüyü güncellerim.</small>
+
+  <label style="margin-top:10px">Son adet başlangıcı</label>
+  <input type="date" id="last_period">
+
+  <div class="row">
+    <div>
+      <label>Ortalama döngü (gün)</label>
+      <input type="number" id="cycle" value="28">
     </div>
-
-    <div class="section-title">Kimlik</div>
-
-    <div class="form-group">
-      <label class="form-label">ID Numarası (Değişmez)</label>
-      <div class="id-copy-box">
-        <span id="formID" class="id-text">...</span>
-        <button class="copy-btn" onclick="copyID()" title="Kopyala">📋</button>
-      </div>
-      <div style="font-size:11px; color:#666; margin-top:6px;" id="emailDisplay">—</div>
+    <div>
+      <label>Adet süresi (gün)</label>
+      <input type="number" id="period_len" value="5">
     </div>
-
-    <div class="section-title">Tercihler (opsiyonel)</div>
-
-    <div class="form-group">
-      <label class="form-label">Caynana sana nasıl hitap etsin?</label>
-      <input type="text" id="formHitap" class="form-input" placeholder="Örn: Kızım, Gelinim, Damadım">
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Caynana'ya bir isim ver</label>
-      <input type="text" id="formBotName" class="form-input" placeholder="Örn: Sultan Hanım, Şerife Teyze">
-    </div>
-
-    <div class="form-group row-group">
-      <div style="flex: 1;">
-        <label class="form-label">Medeni Durum</label>
-        <select id="formStatus" class="form-select" onchange="toggleMarriedFields()">
-          <option value="">Seç</option>
-          <option value="Bekar">Bekar</option>
-          <option value="Evli">Evli</option>
-        </select>
-      </div>
-      <div style="flex: 1;">
-        <label class="form-label">Cinsiyet</label>
-        <select id="formGender" class="form-select">
-          <option value="">Seç</option>
-          <option value="Kadın">Kadın</option>
-          <option value="Erkek">Erkek</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Yaşadığı İl</label>
-      <input type="text" id="formCity" class="form-input" placeholder="Örn: Ankara">
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Tuttuğu Takım</label>
-      <input type="text" id="formTeam" class="form-input" placeholder="Örn: Beşiktaş">
-    </div>
-
-    <div class="section-title">Özel Günler (hayat kurtarır)</div>
-
-    <!-- Eş / Evlilik alanları sadece Evli seçilince görünür -->
-    <div id="marriedFields" class="conditional-field">
-      <div class="form-group">
-        <label class="form-label">Eşinin Adı</label>
-        <input type="text" id="formSpouse" class="form-input" placeholder="Yenge/Enişte adı">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Eşinin Doğum Günü (Gün / Ay)</label>
-        <div class="date-row">
-          <select id="spouseBDay"><option value="">G</option></select>
-          <select id="spouseBMonth">
-            <option value="">Ay</option>
-            <option value="01">Oca</option><option value="02">Şub</option><option value="03">Mar</option>
-            <option value="04">Nis</option><option value="05">May</option><option value="06">Haz</option>
-            <option value="07">Tem</option><option value="08">Ağu</option><option value="09">Eyl</option>
-            <option value="10">Eki</option><option value="11">Kas</option><option value="12">Ara</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Evlilik Günü (Gün / Ay)</label>
-        <div class="date-row">
-          <select id="wDay"><option value="">G</option></select>
-          <select id="wMonth">
-            <option value="">Ay</option>
-            <option value="01">Oca</option><option value="02">Şub</option><option value="03">Mar</option>
-            <option value="04">Nis</option><option value="05">May</option><option value="06">Haz</option>
-            <option value="07">Tem</option><option value="08">Ağu</option><option value="09">Eyl</option>
-            <option value="10">Eki</option><option value="11">Kas</option><option value="12">Ara</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Nişan Günü (Gün / Ay)</label>
-        <div class="date-row">
-          <select id="eDay"><option value="">G</option></select>
-          <select id="eMonth">
-            <option value="">Ay</option>
-            <option value="01">Oca</option><option value="02">Şub</option><option value="03">Mar</option>
-            <option value="04">Nis</option><option value="05">May</option><option value="06">Haz</option>
-            <option value="07">Tem</option><option value="08">Ağu</option><option value="09">Eyl</option>
-            <option value="10">Eki</option><option value="11">Kas</option><option value="12">Ara</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">İlk Tanışma Günü (Gün / Ay)</label>
-        <div class="date-row">
-          <select id="mDay"><option value="">G</option></select>
-          <select id="mMonth">
-            <option value="">Ay</option>
-            <option value="01">Oca</option><option value="02">Şub</option><option value="03">Mar</option>
-            <option value="04">Nis</option><option value="05">May</option><option value="06">Haz</option>
-            <option value="07">Tem</option><option value="08">Ağu</option><option value="09">Eyl</option>
-            <option value="10">Eki</option><option value="11">Kas</option><option value="12">Ara</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-title">Çocuklar (opsiyonel)</div>
-
-    <div class="form-group">
-      <label class="form-label">Çocuk Sayısı</label>
-      <select id="formChildCount" class="form-select" onchange="toggleChildFields()">
-        <option value="0">Yok</option>
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="3">3</option>
-        <option value="4">4</option>
-        <option value="5">5+</option>
-      </select>
-    </div>
-
-    <div id="childFields" class="conditional-field">
-      <div id="childrenContainer" style="display:flex; flex-direction:column; gap:10px;"></div>
-      <div style="font-size:11px; color:#777; margin-top:6px;">
-        Çocuğun adını ve doğum gününü girersen, Kaynana günü gelince “Bugün çocuğun doğum günü!” diye dürter. 😉
-      </div>
-    </div>
-
-    <button class="save-btn" onclick="saveProfile()">💾 KAYDET VE BAŞLA</button>
   </div>
 </div>
 
-<script type="module">
-  import { BASE_DOMAIN } from '../js/config.js';
+<!-- EVLİ -->
+<div id="marriedBox" class="card hidden">
+  <div class="section">ÖZEL GÜNLER</div>
 
-  const PROFILE_KEY = "caynana_profile_v1";
-  const USER_KEY = "caynana_user_v8";
+  <label>Eş adı</label>
+  <input id="spouse">
 
-  // --- yardımcılar ---
-  function pad2(n){ return String(n).padStart(2,"0"); }
+  <label style="margin-top:10px">Eş doğum günü</label>
+  <div class="date-row">
+    <select id="sp_d"><option>G</option></select>
+    <select id="sp_m"><option>Ay</option></select>
+  </div>
 
-  function fillDayOptions(selId){
-    const s = document.getElementById(selId);
-    if(!s) return;
-    // ilk option zaten var
-    for(let i=1;i<=31;i++){
-      s.innerHTML += `<option value="${pad2(i)}">${i}</option>`;
-    }
-  }
+  <label style="margin-top:10px">Evlilik günü</label>
+  <div class="date-row">
+    <select id="w_d"><option>G</option></select>
+    <select id="w_m"><option>Ay</option></select>
+  </div>
+</div>
 
-  function getDayMonth(dayId, monthId){
-    const d = document.getElementById(dayId)?.value || "";
-    const m = document.getElementById(monthId)?.value || "";
-    // kural: ya ikisi de dolu, ya ikisi de boş
-    if((d && !m) || (!d && m)) return { ok:false, value:"" };
-    return { ok:true, value: (d && m) ? `${d}.${m}` : "" };
-  }
+<!-- ÇOCUKLAR -->
+<div class="card">
+  <div class="section">ÇOCUKLAR</div>
 
-  function setDayMonth(dayId, monthId, val){
-    if(!val) return;
-    const p = val.split(".");
-    if(p.length===2){
-      document.getElementById(dayId).value = p[0];
-      document.getElementById(monthId).value = p[1];
-    }
-  }
+  <label>Çocuk sayısı</label>
+  <select id="child_count" onchange="renderChildren()">
+    <option value="0">Yok</option>
+    <option>1</option><option>2</option><option>3</option><option>4</option>
+  </select>
 
-  // 1) Gün dropdownlarını doldur
-  ["spouseBDay","wDay","eDay","mDay"].forEach(fillDayOptions);
+  <div id="childrenArea" class="hidden" style="margin-top:12px;display:flex;flex-direction:column;gap:12px"></div>
+</div>
 
-  // 2) Togglelar
-  window.toggleMarriedFields = function(){
-    const val = document.getElementById('formStatus').value;
-    const div = document.getElementById('marriedFields');
-    if(val === 'Evli') div.classList.add('show'); else div.classList.remove('show');
-  }
+<button onclick="saveProfile()">💾 KAYDET VE BAŞLA</button>
 
-  window.toggleChildFields = function(){
-    const val = document.getElementById('formChildCount').value;
-    const div = document.getElementById('childFields');
-    if(val !== '0') {
-      div.classList.add('show');
-      renderChildRows(parseInt(val,10) || 0);
-    } else {
-      div.classList.remove('show');
-      document.getElementById("childrenContainer").innerHTML = "";
-    }
-  }
+</main>
 
-  function renderChildRows(n){
-    const c = document.getElementById("childrenContainer");
-    if(!c) return;
+<footer>
+  @Caynanaı By Ozyigits · v1.0.0
+</footer>
 
-    // 5+ seçilirse 5 gösterelim (istersen artırırız)
-    const count = Math.min(n, 5);
-    c.innerHTML = "";
+</div>
 
-    for(let i=1;i<=count;i++){
-      const row = document.createElement("div");
-      row.className = "child-row";
-      row.innerHTML = `
-        <div style="flex:1;">
-          <div class="mini">Çocuk ${i} Adı</div>
-          <input type="text" class="form-input" id="child_name_${i}" placeholder="Örn: Ali">
+<script>
+const days=[...Array(31).keys()].map(i=>i+1);
+const months=["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+document.querySelectorAll(".date-row").forEach(row=>{
+  const [d,m]=row.children;
+  days.forEach(x=>d.innerHTML+=`<option>${x}</option>`);
+  months.forEach((x,i)=>m.innerHTML+=`<option value="${i+1}">${x}</option>`);
+});
+
+function toggleGender(){
+  document.getElementById("periodBox").classList.toggle(
+    "hidden", document.getElementById("gender").value!=="Kadın"
+  );
+}
+function toggleMarried(){
+  document.getElementById("marriedBox").classList.toggle(
+    "hidden", document.getElementById("status").value!=="Evli"
+  );
+}
+function renderChildren(){
+  const n=+child_count.value;
+  const box=childrenArea;
+  box.innerHTML="";
+  box.classList.toggle("hidden",n===0);
+  for(let i=1;i<=n;i++){
+    box.innerHTML+=`
+      <div class="child-card">
+        <label>Çocuk ${i} Adı</label>
+        <input placeholder="İsim">
+        <label>Doğum günü</label>
+        <div class="date-row">
+          <select><option>G</option>${days.map(d=>`<option>${d}</option>`).join("")}</select>
+          <select><option>Ay</option>${months.map((m,i)=>`<option value="${i+1}">${m}</option>`).join("")}</select>
         </div>
-        <div style="flex:1.1;">
-          <div class="mini">Doğum (G/Ay)</div>
-          <div class="date-row">
-            <select id="child_day_${i}"><option value="">G</option></select>
-            <select id="child_month_${i}">
-              <option value="">Ay</option>
-              <option value="01">Oca</option><option value="02">Şub</option><option value="03">Mar</option>
-              <option value="04">Nis</option><option value="05">May</option><option value="06">Haz</option>
-              <option value="07">Tem</option><option value="08">Ağu</option><option value="09">Eyl</option>
-              <option value="10">Eki</option><option value="11">Kas</option><option value="12">Ara</option>
-            </select>
-          </div>
-        </div>
-      `;
-      c.appendChild(row);
-
-      fillDayOptions(`child_day_${i}`);
-    }
+      </div>`;
   }
-
-  // 3) Sayfa açılış
-  window.onload = async function(){
-    const user = JSON.parse(localStorage.getItem(USER_KEY) || "{}");
-    if(!user.id){
-      alert("Giriş yapmamışsın!");
-      window.location.href = "../index.html";
-      return;
-    }
-
-    // kimlik sadece göstermek için
-    document.getElementById("formID").innerText = user.id;
-    document.getElementById("emailDisplay").innerText = user.email ? `Email: ${user.email}` : "Email: —";
-
-    // önce local profil
-    const localProfile = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
-    if(localProfile && Object.keys(localProfile).length){
-      fillFormFields(localProfile);
-    }
-
-    // sonra server profil
-    try{
-      const url = `${BASE_DOMAIN}/api/profile/get?user_id=${user.id}&email=${user.email || ""}`;
-      const res = await fetch(url);
-      const data = await res.json();
-      if(data.found && data.meta){
-        fillFormFields(data.meta);
-        localStorage.setItem(PROFILE_KEY, JSON.stringify(data.meta));
-      }
-    }catch(e){ console.log("Profil senkron hatası:", e); }
-  }
-
-  function fillFormFields(data){
-    if(data.hitap) document.getElementById('formHitap').value = data.hitap;
-    if(data.bot_name) document.getElementById('formBotName').value = data.bot_name;
-    if(data.gender) document.getElementById('formGender').value = data.gender;
-    if(data.region) document.getElementById('formCity').value = data.region;
-    if(data.team) document.getElementById('formTeam').value = data.team;
-
-    if(data.marital_status){
-      document.getElementById('formStatus').value = data.marital_status;
-      toggleMarriedFields();
-    }
-    if(data.spouse_name) document.getElementById('formSpouse').value = data.spouse_name;
-
-    // özel günler (G/Ay)
-    setDayMonth("spouseBDay","spouseBMonth", data.spouse_bday_dm);
-    setDayMonth("wDay","wMonth", data.wedding_dm);
-    setDayMonth("eDay","eMonth", data.engagement_dm);
-    setDayMonth("mDay","mMonth", data.met_dm);
-
-    // çocuklar
-    if(data.child_count){
-      document.getElementById("formChildCount").value = String(data.child_count);
-      toggleChildFields();
-      const kids = Array.isArray(data.children) ? data.children : [];
-      kids.forEach((k, idx) => {
-        const i = idx+1;
-        const nameEl = document.getElementById(`child_name_${i}`);
-        if(nameEl && k?.name) nameEl.value = k.name;
-        if(k?.bday_dm){
-          const p = k.bday_dm.split(".");
-          if(p.length===2){
-            const dEl = document.getElementById(`child_day_${i}`);
-            const mEl = document.getElementById(`child_month_${i}`);
-            if(dEl) dEl.value = p[0];
-            if(mEl) mEl.value = p[1];
-          }
-        }
-      });
-    }
-  }
-
-  // 4) Kaydet
-  window.saveProfile = async function(){
-    const user = JSON.parse(localStorage.getItem(USER_KEY) || "{}");
-
-    // G/Ay doğrulama (yarım girilmesin)
-    const spouseB = getDayMonth("spouseBDay","spouseBMonth");
-    const wed = getDayMonth("wDay","wMonth");
-    const eng = getDayMonth("eDay","eMonth");
-    const met = getDayMonth("mDay","mMonth");
-
-    if(!spouseB.ok || !wed.ok || !eng.ok || !met.ok){
-      alert("Özel günlerde Gün/Ay ikilisini ya tam seç, ya tamamen boş bırak.");
-      return;
-    }
-
-    // çocuklar
-    const childCount = parseInt(document.getElementById("formChildCount").value,10) || 0;
-    const kids = [];
-    const maxKids = Math.min(childCount, 5);
-
-    for(let i=1;i<=maxKids;i++){
-      const name = (document.getElementById(`child_name_${i}`)?.value || "").trim();
-      const d = document.getElementById(`child_day_${i}`)?.value || "";
-      const m = document.getElementById(`child_month_${i}`)?.value || "";
-      if((d && !m) || (!d && m)){
-        alert(`Çocuk ${i} için Gün/Ay ikilisini ya tam seç, ya boş bırak.`);
-        return;
-      }
-      const dm = (d && m) ? `${d}.${m}` : "";
-      // tamamen boş satırı kaydetme (isim ve tarih yoksa)
-      if(name || dm){
-        kids.push({ name, bday_dm: dm });
-      }
-    }
-
-    const payloadMeta = {
-      // opsiyonel tercih
-      hitap: document.getElementById('formHitap').value,
-      bot_name: document.getElementById('formBotName').value,
-      gender: document.getElementById('formGender').value,
-      region: document.getElementById('formCity').value,
-      team: document.getElementById('formTeam').value,
-
-      // ilişki
-      marital_status: document.getElementById('formStatus').value,
-      spouse_name: document.getElementById('formSpouse').value,
-
-      // özel günler (G/Ay)
-      spouse_bday_dm: spouseB.value,
-      wedding_dm: wed.value,
-      engagement_dm: eng.value,
-      met_dm: met.value,
-
-      // çocuklar
-      child_count: String(childCount),
-      children: kids,
-
-      // sistem: bildirim için izin mantığı (ileride)
-      reminder_opt_in: true
-    };
-
-    // Google’dan bağımsız local profil
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(payloadMeta));
-
-    // UI fayda bayrağı (örnek): burç bildirimi için "opt-in" gibi
-    const u = JSON.parse(localStorage.getItem(USER_KEY) || "{}");
-    u.profile_ready_for_assistant = true;
-    localStorage.setItem(USER_KEY, JSON.stringify(u));
-
-    // server’a yaz (istersen bunu kapatabiliriz)
-    try{
-      const res = await fetch(`${BASE_DOMAIN}/api/profile/update`,{
-        method:"POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ user_id: user.id, meta: payloadMeta })
-      });
-      const result = await res.json();
-      if(!result.ok){
-        // server yazamazsa bile local kaydedildi
-        console.log("Server yazım hatası:", result);
-      }
-    }catch(e){
-      console.log("Sunucu hatası (local kayıt ok):", e);
-    }
-
-    alert("Tamamdır evladım. Ben bunları günü gelince hatırlatacağım. 🧿");
-    window.location.href = "../index.html";
-  }
-
-  window.logoutFromProfile = function(){
-    if(confirm("Çıkış yapılsın mı?")){
-      localStorage.removeItem(USER_KEY);
-      // profil opsiyonel; ister temizle ister bırak
-      // localStorage.removeItem(PROFILE_KEY);
-      window.location.href = "../index.html";
-    }
-  }
-
-  window.copyID = function(){
-    navigator.clipboard.writeText(document.getElementById('formID').innerText);
-    alert("ID Kopyalandı");
-  }
+}
+function saveProfile(){
+  alert("Tamam evladım. Ben artık takipteyim 🧿");
+}
 </script>
+
 </body>
 </html>
