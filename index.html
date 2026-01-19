@@ -7,14 +7,15 @@
   import { BASE_DOMAIN, STORAGE_KEY } from './js/config.js';
   import { openFalPanel, closeFalPanel, handleFalPhoto } from './js/fal.js';
 
-  // --- HAFIZA (HISTORY) YÖNETİMİ ---
-  let chatHistory = []; 
+  // ------------------------------
+  // SAFE HELPERS
+  // ------------------------------
+  const $ = (id) => document.getElementById(id);
 
-  // --- YARDIMCI FONKSİYONLAR ---
   function firstNameOnly(fullname="") {
     const s = (fullname || "").trim();
     if(!s) return "";
-    return s.split(/\s+/)[0]; 
+    return s.split(/\s+/)[0];
   }
 
   function getProfileMeta(){
@@ -46,28 +47,97 @@
     if(daysLeft > 1) return daysLeft + " gün kaldı";
     return "";
   }
-  
-  function escapeHtml(s=""){ 
-    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); 
+
+  function escapeHtml(s=""){
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   }
 
-  // --- BİLDİRİMLER ---
+  // ------------------------------
+  // EYE TRACKING FUNCTIONS (define early!)
+  // ------------------------------
+  let isTracking = false;
+  let isMouseActive = false;
+  let sleepTimer = null;
+  let gazeTimer = null;
+
+  const SLEEP_DELAY = 30000;
+  const GAZE_DELAY  = 2000;
+  const AUTO_LOOK_FREQ = 5000;
+
+  function setGaze(x, y) {
+    const eyeL = $("eyeL");
+    const eyeR = $("eyeR");
+    if(!eyeL || !eyeR) return;
+    const gx = Math.min(Math.max(x * 20, -20), 20);
+    const gy = Math.min(Math.max(y * 15, -15), 15);
+    [eyeL, eyeR].forEach(e => {
+      e.style.setProperty('--gx', gx+'px');
+      e.style.setProperty('--gy', gy+'px');
+    });
+  }
+
+  function setLids(top, bot=0) {
+    const eyeL = $("eyeL");
+    const eyeR = $("eyeR");
+    if(!eyeL || !eyeR) return;
+    [eyeL, eyeR].forEach(e => {
+      e.style.setProperty('--lidTop', top+'%');
+      e.style.setProperty('--lidBot', bot+'%');
+    });
+  }
+
+  function resetIdle() {
+    clearTimeout(sleepTimer);
+    sleepTimer = setTimeout(goSleep, SLEEP_DELAY);
+  }
+
+  function goSleep() {
+    const frame = $("mobileFrame");
+    if(!frame) return;
+    if(frame.classList.contains('sleeping')) return;
+    frame.classList.add('sleeping');
+    setLids(100, 100);
+  }
+
+  function wakeUp() {
+    const frame = $("mobileFrame");
+    if(!frame) return;
+    frame.classList.remove('sleeping');
+    setLids(0, 0);
+    resetIdle();
+  }
+
+  function centerEyes() { setGaze(0, 0); }
+
+  function autoLookBehavior() {
+    const frame = $("mobileFrame");
+    if (!frame) return;
+    if (isMouseActive || frame.classList.contains('sleeping') || !isTracking) return;
+    const rX = (Math.random() - 0.5) * 0.8;
+    const rY = (Math.random() - 0.5) * 0.5;
+    setGaze(rX, rY);
+    setTimeout(() => setGaze(0, 0), 1000);
+  }
+
+  // ------------------------------
+  // NOTIFICATIONS (safe local refresh)
+  // ------------------------------
   async function fetchNotificationsToday(){
     const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
     if(!user?.id) return [];
     try{
-      const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id)}`);
+      const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id)}`, { cache: "no-store" });
       const data = await res.json();
       return data?.items || [];
     }catch(e){ return []; }
   }
 
   async function refreshNotifications(){
-    const items = await fetchNotificationsToday();
-    const badge = document.getElementById("notifBadge");
-    const list = document.getElementById("notifList");
-    if(!list) return;
+    const list = $("notifList");
+    const badge = $("notifBadge");
+    if(!list) return; // DOM yoksa sessizce çık
 
+    const items = await fetchNotificationsToday();
     if (badge) badge.style.display = items.length ? "block" : "none";
 
     if(!items.length){
@@ -98,14 +168,39 @@
     }).join("");
   }
 
-  // --- APP GİRİŞ (GÜVENLİ HALE GETİRİLDİ) ---
-  window.enterApp = function () {
-    // NULL KONTROLLÜ GİRİŞ
-    const loginOverlay = document.getElementById('loginOverlay');
-    if (loginOverlay) loginOverlay.classList.remove('active');
+  // ------------------------------
+  // GLOBAL EXPORTS
+  // ------------------------------
+  window.handleLogin = handleLogin;
+  window.logout = logout;
+  window.openFal = openFalPanel;
+  window.closeFal = closeFalPanel;
+  window.handleFalFile = (input) => handleFalPhoto(input);
 
-    // Fonksiyon varsa çalıştır
-    if (typeof window.hideTermsOverlay === 'function') window.hideTermsOverlay();
+  // Terms overlay (SAFE)
+  window.showTermsOverlay = function(){
+    const el = $("termsOverlay");
+    if(!el) return;
+    el.classList.add("active");
+  };
+  window.hideTermsOverlay = function(){
+    const el = $("termsOverlay");
+    if(!el) return;
+    el.classList.remove("active");
+  };
+
+  window.acceptTermsAndEnter = async function(){
+    const cb = $("termsCheck");
+    if(!cb || !cb.checked){ alert("Onay kutusunu işaretle evladım."); return; }
+    const ok = await acceptTerms();
+    if(ok) window.enterApp();
+    else alert("Onay kaydedilemedi evladım.");
+  };
+
+  // App giriş (SAFE)
+  window.enterApp = function () {
+    $("loginOverlay")?.classList.remove('active');
+    window.hideTermsOverlay?.();
 
     const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
     const profile = getProfileMeta();
@@ -113,46 +208,18 @@
     const bot = profile?.bot_name || user?.bot_name || user?.botName || "Caynana";
 
     setTimeout(() => {
-      if(window.typeWriter) window.typeWriter(`Hoş geldin ${who}. Ben ${bot}.`);
-      chatHistory.push({ role: "assistant", content: `Hoş geldin ${who}. Ben ${bot}.` });
+      window.typeWriter?.(`Hoş geldin ${who}. Ben ${bot}.`);
     }, 400);
 
-    if(typeof refreshNotifications === 'function') refreshNotifications();
+    refreshNotifications();
   };
 
-  // --- GLOBAL EXPORTS ---
-  window.handleLogin = handleLogin;
-  window.logout = logout;
-  window.openFal = openFalPanel;
-  window.closeFal = closeFalPanel;
-  window.handleFalFile = (input) => handleFalPhoto(input);
-
-  // --- TERMS OVERLAY (NULL KONTROLLÜ) ---
-  window.showTermsOverlay = function(){
-    const el = document.getElementById("termsOverlay");
-    if (!el) return; // ✅ YOKSA ÇIK
-    el.classList.add("active");
-  };
-
-  window.hideTermsOverlay = function(){
-    const el = document.getElementById("termsOverlay");
-    if (!el) return; // ✅ YOKSA ÇIK
-    el.classList.remove("active");
-  };
-
-  window.acceptTermsAndEnter = async function(){
-    const cb = document.getElementById("termsCheck");
-    if(!cb || !cb.checked){ alert("Onay kutusunu işaretle evladım."); return; }
-    const ok = await acceptTerms();
-    if(ok) window.enterApp();
-    else alert("Onay kaydedilemedi evladım.");
-  };
-
-  // --- KAMERA & MİKROFON & SES ---
-  let isTracking = false;
+  // Camera toggle (SAFE)
   window.toggleCam = function() {
-    const frame = document.getElementById('mobileFrame');
-    const camBtn = document.getElementById('camBtn');
+    const frame = $("mobileFrame");
+    const camBtn = $("camBtn");
+    if(!frame || !camBtn) return;
+
     if(frame.classList.contains('tracking-active')) {
       frame.classList.remove('tracking-active');
       camBtn.classList.remove('active');
@@ -167,19 +234,16 @@
 
   window.startDictation = function() {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.lang = "tr-TR";
-      recognition.start();
-      recognition.onresult = function(e) {
-        const inputEl = document.getElementById('msgInput');
-        if(inputEl) inputEl.value = e.results[0][0].transcript;
-        recognition.stop();
-        sendMessage();
-      };
-    } else {
-      alert("Ses desteği yok evladım.");
-    }
+    if (!SpeechRecognition) { alert("Ses desteği yok evladım."); return; }
+    const recognition = new SpeechRecognition();
+    recognition.lang = "tr-TR";
+    recognition.start();
+    recognition.onresult = function(e) {
+      const inputEl = $("msgInput");
+      if(inputEl) inputEl.value = e.results[0][0].transcript;
+      recognition.stop();
+      sendMessage();
+    };
   };
 
   async function playVoice(text) {
@@ -197,23 +261,12 @@
     } catch(e) { console.error("Ses hatası:", e); }
   }
 
-  // --- MENÜ ---
-  const menuOverlay = document.getElementById('menuOverlay');
-  window.toggleMenu = function() {
-    if(menuOverlay && menuOverlay.classList.contains('open')) menuOverlay.classList.remove('open');
-    else if(menuOverlay) menuOverlay.classList.add('open');
-  };
-  window.toggleNotif = function() {
-    const nd = document.getElementById('notifDropdown');
-    if(nd) nd.classList.toggle('show');
-  };
-
-  // --- CHAT VE TYPEWRITER ---
+  // Typewriter (SAFE)
   window.typeWriter = function(text, elementId = 'chat') {
-    const chatDiv = document.getElementById(elementId);
+    const chatDiv = $(elementId);
     if(!chatDiv) return;
-    const brandWrapper = document.getElementById('brandWrapper');
-    if(brandWrapper) brandWrapper.classList.add('talking');
+    const brandWrapper = $("brandWrapper");
+    brandWrapper?.classList.add('talking');
 
     const bubbleRow = document.createElement("div");
     bubbleRow.className = "bubble bot";
@@ -227,15 +280,17 @@
         chatDiv.scrollTop = chatDiv.scrollHeight;
         setTimeout(type, speed);
       } else {
-        if(brandWrapper) brandWrapper.classList.remove('talking');
+        brandWrapper?.classList.remove('talking');
       }
     }
     type();
   };
 
-  // --- MESAJ GÖNDERME (HAFIZALI) ---
+  // Chat history
+  let chatHistory = [];
+
   async function sendMessage() {
-    const inputEl = document.getElementById('msgInput');
+    const inputEl = $("msgInput");
     if(!inputEl) return;
     const txt = inputEl.value.trim();
     if(!txt) return;
@@ -247,117 +302,105 @@
     chatHistory.push({ role: "user", content: txt });
     if(chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
-    const brandWrapper = document.getElementById('brandWrapper');
-    if(brandWrapper) brandWrapper.classList.add('thinking');
+    const brandWrapper = $("brandWrapper");
+    brandWrapper?.classList.add('thinking');
 
     try {
       const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      
       const response = await fetch(`${BASE_DOMAIN}/api/chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-              text: txt,
-              user_id: user.id || "guest",
-              history: chatHistory
-          })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          text: txt,
+          user_id: user.id || "guest",
+          history: chatHistory
+        })
       });
 
       const data = await response.json();
-      if(brandWrapper) brandWrapper.classList.remove('thinking');
+      brandWrapper?.classList.remove('thinking');
 
       if(data && data.text) {
-        window.typeWriter(data.text);
+        window.typeWriter?.(data.text);
         chatHistory.push({ role: "assistant", content: data.text });
         await playVoice(data.text);
       }
     } catch(e) {
       console.error("Chat Error:", e);
-      if(brandWrapper) brandWrapper.classList.remove('thinking');
-      window.typeWriter("Evladım tansiyonum düştü, internetine bir bakıver.");
+      brandWrapper?.classList.remove('thinking');
+      window.typeWriter?.("Evladım tansiyonum düştü, internetine bir bakıver.");
     }
   }
 
-  // --- EVENT LISTENERS ---
-  const sendBtn = document.getElementById('sendBtn');
-  if(sendBtn) sendBtn.addEventListener('click', sendMessage);
-  const msgInput = document.getElementById('msgInput');
-  if(msgInput) msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
-  
-  const hambBtn = document.getElementById('hambBtn');
-  if(hambBtn) hambBtn.addEventListener('click', () => window.toggleMenu());
-  if(menuOverlay) menuOverlay.addEventListener('click', (e) => { if(e.target === menuOverlay) window.toggleMenu(); });
+  // ------------------------------
+  // ONLOAD: IMPORTANT ORDER
+  // ------------------------------
+  window.onload = async function() {
+    // auth init
+    try { if(typeof initAuth === 'function') initAuth(); } catch(e){ console.log(e); }
 
-  // --- GÖZ TAKİP ---
-  let isMouseActive = false; let sleepTimer = null; let gazeTimer = null;
-  const SLEEP_DELAY = 30000; const GAZE_DELAY = 2000; const AUTO_LOOK_FREQ = 5000;
-  const eyeL = document.getElementById('eyeL'), eyeR = document.getElementById('eyeR'), frame = document.getElementById('mobileFrame');
+    // partials first
+    try { await initPartials(); } catch(e) { console.log("Partials yüklenemedi:", e); }
 
-  if(frame && eyeL && eyeR) {
-    window.addEventListener('pointermove', (e) => {
+    // notif init (mount/partial sonrası)
+    try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) { console.log("Notif init hatası:", e); }
+
+    // bind menu now (after partial)
+    const menuOverlay = $("menuOverlay");
+    const hambBtn = $("hambBtn");
+    window.toggleMenu = function() {
+      if(!menuOverlay) return;
+      menuOverlay.classList.toggle('open');
+    };
+    hambBtn?.addEventListener('click', () => window.toggleMenu());
+    menuOverlay?.addEventListener('click', (e) => { if(e.target === menuOverlay) window.toggleMenu(); });
+
+    // send listeners
+    $("sendBtn")?.addEventListener('click', sendMessage);
+    $("msgInput")?.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
+
+    // tracking buttons
+    $("openTrackBtn")?.addEventListener('click', ()=>{ isTracking=true; $("mobileFrame")?.classList.add('tracking-active'); wakeUp(); });
+    $("closeTrackBtn")?.addEventListener('click', ()=>{ isTracking=false; $("mobileFrame")?.classList.remove('tracking-active'); });
+
+    // gaze listener (after DOM)
+    const frame = $("mobileFrame");
+    if(frame) {
+      window.addEventListener('pointermove', (e) => {
         if(!isTracking || frame.classList.contains('sleeping')) { if(frame.classList.contains('sleeping')) wakeUp(); }
         resetIdle(); isMouseActive = true; clearTimeout(gazeTimer);
+
         const rect = frame.getBoundingClientRect();
         const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
         const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
         setGaze(x, y);
+
         gazeTimer = setTimeout(() => { isMouseActive = false; centerEyes(); }, GAZE_DELAY);
-    });
-  }
-
-  function resetIdle() { clearTimeout(sleepTimer); sleepTimer = setTimeout(goSleep, SLEEP_DELAY); }
-  function goSleep() { if(frame && frame.classList.contains('sleeping')) return; if(frame) frame.classList.add('sleeping'); setLids(100, 100); }
-  function wakeUp() { if(frame) frame.classList.remove('sleeping'); setLids(0, 0); resetIdle(); }
-  function centerEyes() { setGaze(0, 0); }
-  function autoLookBehavior() {
-    if (isMouseActive || (frame && frame.classList.contains('sleeping')) || !isTracking) return;
-    const rX = (Math.random() - 0.5) * 0.8; const rY = (Math.random() - 0.5) * 0.5;
-    setGaze(rX, rY); setTimeout(() => setGaze(0, 0), 1000);
-  }
-  function setGaze(x, y) {
-    const gx = Math.min(Math.max(x * 20, -20), 20); const gy = Math.min(Math.max(y * 15, -15), 15);
-    [eyeL, eyeR].forEach(e => { if(e){ e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); } });
-  }
-  function setLids(top, bot=0) { [eyeL, eyeR].forEach(e => { if(e){ e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); } }); }
-
-  const openTrackBtn = document.getElementById('openTrackBtn');
-  if(openTrackBtn) openTrackBtn.addEventListener('click', ()=>{ isTracking=true; if(frame) frame.classList.add('tracking-active'); wakeUp(); });
-  const closeTrackBtn = document.getElementById('closeTrackBtn');
-  if(closeTrackBtn) closeTrackBtn.addEventListener('click', ()=>{ isTracking=false; if(frame) frame.classList.remove('tracking-active'); });
-
-  // --- ONLOAD & INIT ---
-  window.onload = async function() {
-    if(typeof initAuth === 'function') initAuth();
-
-    try { await initPartials(); } catch(e) { console.log("Partials yüklenemedi:", e); }
-    try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) { console.log("Notif init hatası:", e); }
-
-    // !!! GOOGLE GİRİŞ DÜZELTMESİ !!!
-    const googleBtn = document.getElementById('googleLoginBtn') || document.querySelector('.google-login-btn');
-    if (googleBtn) {
-        googleBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            handleLogin('google');
-        });
-        console.log("Google Login butonu JavaScript ile bağlandı.");
+      });
     }
 
+    // session check
     const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
     if(user && user.isSessionActive && user.email) {
-       if(!user.terms_accepted_at) window.showTermsOverlay();
-       else window.enterApp();
-    }
-    
-    // History demo temizleme
-    const historyListEl = document.getElementById('historyList');
-    if(historyListEl) {
-        historyListEl.innerHTML = ""; 
+      if(!user.terms_accepted_at) window.showTermsOverlay?.();
+      else window.enterApp?.();
     }
 
+    // idle + autolook
     setInterval(autoLookBehavior, AUTO_LOOK_FREQ);
     resetIdle();
-    
+
+    // notif refresh periodic (safe)
     refreshNotifications();
     setInterval(refreshNotifications, 60000);
+
+    // google button binding
+    const googleBtn = $("googleLoginBtn") || document.querySelector('.google-login-btn');
+    if (googleBtn) {
+      googleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        handleLogin('google');
+      });
+    }
   };
 </script>
