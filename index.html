@@ -1,14 +1,9 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,
-<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
-  <circle cx='50' cy='50' r='48' fill='black'/>
-  <text x='50' y='68' font-size='60' text-anchor='middle' fill='white'>C</text>
-</svg>">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
-<title>Caynana AI v2.6 Final (Fal Modülü)</title>
+<title>Caynana AI v2.7 Final</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 <style>
@@ -60,31 +55,6 @@
   .notif-desc { font-size: 11px; color: #aaa; line-height: 1.3; }
   .notif-time { font-size: 10px; color: #666; margin-top: 4px; }
 
-  /* --- GÖZLER (KAMERA) --- */
-  .face-container { flex: 0 0 0px; background: linear-gradient(to bottom, var(--bg), transparent); overflow: hidden; transition: flex-basis 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2500; }
-  .mobile-frame.tracking-active .face-container { flex-basis: 180px; } 
-  
-  .face-panel-inner { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: translateY(-30px); transition: 0.4s; }
-  .mobile-frame.tracking-active .face-panel-inner { opacity: 1; transform: translateY(0); }
-
-  .eyes-row { display: flex; gap: 24px; margin-bottom: 10px; }
-  .eye { width: 90px; height: 65px; position: relative; --lidTop:0%; --lidBot:0%; --gx:0px; --gy:0px; transition: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-  .sclera { width: 100%; height: 100%; background: #e0e0e0; border-radius: 50%; overflow: hidden; position: relative; border: 2px solid #1a1a1a; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
-  .iris { width: 32px; height: 32px; background: radial-gradient(circle, #5d4037 0%, #281a16 100%); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(calc(-50% + var(--gx)), calc(-50% + var(--gy))); border: 1px solid rgba(255,255,255,0.25); transition: transform 0.1s linear; }
-  .pupil { width: 10px; height: 10px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-  .reflection { position: absolute; top: 6px; right: 6px; width: 4px; height: 4px; background: #fff; border-radius: 50%; opacity: 0.9; }
-  .lid-top, .lid-bot { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.3s ease-in-out; }
-  .lid-top { top: 0; height: var(--lidTop); border-bottom: 2px solid #222; }
-  .lid-bot { bottom: 0; height: var(--lidBot); border-top: 2px solid #222; }
-
-  /* Uyku */
-  .mobile-frame.sleeping .eyes-row { animation: sleepBreath 4s infinite ease-in-out; opacity: 0.6; }
-  @keyframes sleepBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95) translateY(2px); } }
-
-  .mouth-wrapper { width: 60px; height: 26px; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 8px; }
-  .mouth { width: 40px; height: 10px; border-top: 3px solid var(--lip-color); border-radius: 50% 50% 0 0; position: absolute; top: 8px; transition: 0.15s; opacity: 0.9; }
-  .close-track-btn { margin-top: 10px; background: rgba(198, 40, 40, 0.15); color: #ef9a9a; border: 1px solid rgba(198, 40, 40, 0.4); padding: 5px 14px; border-radius: 20px; font-size: 11px; cursor: pointer; }
-
   /* --- CHAT --- */
   .chat-area { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; scrollbar-width: none; }
   .chat-area::-webkit-scrollbar { display: none; }
@@ -94,15 +64,9 @@
 
   /* --- DOCK & FOOTER --- */
   .input-dock { flex: 0 0 auto; background: var(--glass); padding: 5px 16px 15px 16px; z-index: 3000; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-  .track-trigger-row { display: flex; justify-content: center; width: 100%; transition: 0.3s; height: 36px; overflow: hidden; }
-  .mobile-frame.tracking-active .track-trigger-row { height: 0; margin: 0; opacity: 0; pointer-events: none; }
-  .main-track-btn { background: rgba(255, 179, 0, 0.1); border: 1px solid var(--gold); color: var(--gold); padding: 8px 24px; border-radius: 24px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 0 15px rgba(255, 179, 0, 0.1); animation: pulseBtn 2s infinite; display: flex; align-items: center; gap: 8px; }
-  
   .dock-inner { display: flex; align-items: flex-end; gap: 8px; background: #1a1a1a; border: 1px solid #333; border-radius: 24px; padding: 6px; }
   .icon-btn { width: 42px; height: 42px; border-radius: 50%; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: 0.2s; }
   .icon-btn svg { width: 22px; height: 22px; stroke: #aaa; stroke-width: 2; fill: none; transition: 0.2s; }
-  .icon-btn:hover svg, .icon-btn.active svg { stroke: var(--gold); }
-  .icon-btn.active { background: rgba(255,179,0,0.15); }
   .send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--pistachio); color: #000; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(190, 242, 100, 0.3); }
   .send-btn svg { stroke: #000; fill:none; width:22px; height:22px; }
   textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; resize: none; padding: 10px; max-height: 100px; min-height: 24px; font-family: inherit; scrollbar-width: none; }
@@ -142,20 +106,12 @@
   .new-chat-btn { width: 100%; background: #333; color: var(--pistachio); border: 1px solid #444; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; margin-bottom: 15px; display:flex; justify-content:center; align-items:center; gap:8px; }
   
   .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px; min-height: 100px; }
-  .history-item { color: #ccc; padding: 12px 10px; border-radius: 8px; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-  .history-item:hover { background: #222; color: #fff; }
-  .history-item:hover .delete-chat-btn { display: block; }
-  .history-text { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 190px; }
-  .delete-chat-btn { display: none; background: none; border: none; color: #ff5252; cursor: pointer; font-size: 16px; padding: 0 5px; }
-
   .menu-static-links { border-top: 1px solid #2a2a2a; padding-top: 10px; }
   .menu-item { color: #888; text-decoration: none; padding: 10px 0; display: block; font-size: 13px; transition: 0.2s; cursor:pointer; }
   .menu-item:hover { color: var(--gold); }
 
   .menu-footer-actions { margin-top: auto; padding-top: 10px; border-top: 1px solid #333; }
   .menu-version { text-align: center; font-size: 10px; color: #555; margin-top: 20px; }
-  
-  #camVideo { display: none; }
 </style>
 </head>
 <body>
@@ -182,12 +138,12 @@
       <div style="border-bottom:1px solid #333; padding-bottom:15px; margin-bottom:15px;">
         <div style="font-size:11px; color:#666; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Devam Et</div>
 
-        <button class="auth-btn btn-google enabled" style="opacity:1; filter:none;" onclick="handleLogin('google')">
+        <button class="auth-btn btn-google enabled" id="googleLoginBtn">
           <svg class="auth-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
           Google ile Devam Et
         </button>
 
-        <button class="auth-btn btn-apple enabled" style="opacity:1; filter:none;" onclick="handleLogin('apple')">
+        <button class="auth-btn btn-apple enabled" id="appleLoginBtn">
           <svg class="auth-icon" viewBox="0 0 24 24" fill="#fff"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24.02-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.57-.91 4.35-.68c.75.04 2.86.32 3.9 1.83-3.23 1.6-2.67 6.38 1.02 7.94-.75 1.49-1.81 2.97-2.89 4.01l-.22.25-.24-.12zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.54 4.33-3.74 4.25z"/></svg>
           Apple ile Devam Et
         </button>
@@ -223,32 +179,30 @@
         <label for="termsCheck" style="color:#aaa;">Okudum, onaylıyorum.</label>
       </div>
 
-      <button class="auth-btn btn-google enabled" style="filter:none; opacity:1;" onclick="acceptTermsAndEnter()">
+      <button class="auth-btn btn-google enabled" style="filter:none; opacity:1;" id="termsAcceptBtn">
         ✅ Onayla ve Devam Et
       </button>
     </div>
   </div>
 
-  <div id="menuMount">
-    <div class="menu-overlay" id="menuOverlay">
-      <div class="menu-sidebar">
-        <div class="sidebar-header">
-          <button class="new-chat-btn" onclick="startNewChat()"><span>+</span> Yeni Sohbet Başlat</button>
-        </div>
-        <div style="font-size:11px; color:#666; padding-left:10px; margin-bottom:5px;">SON SOHBETLER</div>
-        <div class="history-list" id="historyList"></div>
-        <div class="menu-static-links">
-          <a class="menu-item" onclick="openFal(); toggleMenu();">☕ Kahve Falı</a>
-          <a class="menu-item" href="pages/profil.html">👤 Profil Ayarları</a>
-          <a class="menu-item" href="pages/hakkimizda.html">ℹ️ Hakkımızda</a>
-          <a class="menu-item" href="pages/sss.html">❓ SSS</a>
-          <a class="menu-item" href="pages/iletisim.html">✉️ İletişim</a>
-          <a class="menu-item" href="pages/gizlilik.html">🔒 Gizlilik</a>
-        </div>
-        <div class="menu-footer-actions">
-          <a class="menu-item" onclick="logout()" style="color:#ff5252">🛡️ Güvenli Çıkış</a>
-          <div class="menu-version">@CaynanaAI v2.6</div>
-        </div>
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-sidebar">
+      <div class="sidebar-header">
+        <button class="new-chat-btn" id="newChatBtn"><span>+</span> Yeni Sohbet Başlat</button>
+      </div>
+      <div style="font-size:11px; color:#666; padding-left:10px; margin-bottom:5px;">SON SOHBETLER</div>
+      <div class="history-list" id="historyList"></div>
+      <div class="menu-static-links">
+        <a class="menu-item" onclick="window.openFal(); window.toggleMenu();">☕ Kahve Falı</a>
+        <a class="menu-item" href="pages/profil.html">👤 Profil Ayarları</a>
+        <a class="menu-item" href="pages/hakkimizda.html">ℹ️ Hakkımızda</a>
+        <a class="menu-item" href="pages/sss.html">❓ SSS</a>
+        <a class="menu-item" href="pages/iletisim.html">✉️ İletişim</a>
+        <a class="menu-item" href="pages/gizlilik.html">🔒 Gizlilik</a>
+      </div>
+      <div class="menu-footer-actions">
+        <a class="menu-item" id="logoutBtn" style="color:#ff5252">🛡️ Güvenli Çıkış</a>
+        <div class="menu-version">@CaynanaAI v2.7</div>
       </div>
     </div>
   </div>
@@ -271,7 +225,7 @@
     </div>
 
     <div id="notifMount">
-      <button class="notif-btn" id="notifBtn" onclick="toggleNotif()">
+      <button class="notif-btn" id="notifBtn">
         <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
         <div class="badge" id="notifBadge"></div>
       </button>
@@ -314,21 +268,21 @@
   <div class="input-dock">
     <div class="track-trigger-row"><button class="main-track-btn" id="openTrackBtn">👁️ TAKİP ET</button></div>
     <div class="dock-inner">
-      <button class="icon-btn" id="camBtn" onclick="toggleCam()"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
+      <button class="icon-btn" id="camBtn"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
       <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?"></textarea>
-      <button class="icon-btn" id="micBtn" onclick="startDictation()"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
+      <button class="icon-btn" id="micBtn"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
       <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg></button>
     </div>
   </div>
 
   <div class="footer-container">
     <span>@CaynanaAI By Ozyigits</span>
-    <div class="footer-ver">2026 - v2.6</div>
+    <div class="footer-ver">2026 - v2.7</div>
   </div>
 </div>
 
 <div class="full-overlay" id="falOverlay" style="background:#111; z-index:7000;">
-  <button onclick="closeFal()" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:30px; color:#fff;">&times;</button>
+  <button onclick="window.closeFal()" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:30px; color:#fff;">&times;</button>
   <div style="text-align:center; margin-top:60px;">
     <svg class="seesaw-svg" viewBox="0 0 40 20" style="width:60px;">
       <g class="seesaw-bar"><line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2"/><circle cx="20" cy="5" r="5" fill="#6d4c41"/></g>
@@ -344,7 +298,7 @@
     <label for="falInput" class="main-track-btn" style="padding:20px; border-radius:50%; width:80px; height:80px; justify-content:center;">
       <svg viewBox="0 0 24 24" width="40" height="40" stroke="#ffb300" fill="none" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
     </label>
-    <input type="file" id="falInput" accept="image/*" capture="environment" style="display:none;" onchange="handleFalFile(this)">
+    <input type="file" id="falInput" accept="image/*" capture="environment" style="display:none;" onchange="window.handleFalFile(this)">
   </div>
 
   <div id="falStep2" style="flex:1; display:none; flex-direction:column; align-items:center; justify-content:center;">
@@ -356,161 +310,237 @@
 
   <div id="falResult" style="flex:1; display:none; flex-direction:column; padding:20px; overflow-y:auto;">
     <div id="falText" style="background:#222; padding:20px; border-radius:12px; color:#ececec; line-height:1.6; border:1px solid #333;"></div>
-    <button onclick="closeFal()" class="auth-btn btn-google enabled" style="margin-top:20px; filter:none;">Tamamdır Anne</button>
+    <button onclick="window.closeFal()" class="auth-btn btn-google enabled" style="margin-top:20px; filter:none;">Tamamdır Anne</button>
   </div>
 </div>
 
 <video id="camVideo" autoplay playsinline muted></video>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
-
 <script type="module">
-import { initPartials } from '/js/partials.js';
-import { initNotif } from '/js/notif.js';
-import { initAuth, handleLogin, logout, acceptTerms } from '/js/auth.js';
-import { addUserBubble } from '/js/chat.js';
-import { BASE_DOMAIN, STORAGE_KEY } from '/js/config.js';
-import { openFalPanel, closeFalPanel, handleFalPhoto } from '/js/fal.js';
+  // --- ÖNEMLİ İMPORTLAR (DOĞRU YOLLAR) ---
+  import { initAuth, handleLogin, logout, acceptTerms } from '/js/auth.js';
+  import { addUserBubble } from '/js/chat.js';
+  import { BASE_DOMAIN, STORAGE_KEY } from '/js/config.js';
+  import { openFalPanel, closeFalPanel, handleFalPhoto } from '/js/fal.js';
 
-
-  // ------------------------------------
-  // --- HAFIZA (HISTORY) YÖNETİMİ ---
-  // ------------------------------------
-  // Konuşma geçmişini burada tutacağız.
-  let chatHistory = []; 
-
-  // --- YARDIMCI FONKSİYONLAR ---
-  function firstNameOnly(fullname="") {
-    const s = (fullname || "").trim();
-    if(!s) return "";
-    return s.split(/\s+/)[0]; 
-  }
-
-  function getProfileMeta(){
-    try{ return JSON.parse(localStorage.getItem("caynana_profile_v2") || "{}"); }catch(e){ return {}; }
-  }
-
-  function getCaynanaWho(user, profile){
-    const hitap = (profile?.hitap || "").trim();
-    if(hitap) return hitap;
-    const n = firstNameOnly(user?.fullname || user?.name || "");
-    if(n) return n;
-    return "Evladım";
-  }
-
-  function iconFor(type){
-    if(type==="match") return "⚽";
-    if(type==="horoscope") return "♈";
-    if(type==="diet") return "🥗";
-    if(type==="spouse_bday") return "🎂";
-    if(type==="child_bday") return "🧒";
-    if(type==="wedding") return "💍";
-    if(type==="period_check") return "🌙";
-    return "🔔";
-  }
-
-  function timeLabel(daysLeft){
-    if(daysLeft === 0) return "Bugün";
-    if(daysLeft === 1) return "Yarın";
-    if(daysLeft > 1) return daysLeft + " gün kaldı";
-    return "";
-  }
+  // --- GLOBAL DEĞİŞKENLER ---
+  let chatHistory = [];
   
-  function escapeHtml(s=""){ 
-    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); 
-  }
+  // Element Seçiciler (Hata Almamak İçin Güvenli Seçim)
+  const $ = (id) => document.getElementById(id);
 
-  // --- BİLDİRİMLER ---
-  async function fetchNotificationsToday(){
-    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    if(!user?.id) return [];
-    try{
-      const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id)}`);
-      const data = await res.json();
-      return data?.items || [];
-    }catch(e){ return []; }
-  }
-
-  async function refreshNotifications(){
-    const items = await fetchNotificationsToday();
-    const badge = document.getElementById("notifBadge");
-    const list = document.getElementById("notifList");
-    if(!list) return;
-
-    if(badge) badge.style.display = items.length ? "block" : "none";
-
-    if(!items.length){
-      list.innerHTML = `
-        <div class="notif-item">
-          <div class="notif-icon">🧿</div>
-          <div class="notif-content">
-            <div class="notif-title">Bugün sakin</div>
-            <div class="notif-desc">Evladım bugün hatırlatmam yok. Ben yine buradayım.</div>
-            <div class="notif-time">—</div>
-          </div>
-        </div>`;
-      return;
-    }
-
-    list.innerHTML = items.map(it => {
-      const clickable = it.action_url ? "cursor:pointer;" : "";
-      const onclick = it.action_url ? `location.href='${it.action_url}'` : "";
-      return `
-        <div class="notif-item" style="${clickable}" onclick="${onclick}">
-          <div class="notif-icon">${iconFor(it.type)}</div>
-          <div class="notif-content">
-            <div class="notif-title">${escapeHtml(it.title || "")}</div>
-            <div class="notif-desc">${escapeHtml(it.message || "")}</div>
-            <div class="notif-time">${timeLabel(it.days_left)}</div>
-          </div>
-        </div>`;
-    }).join("");
-  }
-
-  // --- APP GİRİŞ ---
-  window.enterApp = function () {
-    document.getElementById('loginOverlay')?.classList.remove('active');
-    window.hideTermsOverlay?.();
-
-    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    const profile = getProfileMeta();
-    const who = getCaynanaWho(user, profile);
-    const bot = profile?.bot_name || user?.bot_name || user?.botName || "Caynana";
-
-    setTimeout(() => {
-      const greeting = `Hoş geldin ${who}. Ben ${bot}.`;
-      window.typeWriter(greeting);
-      // İlk selamı hafızaya ekle
-      chatHistory.push({ role: "assistant", content: greeting });
-    }, 400);
-
-    refreshNotifications();
-  };
-
-  // --- GLOBAL EXPORTS ---
+  // --- GLOBAL EXPORTS (HTML'den çağrılabilmesi için) ---
   window.handleLogin = handleLogin;
   window.logout = logout;
   window.openFal = openFalPanel;
   window.closeFal = closeFalPanel;
   window.handleFalFile = (input) => handleFalPhoto(input);
 
-  window.showTermsOverlay = function(){ document.getElementById("termsOverlay").classList.add("active"); };
-  window.hideTermsOverlay = function(){ document.getElementById("termsOverlay").classList.remove("active"); };
-  window.acceptTermsAndEnter = async function(){
-    const cb = document.getElementById("termsCheck");
-    if(!cb || !cb.checked){ alert("Onay kutusunu işaretle evladım."); return; }
-    const ok = await acceptTerms();
-    if(ok) window.enterApp();
-    else alert("Onay kaydedilemedi evladım.");
+  // Chat Mesajı Gönderme (Backend v14.5 ile Uyumlu: 'text' gönderir)
+  window.sendMessage = async function() {
+    const inputEl = $('msgInput');
+    const txt = inputEl.value.trim();
+    if(!txt) return;
+
+    // UI Güncelle
+    addUserBubble(txt);
+    inputEl.value = '';
+    inputEl.blur();
+
+    // History Ekle
+    chatHistory.push({ role: "user", content: txt });
+    if(chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+
+    // Düşünme Animasyonu
+    const brand = $('brandWrapper');
+    if(brand) brand.classList.add('thinking');
+
+    try {
+      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      
+      // FETCH İSTEĞİ (KRİTİK NOKTA)
+      const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: txt, // Backend 'text' bekliyor
+          user_id: user.id || "guest",
+          history: chatHistory
+        })
+      });
+
+      const data = await res.json();
+      if(brand) brand.classList.remove('thinking');
+
+      if(data && data.text) {
+        window.typeWriter(data.text);
+        chatHistory.push({ role: "assistant", content: data.text });
+        
+        // Seslendirme (Opsiyonel)
+        if(data.audio) {
+           const audio = new Audio("data:audio/mp3;base64," + data.audio);
+           audio.play().catch(e => console.log("Ses hatası:", e));
+        }
+      }
+    } catch(e) {
+      console.error("Chat Error:", e);
+      if(brand) brand.classList.remove('thinking');
+      window.typeWriter("Evladım internetimde bir ağırlık var, tekrar söyle bakayım.");
+    }
   };
 
-  // --- KAMERA & MİKROFON & SES ---
+  // Yazı Efekti
+  window.typeWriter = function(text) {
+    const chatDiv = $('chat');
+    const brand = $('brandWrapper');
+    if(!chatDiv) return;
+    
+    if(brand) brand.classList.add('talking');
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble bot";
+    chatDiv.appendChild(bubble);
+
+    let i = 0;
+    function type() {
+      if(i < text.length) {
+        bubble.textContent += text.charAt(i);
+        i++;
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+        setTimeout(type, 20);
+      } else {
+        if(brand) brand.classList.remove('talking');
+      }
+    }
+    type();
+  };
+
+  // Bildirimler (Notification)
+  window.refreshNotifications = async function() {
+    const list = $('notifList');
+    const badge = $('notifBadge');
+    if(!list) return;
+
+    try {
+      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${user.id || 'guest'}`);
+      const data = await res.json();
+      const items = data.items || [];
+
+      if(badge) badge.style.display = items.length ? "block" : "none";
+
+      if(!items.length) {
+        list.innerHTML = `<div class="notif-item"><div class="notif-content"><div class="notif-title">Sakin</div><div class="notif-desc">Hatırlatma yok evladım.</div></div></div>`;
+        return;
+      }
+
+      list.innerHTML = items.map(it => `
+        <div class="notif-item">
+          <div class="notif-icon">🔔</div>
+          <div class="notif-content">
+            <div class="notif-title">${it.title}</div>
+            <div class="notif-desc">${it.message}</div>
+          </div>
+        </div>
+      `).join("");
+    } catch(e) {
+      console.log("Notif error:", e);
+    }
+  };
+
+  // Uygulamaya Giriş (Kilit Açma)
+  window.enterApp = function() {
+    $('loginOverlay').classList.remove('active');
+    $('termsOverlay').classList.remove('active');
+    
+    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const name = user.name || "Evladım";
+    
+    setTimeout(() => {
+      window.typeWriter(`Hoş geldin ${name}. Ben Caynana.`);
+    }, 500);
+    
+    window.refreshNotifications();
+  };
+
+  // --- 2. OLAY DİNLEYİCİLERİ (EVENT LISTENERS) ---
+  // Sayfa yüklendiğinde çalışır ve butonları bağlar.
+  window.onload = function() {
+    console.log("Caynana v2.7 Frontend Başlatılıyor...");
+
+    // Buton Bağlamaları
+    $('sendBtn')?.addEventListener('click', window.sendMessage);
+    $('msgInput')?.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        window.sendMessage();
+      }
+    });
+
+    $('hambBtn')?.addEventListener('click', () => $('menuOverlay').classList.toggle('open'));
+    $('menuOverlay')?.addEventListener('click', (e) => {
+       if(e.target === $('menuOverlay')) $('menuOverlay').classList.remove('open');
+    });
+
+    $('notifBtn')?.addEventListener('click', () => {
+       $('notifDropdown').classList.toggle('show');
+       window.refreshNotifications();
+    });
+
+    // Login Butonları
+    $('googleLoginBtn')?.addEventListener('click', () => handleLogin('google'));
+    $('appleLoginBtn')?.addEventListener('click', () => handleLogin('apple'));
+    
+    $('termsAcceptBtn')?.addEventListener('click', async () => {
+       const ok = await acceptTerms();
+       if(ok) window.enterApp();
+    });
+    
+    $('newChatBtn')?.addEventListener('click', () => {
+       chatHistory = [];
+       $('chat').innerHTML = '';
+       window.typeWriter("Sıfırdan başladık evladım, buyur.");
+       $('menuOverlay').classList.remove('open');
+    });
+    
+    $('logoutBtn')?.addEventListener('click', logout);
+
+    // Camera & Göz Takip Butonları
+    $('camBtn')?.addEventListener('click', window.toggleCam);
+    $('openTrackBtn')?.addEventListener('click', () => { 
+        isTracking = true; 
+        $('mobileFrame').classList.add('tracking-active'); 
+        wakeUp(); 
+    });
+    $('closeTrackBtn')?.addEventListener('click', () => { 
+        isTracking = false; 
+        $('mobileFrame').classList.remove('tracking-active'); 
+    });
+
+    // Oturum Kontrolü
+    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    if(user && user.isSessionActive) {
+       if(!user.terms_accepted_at) {
+         $('loginOverlay').classList.remove('active');
+         $('termsOverlay').classList.add('active');
+       } else {
+         window.enterApp();
+       }
+    }
+  };
+
+  // --- GÖZ TAKİP MANTIĞI ---
   let isTracking = false;
+  let isMouseActive = false;
+  let sleepTimer = null;
+  let gazeTimer = null;
+  const SLEEP_DELAY = 30000;
+  const GAZE_DELAY = 2000;
+  const AUTO_LOOK_FREQ = 5000;
+
   window.toggleCam = function() {
-    const frame = document.getElementById('mobileFrame');
-    const camBtn = document.getElementById('camBtn');
+    const frame = $('mobileFrame');
+    const camBtn = $('camBtn');
     if(!frame || !camBtn) return;
 
     if(frame.classList.contains('tracking-active')) {
@@ -525,214 +555,79 @@ import { openFalPanel, closeFalPanel, handleFalPhoto } from '/js/fal.js';
     }
   };
 
-  window.startDictation = function() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.lang = "tr-TR";
-      recognition.start();
-      recognition.onresult = function(e) {
-        const inputEl = document.getElementById('msgInput');
-        if(inputEl) inputEl.value = e.results[0][0].transcript;
-        recognition.stop();
-        sendMessage();
-      };
-    } else {
-      alert("Ses desteği yok evladım.");
-    }
-  };
-
-  async function playVoice(text) {
-    try {
-      const res = await fetch(`${BASE_DOMAIN}/api/speech`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
-      });
-      const data = await res.json();
-      if(data.audio_data) {
-        const audio = new Audio("data:audio/mp3;base64," + data.audio_data);
-        audio.play();
-      }
-    } catch(e) { console.error("Ses hatası:", e); }
-  }
-
-  // --- MENÜ ---
-  const menuOverlay = document.getElementById('menuOverlay');
-  window.toggleMenu = function() {
-    if(!menuOverlay) return;
-    if(menuOverlay.classList.contains('open')) menuOverlay.classList.remove('open');
-    else menuOverlay.classList.add('open');
-  };
-  window.toggleNotif = function() {
-    const dd = document.getElementById('notifDropdown');
-    if(dd) dd.classList.toggle('show');
-  };
-
-  // --- CHAT VE TYPEWRITER ---
-  window.typeWriter = function(text, elementId = 'chat') {
-    const chatDiv = document.getElementById(elementId);
-    if(!chatDiv) return;
-    const brandWrapper = document.getElementById('brandWrapper');
-    if(brandWrapper) brandWrapper.classList.add('talking');
-
-    const bubbleRow = document.createElement("div");
-    bubbleRow.className = "bubble bot";
-    chatDiv.appendChild(bubbleRow);
-
-    let i = 0; const speed = 20;
-    function type() {
-      if (i < text.length) {
-        bubbleRow.textContent += text.charAt(i);
-        i++;
-        chatDiv.scrollTop = chatDiv.scrollHeight;
-        setTimeout(type, speed);
-      } else {
-        if(brandWrapper) brandWrapper.classList.remove('talking');
-      }
-    }
-    type();
-  };
-
-  // --- MESAJ GÖNDERME (HAFIZALI VERSİYON) ---
-  async function sendMessage() {
-    const inputEl = document.getElementById('msgInput');
-    const txt = inputEl.value.trim();
-    if(!txt) return;
-
-    // 1. Kullanıcı baloncuğunu ekle
-    addUserBubble(txt);
-    inputEl.value = '';
-    inputEl.blur();
-
-    // 2. Hafızaya ekle (Kullanıcı mesajı)
-    chatHistory.push({ role: "user", content: txt });
-
-    // Hafıza çok şişmesin diye son 10 mesajı tutalım
-    if(chatHistory.length > 10) {
-        chatHistory = chatHistory.slice(-10);
-    }
-
-    const brandWrapper = document.getElementById('brandWrapper');
-    if(brandWrapper) brandWrapper.classList.add('thinking');
-
-    try {
-      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      
-      // 3. Backend'e HEM mesajı HEM DE geçmişi gönderiyoruz
-      const response = await fetch(`${BASE_DOMAIN}/api/chat`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-              text: txt,
-              user_id: user.id || "guest",
-              history: chatHistory // <-- İŞTE SİHİR BURADA
-          })
-      });
-
-      const data = await response.json();
-      if(brandWrapper) brandWrapper.classList.remove('thinking');
-
-      if(data && data.text) {
-        // 4. Botun cevabını ekrana yaz
-        window.typeWriter(data.text);
-        
-        // 5. Botun cevabını da hafızaya ekle
-        chatHistory.push({ role: "assistant", content: data.text });
-        
-        await playVoice(data.text);
-      }
-    } catch(e) {
-      console.error("Chat Error:", e);
-      if(brandWrapper) brandWrapper.classList.remove('thinking');
-      window.typeWriter("Evladım tansiyonum düştü, internetine bir bakıver.");
-    }
-  }
-
-  // Event Listeners
-  const sendBtn = document.getElementById('sendBtn');
-  if(sendBtn) sendBtn.addEventListener('click', sendMessage);
-  const msgInput = document.getElementById('msgInput');
-  if(msgInput) msgInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); } });
-  
-  const hambBtn = document.getElementById('hambBtn');
-  if(hambBtn) hambBtn.addEventListener('click', () => window.toggleMenu());
-  if(menuOverlay) menuOverlay.addEventListener('click', (e) => { if(e.target === menuOverlay) window.toggleMenu(); });
-
-  // Göz Takip
-  let isMouseActive = false; let sleepTimer = null; let gazeTimer = null;
-  const SLEEP_DELAY = 30000; const GAZE_DELAY = 2000; const AUTO_LOOK_FREQ = 5000;
-  const eyeL = document.getElementById('eyeL'), eyeR = document.getElementById('eyeR'), frame = document.getElementById('mobileFrame');
-
-  if(frame) {
-    window.addEventListener('pointermove', (e) => {
-      if(!isTracking || frame.classList.contains('sleeping')) { if(frame.classList.contains('sleeping')) wakeUp(); }
-      resetIdle(); isMouseActive = true; clearTimeout(gazeTimer);
-      const rect = frame.getBoundingClientRect();
-      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-      setGaze(x, y);
-      gazeTimer = setTimeout(() => { isMouseActive = false; centerEyes(); }, GAZE_DELAY);
+  function setGaze(x, y) {
+    const eyeL = $('eyeL');
+    const eyeR = $('eyeR');
+    if(!eyeL || !eyeR) return;
+    const gx = Math.min(Math.max(x * 20, -20), 20);
+    const gy = Math.min(Math.max(y * 15, -15), 15);
+    [eyeL, eyeR].forEach(e => {
+      e.style.setProperty('--gx', gx+'px');
+      e.style.setProperty('--gy', gy+'px');
     });
   }
 
-  function resetIdle() { clearTimeout(sleepTimer); sleepTimer = setTimeout(goSleep, SLEEP_DELAY); }
-  function goSleep() { 
-    if(!frame) return;
-    if(frame.classList.contains('sleeping')) return; frame.classList.add('sleeping'); setLids(100, 100); 
+  function setLids(top, bot=0) {
+    const eyeL = $('eyeL');
+    const eyeR = $('eyeR');
+    if(!eyeL || !eyeR) return;
+    [eyeL, eyeR].forEach(e => {
+      e.style.setProperty('--lidTop', top+'%');
+      e.style.setProperty('--lidBot', bot+'%');
+    });
   }
-  function wakeUp() { 
-    if(!frame) return;
-    frame.classList.remove('sleeping'); setLids(0, 0); resetIdle(); 
+
+  function resetIdle() {
+    clearTimeout(sleepTimer);
+    sleepTimer = setTimeout(goSleep, SLEEP_DELAY);
   }
+
+  function goSleep() {
+    const frame = $('mobileFrame');
+    if(!frame) return;
+    if(frame.classList.contains('sleeping')) return;
+    frame.classList.add('sleeping');
+    setLids(100, 100);
+  }
+
+  function wakeUp() {
+    const frame = $('mobileFrame');
+    if(!frame) return;
+    frame.classList.remove('sleeping');
+    setLids(0, 0);
+    resetIdle();
+  }
+
   function centerEyes() { setGaze(0, 0); }
+
   function autoLookBehavior() {
+    const frame = $('mobileFrame');
     if (!frame) return;
     if (isMouseActive || frame.classList.contains('sleeping') || !isTracking) return;
-    const rX = (Math.random() - 0.5) * 0.8; const rY = (Math.random() - 0.5) * 0.5;
-    setGaze(rX, rY); setTimeout(() => setGaze(0, 0), 1000);
+    const rX = (Math.random() - 0.5) * 0.8;
+    const rY = (Math.random() - 0.5) * 0.5;
+    setGaze(rX, rY);
+    setTimeout(() => setGaze(0, 0), 1000);
   }
-  function setGaze(x, y) {
-    const gx = Math.min(Math.max(x * 20, -20), 20); const gy = Math.min(Math.max(y * 15, -15), 15);
-    if(eyeL && eyeR) [eyeL, eyeR].forEach(e => { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); });
-  }
-  function setLids(top, bot=0) { if(eyeL && eyeR) [eyeL, eyeR].forEach(e => { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); }); }
 
-  const openTrackBtn = document.getElementById('openTrackBtn');
-  if(openTrackBtn) openTrackBtn.addEventListener('click', ()=>{ isTracking=true; frame.classList.add('tracking-active'); wakeUp(); });
-  const closeTrackBtn = document.getElementById('closeTrackBtn');
-  if(closeTrackBtn) closeTrackBtn.addEventListener('click', ()=>{ isTracking=false; frame.classList.remove('tracking-active'); });
-
-  // ONLOAD
-  window.onload = async function() {
-    // 1. Partials (Header/Footer vs)
-    try { await initPartials(); } catch(e) { console.log("Partials yüklenemedi:", e); }
-
-    // 2. Auth init
-    if(typeof initAuth === 'function') initAuth();
-
-    // 3. Notif Init
-    try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) { console.log("Notif init hatası:", e); }
-
-    // 4. Session Check
-    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    if(user && user.isSessionActive && user.email) {
-       if(!user.terms_accepted_at) window.showTermsOverlay();
-       else window.enterApp();
+  window.addEventListener('pointermove', (e) => {
+    const frame = $('mobileFrame');
+    if(!isTracking || !frame || frame.classList.contains('sleeping')) { 
+        if(frame && frame.classList.contains('sleeping')) wakeUp(); 
     }
-    
-    // History demo yükleme (Opsiyonel)
-    const historyListEl = document.getElementById('historyList');
-    if(historyListEl) { historyListEl.innerHTML = ""; }
+    resetIdle(); isMouseActive = true; clearTimeout(gazeTimer);
 
-    // Idle
-    setInterval(autoLookBehavior, AUTO_LOOK_FREQ);
-    resetIdle();
-    
-    // Refresh Notifs
-    refreshNotifications();
-    setInterval(refreshNotifications, 60000);
-  };
+    const rect = frame.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+    setGaze(x, y);
+
+    gazeTimer = setTimeout(() => { isMouseActive = false; centerEyes(); }, GAZE_DELAY);
+  });
+
+  setInterval(autoLookBehavior, AUTO_LOOK_FREQ);
+  resetIdle();
+
 </script>
 
 </body>
