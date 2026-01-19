@@ -98,10 +98,14 @@
     }).join("");
   }
 
-  // --- APP GİRİŞ ---
+  // --- APP GİRİŞ (GÜVENLİ HALE GETİRİLDİ) ---
   window.enterApp = function () {
-    document.getElementById('loginOverlay')?.classList.remove('active');
-    window.hideTermsOverlay?.();
+    // NULL KONTROLLÜ GİRİŞ
+    const loginOverlay = document.getElementById('loginOverlay');
+    if (loginOverlay) loginOverlay.classList.remove('active');
+
+    // Fonksiyon varsa çalıştır
+    if (typeof window.hideTermsOverlay === 'function') window.hideTermsOverlay();
 
     const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
     const profile = getProfileMeta();
@@ -109,11 +113,11 @@
     const bot = profile?.bot_name || user?.bot_name || user?.botName || "Caynana";
 
     setTimeout(() => {
-      window.typeWriter(`Hoş geldin ${who}. Ben ${bot}.`);
+      if(window.typeWriter) window.typeWriter(`Hoş geldin ${who}. Ben ${bot}.`);
       chatHistory.push({ role: "assistant", content: `Hoş geldin ${who}. Ben ${bot}.` });
     }, 400);
 
-    refreshNotifications();
+    if(typeof refreshNotifications === 'function') refreshNotifications();
   };
 
   // --- GLOBAL EXPORTS ---
@@ -123,8 +127,19 @@
   window.closeFal = closeFalPanel;
   window.handleFalFile = (input) => handleFalPhoto(input);
 
-  window.showTermsOverlay = function(){ document.getElementById("termsOverlay").classList.add("active"); };
-  window.hideTermsOverlay = function(){ document.getElementById("termsOverlay").classList.remove("active"); };
+  // --- TERMS OVERLAY (NULL KONTROLLÜ) ---
+  window.showTermsOverlay = function(){
+    const el = document.getElementById("termsOverlay");
+    if (!el) return; // ✅ YOKSA ÇIK
+    el.classList.add("active");
+  };
+
+  window.hideTermsOverlay = function(){
+    const el = document.getElementById("termsOverlay");
+    if (!el) return; // ✅ YOKSA ÇIK
+    el.classList.remove("active");
+  };
+
   window.acceptTermsAndEnter = async function(){
     const cb = document.getElementById("termsCheck");
     if(!cb || !cb.checked){ alert("Onay kutusunu işaretle evladım."); return; }
@@ -157,7 +172,8 @@
       recognition.lang = "tr-TR";
       recognition.start();
       recognition.onresult = function(e) {
-        document.getElementById('msgInput').value = e.results[0][0].transcript;
+        const inputEl = document.getElementById('msgInput');
+        if(inputEl) inputEl.value = e.results[0][0].transcript;
         recognition.stop();
         sendMessage();
       };
@@ -184,11 +200,12 @@
   // --- MENÜ ---
   const menuOverlay = document.getElementById('menuOverlay');
   window.toggleMenu = function() {
-    if(menuOverlay.classList.contains('open')) menuOverlay.classList.remove('open');
-    else menuOverlay.classList.add('open');
+    if(menuOverlay && menuOverlay.classList.contains('open')) menuOverlay.classList.remove('open');
+    else if(menuOverlay) menuOverlay.classList.add('open');
   };
   window.toggleNotif = function() {
-    document.getElementById('notifDropdown').classList.toggle('show');
+    const nd = document.getElementById('notifDropdown');
+    if(nd) nd.classList.toggle('show');
   };
 
   // --- CHAT VE TYPEWRITER ---
@@ -196,7 +213,7 @@
     const chatDiv = document.getElementById(elementId);
     if(!chatDiv) return;
     const brandWrapper = document.getElementById('brandWrapper');
-    brandWrapper.classList.add('talking');
+    if(brandWrapper) brandWrapper.classList.add('talking');
 
     const bubbleRow = document.createElement("div");
     bubbleRow.className = "bubble bot";
@@ -210,7 +227,7 @@
         chatDiv.scrollTop = chatDiv.scrollHeight;
         setTimeout(type, speed);
       } else {
-        brandWrapper.classList.remove('talking');
+        if(brandWrapper) brandWrapper.classList.remove('talking');
       }
     }
     type();
@@ -219,6 +236,7 @@
   // --- MESAJ GÖNDERME (HAFIZALI) ---
   async function sendMessage() {
     const inputEl = document.getElementById('msgInput');
+    if(!inputEl) return;
     const txt = inputEl.value.trim();
     if(!txt) return;
 
@@ -230,7 +248,7 @@
     if(chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
     const brandWrapper = document.getElementById('brandWrapper');
-    brandWrapper.classList.add('thinking');
+    if(brandWrapper) brandWrapper.classList.add('thinking');
 
     try {
       const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
@@ -246,7 +264,7 @@
       });
 
       const data = await response.json();
-      brandWrapper.classList.remove('thinking');
+      if(brandWrapper) brandWrapper.classList.remove('thinking');
 
       if(data && data.text) {
         window.typeWriter(data.text);
@@ -255,7 +273,7 @@
       }
     } catch(e) {
       console.error("Chat Error:", e);
-      brandWrapper.classList.remove('thinking');
+      if(brandWrapper) brandWrapper.classList.remove('thinking');
       window.typeWriter("Evladım tansiyonum düştü, internetine bir bakıver.");
     }
   }
@@ -275,42 +293,44 @@
   const SLEEP_DELAY = 30000; const GAZE_DELAY = 2000; const AUTO_LOOK_FREQ = 5000;
   const eyeL = document.getElementById('eyeL'), eyeR = document.getElementById('eyeR'), frame = document.getElementById('mobileFrame');
 
-  window.addEventListener('pointermove', (e) => {
-    if(!isTracking || frame.classList.contains('sleeping')) { if(frame.classList.contains('sleeping')) wakeUp(); }
-    resetIdle(); isMouseActive = true; clearTimeout(gazeTimer);
-    const rect = frame.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-    setGaze(x, y);
-    gazeTimer = setTimeout(() => { isMouseActive = false; centerEyes(); }, GAZE_DELAY);
-  });
+  if(frame && eyeL && eyeR) {
+    window.addEventListener('pointermove', (e) => {
+        if(!isTracking || frame.classList.contains('sleeping')) { if(frame.classList.contains('sleeping')) wakeUp(); }
+        resetIdle(); isMouseActive = true; clearTimeout(gazeTimer);
+        const rect = frame.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+        setGaze(x, y);
+        gazeTimer = setTimeout(() => { isMouseActive = false; centerEyes(); }, GAZE_DELAY);
+    });
+  }
 
   function resetIdle() { clearTimeout(sleepTimer); sleepTimer = setTimeout(goSleep, SLEEP_DELAY); }
-  function goSleep() { if(frame.classList.contains('sleeping')) return; frame.classList.add('sleeping'); setLids(100, 100); }
-  function wakeUp() { frame.classList.remove('sleeping'); setLids(0, 0); resetIdle(); }
+  function goSleep() { if(frame && frame.classList.contains('sleeping')) return; if(frame) frame.classList.add('sleeping'); setLids(100, 100); }
+  function wakeUp() { if(frame) frame.classList.remove('sleeping'); setLids(0, 0); resetIdle(); }
   function centerEyes() { setGaze(0, 0); }
   function autoLookBehavior() {
-    if (isMouseActive || frame.classList.contains('sleeping') || !isTracking) return;
+    if (isMouseActive || (frame && frame.classList.contains('sleeping')) || !isTracking) return;
     const rX = (Math.random() - 0.5) * 0.8; const rY = (Math.random() - 0.5) * 0.5;
     setGaze(rX, rY); setTimeout(() => setGaze(0, 0), 1000);
   }
   function setGaze(x, y) {
     const gx = Math.min(Math.max(x * 20, -20), 20); const gy = Math.min(Math.max(y * 15, -15), 15);
-    [eyeL, eyeR].forEach(e => { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); });
+    [eyeL, eyeR].forEach(e => { if(e){ e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); } });
   }
-  function setLids(top, bot=0) { [eyeL, eyeR].forEach(e => { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); }); }
+  function setLids(top, bot=0) { [eyeL, eyeR].forEach(e => { if(e){ e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); } }); }
 
   const openTrackBtn = document.getElementById('openTrackBtn');
-  if(openTrackBtn) openTrackBtn.addEventListener('click', ()=>{ isTracking=true; frame.classList.add('tracking-active'); wakeUp(); });
+  if(openTrackBtn) openTrackBtn.addEventListener('click', ()=>{ isTracking=true; if(frame) frame.classList.add('tracking-active'); wakeUp(); });
   const closeTrackBtn = document.getElementById('closeTrackBtn');
-  if(closeTrackBtn) closeTrackBtn.addEventListener('click', ()=>{ isTracking=false; frame.classList.remove('tracking-active'); });
+  if(closeTrackBtn) closeTrackBtn.addEventListener('click', ()=>{ isTracking=false; if(frame) frame.classList.remove('tracking-active'); });
 
   // --- ONLOAD & INIT ---
   window.onload = async function() {
     if(typeof initAuth === 'function') initAuth();
 
-    await initPartials();                // ✅ menu+notif partial load
-    initNotif({ baseUrl: BASE_DOMAIN }); // ✅ /api/reminders/today
+    try { await initPartials(); } catch(e) { console.log("Partials yüklenemedi:", e); }
+    try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) { console.log("Notif init hatası:", e); }
 
     // !!! GOOGLE GİRİŞ DÜZELTMESİ !!!
     const googleBtn = document.getElementById('googleLoginBtn') || document.querySelector('.google-login-btn');
