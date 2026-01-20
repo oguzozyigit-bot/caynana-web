@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Caynana AI v3.3 Repair</title>
+  <title>Caynana AI v3.4 Final Gold</title>
   <link rel="icon" href="data:,">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
-    /* --- TEMEL --- */
+    /* --- TEMEL AYARLAR --- */
     :root { --bg-outer: #000; --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --glass: rgba(20, 20, 20, 0.98); --border: rgba(255, 255, 255, 0.12); --lip-color: #d84315; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; background: var(--bg-outer); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); overflow: hidden; display: flex; align-items: center; justify-content: center; }
 
-    /* Scrollbar Gizleme */
-    .no-scroll::-webkit-scrollbar { display: none; }
-    .no-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    /* Scrollbar Gizleme (Global) */
+    ::-webkit-scrollbar { display: none; }
+    * { -ms-overflow-style: none; scrollbar-width: none; }
 
     .mobile-frame { width: 100%; height: 100%; max-width: 480px; background: var(--bg); position: relative; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(255, 255, 255, 0.05); overflow: hidden; }
     @media (min-width: 500px) { .mobile-frame { height: 95dvh; border-radius: 24px; border: 1px solid #333; } }
@@ -25,7 +25,7 @@
     .left-controls, .right-controls { display: flex; gap: 8px; align-items: center; }
     .hamb-btn { background: none; border: none; cursor: pointer; color: #aaa; font-size: 24px; padding: 5px; }
 
-    /* Logo & Animasyon */
+    /* TAHTERAVALLİ & LOGO */
     .brand-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; transition: transform 0.4s; }
     .logo-area { display: flex; align-items: center; gap: 6px; }
     .brand-name { font-weight: 700; font-size: 15px; color: #fff; }
@@ -33,20 +33,23 @@
     
     .seesaw-svg { width: 32px; height: 16px; overflow: visible; }
     .seesaw-bar { transform-origin: 20px 8px; transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .brand-wrapper.user-typing .seesaw-bar { transform: rotate(-15deg); }
-    .brand-wrapper.bot-typing .seesaw-bar { transform: rotate(15deg); }
-    .brand-wrapper.thinking .seesaw-bar { animation: rock 1s infinite ease-in-out; }
+    
+    /* Animasyon Durumları */
+    .brand-wrapper.user-typing .seesaw-bar { transform: rotate(-15deg); } /* Sola */
+    .brand-wrapper.bot-typing .seesaw-bar { transform: rotate(15deg); } /* Sağa */
+    .brand-wrapper.thinking .seesaw-bar { animation: rock 1s infinite ease-in-out; } /* Sallan */
     @keyframes rock { 0%,100% {transform: rotate(-5deg);} 50% {transform: rotate(5deg);} }
 
-    /* YP Widget (Segmentli Tasarım) */
-    .yp-container { display: flex; flex-direction: column; align-items: center; cursor: help; margin-right: 5px; }
+    /* YP Widget (Enerji Barı) */
+    .yp-container { position: relative; display: flex; flex-direction: column; align-items: center; cursor: pointer; margin-right: 5px; }
     .yp-text { font-size: 8px; color: var(--gold); font-weight: bold; margin-bottom: 2px; }
     .yp-segments { display: flex; gap: 1px; }
-    .yp-seg { width: 4px; height: 6px; background: #333; border-radius: 1px; }
+    .yp-seg { width: 4px; height: 6px; background: #333; border-radius: 1px; transition: 0.3s; }
     .yp-seg.active { background: #bef264; box-shadow: 0 0 2px #bef264; }
     
-    /* Popup */
-    .yp-popup { position: absolute; top: 40px; right: 50px; width: 160px; background: #222; border: 1px solid var(--gold); padding: 10px; border-radius: 8px; font-size: 10px; color: #eee; z-index: 4000; display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5); line-height: 1.4; text-align: left; }
+    /* YP Popup */
+    .yp-popup { position: absolute; top: 35px; right: -20px; width: 160px; background: #222; border: 1px solid var(--gold); padding: 10px; border-radius: 8px; font-size: 10px; color: #eee; z-index: 4000; display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5); line-height: 1.4; text-align: left; }
+    .yp-popup::after { content: ""; position: absolute; top: -5px; right: 25px; border-width: 0 5px 5px 5px; border-style: solid; border-color: transparent transparent var(--gold) transparent; }
     .yp-popup.show { display: block; animation: popIn 0.2s; }
     @keyframes popIn { from{opacity:0; transform:translateY(-5px);} to{opacity:1; transform:translateY(0);} }
 
@@ -54,14 +57,15 @@
     .icon-btn-top svg { width: 22px; height: 22px; stroke: #aaa; fill: none; stroke-width: 2; transition: 0.2s; }
     .badge { position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; background: #ff5252; border-radius: 50%; display: none; }
 
-    /* --- CHAT --- */
+    /* --- CHAT ALANI --- */
     .chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
     .bubble { max-width: 85%; padding: 10px 12px; border-radius: 12px; font-size: 14px; line-height: 1.4; word-wrap: break-word; flex-shrink: 0; }
     .bubble.bot { align-self: flex-start; background: #1c1c1c; border-left: 2px solid var(--gold); color: #ddd; border-top-left-radius: 2px; }
     .bubble.user { align-self: flex-end; background: #222; border-right: 2px solid var(--pistachio); color: #fff; border-top-right-radius: 2px; text-align: right; }
 
-    /* --- DOCK --- */
+    /* --- DOCK (YAZI ALANI) --- */
     .input-dock { flex: 0 0 auto; background: transparent; padding: 0 10px; z-index: 3000; display: flex; flex-direction: column; gap: 0; align-items: center; position: relative; margin-bottom: 5px; }
+    
     .track-btn-wrapper { width: 100%; display: flex; justify-content: center; height: 24px; overflow: hidden; transition: 0.3s; opacity: 1; }
     .mobile-frame.tracking-active .track-btn-wrapper { height: 0; opacity: 0; }
     .track-toggle-btn { background: rgba(255,179,0,0.1); color: var(--gold); border: 1px solid var(--gold); padding: 2px 12px; border-radius: 12px; font-size: 10px; cursor: pointer; backdrop-filter: blur(4px); }
@@ -71,12 +75,12 @@
     .icon-btn svg { width: 18px; height: 18px; stroke: #aaa; stroke-width: 2; fill: none; transition: 0.2s; }
     .icon-btn:hover svg { stroke: var(--gold); }
     
-    textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 14px; padding: 10px 5px; height: 40px; max-height: 40px; font-family: inherit; resize: none; white-space: nowrap; overflow-x: hidden; }
+    textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 14px; padding: 10px 5px; height: 40px; max-height: 40px; font-family: inherit; resize: none; white-space: nowrap; overflow: hidden; }
     
     .send-btn { width: 36px; height: 36px; border-radius: 50%; background: var(--pistachio); color: #000; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     .send-btn svg { width: 18px; height: 18px; fill: none; stroke: #000; }
 
-    /* --- FOOTER --- */
+    /* --- FOOTER & LINKS --- */
     .footer-wrapper { background: #000; padding: 8px 0 12px 0; border-top: 1px solid #1a1a1a; width: 100%; display: flex; flex-direction: column; gap: 5px; }
     .footer-links-row { display: flex; justify-content: center; gap: 15px; }
     .footer-links-row a { color: #555; font-size: 10px; text-decoration: none; }
@@ -88,7 +92,7 @@
     .menu-sidebar { width: 280px; height: 100%; background: #111; padding: 20px; transform: translateX(-100%); transition: 0.3s; display: flex; flex-direction: column; border-right: 1px solid #333; overflow-y: auto; }
     .menu-overlay.open .menu-sidebar { transform: translateX(0); }
     
-    .new-chat-btn { width: 100%; background: var(--pistachio); color: #000; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; font-size: 12px; }
+    .new-chat-btn { width: 100%; background: var(--pistachio); color: #000; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 20px; font-size: 12px; display:flex; justify-content:center; align-items:center; gap:5px; }
     .section-title { font-size: 9px; color: #666; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; margin-top: 10px; }
     
     .recent-chat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px; background: #1a1a1a; border-radius: 6px; font-size: 12px; color: #ccc; cursor: pointer; margin-bottom: 4px; }
@@ -105,11 +109,12 @@
     .regl-body { display: none; padding: 0 10px 10px 10px; font-size: 10px; color: #ccc; border-top: 1px solid #5c1818; }
     .regl-body.open { display: block; }
 
+    /* MENU ACTIONS - BOŞLUKLU */
     .menu-actions { margin-top: auto; padding-top: 15px; border-top: 1px solid #222; display: flex; flex-direction: column; gap: 5px; }
     .action-link { font-size: 11px; color: #ccc; text-decoration: none; padding: 10px; cursor: pointer; display: block; background: #1a1a1a; border-radius: 6px; margin-bottom: 5px; text-align: center; }
-    .delete-acc { background: transparent; border: 1px solid #333; color: #b71c1c !important; margin-top: 20px; } /* BOŞLUK VERİLDİ */
+    .delete-acc { background: transparent; border: 1px solid #333; color: #b71c1c !important; margin-top: 30px; } /* BOŞLUK VERİLDİ */
 
-    /* --- FACE TRACKING (ESKİ SAĞLAM CSS) --- */
+    /* --- FACE TRACKING (V2.6 MANTIĞI) --- */
     .face-container { flex: 0 0 0px; background: linear-gradient(to bottom, var(--bg), transparent); overflow: hidden; transition: flex-basis 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2500; }
     .mobile-frame.tracking-active .face-container { flex-basis: 160px; }
     .face-panel-inner { opacity: 0; transition: 0.4s; transform: translateY(-20px); width: 100%; display: flex; flex-direction: column; align-items: center; }
@@ -117,15 +122,9 @@
     
     .eyes-row { display: flex; gap: 24px; margin-bottom: 10px; }
     .eye { width: 90px; height: 65px; position: relative; --lidTop:0%; --lidBot:0%; --gx:0px; --gy:0px; transition: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-    /* Sclera: Göz Akı */
     .sclera { width: 100%; height: 100%; background: #e0e0e0; border-radius: 50%; overflow: hidden; position: relative; border: 2px solid #1a1a1a; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
-    /* Iris: Renkli Kısım */
     .iris { width: 32px; height: 32px; background: radial-gradient(circle, #5d4037 0%, #281a16 100%); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(calc(-50% + var(--gx)), calc(-50% + var(--gy))); border: 1px solid rgba(255,255,255,0.25); transition: transform 0.1s linear; }
-    /* Pupil: Göz Bebeği */
     .pupil { width: 10px; height: 10px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-    .reflection { position: absolute; top: 6px; right: 6px; width: 4px; height: 4px; background: #fff; border-radius: 50%; opacity: 0.9; }
-    
-    /* Göz Kapakları */
     .lid-top, .lid-bot { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.3s ease-in-out; }
     .lid-top { top: 0; height: var(--lidTop); border-bottom: 2px solid #222; }
     .lid-bot { bottom: 0; height: var(--lidBot); border-top: 2px solid #222; }
@@ -133,21 +132,26 @@
     .mouth-wrapper { width: 60px; height: 26px; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 8px; }
     .mouth { width: 40px; height: 10px; border-top: 3px solid var(--lip-color); border-radius: 50% 50% 0 0; position: absolute; top: 8px; transition: 0.15s; opacity: 0.9; }
 
-    /* UYKU */
+    /* Uyku Modu */
     .mobile-frame.sleeping .eyes-row { animation: sleepBreath 4s infinite ease-in-out; opacity: 0.6; }
     @keyframes sleepBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95) translateY(2px); } }
 
     #camVideo { display: none; }
     
-    /* LOGIN OVERLAY (FULL TASARIM) */
-    .full-overlay { position: absolute; inset: 0; background: #000; z-index: 6000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
+    /* --- OVERLAYS (LOGIN & TERMS) --- */
+    .full-overlay { position: absolute; inset: 0; background: #000; z-index: 6000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; padding: 20px; }
     .full-overlay.active { opacity: 1; pointer-events: auto; }
+    
     .login-card { width: 100%; max-width: 320px; text-align: center; }
     .auth-btn { width: 100%; padding: 12px; border-radius: 12px; margin-bottom: 10px; cursor: pointer; border: 1px solid #333; background: #fff; font-size: 13px; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; }
     .login-links { margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; border-top: 1px solid #222; padding-top: 20px; }
     .login-links a { color: #666; font-size: 11px; text-decoration: none; transition: 0.2s; }
     .login-links a:hover { color: var(--gold); }
     .login-copy { margin-top: 20px; font-size: 12px; color: #444; font-weight: 600; }
+
+    /* TERMS BOX */
+    .agreement-box { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #888; justify-content: center; margin-top: 15px; margin-bottom: 15px; }
+    .agreement-box input { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
   </style>
 </head>
 <body>
@@ -204,6 +208,7 @@
       <button class="new-chat-btn" onclick="window.newChat()"><span>+</span> YENİ SOHBET</button>
       <div class="section-title">Son Sohbetler</div>
       <div class="recent-chats-list" id="recentChatsList"></div>
+      
       <div class="section-title">Asistan</div>
       <div class="menu-grid">
         <div class="menu-card"><span class="mc-icon">🛍️</span><span class="mc-text">Alışveriş</span></div>
@@ -213,6 +218,7 @@
         <div class="menu-card"><span class="mc-icon">📅</span><span class="mc-text">Özel Gün</span></div>
         <div class="menu-card"><span class="mc-icon">⏰</span><span class="mc-text">Hatırlatıcı</span></div>
       </div>
+
       <div class="section-title">Mistik</div>
       <div class="menu-grid">
         <div class="menu-card" onclick="window.openFal()"><span class="mc-icon">☕</span><span class="mc-text">Kahve</span></div>
@@ -220,10 +226,12 @@
         <div class="menu-card" onclick="location.href='pages/burc.html'"><span class="mc-icon">♈</span><span class="mc-text">Burç</span></div>
         <div class="menu-card"><span class="mc-icon">🌙</span><span class="mc-text">Rüya</span></div>
       </div>
+
       <div class="regl-module" id="reglModule">
         <div class="regl-header" onclick="document.getElementById('reglBody').classList.toggle('open')"><span>🩸 Regl Takibi</span><span>▼</span></div>
         <div class="regl-body" id="reglBody">Son: 12 Ocak<br>Beklenen: 9 Şubat</div>
       </div>
+
       <div class="menu-actions">
         <a class="action-link" id="logoutBtn" style="color:#fff;">🛡️ Güvenli Çıkış</a>
         <a class="action-link delete-acc" id="deleteAccBtn">⚠️ Hesabımı Sil</a>
@@ -273,17 +281,19 @@
 
 </div>
 
-<div class="full-overlay" id="falOverlay" style="background:#111; z-index:7000; display:none;">
-  <button onclick="document.getElementById('falOverlay').style.display='none'" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:30px; color:#fff;">&times;</button>
-  <div style="text-align:center; margin-top:60px; color:#d9f99d;"><h2>Kaynana Fal</h2></div>
-  <div style="flex:1; display:flex; justify-content:center; align-items:center;">
-    <label class="send-btn" style="width:80px; height:80px;"><input type="file" style="display:none;" onchange="alert('Fal resmi alındı.'); document.getElementById('falOverlay').style.display='none';"><svg viewBox="0 0 24 24" width="30"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></label>
-  </div>
-</div>
-
 <div class="full-overlay active" id="loginOverlay">
   <div class="login-card">
-    <div class="brand-name" style="font-size:24px; margin-bottom:20px;">Caynana.AI</div>
+    <div style="display:flex; justify-content:center; margin-bottom:10px;">
+      <svg class="seesaw-svg" viewBox="0 0 40 20" style="width:60px; height:30px;">
+        <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+        <g class="seesaw-bar" style="animation: rock 2s infinite ease-in-out">
+          <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+          <circle cx="3" cy="5" r="3" fill="#bef264" />
+          <circle cx="37" cy="5" r="3" fill="#ffb300" />
+        </g>
+      </svg>
+    </div>
+    <div class="brand-name" style="font-size:24px; margin-bottom:5px;">Caynana.AI</div>
     <div style="font-size:12px; color:#888; margin-bottom:20px;">Yapay Zekânın Geleneksel Aklı</div>
     
     <button class="auth-btn" id="googleLogin">
@@ -306,6 +316,29 @@
   </div>
 </div>
 
+<div class="full-overlay" id="termsOverlay" style="z-index:6500; background:#000; display:none;">
+  <div class="login-card" style="max-width:350px;">
+    <div class="brand-name">Sözleşme</div>
+    <div style="font-size:12px; color:#888; margin-bottom:10px;">Devam etmek için onayla evladım.</div>
+    <div style="border:1px solid #333; height:200px; overflow-y:auto; font-size:10px; text-align:left; padding:10px; margin-bottom:10px;">
+      <p>1. Caynana AI eğlence amaçlıdır...</p>
+      <p>2. Verileriniz KVKK kapsamında...</p>
+    </div>
+    <div class="agreement-box">
+      <input type="checkbox" id="termsCheck"> <label for="termsCheck">Okudum, onaylıyorum.</label>
+    </div>
+    <button class="auth-btn" id="termsAcceptBtn">Onayla ve Gir</button>
+  </div>
+</div>
+
+<div class="full-overlay" id="falOverlay" style="background:#111; z-index:7000; display:none;">
+  <button onclick="document.getElementById('falOverlay').style.display='none'" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:30px; color:#fff;">&times;</button>
+  <div style="text-align:center; margin-top:60px; color:#d9f99d;"><h2>Kaynana Fal</h2></div>
+  <div style="flex:1; display:flex; justify-content:center; align-items:center;">
+    <label class="send-btn" style="width:80px; height:80px;"><input type="file" style="display:none;" onchange="alert('Fal resmi alındı.'); document.getElementById('falOverlay').style.display='none';"><svg viewBox="0 0 24 24" width="30"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></label>
+  </div>
+</div>
+
 <video id="camVideo" autoplay playsinline muted></video>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -313,77 +346,76 @@
 
 <script type="module">
 const BASE_DOMAIN = "https://caynana-api-py310-final.onrender.com";
-const STORAGE_KEY = "caynana_user_v2";
-let chatHistory = [], deleteCounter = 0, idleTimer = null, isTracking = false, mouseActive=false;
+const STORAGE_KEY = "caynana_user_final"; // ANAHTAR SABİTLENDİ
+let chatHistory = [], deleteCounter = 0, idleTimer = null, isTracking = false;
 const $ = (id) => document.getElementById(id);
 
-// --- 1. LOGIN & INIT ---
+// --- 1. INIT ---
 window.onload = function() {
-  const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-  
-  if(user && user.id) {
-    $("loginOverlay").classList.remove("active");
-    checkGender();
-    renderHistory();
-    updateYP("visit");
-    // Boşluk Fix: "Hoş geldin " + isim
-    typeWriter(`Hoş geldin ${user.name || 'evladım'}. Ben Caynana.`);
-  } else {
-    $("loginOverlay").classList.add("active");
-  }
-
-  // Gözler
+  checkLogin();
   resetIdle();
   setInterval(autoLook, 4000);
 };
 
-// --- 2. GÖZ TAKİP (ESKİ SAĞLAM MANTIK) ---
-function setGaze(x, y) {
-  const L=$("eyeL"), R=$("eyeR");
-  if(!L || !R) return;
-  const gx = Math.min(Math.max(x*20, -20), 20);
-  const gy = Math.min(Math.max(y*15, -15), 15);
-  L.style.setProperty('--gx', gx+'px'); L.style.setProperty('--gy', gy+'px');
-  R.style.setProperty('--gx', gx+'px'); R.style.setProperty('--gy', gy+'px');
-}
-function setLids(top, bot=0) {
-  const L=$("eyeL"), R=$("eyeR");
-  if(!L || !R) return;
-  [L,R].forEach(e=>{
-     e.querySelector('.lid-top').style.height = top+'%';
-     e.querySelector('.lid-bot').style.height = bot+'%';
-  });
-}
-function autoLook() {
-  if($("mobileFrame").classList.contains("sleeping") || isTracking || mouseActive) return;
-  const rx = (Math.random()-0.5)*1.2, ry = (Math.random()-0.5)*0.5;
-  setGaze(rx, ry);
-  setTimeout(()=>setGaze(0,0), 1000);
-}
-function resetIdle() {
-  $("mobileFrame").classList.remove("sleeping");
-  setLids(0,0);
-  clearTimeout(idleTimer);
-  idleTimer = setTimeout(() => {
-    if(!isTracking) {
-       $("mobileFrame").classList.add("sleeping");
-       setLids(60,20);
+function checkLogin() {
+  const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+  if(user && user.id) {
+    if(!user.termsAccepted) {
+      $("loginOverlay").classList.remove("active");
+      $("termsOverlay").style.display = "flex";
+    } else {
+      $("loginOverlay").classList.remove("active");
+      $("termsOverlay").style.display = "none";
+      checkGender();
+      renderHistory();
+      updateYP("visit");
+      // BOŞLUK DÜZELTİLDİ
+      typeWriter(`Hoş geldin ${user.name || 'evladım'}. Ben Caynana.`);
     }
-  }, 30000);
+  } else {
+    $("loginOverlay").classList.add("active");
+  }
 }
-window.addEventListener("pointermove", (e) => {
-  resetIdle();
-  if(isTracking) return; 
-  mouseActive=true;
-  const rect = $("mobileFrame").getBoundingClientRect();
-  const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-  const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-  setGaze(x,y);
-  clearTimeout(window.mouseT);
-  window.mouseT = setTimeout(()=>mouseActive=false, 1000);
-});
 
-// --- 3. CHAT ---
+// --- 2. LOGIN / LOGOUT ---
+$("googleLogin").onclick = () => {
+  // Demo Login
+  const u = {id:"u_123", name:"Sultan", gender:"Kadın", yp:50, termsAccepted:false};
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+  checkLogin();
+};
+
+$("termsAcceptBtn").onclick = () => {
+  if(!$("termsCheck").checked) { alert("Onaylaman lazım evladım."); return; }
+  const u = JSON.parse(localStorage.getItem(STORAGE_KEY));
+  u.termsAccepted = true;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+  checkLogin();
+};
+
+$("logoutBtn").onclick = () => {
+  // ÇIKIŞ MESAJI
+  if(confirm("Beni terk etmek üzeresin, emin misin evladım?")) {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+};
+
+$("deleteAccBtn").onclick = () => {
+  deleteCounter++;
+  if(deleteCounter===1) alert("Hesabını silmek istediğine emin misin?");
+  else if(deleteCounter===2) alert("Son şans! Her şey silinecek.");
+  else if(deleteCounter===3) { localStorage.clear(); location.reload(); }
+};
+
+// --- 3. PROFILE CLICK ---
+window.goProfile = () => {
+  const u = JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
+  if(u && u.id) location.href = "pages/profil.html";
+  else alert("Giriş yapmadın ki evladım!");
+};
+
+// --- 4. CHAT (VERİ FORMATI DÜZELTİLDİ) ---
 $("sendBtn").onclick = sendMessage;
 $("msgInput").onkeydown = (e) => { if(e.key==="Enter") sendMessage(); };
 
@@ -396,7 +428,6 @@ async function sendMessage() {
   inp.value = "";
   $("brandWrapper").classList.add("user-typing");
   updateYP("msg");
-  
   chatHistory.push({ role: "user", content: txt });
   saveHistory(txt);
 
@@ -407,23 +438,28 @@ async function sendMessage() {
 
   try {
     const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    // API CALL - FORMAT CORRECT
     const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: txt, user_id: user.id || "guest", history: chatHistory })
+        body: JSON.stringify({ 
+            message: txt, 
+            user_id: user.id || "guest", 
+            history: chatHistory // Backend List[Dict] bekliyor, bu doğru.
+        })
     });
     
-    if(!res.ok) throw new Error("API");
+    if(!res.ok) throw new Error("Sunucu: " + res.status);
     const data = await res.json();
     const reply = data.assistant_text || "Bir şeyler oldu.";
 
     $("brandWrapper").classList.remove("thinking");
     $("brandWrapper").classList.add("bot-typing");
-    
     chatHistory.push({ role: "assistant", content: reply });
     typeWriter(reply, () => $("brandWrapper").classList.remove("bot-typing"));
   } catch(e) {
+    console.error(e);
     $("brandWrapper").classList.remove("thinking");
-    addBubble("Bağlantı yok evladım.", "bot");
+    addBubble("Bağlantı hatası evladım.", "bot");
   }
 }
 
@@ -447,50 +483,72 @@ function typeWriter(txt, cb) {
   }, 20);
 }
 
-// --- 4. EXTRAS ---
+// --- 5. GÖZLER (V2.6 MANTIĞI) ---
+function setGaze(x, y) {
+  const L=$("eyeL"), R=$("eyeR");
+  if(!L || !R) return;
+  const gx = Math.min(Math.max(x*20, -20), 20);
+  const gy = Math.min(Math.max(y*15, -15), 15);
+  L.style.setProperty('--gx', gx+'px'); L.style.setProperty('--gy', gy+'px');
+  R.style.setProperty('--gx', gx+'px'); R.style.setProperty('--gy', gy+'px');
+}
+function setLids(top, bot=0) {
+  const L=$("eyeL"), R=$("eyeR");
+  if(!L || !R) return;
+  [L,R].forEach(e=>{
+     e.querySelector('.lid-top').style.height = top+'%';
+     e.querySelector('.lid-bot').style.height = bot+'%';
+  });
+}
+function autoLook() {
+  if($("mobileFrame").classList.contains("sleeping") || isTracking) return;
+  const rx = (Math.random()-0.5)*1.2, ry = (Math.random()-0.5)*0.5;
+  setGaze(rx, ry);
+  setTimeout(()=>setGaze(0,0), 1000);
+}
+function resetIdle() {
+  $("mobileFrame").classList.remove("sleeping");
+  setLids(0,0);
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    if(!isTracking) {
+       $("mobileFrame").classList.add("sleeping");
+       setLids(60,20); // Uyku pozisyonu
+    }
+  }, 30000);
+}
+window.addEventListener("pointermove", (e) => {
+  resetIdle();
+  if(isTracking) return; 
+  const rect = $("mobileFrame").getBoundingClientRect();
+  const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+  setGaze(x,y);
+});
+
+// --- 6. EXTRAS ---
 function updateYP(action) {
   let user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
   let yp = user.yp || 50;
   if(action==="msg") yp+=0.5; if(action==="visit") yp+=5;
   yp = Math.min(100, Math.max(0, yp));
   
-  // Segment Update
+  // Segment Bar Update
   const segs = document.querySelectorAll('.yp-seg');
-  const activeCount = Math.floor(yp / 20); // 5 segment var
-  segs.forEach((s,i) => {
-     s.classList.toggle('active', i < activeCount);
-  });
+  const activeCount = Math.floor(yp / 20);
+  segs.forEach((s,i) => s.classList.toggle('active', i < activeCount));
   
   user.yp = yp;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
 }
-
-// Popup
 $("ypContainer").onclick = (e) => { e.stopPropagation(); $("ypPopup").classList.toggle("show"); };
 document.body.onclick = () => $("ypPopup").classList.remove("show");
 
-// Profile Click Check
-window.goProfile = () => {
-  const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-  if(user && user.id) location.href = "pages/profil.html";
-  else alert("Önce giriş yap evladım.");
-};
+function checkGender() {
+  const u = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  $("reglModule").style.display = (u.gender === "Kadın") ? "block" : "none";
+}
 
-// Login Actions
-$("googleLogin").onclick = () => {
-  // Demo Data (Kadın)
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({id:"u1", name:"Sultan", gender:"Kadın", yp:50}));
-  location.reload();
-};
-$("logoutBtn").onclick = () => { localStorage.removeItem(STORAGE_KEY); location.reload(); };
-$("deleteAccBtn").onclick = () => {
-  deleteCounter++;
-  if(deleteCounter===1) alert("Emin misin?");
-  else if(deleteCounter===2) alert("Son?");
-  else if(deleteCounter===3) { localStorage.clear(); location.reload(); }
-};
-
-// Menu & History
 function saveHistory(msg) {
   let list = JSON.parse(localStorage.getItem("caynana_chats") || "[]");
   if(chatHistory.length===1) {
@@ -502,7 +560,7 @@ function saveHistory(msg) {
 }
 function renderHistory() {
   $("recentChatsList").innerHTML = JSON.parse(localStorage.getItem("caynana_chats")||"[]").map(i => 
-    `<div class="recent-chat-item"><span>${i.title}</span><button class="del-chat" onclick="delChat(${i.id})">🗑️</button></div>`
+    `<div class="recent-chat-item"><span>${i.title}</span><button class="del-chat" onclick="window.delChat(${i.id})">🗑️</button></div>`
   ).join("");
 }
 window.delChat = (id) => {
@@ -511,18 +569,8 @@ window.delChat = (id) => {
   renderHistory();
 };
 
-function checkGender() {
-  const u = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  $("reglModule").style.display = (u.gender === "Kadın") ? "block" : "none";
-}
-
-// Global UI
 window.toggleMenu = () => $("menuOverlay").classList.toggle("open");
-window.toggleCam = () => {
-  $("mobileFrame").classList.toggle("tracking-active");
-  isTracking=!isTracking;
-  if(!isTracking) resetIdle();
-};
+window.toggleCam = () => { $("mobileFrame").classList.toggle("tracking-active"); isTracking=!isTracking; resetIdle(); };
 window.newChat = () => { chatHistory=[]; $("chat").innerHTML=""; $("menuOverlay").classList.remove("open"); };
 window.openFal = () => { $("falOverlay").style.display="flex"; window.toggleMenu(); };
 window.handleFalFile = () => { alert("Fal resmi yüklendi."); };
