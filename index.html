@@ -384,9 +384,48 @@
     import { initPartials } from '/js/partials.js';
     import { initNotif } from '/js/notif.js';
     import { initAuth, handleLogin, logout, acceptTerms } from '/js/auth.js';
-    import { addUserBubble } from '/js/chat.js';
+    import { addUserBubble, fetchTextResponse, typeWriter as typeWriterLib } from '/js/chat.js';
     import { BASE_DOMAIN, STORAGE_KEY } from '/js/config.js';
     import { openFalPanel, closeFalPanel, handleFalPhoto } from '/js/fal.js';
+    // ---- SEND (tek kaynak) ----
+function bindSend() {
+  const sendBtn = document.getElementById("sendBtn");
+  const inputEl = document.getElementById("msgInput");
+
+  if (!sendBtn || !inputEl) {
+    console.warn("sendBtn/msgInput yok, send bağlanamadı");
+    return;
+  }
+
+  async function doSend() {
+    const txt = (inputEl.value || "").trim();
+    if (!txt) return;
+
+    // UI: user bubble
+    addUserBubble(txt);
+    inputEl.value = "";
+
+    // backend -> chat.js üzerinden
+    const out = await fetchTextResponse(txt, "chat");
+    const reply = out?.text || "Evladım bir şeyler ters gitti.";
+
+    // UI: bot bubble (typewriter)
+    typeWriterLib(reply, "chat");
+  }
+
+  // ✅ klik garanti (önceki listenerları ezer)
+  sendBtn.onclick = (e) => { e.preventDefault(); doSend(); };
+
+  // ✅ Enter ile gönder (Shift+Enter yeni satır)
+  inputEl.onkeydown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      doSend();
+    }
+  };
+
+  console.log("✅ SEND bağlandı");
+}
 
     // --- GLOBAL & HELPERS ---
     let chatHistory = [];
@@ -586,6 +625,46 @@
     };
 
     // --- BAŞLANGIÇ ---
+    // ---- SEND (tek kaynak, garanti) ----
+function bindSend() {
+  const sendBtn = document.getElementById("sendBtn");
+  const inputEl = document.getElementById("msgInput");
+
+  if (!sendBtn || !inputEl) {
+    console.warn("sendBtn/msgInput yok, send bağlanamadı");
+    return;
+  }
+
+  async function doSend() {
+    const txt = (inputEl.value || "").trim();
+    if (!txt) return;
+
+    // UI: user bubble
+    addUserBubble(txt);
+    inputEl.value = "";
+
+    // Backend -> chat.js (tek güvenilir yol)
+    const out = await fetchTextResponse(txt, "chat");
+    const reply = out?.text || "Evladım bir şeyler ters gitti.";
+
+    // UI: bot bubble
+    typeWriterLib(reply, "chat");
+  }
+
+  // ✅ klik garanti (eski listenerları ezer)
+  sendBtn.onclick = (e) => { e.preventDefault(); doSend(); };
+
+  // ✅ Enter ile gönder (Shift+Enter yeni satır)
+  inputEl.onkeydown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      doSend();
+    }
+  };
+
+  console.log("✅ SEND bağlandı");
+}
+
     window.addEventListener('DOMContentLoaded', async () => {
       console.log("Caynana v2.7 Başlatılıyor...");
 
@@ -597,7 +676,8 @@
 
       // Notif init
       try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) {}
-
+      bindSend();
+});
       // BUTON BAĞLANTILARI (KRİTİK)
       $('googleLoginBtn')?.addEventListener('click', () => window.handleLogin('google'));
       $('appleLoginBtn')?.addEventListener('click', () => window.handleLogin('apple'));
