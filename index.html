@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Caynana AI v4.3 Eye Fix</title>
+  <title>Caynana AI v4.4 Final Restore</title>
   <link rel="icon" href="data:,">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
-    /* --- 1. TEMEL AYARLAR --- */
+    /* --- 1. TEMEL --- */
     :root { --bg-outer: #000; --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --glass: rgba(20, 20, 20, 0.98); --border: rgba(255, 255, 255, 0.12); --lip-color: #d84315; }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; background: var(--bg-outer); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: var(--text); overflow: hidden; display: flex; align-items: center; justify-content: center; }
@@ -22,10 +22,10 @@
 
     /* --- 2. TOPBAR --- */
     .topbar { flex: 0 0 65px; background: var(--glass); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 12px; z-index: 3000; }
-    .left-controls, .right-controls { display: flex; gap: 10px; align-items: center; }
+    .left-controls, .right-controls { display: flex; gap: 8px; align-items: center; }
     .hamb-btn { background: none; border: none; cursor: pointer; color: #aaa; font-size: 26px; padding: 5px; }
 
-    /* Logo & Tahteravalli */
+    /* Brand & Animasyon */
     .brand-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; transition: transform 0.4s; }
     .logo-area { display: flex; align-items: center; gap: 6px; }
     .brand-name { font-weight: 800; font-size: 15px; color: #fff; letter-spacing: 0.5px; }
@@ -38,7 +38,7 @@
     .brand-wrapper.thinking .seesaw-bar { animation: rock 1s infinite ease-in-out; }
     @keyframes rock { 0%,100% {transform: rotate(-5deg);} 50% {transform: rotate(5deg);} }
 
-    /* YP Widget */
+    /* YP Widget (Senin beğendiğin v3.5 tasarımı) */
     .yp-container { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; margin-right: 5px; }
     .yp-text { font-size: 8px; color: var(--gold); font-weight: 800; margin-bottom: 2px; }
     .yp-bar-bg { width: 32px; height: 5px; background: #222; border: 1px solid #444; border-radius: 3px; overflow: hidden; }
@@ -53,13 +53,42 @@
     .icon-btn-top:active svg { stroke: var(--gold); }
     .badge { position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; background: #ff5252; border-radius: 50%; display: none; border: 1px solid #000; }
 
-    /* --- 3. CHAT --- */
+    /* --- 3. GÖZLER (V2.6'nın Sağlam CSS Yapısı) --- */
+    .face-container { flex: 0 0 0px; background: linear-gradient(to bottom, var(--bg), transparent); overflow: hidden; transition: flex-basis 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2500; }
+    .mobile-frame.tracking-active .face-container { flex-basis: 160px; }
+    .face-panel-inner { opacity: 0; transition: 0.4s; transform: translateY(-20px); width: 100%; display: flex; flex-direction: column; align-items: center; }
+    .mobile-frame.tracking-active .face-panel-inner { opacity: 1; transform: translateY(0); }
+    
+    .eyes-row { display: flex; gap: 24px; margin-bottom: 10px; }
+    /* Eye container */
+    .eye { width: 90px; height: 65px; position: relative; --lidTop:0%; --lidBot:0%; --gx:0px; --gy:0px; transition: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+    /* Sclera (Beyaz) */
+    .sclera { width: 100%; height: 100%; background: #e0e0e0; border-radius: 50%; overflow: hidden; position: relative; border: 2px solid #1a1a1a; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
+    /* Iris (Hareket eden kısım) */
+    .iris { width: 32px; height: 32px; background: radial-gradient(circle, #5d4037 0%, #281a16 100%); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(calc(-50% + var(--gx)), calc(-50% + var(--gy))); border: 1px solid rgba(255,255,255,0.25); transition: transform 0.1s linear; }
+    /* Pupil */
+    .pupil { width: 10px; height: 10px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .reflection { position: absolute; top: 6px; right: 6px; width: 4px; height: 4px; background: #fff; border-radius: 50%; opacity: 0.9; }
+    
+    /* Göz Kapakları */
+    .lid-top, .lid-bot { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.3s ease-in-out; }
+    .lid-top { top: 0; height: var(--lidTop); border-bottom: 2px solid #222; }
+    .lid-bot { bottom: 0; height: var(--lidBot); border-top: 2px solid #222; }
+
+    .mouth-wrapper { width: 60px; height: 26px; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 8px; }
+    .mouth { width: 40px; height: 10px; border-top: 3px solid var(--lip-color); border-radius: 50% 50% 0 0; position: absolute; top: 8px; transition: 0.15s; opacity: 0.9; }
+
+    /* Uyku Animasyonu */
+    .mobile-frame.sleeping .eyes-row { animation: sleepBreath 4s infinite ease-in-out; opacity: 0.6; }
+    @keyframes sleepBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95) translateY(2px); } }
+
+    /* --- 4. CHAT --- */
     .chat-area { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
     .bubble { max-width: 85%; padding: 12px 14px; border-radius: 14px; font-size: 14px; line-height: 1.4; word-wrap: break-word; flex-shrink: 0; }
     .bubble.bot { align-self: flex-start; background: #1c1c1c; border-left: 3px solid var(--gold); color: #ddd; border-top-left-radius: 2px; }
     .bubble.user { align-self: flex-end; background: #222; border-right: 3px solid var(--pistachio); color: #fff; border-top-right-radius: 2px; text-align: right; }
 
-    /* --- 4. DOCK --- */
+    /* --- 5. DOCK --- */
     .input-dock { flex: 0 0 auto; background: transparent; padding: 0 12px; z-index: 3000; display: flex; flex-direction: column; align-items: center; position: relative; margin-bottom: 8px; }
     .track-btn-wrapper { width: 100%; display: flex; justify-content: center; height: 26px; overflow: hidden; transition: 0.3s; opacity: 1; }
     .mobile-frame.tracking-active .track-btn-wrapper { height: 0; opacity: 0; }
@@ -76,7 +105,7 @@
     .send-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--pistachio); color: #000; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
     .send-btn svg { width: 20px; height: 20px; fill: none; stroke: #000; stroke-width: 2; }
 
-    /* --- 5. MENU --- */
+    /* --- 6. MENU (ESKİ BEĞENDİĞİN YAPI) --- */
     .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(5px); display:flex; }
     .menu-overlay.open { opacity: 1; pointer-events: auto; }
     .menu-sidebar { width: 280px; height: 100%; background: #111; padding: 20px; transform: translateX(-100%); transition: 0.3s; display: flex; flex-direction: column; border-right: 1px solid #333; overflow-y: auto; }
@@ -102,34 +131,6 @@
     .menu-actions { margin-top: auto; padding-top: 20px; border-top: 1px solid #222; display: flex; flex-direction: column; gap: 8px; }
     .action-link { font-size: 12px; color: #ccc; text-decoration: none; padding: 12px; cursor: pointer; display: block; background: #1a1a1a; border-radius: 8px; margin-bottom: 5px; text-align: center; font-weight: 500; transition: 0.2s; }
     .delete-acc { background: transparent; border: 1px solid #333; color: #b71c1c !important; margin-top: 30px; }
-
-    /* --- 6. FACE TRACKING (GÖZLER - GERİ GELDİ!) --- */
-    .face-container { flex: 0 0 0px; background: linear-gradient(to bottom, var(--bg), transparent); overflow: hidden; transition: flex-basis 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2500; }
-    .mobile-frame.tracking-active .face-container { flex-basis: 160px; }
-    .face-panel-inner { opacity: 0; transition: 0.4s; transform: translateY(-20px); width: 100%; display: flex; flex-direction: column; align-items: center; }
-    .mobile-frame.tracking-active .face-panel-inner { opacity: 1; transform: translateY(0); }
-    
-    .eyes-row { display: flex; gap: 24px; margin-bottom: 10px; }
-    .eye { width: 90px; height: 65px; position: relative; --lidTop:0%; --lidBot:0%; --gx:0px; --gy:0px; transition: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-    /* Sclera: Göz Akı */
-    .sclera { width: 100%; height: 100%; background: #e0e0e0; border-radius: 50%; overflow: hidden; position: relative; border: 2px solid #1a1a1a; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
-    /* Iris: Renkli Kısım */
-    .iris { width: 32px; height: 32px; background: radial-gradient(circle, #5d4037 0%, #281a16 100%); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(calc(-50% + var(--gx)), calc(-50% + var(--gy))); border: 1px solid rgba(255,255,255,0.25); transition: transform 0.1s linear; }
-    /* Pupil: Göz Bebeği */
-    .pupil { width: 10px; height: 10px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-    .reflection { position: absolute; top: 6px; right: 6px; width: 4px; height: 4px; background: #fff; border-radius: 50%; opacity: 0.9; }
-    
-    /* Göz Kapakları */
-    .lid-top, .lid-bot { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.3s ease-in-out; }
-    .lid-top { top: 0; height: var(--lidTop); border-bottom: 2px solid #222; }
-    .lid-bot { bottom: 0; height: var(--lidBot); border-top: 2px solid #222; }
-
-    .mouth-wrapper { width: 60px; height: 26px; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 8px; }
-    .mouth { width: 40px; height: 10px; border-top: 3px solid var(--lip-color); border-radius: 50% 50% 0 0; position: absolute; top: 8px; transition: 0.15s; opacity: 0.9; }
-
-    /* Uyku Modu */
-    .mobile-frame.sleeping .eyes-row { animation: sleepBreath 4s infinite ease-in-out; opacity: 0.6; }
-    @keyframes sleepBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95) translateY(2px); } }
 
     /* --- BİLDİRİM & FOOTER --- */
     .notification-dropdown { position: absolute; top: 65px; right: 10px; width: 280px; background: #1c1c1c; border: 1px solid #333; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); z-index: 4000; display: none; flex-direction: column; }
@@ -255,7 +256,7 @@
         </div>
       </div>
       <div class="mouth-wrapper"><div class="mouth"></div></div>
-      <button class="track-toggle-btn" style="margin-top:10px;" onclick="window.toggleCam()">Kapat</button>
+      <button class="track-toggle-btn" style="margin-top:10px; color:#fff;" onclick="window.toggleCam()">Kapat</button>
     </div>
   </div>
 
@@ -349,7 +350,7 @@
 
 <script type="module">
 const BASE_DOMAIN = "https://caynana-api-py310-final.onrender.com";
-const STORAGE_KEY = "caynana_user_v4_fixed"; 
+const STORAGE_KEY = "caynana_user_v4_final"; 
 let chatHistory = [], deleteCounter = 0, idleTimer = null, isTracking = false;
 const $ = (id) => document.getElementById(id);
 
@@ -368,6 +369,7 @@ window.onload = function() {
     $("loginOverlay").classList.add("active");
   }
 
+  // GÖZLERİ BAŞLAT (V2.6 MANTIĞI)
   resetIdle();
   setInterval(autoLook, 4000);
 };
@@ -458,25 +460,29 @@ function typeWriter(txt, cb) {
   }, 20);
 }
 
-// --- 4. GÖZLER (SAĞLAM HAL) ---
+// --- 4. GÖZLER (SAĞLAM V2.6 MANTIK - DÜZELTİLDİ) ---
 function setGaze(x, y) {
+  // EyeL ve EyeR için CSS Değişkenleri
   const L=$("eyeL"), R=$("eyeR");
   if(!L || !R) return;
   const gx = Math.min(Math.max(x*20, -20), 20);
   const gy = Math.min(Math.max(y*15, -15), 15);
+  // Değişkenleri ata
   L.style.setProperty('--gx', gx+'px'); L.style.setProperty('--gy', gy+'px');
   R.style.setProperty('--gx', gx+'px'); R.style.setProperty('--gy', gy+'px');
 }
 function setLids(top, bot=0) {
   const L=$("eyeL"), R=$("eyeR");
   if(!L || !R) return;
+  // Lid yüksekliklerini ayarla
   [L,R].forEach(e=>{
-     e.querySelector('.lid-top').style.height = top+'%';
-     e.querySelector('.lid-bot').style.height = bot+'%';
+     e.style.setProperty('--lidTop', top+'%');
+     e.style.setProperty('--lidBot', bot+'%');
   });
 }
 function autoLook() {
   if($("mobileFrame").classList.contains("sleeping") || isTracking) return;
+  // Rastgele bakış
   const rx = (Math.random()-0.5)*1.5, ry = (Math.random()-0.5)*0.5;
   setGaze(rx, ry);
   setTimeout(()=>setGaze(0,0), 1000);
