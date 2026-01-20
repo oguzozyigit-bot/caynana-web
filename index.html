@@ -711,24 +711,20 @@
   // ---------------------------
   // Boot
   // ---------------------------
-  window.addEventListener("DOMContentLoaded", async ()=>{
+  document.addEventListener("DOMContentLoaded", async () => {
+  // 1) Önce Google token client hazırla
+  initAuth();
 
-  // 1️⃣ ÖNCE Google Auth hazırla
-  if (typeof initAuth === "function") initAuth();
+  // 2) Sonra butonlara tıklama bağla
+  document.getElementById("googleLoginBtn")?.addEventListener("click", () => handleLogin("google"));
+  document.getElementById("appleLoginBtn")?.addEventListener("click", () => handleLogin("apple"));
 
-  // 2️⃣ SONRA click bağla
-  $("googleLoginBtn")?.addEventListener("click", () => handleLogin("google"));
-  $("appleLoginBtn")?.addEventListener("click", () => handleLogin("apple"));
-
-  // 3️⃣ Diğerleri
+  // 3) Diğer başlangıç işleri
   applyDailyYP();
 
-  try { await initPartials(); } catch(e){}
-  try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e){}
-
+  try { await initPartials(); } catch(e) {}
+  try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) {}
 });
-    // YP daily apply
-    applyDailyYP();
 
     // partials/notif/auth
     try{ await initPartials(); }catch(e){}
