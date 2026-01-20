@@ -1,612 +1,674 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
-<title>Caynana AI v2.7 Final</title>
-<link rel="icon" href="data:,">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content" />
+  <title>Caynana AI v2.7 Final</title>
+  <link rel="icon" href="data:,">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-<style>
-  /* --- TEMEL CSS (Değişmedi) --- */
-  :root { --bg-outer: #000; --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --glass: rgba(20, 20, 20, 0.98); --border: rgba(255, 255, 255, 0.12); --lip-color: #d84315; --card-bg: #1a1a1a; }
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; background: var(--bg-outer); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  
-  .mobile-frame { width: 100%; height: 100%; max-width: 480px; background: var(--bg); position: relative; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(255, 255, 255, 0.05); overflow: hidden; }
-  @media (min-width: 500px) { .mobile-frame { height: 95dvh; border-radius: 24px; border: 1px solid #333; } }
+  <style>
+    /* --- TEMEL CSS (Değişmedi) --- */
+    :root { --bg-outer: #000; --bg: #0e0e0e; --text: #ececec; --gold: #ffb300; --pistachio: #bef264; --glass: rgba(20, 20, 20, 0.98); --border: rgba(255, 255, 255, 0.12); --lip-color: #d84315; --card-bg: #1a1a1a; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100dvh; background: var(--bg-outer); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); overflow: hidden; display: flex; align-items: center; justify-content: center; }
 
-  /* --- HEADER & LOGO --- */
-  .topbar { flex: 0 0 75px; background: var(--glass); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 3000; }
-  .left-controls { display: flex; gap: 15px; align-items: center; }
-  .hamb-btn { background: none; border: none; cursor: pointer; color: #aaa; font-size: 24px; padding: 0; }
-  
-  .brand-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 40px; flex: 1; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-  .logo-area { display: flex; align-items: center; gap: 8px; }
-  .brand-name { font-weight: 700; font-size: 16px; color: #fff; }
-  .slogan { font-size: 11px; color: #888; margin-top: 2px; font-weight: 500; letter-spacing: 0.5px; } 
-  
-  .seesaw-svg { width: 36px; height: 18px; overflow: visible; }
-  .seesaw-bar { transform-origin: 20px 8px; transition: transform 0.4s; }
-  
-  /* ANİMASYONLAR */
-  .brand-wrapper.talking .seesaw-bar { animation: talkWiggle 0.4s infinite alternate ease-in-out; }
-  @keyframes talkWiggle { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
-  
-  .brand-wrapper.thinking #orangeBall { animation: breathAnim 0.8s infinite alternate ease-in-out; transform-box: fill-box; transform-origin: center; }
-  @keyframes breathAnim { from { transform: scale(1); filter: brightness(1); } to { transform: scale(1.5); filter: brightness(1.3); box-shadow: 0 0 10px var(--gold); } }
-  
-  /* --- BİLDİRİM --- */
-  .notif-btn { background: none; border: none; position: relative; cursor: pointer; padding: 5px; display: flex; align-items: center; }
-  .notif-btn svg { width: 26px; height: 26px; stroke: #aaa; fill: none; stroke-width: 2; transition: 0.2s; }
-  .notif-btn:active svg { stroke: var(--pistachio); }
-  .badge { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; display: none; border: 1px solid #000; }
+    .mobile-frame { width: 100%; height: 100%; max-width: 480px; background: var(--bg); position: relative; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(255, 255, 255, 0.05); overflow: hidden; }
+    @media (min-width: 500px) { .mobile-frame { height: 95dvh; border-radius: 24px; border: 1px solid #333; } }
 
-  .notification-dropdown { position: absolute; top: 70px; right: 10px; width: 300px; background: #1c1c1c; border: 1px solid #333; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 4000; display: none; flex-direction: column; overflow: hidden; animation: slideDown 0.2s ease; }
-  .notification-dropdown.show { display: flex; }
-  @keyframes slideDown { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
+    /* --- HEADER & LOGO --- */
+    .topbar { flex: 0 0 75px; background: var(--glass); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 3000; }
+    .left-controls { display: flex; gap: 15px; align-items: center; }
+    .hamb-btn { background: none; border: none; cursor: pointer; color: #aaa; font-size: 24px; padding: 0; }
 
-  .notif-header { padding: 12px; border-bottom: 1px solid #333; font-size: 13px; font-weight: bold; color: #fff; background: #222; }
-  .notif-list { max-height: 300px; overflow-y: auto; }
-  .notif-item { padding: 12px; border-bottom: 1px solid #2a2a2a; display: flex; gap: 10px; align-items: start; }
-  .notif-item:last-child { border-bottom: none; }
-  .notif-icon { font-size: 18px; }
-  .notif-content { flex: 1; }
-  .notif-title { font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 2px; }
-  .notif-desc { font-size: 11px; color: #aaa; line-height: 1.3; }
-  .notif-time { font-size: 10px; color: #666; margin-top: 4px; }
+    .brand-wrapper { display: flex; flex-direction: column; align-items: center; margin-right: 40px; flex: 1; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .logo-area { display: flex; align-items: center; gap: 8px; }
+    .brand-name { font-weight: 700; font-size: 16px; color: #fff; }
+    .slogan { font-size: 11px; color: #888; margin-top: 2px; font-weight: 500; letter-spacing: 0.5px; }
 
-  /* --- CHAT --- */
-  .chat-area { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; scrollbar-width: none; }
-  .chat-area::-webkit-scrollbar { display: none; }
-  .bubble { max-width: 85%; padding: 12px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; position: relative; animation: pop 0.2s ease; word-wrap: break-word; flex-shrink: 0; height: auto; }
-  .bubble.bot { align-self: flex-start; background: #1c1c1c; border-left: 3px solid var(--gold); color: #ddd; border-top-left-radius: 4px; min-height: 40px;}
-  .bubble.user { align-self: flex-end; background: #222; border-right: 3px solid var(--pistachio); color: #fff; border-top-right-radius: 4px; text-align: right; }
+    .seesaw-svg { width: 36px; height: 18px; overflow: visible; }
+    .seesaw-bar { transform-origin: 20px 8px; transition: transform 0.4s; }
 
-  /* --- DOCK & FOOTER --- */
-  .input-dock { flex: 0 0 auto; background: var(--glass); padding: 5px 16px 15px 16px; z-index: 3000; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-  .track-trigger-row { display: flex; justify-content: center; width: 100%; transition: 0.3s; height: 36px; overflow: hidden; }
-  .mobile-frame.tracking-active .track-trigger-row { height: 0; margin: 0; opacity: 0; pointer-events: none; }
-  .main-track-btn { background: rgba(255, 179, 0, 0.1); border: 1px solid var(--gold); color: var(--gold); padding: 8px 24px; border-radius: 24px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 0 15px rgba(255, 179, 0, 0.1); animation: pulseBtn 2s infinite; display: flex; align-items: center; gap: 8px; }
-  
-  .dock-inner { display: flex; align-items: flex-end; gap: 8px; background: #1a1a1a; border: 1px solid #333; border-radius: 24px; padding: 6px; }
-  .icon-btn { width: 42px; height: 42px; border-radius: 50%; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: 0.2s; }
-  .icon-btn svg { width: 22px; height: 22px; stroke: #aaa; stroke-width: 2; fill: none; transition: 0.2s; }
-  .icon-btn:hover svg, .icon-btn.active svg { stroke: var(--gold); }
-  .icon-btn.active { background: rgba(255,179,0,0.15); }
-  .send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--pistachio); color: #000; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(190, 242, 100, 0.3); }
-  .send-btn svg { stroke: #000; fill:none; width:22px; height:22px; }
-  textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; resize: none; padding: 10px; max-height: 100px; min-height: 24px; font-family: inherit; scrollbar-width: none; }
+    /* ANİMASYONLAR */
+    .brand-wrapper.talking .seesaw-bar { animation: talkWiggle 0.4s infinite alternate ease-in-out; }
+    @keyframes talkWiggle { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
 
-  /* FOOTER */
-  .footer-container { text-align: center; width: 100%; padding: 15px 0; background: #000; border-top: 1px solid #222; margin-top: auto; }
-  .footer-container span { font-size: 12px; color: #aaa; font-weight: 600; letter-spacing: 0.5px; opacity: 0.9; }
-  .footer-ver { font-size: 10px; color: #666; font-family: monospace; margin-top: 4px; }
+    .brand-wrapper.thinking #orangeBall { animation: breathAnim 0.8s infinite alternate ease-in-out; transform-box: fill-box; transform-origin: center; }
+    @keyframes breathAnim { from { transform: scale(1); filter: brightness(1); } to { transform: scale(1.5); filter: brightness(1.3); box-shadow: 0 0 10px var(--gold); } }
 
-  /* --- LOGIN & MENU --- */
-  .full-overlay { position: absolute; inset: 0; background: #000; z-index: 6000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.4s ease; padding: 20px; overflow-y: auto; }
-  .full-overlay.active { opacity: 1; pointer-events: auto; }
-  .login-card { width: 100%; max-width: 320px; text-align: center; display: flex; flex-direction: column; gap: 15px; margin: auto; }
-  .login-logo { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 5px; }
-  .login-logo span { color: var(--gold); }
-  
-  .auth-btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; opacity: 0.5; pointer-events: none; filter: grayscale(1); margin-bottom: 8px; }
-  .auth-btn.enabled { opacity: 1; pointer-events: auto; filter: grayscale(0); }
-  .btn-google { background: #fff; color: #333; border: 1px solid #ddd; } 
-  .btn-apple { background: #000; color: #fff; border: 1px solid #333; }
-  .auth-icon { width: 20px; height: 20px; }
+    /* --- BİLDİRİM --- */
+    .notif-btn { background: none; border: none; position: relative; cursor: pointer; padding: 5px; display: flex; align-items: center; }
+    .notif-btn svg { width: 26px; height: 26px; stroke: #aaa; fill: none; stroke-width: 2; transition: 0.2s; }
+    .notif-btn:active svg { stroke: var(--pistachio); }
+    .badge { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; background: #ff5252; border-radius: 50%; display: none; border: 1px solid #000; }
 
-  .agreement-box { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #888; justify-content: center; margin-top: 10px; text-align: left; }
-  .agreement-box input { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
-  
-  .login-footer-links { margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; border-top: 1px solid #222; padding-top: 20px; }
-  .login-footer-links a { color: #666; font-size: 11px; text-decoration: none; transition: 0.2s; }
-  .login-footer-links a:hover { color: var(--gold); }
-  
-  /* MENU */
-  .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 5000; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(5px); display:flex; justify-content: flex-start;}
-  .menu-overlay.open { opacity: 1; pointer-events: auto; }
-  .menu-sidebar { width: 270px; height: 100%; background: #161616; padding: 20px 20px 20px; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; border-right: 1px solid #333; box-shadow: 5px 0 30px rgba(0,0,0,0.5); }
-  .menu-overlay.open .menu-sidebar { transform: translateX(0); }
-  
-  .sidebar-header { padding: 30px 0 20px 0; border-bottom: 1px solid #222; margin-bottom: 10px; }
-  .new-chat-btn { width: 100%; background: #333; color: var(--pistachio); border: 1px solid #444; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; margin-bottom: 15px; display:flex; justify-content:center; align-items:center; gap:8px; }
-  
-  .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px; min-height: 100px; }
-  .history-item { color: #ccc; padding: 12px 10px; border-radius: 8px; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-  .history-item:hover { background: #222; color: #fff; }
-  .history-item:hover .delete-chat-btn { display: block; }
-  .history-text { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 190px; }
-  .delete-chat-btn { display: none; background: none; border: none; color: #ff5252; cursor: pointer; font-size: 16px; padding: 0 5px; }
+    .notification-dropdown { position: absolute; top: 70px; right: 10px; width: 300px; background: #1c1c1c; border: 1px solid #333; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); z-index: 4000; display: none; flex-direction: column; overflow: hidden; animation: slideDown 0.2s ease; }
+    .notification-dropdown.show { display: flex; }
+    @keyframes slideDown { from {opacity:0; transform:translateY(-10px);} to {opacity:1; transform:translateY(0);} }
 
-  .menu-static-links { border-top: 1px solid #2a2a2a; padding-top: 10px; }
-  .menu-item { color: #888; text-decoration: none; padding: 10px 0; display: block; font-size: 13px; transition: 0.2s; cursor:pointer; }
-  .menu-item:hover { color: var(--gold); }
+    .notif-header { padding: 12px; border-bottom: 1px solid #333; font-size: 13px; font-weight: bold; color: #fff; background: #222; }
+    .notif-list { max-height: 300px; overflow-y: auto; }
+    .notif-item { padding: 12px; border-bottom: 1px solid #2a2a2a; display: flex; gap: 10px; align-items: start; }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-icon { font-size: 18px; }
+    .notif-content { flex: 1; }
+    .notif-title { font-size: 13px; color: #fff; font-weight: 600; margin-bottom: 2px; }
+    .notif-desc { font-size: 11px; color: #aaa; line-height: 1.3; }
+    .notif-time { font-size: 10px; color: #666; margin-top: 4px; }
 
-  .menu-footer-actions { margin-top: auto; padding-top: 10px; border-top: 1px solid #333; }
-  .menu-version { text-align: center; font-size: 10px; color: #555; margin-top: 20px; }
-  
-  #camVideo { display: none; }
+    /* --- CHAT --- */
+    .chat-area { flex: 1; overflow-y: auto; padding: 20px 16px; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; scrollbar-width: none; }
+    .chat-area::-webkit-scrollbar { display: none; }
+    .bubble { max-width: 85%; padding: 12px 14px; border-radius: 18px; font-size: 15px; line-height: 1.4; position: relative; animation: pop 0.2s ease; word-wrap: break-word; flex-shrink: 0; height: auto; }
+    .bubble.bot { align-self: flex-start; background: #1c1c1c; border-left: 3px solid var(--gold); color: #ddd; border-top-left-radius: 4px; min-height: 40px;}
+    .bubble.user { align-self: flex-end; background: #222; border-right: 3px solid var(--pistachio); color: #fff; border-top-right-radius: 4px; text-align: right; }
 
-  /* GÖZLER */
-  .face-container { flex: 0 0 0px; background: linear-gradient(to bottom, var(--bg), transparent); overflow: hidden; transition: flex-basis 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2500; }
-  .mobile-frame.tracking-active .face-container { flex-basis: 180px; } 
-  .face-panel-inner { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: translateY(-30px); transition: 0.4s; }
-  .mobile-frame.tracking-active .face-panel-inner { opacity: 1; transform: translateY(0); }
-  .eyes-row { display: flex; gap: 24px; margin-bottom: 10px; }
-  .eye { width: 90px; height: 65px; position: relative; --lidTop:0%; --lidBot:0%; --gx:0px; --gy:0px; transition: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-  .sclera { width: 100%; height: 100%; background: #e0e0e0; border-radius: 50%; overflow: hidden; position: relative; border: 2px solid #1a1a1a; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
-  .iris { width: 32px; height: 32px; background: radial-gradient(circle, #5d4037 0%, #281a16 100%); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(calc(-50% + var(--gx)), calc(-50% + var(--gy))); border: 1px solid rgba(255,255,255,0.25); transition: transform 0.1s linear; }
-  .pupil { width: 10px; height: 10px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-  .reflection { position: absolute; top: 6px; right: 6px; width: 4px; height: 4px; background: #fff; border-radius: 50%; opacity: 0.9; }
-  .lid-top, .lid-bot { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.3s ease-in-out; }
-  .lid-top { top: 0; height: var(--lidTop); border-bottom: 2px solid #222; }
-  .lid-bot { bottom: 0; height: var(--lidBot); border-top: 2px solid #222; }
-  .mobile-frame.sleeping .eyes-row { animation: sleepBreath 4s infinite ease-in-out; opacity: 0.6; }
-  @keyframes sleepBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95) translateY(2px); } }
-  .mouth-wrapper { width: 60px; height: 26px; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 8px; }
-  .mouth { width: 40px; height: 10px; border-top: 3px solid var(--lip-color); border-radius: 50% 50% 0 0; position: absolute; top: 8px; transition: 0.15s; opacity: 0.9; }
-  .close-track-btn { margin-top: 10px; background: rgba(198, 40, 40, 0.15); color: #ef9a9a; border: 1px solid rgba(198, 40, 40, 0.4); padding: 5px 14px; border-radius: 20px; font-size: 11px; cursor: pointer; }
-</style>
+    /* --- DOCK & FOOTER --- */
+    .input-dock { flex: 0 0 auto; background: var(--glass); padding: 5px 16px 15px 16px; z-index: 3000; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+    .track-trigger-row { display: flex; justify-content: center; width: 100%; transition: 0.3s; height: 36px; overflow: hidden; }
+    .mobile-frame.tracking-active .track-trigger-row { height: 0; margin: 0; opacity: 0; pointer-events: none; }
+    .main-track-btn { background: rgba(255, 179, 0, 0.1); border: 1px solid var(--gold); color: var(--gold); padding: 8px 24px; border-radius: 24px; cursor: pointer; font-size: 13px; font-weight: 600; box-shadow: 0 0 15px rgba(255, 179, 0, 0.1); animation: pulseBtn 2s infinite; display: flex; align-items: center; gap: 8px; }
+
+    .dock-inner { display: flex; align-items: flex-end; gap: 8px; background: #1a1a1a; border: 1px solid #333; border-radius: 24px; padding: 6px; }
+    .icon-btn { width: 42px; height: 42px; border-radius: 50%; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: 0.2s; }
+    .icon-btn svg { width: 22px; height: 22px; stroke: #aaa; stroke-width: 2; fill: none; transition: 0.2s; }
+    .icon-btn:hover svg, .icon-btn.active svg { stroke: var(--gold); }
+    .icon-btn.active { background: rgba(255,179,0,0.15); }
+    .send-btn { width: 42px; height: 42px; border-radius: 50%; background: var(--pistachio); color: #000; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(190, 242, 100, 0.3); }
+    .send-btn svg { stroke: #000; fill:none; width:22px; height:22px; }
+    textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; resize: none; padding: 10px; max-height: 100px; min-height: 24px; font-family: inherit; scrollbar-width: none; }
+
+    /* FOOTER */
+    .footer-container { text-align: center; width: 100%; padding: 15px 0; background: #000; border-top: 1px solid #222; margin-top: auto; }
+    .footer-container span { font-size: 12px; color: #aaa; font-weight: 600; letter-spacing: 0.5px; opacity: 0.9; }
+    .footer-ver { font-size: 10px; color: #666; font-family: monospace; margin-top: 4px; }
+
+    /* --- LOGIN & MENU --- */
+    .full-overlay { position: absolute; inset: 0; background: #000; z-index: 6000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.4s ease; padding: 20px; overflow-y: auto; }
+    .full-overlay.active { opacity: 1; pointer-events: auto; }
+    .login-card { width: 100%; max-width: 320px; text-align: center; display: flex; flex-direction: column; gap: 15px; margin: auto; }
+    .login-logo { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 5px; }
+    .login-logo span { color: var(--gold); }
+
+    .auth-btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; opacity: 0.5; pointer-events: none; filter: grayscale(1); margin-bottom: 8px; }
+    .auth-btn.enabled { opacity: 1; pointer-events: auto; filter: grayscale(0); }
+    .btn-google { background: #fff; color: #333; border: 1px solid #ddd; }
+    .btn-apple { background: #000; color: #fff; border: 1px solid #333; }
+    .auth-icon { width: 20px; height: 20px; }
+
+    .agreement-box { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #888; justify-content: center; margin-top: 10px; text-align: left; }
+    .agreement-box input { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
+
+    .login-footer-links { margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; border-top: 1px solid #222; padding-top: 20px; }
+    .login-footer-links a { color: #666; font-size: 11px; text-decoration: none; transition: 0.2s; }
+    .login-footer-links a:hover { color: var(--gold); }
+
+    /* MENU */
+    .menu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 5000; opacity: 0; pointer-events: none; transition: 0.3s; backdrop-filter: blur(5px); display:flex; justify-content: flex-start;}
+    .menu-overlay.open { opacity: 1; pointer-events: auto; }
+    .menu-sidebar { width: 270px; height: 100%; background: #161616; padding: 20px 20px 20px; transform: translateX(-100%); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; border-right: 1px solid #333; box-shadow: 5px 0 30px rgba(0,0,0,0.5); }
+    .menu-overlay.open .menu-sidebar { transform: translateX(0); }
+
+    .sidebar-header { padding: 30px 0 20px 0; border-bottom: 1px solid #222; margin-bottom: 10px; }
+    .new-chat-btn { width: 100%; background: #333; color: var(--pistachio); border: 1px solid #444; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; text-align: center; margin-bottom: 15px; display:flex; justify-content:center; align-items:center; gap:8px; }
+
+    .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; margin-bottom: 20px; min-height: 100px; }
+    .history-item { color: #ccc; padding: 12px 10px; border-radius: 8px; font-size: 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+    .history-item:hover { background: #222; color: #fff; }
+    .history-item:hover .delete-chat-btn { display: block; }
+    .history-text { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 190px; }
+    .delete-chat-btn { display: none; background: none; border: none; color: #ff5252; cursor: pointer; font-size: 16px; padding: 0 5px; }
+
+    .menu-static-links { border-top: 1px solid #2a2a2a; padding-top: 10px; }
+    .menu-item { color: #888; text-decoration: none; padding: 10px 0; display: block; font-size: 13px; transition: 0.2s; cursor:pointer; }
+    .menu-item:hover { color: var(--gold); }
+
+    .menu-footer-actions { margin-top: auto; padding-top: 10px; border-top: 1px solid #333; }
+    .menu-version { text-align: center; font-size: 10px; color: #555; margin-top: 20px; }
+
+    #camVideo { display: none; }
+
+    /* GÖZLER */
+    .face-container { flex: 0 0 0px; background: linear-gradient(to bottom, var(--bg), transparent); overflow: hidden; transition: flex-basis 0.5s; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 2500; }
+    .mobile-frame.tracking-active .face-container { flex-basis: 180px; }
+    .face-panel-inner { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; transform: translateY(-30px); transition: 0.4s; }
+    .mobile-frame.tracking-active .face-panel-inner { opacity: 1; transform: translateY(0); }
+    .eyes-row { display: flex; gap: 24px; margin-bottom: 10px; }
+    .eye { width: 90px; height: 65px; position: relative; --lidTop:0%; --lidBot:0%; --gx:0px; --gy:0px; transition: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+    .sclera { width: 100%; height: 100%; background: #e0e0e0; border-radius: 50%; overflow: hidden; position: relative; border: 2px solid #1a1a1a; box-shadow: inset 0 0 10px rgba(0,0,0,0.8); }
+    .iris { width: 32px; height: 32px; background: radial-gradient(circle, #5d4037 0%, #281a16 100%); border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(calc(-50% + var(--gx)), calc(-50% + var(--gy))); border: 1px solid rgba(255,255,255,0.25); transition: transform 0.1s linear; }
+    .pupil { width: 10px; height: 10px; background: #000; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .reflection { position: absolute; top: 6px; right: 6px; width: 4px; height: 4px; background: #fff; border-radius: 50%; opacity: 0.9; }
+    .lid-top, .lid-bot { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.3s ease-in-out; }
+    .lid-top { top: 0; height: var(--lidTop); border-bottom: 2px solid #222; }
+    .lid-bot { bottom: 0; height: var(--lidBot); border-top: 2px solid #222; }
+    .mobile-frame.sleeping .eyes-row { animation: sleepBreath 4s infinite ease-in-out; opacity: 0.6; }
+    @keyframes sleepBreath { 0%, 100% { transform: scale(1); } 50% { transform: scale(0.95) translateY(2px); } }
+    .mouth-wrapper { width: 60px; height: 26px; display: flex; justify-content: center; align-items: center; position: relative; margin-top: 8px; }
+    .mouth { width: 40px; height: 10px; border-top: 3px solid var(--lip-color); border-radius: 50% 50% 0 0; position: absolute; top: 8px; transition: 0.15s; opacity: 0.9; }
+    .close-track-btn { margin-top: 10px; background: rgba(198, 40, 40, 0.15); color: #ef9a9a; border: 1px solid rgba(198, 40, 40, 0.4); padding: 5px 14px; border-radius: 20px; font-size: 11px; cursor: pointer; }
+  </style>
 </head>
+
 <body>
+  <div class="mobile-frame" id="mobileFrame">
 
-<div class="mobile-frame" id="mobileFrame">
+    <!-- LOGIN -->
+    <div class="full-overlay active" id="loginOverlay">
+      <div class="login-card">
+        <div style="display:flex; justify-content:center; margin-bottom:10px;">
+          <svg class="seesaw-svg" viewBox="0 0 40 20" style="width:60px; height:30px;">
+            <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+            <g class="seesaw-bar">
+              <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+              <circle cx="3" cy="5" r="3" fill="#bef264" />
+              <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+            </g>
+          </svg>
+        </div>
 
-  <div class="full-overlay active" id="loginOverlay">
-    <div class="login-card">
-      <div style="display:flex; justify-content:center; margin-bottom:10px;">
-        <svg class="seesaw-svg" viewBox="0 0 40 20" style="width:60px; height:30px;">
-          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
-          <g class="seesaw-bar">
-            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
-            <circle cx="3" cy="5" r="3" fill="#bef264" />
-            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
-          </g>
-        </svg>
-      </div>
+        <div class="login-logo">Caynana<span>.AI</span></div>
+        <div style="font-size:13px; color:#888;">Yapay Zekânın Geleneksel Aklı</div>
+        <br>
 
-      <div class="login-logo">Caynana<span>.AI</span></div>
-      <div style="font-size:13px; color:#888;">Yapay Zekânın Geleneksel Aklı</div>
-      <br>
+        <div style="border-bottom:1px solid #333; padding-bottom:15px; margin-bottom:15px;">
+          <div style="font-size:11px; color:#666; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Devam Et</div>
 
-      <div style="border-bottom:1px solid #333; padding-bottom:15px; margin-bottom:15px;">
-        <div style="font-size:11px; color:#666; margin-bottom:8px; text-transform:uppercase; letter-spacing:1px;">Devam Et</div>
+          <button class="auth-btn btn-google enabled" id="googleLoginBtn" type="button">
+            <svg class="auth-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            Google ile Devam Et
+          </button>
 
-        <button class="auth-btn btn-google enabled" id="googleLoginBtn">
-          <svg class="auth-icon" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-          Google ile Devam Et
-        </button>
+          <button class="auth-btn btn-apple enabled" id="appleLoginBtn" type="button">
+            <svg class="auth-icon" viewBox="0 0 24 24" fill="#fff"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24.02-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.57-.91 4.35-.68c.75.04 2.86.32 3.9 1.83-3.23 1.6-2.67 6.38 1.02 7.94-.75 1.49-1.81 2.97-2.89 4.01l-.22.25-.24-.12zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.54 4.33-3.74 4.25z"/></svg>
+            Apple ile Devam Et
+          </button>
+        </div>
 
-        <button class="auth-btn btn-apple enabled" id="appleLoginBtn">
-          <svg class="auth-icon" viewBox="0 0 24 24" fill="#fff"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24.02-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.74s2.57-.91 4.35-.68c.75.04 2.86.32 3.9 1.83-3.23 1.6-2.67 6.38 1.02 7.94-.75 1.49-1.81 2.97-2.89 4.01l-.22.25-.24-.12zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.54 4.33-3.74 4.25z"/></svg>
-          Apple ile Devam Et
-        </button>
-      </div>
+        <div class="login-footer-links">
+          <a href="pages/hakkimizda.html">Hakkımızda</a>
+          <a href="pages/sss.html">SSS</a>
+          <a href="pages/gizlilik.html">Gizlilik</a>
+          <a href="pages/sozlesme.html">Kullanım</a>
+          <a href="pages/iletisim.html">İletişim</a>
+        </div>
 
-      <div class="login-footer-links">
-        <a href="pages/hakkimizda.html">Hakkımızda</a>
-        <a href="pages/sss.html">SSS</a>
-        <a href="pages/gizlilik.html">Gizlilik</a>
-        <a href="pages/sozlesme.html">Kullanım</a>
-        <a href="pages/iletisim.html">İletişim</a>
-      </div>
+        <div style="margin-top:20px; border-top:1px solid #222; padding-top:15px;">
+          <div style="font-weight:600; color:#aaa; font-size:12px;">@CaynanaAI By Ozyigits</div>
+        </div>
+      </div>
+    </div>
 
-      <div style="margin-top:20px; border-top:1px solid #222; padding-top:15px;">
-        <div style="font-weight:600; color:#aaa; font-size:12px;">@CaynanaAI By Ozyigits</div>
-      </div>
-    </div>
-  </div>
+    <!-- TERMS -->
+    <div class="full-overlay" id="termsOverlay" style="z-index:6500; background:#000;">
+      <div class="login-card" style="max-width:420px;">
+        <div class="login-logo">Sözleşme<span>.Onay</span></div>
+        <div style="font-size:12px; color:#888; line-height:1.5;">
+          Devam etmek için sözleşmeyi onaylaman gerekiyor evladım.
+        </div>
 
-  <div class="full-overlay" id="termsOverlay" style="z-index:6500; background:#000;">
-    <div class="login-card" style="max-width:420px;">
-      <div class="login-logo">Sözleşme<span>.Onay</span></div>
-      <div style="font-size:12px; color:#888; line-height:1.5;">
-        Devam etmek için sözleşmeyi onaylaman gerekiyor evladım.
-      </div>
+        <div style="border:1px solid #222; border-radius:12px; overflow:hidden; height:320px; background:#111;">
+          <iframe src="pages/sozlesme.html" style="width:100%; height:100%; border:0;"></iframe>
+        </div>
 
-      <div style="border:1px solid #222; border-radius:12px; overflow:hidden; height:320px; background:#111;">
-        <iframe src="pages/sozlesme.html" style="width:100%; height:100%; border:0;"></iframe>
-      </div>
+        <div class="agreement-box" style="justify-content:flex-start; gap:10px;">
+          <input type="checkbox" id="termsCheck">
+          <label for="termsCheck" style="color:#aaa;">Okudum, onaylıyorum.</label>
+        </div>
 
-      <div class="agreement-box" style="justify-content:flex-start; gap:10px;">
-        <input type="checkbox" id="termsCheck">
-        <label for="termsCheck" style="color:#aaa;">Okudum, onaylıyorum.</label>
-      </div>
+        <button class="auth-btn btn-google enabled" style="filter:none; opacity:1;" id="termsAcceptBtn" type="button">
+          ✅ Onayla ve Devam Et
+        </button>
+      </div>
+    </div>
 
-      <button class="auth-btn btn-google enabled" style="filter:none; opacity:1;" id="termsAcceptBtn">
-        ✅ Onayla ve Devam Et
-      </button>
-    </div>
-  </div>
+    <!-- MENU MOUNT -->
+    <div id="menuMount">
+      <div class="menu-overlay" id="menuOverlay">
+        <div class="menu-sidebar">
+          <div class="sidebar-header">
+            <button class="new-chat-btn" id="newChatBtn" type="button"><span>+</span> Yeni Sohbet Başlat</button>
+          </div>
+          <div style="font-size:11px; color:#666; padding-left:10px; margin-bottom:5px;">SON SOHBETLER</div>
+          <div class="history-list" id="historyList"></div>
+          <div class="menu-static-links">
+            <a class="menu-item" onclick="window.openFal(); window.toggleMenu();">☕ Kahve Falı</a>
+            <a class="menu-item" href="pages/profil.html">👤 Profil Ayarları</a>
+            <a class="menu-item" href="pages/hakkimizda.html">ℹ️ Hakkımızda</a>
+            <a class="menu-item" href="pages/sss.html">❓ SSS</a>
+            <a class="menu-item" href="pages/iletisim.html">✉️ İletişim</a>
+            <a class="menu-item" href="pages/gizlilik.html">🔒 Gizlilik</a>
+          </div>
+          <div class="menu-footer-actions">
+            <a class="menu-item" id="logoutBtn" style="color:#ff5252">🛡️ Güvenli Çıkış</a>
+            <div class="menu-version">@CaynanaAI v2.7</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <div id="menuMount">
-    <div class="menu-overlay" id="menuOverlay">
-      <div class="menu-sidebar">
-        <div class="sidebar-header">
-          <button class="new-chat-btn" id="newChatBtn"><span>+</span> Yeni Sohbet Başlat</button>
-        </div>
-        <div style="font-size:11px; color:#666; padding-left:10px; margin-bottom:5px;">SON SOHBETLER</div>
-        <div class="history-list" id="historyList"></div>
-        <div class="menu-static-links">
-          <a class="menu-item" onclick="window.openFal(); window.toggleMenu();">☕ Kahve Falı</a>
-          <a class="menu-item" href="pages/profil.html">👤 Profil Ayarları</a>
-          <a class="menu-item" href="pages/hakkimizda.html">ℹ️ Hakkımızda</a>
-          <a class="menu-item" href="pages/sss.html">❓ SSS</a>
-          <a class="menu-item" href="pages/iletisim.html">✉️ İletişim</a>
-          <a class="menu-item" href="pages/gizlilik.html">🔒 Gizlilik</a>
-        </div>
-        <div class="menu-footer-actions">
-          <a class="menu-item" id="logoutBtn" style="color:#ff5252">🛡️ Güvenli Çıkış</a>
-          <div class="menu-version">@CaynanaAI v2.7</div>
-        </div>
-      </div>
-    </div>
-  </div>
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="left-controls"><button class="hamb-btn" id="hambBtn" type="button">☰</button></div>
 
-  <div class="topbar">
-    <div class="left-controls"><button class="hamb-btn" id="hambBtn">☰</button></div>
-    <div class="brand-wrapper" id="brandWrapper">
-      <div class="logo-area">
-        <svg class="seesaw-svg" viewBox="0 0 40 20">
-          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
-          <g class="seesaw-bar" id="seesawBar">
-             <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
-             <circle cx="3" cy="5" r="3" fill="#bef264" />
-             <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
-          </g>
-        </svg>
-        <div class="brand-name">Caynana AI</div>
-      </div>
-      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
-    </div>
+      <div class="brand-wrapper" id="brandWrapper">
+        <div class="logo-area">
+          <svg class="seesaw-svg" viewBox="0 0 40 20">
+            <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+            <g class="seesaw-bar" id="seesawBar">
+              <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+              <circle cx="3" cy="5" r="3" fill="#bef264" />
+              <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+            </g>
+          </svg>
+          <div class="brand-name">Caynana AI</div>
+        </div>
+        <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+      </div>
 
-    <div id="notifMount">
-      <button class="notif-btn" id="notifBtn">
-        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        <div class="badge" id="notifBadge"></div>
-      </button>
+      <div id="notifMount">
+        <button class="notif-btn" id="notifBtn" type="button">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <div class="badge" id="notifBadge"></div>
+        </button>
 
-      <div class="notification-dropdown" id="notifDropdown">
-        <div class="notif-header">Bildirimler</div>
-        <div class="notif-list" id="notifList">
-          <div class="notif-item">
-            <div class="notif-icon">🧿</div>
-            <div class="notif-content">
-              <div class="notif-title">Hazırım</div>
-              <div class="notif-desc">Evladım, hatırlatmalarını bekliyorum.</div>
-              <div class="notif-time">—</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+        <div class="notification-dropdown" id="notifDropdown">
+          <div class="notif-header">Bildirimler</div>
+          <div class="notif-list" id="notifList">
+            <div class="notif-item">
+              <div class="notif-icon">🧿</div>
+              <div class="notif-content">
+                <div class="notif-title">Hazırım</div>
+                <div class="notif-desc">Evladım, hatırlatmalarını bekliyorum.</div>
+                <div class="notif-time">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <div class="face-container" id="faceContainer">
-    <div class="face-panel-inner" id="faceInner">
-      <div class="eyes-row">
-        <div class="eye" id="eyeL">
-          <div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div>
-          <div class="lid-top"></div><div class="lid-bot"></div>
-        </div>
-        <div class="eye" id="eyeR">
-          <div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div>
-          <div class="lid-top"></div><div class="lid-bot"></div>
-        </div>
-      </div>
-      <div class="mouth-wrapper"><div class="mouth"></div></div>
-      <button class="close-track-btn" id="closeTrackBtn">Takibi Kapat</button>
-    </div>
-  </div>
+    <!-- FACE -->
+    <div class="face-container" id="faceContainer">
+      <div class="face-panel-inner" id="faceInner">
+        <div class="eyes-row">
+          <div class="eye" id="eyeL">
+            <div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div>
+            <div class="lid-top"></div><div class="lid-bot"></div>
+          </div>
+          <div class="eye" id="eyeR">
+            <div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div>
+            <div class="lid-top"></div><div class="lid-bot"></div>
+          </div>
+        </div>
+        <div class="mouth-wrapper"><div class="mouth"></div></div>
+        <button class="close-track-btn" id="closeTrackBtn" type="button">Takibi Kapat</button>
+      </div>
+    </div>
 
-  <div class="chat-area" id="chat"></div>
+    <!-- CHAT -->
+    <div class="chat-area" id="chat"></div>
 
-  <div class="input-dock">
-    <div class="track-trigger-row"><button class="main-track-btn" id="openTrackBtn">👁️ TAKİP ET</button></div>
-    <div class="dock-inner">
-      <button class="icon-btn" id="camBtn"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
-      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?"></textarea>
-      <button class="icon-btn" id="micBtn"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
-      <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg></button>
-    </div>
-  </div>
+    <!-- DOCK -->
+    <div class="input-dock">
+      <div class="track-trigger-row">
+        <button class="main-track-btn" id="openTrackBtn" type="button">👁️ TAKİP ET</button>
+      </div>
 
-  <div class="footer-container">
-    <span>@CaynanaAI By Ozyigits</span>
-    <div class="footer-ver">2026 - v2.7</div>
-  </div>
-</div>
+      <div class="dock-inner">
+        <button class="icon-btn" id="camBtn" type="button">
+          <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+        </button>
 
-<div class="full-overlay" id="falOverlay" style="background:#111; z-index:7000;">
-  <button onclick="window.closeFal()" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:30px; color:#fff;">&times;</button>
-  <div style="text-align:center; margin-top:60px;">
-    <svg class="seesaw-svg" viewBox="0 0 40 20" style="width:60px;">
-      <g class="seesaw-bar"><line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2"/><circle cx="20" cy="5" r="5" fill="#6d4c41"/></g>
-    </svg>
-    <h2 style="color:#d9f99d; margin:10px 0;">Kaynana Fal</h2>
-    <p style="color:#888; font-size:12px; padding:0 20px;">
-      Günde sadece 1 kez bakılır evladım. Umudunu fala bağlama, falsız kalma.
-    </p>
-  </div>
+        <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?"></textarea>
 
-  <div id="falStep1" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
-    <div id="falStatus" style="color:#fff; font-size:16px; text-align:center; padding:20px;">Hadi fincanı çek bakalım...</div>
-    <label for="falInput" class="main-track-btn" style="padding:20px; border-radius:50%; width:80px; height:80px; justify-content:center;">
-      <svg viewBox="0 0 24 24" width="40" height="40" stroke="#ffb300" fill="none" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-    </label>
-    <input type="file" id="falInput" accept="image/*" capture="environment" style="display:none;" onchange="window.handleFalFile(this)">
-  </div>
+        <button class="icon-btn" id="micBtn" type="button">
+          <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        </button>
 
-  <div id="falStep2" style="flex:1; display:none; flex-direction:column; align-items:center; justify-content:center;">
-    <div class="brand-wrapper thinking" style="transform:scale(2); margin-bottom:30px;">
-      <svg class="seesaw-svg" viewBox="0 0 40 20"><g class="seesaw-bar"><circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall"/></g></svg>
-    </div>
-    <div id="loadingText" style="color:#d9f99d; font-size:18px; text-align:center; padding:20px;">Vay vay vay...</div>
-  </div>
+        <button class="send-btn" id="sendBtn" type="button">
+          <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+        </button>
+      </div>
+    </div>
 
-  <div id="falResult" style="flex:1; display:none; flex-direction:column; padding:20px; overflow-y:auto;">
-    <div id="falText" style="background:#222; padding:20px; border-radius:12px; color:#ececec; line-height:1.6; border:1px solid #333;"></div>
-    <button onclick="window.closeFal()" class="auth-btn btn-google enabled" style="margin-top:20px; filter:none;">Tamamdır Anne</button>
-  </div>
-</div>
+    <!-- FOOTER -->
+    <div class="footer-container">
+      <span>@CaynanaAI By Ozyigits</span>
+      <div class="footer-ver">2026 - v2.7</div>
+    </div>
+  </div>
 
-<video id="camVideo" autoplay playsinline muted></video>
+  <!-- FAL OVERLAY -->
+  <div class="full-overlay" id="falOverlay" style="background:#111; z-index:7000;">
+    <button onclick="window.closeFal()" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:30px; color:#fff;" type="button">&times;</button>
+    <div style="text-align:center; margin-top:60px;">
+      <svg class="seesaw-svg" viewBox="0 0 40 20" style="width:60px;">
+        <g class="seesaw-bar"><line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2"/><circle cx="20" cy="5" r="5" fill="#6d4c41"/></g>
+      </svg>
+      <h2 style="color:#d9f99d; margin:10px 0;">Kaynana Fal</h2>
+      <p style="color:#888; font-size:12px; padding:0 20px;">
+        Günde sadece 1 kez bakılır evladım. Umudunu fala bağlama, falsız kalma.
+      </p>
+    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+    <div id="falStep1" style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
+      <div id="falStatus" style="color:#fff; font-size:16px; text-align:center; padding:20px;">Hadi fincanı çek bakalım...</div>
+      <label for="falInput" class="main-track-btn" style="padding:20px; border-radius:50%; width:80px; height:80px; justify-content:center;">
+        <svg viewBox="0 0 24 24" width="40" height="40" stroke="#ffb300" fill="none" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </label>
+      <input type="file" id="falInput" accept="image/*" capture="environment" style="display:none;" onchange="window.handleFalFile(this)">
+    </div>
 
-<script type="module">
-  // --- IMPORTLAR ---
-  import { initPartials } from '/js/partials.js';
-  import { initNotif } from '/js/notif.js';
-  import { initAuth, handleLogin, logout, acceptTerms } from '/js/auth.js';
-  import { addUserBubble } from '/js/chat.js';
-  import { BASE_DOMAIN, STORAGE_KEY } from '/js/config.js';
-  import { openFalPanel, closeFalPanel, handleFalPhoto } from '/js/fal.js';
+    <div id="falStep2" style="flex:1; display:none; flex-direction:column; align-items:center; justify-content:center;">
+      <div class="brand-wrapper thinking" style="transform:scale(2); margin-bottom:30px;">
+        <svg class="seesaw-svg" viewBox="0 0 40 20"><g class="seesaw-bar"><circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall"/></g></svg>
+      </div>
+      <div id="loadingText" style="color:#d9f99d; font-size:18px; text-align:center; padding:20px;">Vay vay vay...</div>
+    </div>
 
-  // --- GLOBAL DEĞİŞKENLER & SEÇİCİLER ---
-  let chatHistory = [];
-  const $ = (id) => document.getElementById(id);
+    <div id="falResult" style="flex:1; display:none; flex-direction:column; padding:20px; overflow-y:auto;">
+      <div id="falText" style="background:#222; padding:20px; border-radius:12px; color:#ececec; line-height:1.6; border:1px solid #333;"></div>
+      <button onclick="window.closeFal()" class="auth-btn btn-google enabled" style="margin-top:20px; filter:none;" type="button">Tamamdır Anne</button>
+    </div>
+  </div>
 
-  // --- GLOBAL'E ATAMALAR (HTML onclick çalışsın diye) ---
-  window.handleLogin = handleLogin;
-  window.logout = logout;
-  window.acceptTermsAndEnter = acceptTermsAndEnter;
-  window.openFal = openFalPanel;
-  window.closeFal = closeFalPanel;
-  window.handleFalFile = handleFalPhoto;
-  window.toggleMenu = function() {
-    const el = $('menuOverlay');
-    if(el) el.classList.toggle('open');
-  };
-  window.toggleNotif = function() {
-    const el = $('notifDropdown');
-    if(el) el.classList.toggle('show');
-  };
+  <video id="camVideo" autoplay playsinline muted></video>
 
-  // --- YENİ EKLENEN KRİTİK FONKSİYONLAR ---
-  
-  // 1. Şartları Kabul Et ve Gir (Güvenli Versiyon)
-  async function acceptTermsAndEnter(){
-    const cb = $('termsCheck');
-    if(!cb || !cb.checked){ alert("Onay kutusunu işaretle evladım."); return; }
-    const ok = await acceptTerms();
-    if(ok) window.enterApp();
-    else alert("Onay kaydedilemedi evladım.");
-  };
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
 
-  // 2. Uygulamaya Giriş (UI Güncelleme)
-  window.enterApp = function() {
-    $('loginOverlay')?.classList.remove('active');
-    $('termsOverlay')?.classList.remove('active');
-    
-    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    // İsim Kontrolü (Hata önleyici)
-    const name = user.fullname || user.name || user.email || "Evladım";
-    
-    setTimeout(() => {
-      window.typeWriter(`Hoş geldin ${name}. Ben Caynana.`);
-    }, 500);
-    
-    window.refreshNotifications?.();
-  };
+  <script type="module">
+    // --- IMPORTLAR ---
+    import { initPartials } from '/js/partials.js';
+    import { initNotif } from '/js/notif.js';
+    import { initAuth, handleLogin, logout, acceptTerms } from '/js/auth.js';
+    import { addUserBubble } from '/js/chat.js';
+    import { BASE_DOMAIN, STORAGE_KEY } from '/js/config.js';
+    import { openFalPanel, closeFalPanel, handleFalPhoto } from '/js/fal.js';
 
-  // 3. Mesaj Gönderme (Safe + Text/Message Uyumlu)
-  window.sendMessage = async function() {
-    const inputEl = $('msgInput');
-    if (!inputEl) { console.error("Input bulunamadı"); return; }
-    
-    const txt = inputEl.value.trim();
-    if(!txt) return;
+    // --- GLOBAL & HELPERS ---
+    let chatHistory = [];
+    const $ = (id) => document.getElementById(id);
 
-    // UI
-    addUserBubble(txt);
-    inputEl.value = '';
-    inputEl.blur();
+    // --- GLOBAL’E ATAMALAR ---
+    window.handleLogin = handleLogin;
+    window.logout = logout;
+    window.openFal = openFalPanel;
+    window.closeFal = closeFalPanel;
+    window.handleFalFile = handleFalPhoto;
 
-    // History
-    chatHistory.push({ role: "user", content: txt });
-    if(chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
+    window.toggleMenu = function() {
+      const el = $('menuOverlay');
+      if (el) el.classList.toggle('open');
+    };
 
-    const brand = $('brandWrapper');
-    if(brand) brand.classList.add('thinking');
+    window.toggleNotif = function() {
+      const el = $('notifDropdown');
+      if (el) el.classList.toggle('show');
+    };
 
-    try {
-      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      
-      const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: txt,  // Backend v14.5 ile uyumlu
-          user_id: user.id || "guest",
-          history: chatHistory
-        })
-      });
+    window.showTermsOverlay = function() {
+      $('termsOverlay')?.classList.add('active');
+    };
 
-      const data = await res.json();
-      if(brand) brand.classList.remove('thinking');
+    // 1) Terms kabul ve gir
+    async function acceptTermsAndEnter(){
+      const cb = $('termsCheck');
+      if(!cb || !cb.checked){ alert("Onay kutusunu işaretle evladım."); return; }
+      const ok = await acceptTerms();
+      if(ok) window.enterApp();
+      else alert("Onay kaydedilemedi evladım.");
+    }
+    window.acceptTermsAndEnter = acceptTermsAndEnter;
 
-      if(data && data.text) {
-        window.typeWriter(data.text);
-        chatHistory.push({ role: "assistant", content: data.text });
-        
-        if(data.audio) {
-           const audio = new Audio("data:audio/mp3;base64," + data.audio);
-           audio.play().catch(e => console.log("Ses hatası:", e));
-        }
-      }
-    } catch(e) {
-      console.error("Chat Error:", e);
-      if(brand) brand.classList.remove('thinking');
-      window.typeWriter("Evladım tansiyonum düştü, internetine bir bakıver.");
-    }
-  };
+    // 2) App giriş
+    window.enterApp = function() {
+      $('loginOverlay')?.classList.remove('active');
+      $('termsOverlay')?.classList.remove('active');
 
-  // 4. Yazı Efekti
-  window.typeWriter = function(text) {
-    const chatDiv = $('chat');
-    const brand = $('brandWrapper');
-    if(!chatDiv) return;
-    
-    if(brand) brand.classList.add('talking');
-    const bubble = document.createElement("div");
-    bubble.className = "bubble bot";
-    chatDiv.appendChild(bubble);
+      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      const name = user.fullname || user.name || user.email || "Evladım";
 
-    let i = 0;
-    function type() {
-      if(i < text.length) {
-        bubble.textContent += text.charAt(i);
-        i++;
-        chatDiv.scrollTop = chatDiv.scrollHeight;
-        setTimeout(type, 20);
-      } else {
-        if(brand) brand.classList.remove('talking');
-      }
-    }
-    type();
-  };
+      setTimeout(() => {
+        window.typeWriter(`Hoş geldin ${name}. Ben Caynana.`);
+      }, 500);
 
-  // 5. Bildirimler
-  window.refreshNotifications = async function() {
-    const list = $('notifList');
-    const badge = $('notifBadge');
-    if(!list) return;
+      window.refreshNotifications?.();
+    };
 
-    try {
-      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${user.id || 'guest'}`);
-      const data = await res.json();
-      const items = data.items || [];
+    // 3) Mesaj gönder
+    window.sendMessage = async function() {
+      const inputEl = $('msgInput');
+      if (!inputEl) { console.error("Input bulunamadı"); return; }
 
-      if(badge) badge.style.display = items.length ? "block" : "none";
+      const txt = inputEl.value.trim();
+      if(!txt) return;
 
-      if(!items.length) {
-        list.innerHTML = `<div class="notif-item"><div class="notif-content"><div class="notif-title">Sakin</div><div class="notif-desc">Hatırlatma yok evladım.</div></div></div>`;
-        return;
-      }
+      addUserBubble(txt);
+      inputEl.value = '';
+      inputEl.blur();
 
-      list.innerHTML = items.map(it => `
-        <div class="notif-item">
-          <div class="notif-icon">🔔</div>
-          <div class="notif-content">
-            <div class="notif-title">${it.title}</div>
-            <div class="notif-desc">${it.message}</div>
-          </div>
-        </div>
-      `).join("");
-    } catch(e) { console.log("Notif error:", e); }
-  };
+      chatHistory.push({ role: "user", content: txt });
+      if(chatHistory.length > 10) chatHistory = chatHistory.slice(-10);
 
-  // --- WINDOW ONLOAD (Başlangıç) ---
-  window.onload = async function() {
-    console.log("Caynana v2.7 Başlatılıyor...");
+      const brand = $('brandWrapper');
+      if(brand) brand.classList.add('thinking');
 
-    // 1. Partials
-    try { await initPartials(); } catch(e) { console.log("Partials hatası:", e); }
+      try {
+        const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 
-    // 2. Auth Init (ÖNEMLİ EKLENTİ)
-    if(typeof initAuth === 'function') initAuth();
+        const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: txt,
+            user_id: user.id || "guest",
+            history: chatHistory
+          })
+        });
 
-    // 3. Notif Init
-    try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) {}
+        const data = await res.json();
+        if(brand) brand.classList.remove('thinking');
 
-    // 4. Session Kontrolü
-    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    if(user && user.isSessionActive && user.email) {
-       if(!user.terms_accepted_at) $('termsOverlay').classList.add('active');
-       else window.enterApp();
-       $('loginOverlay').classList.remove('active');
-    }
+        if(data && data.text) {
+          window.typeWriter(data.text);
+          chatHistory.push({ role: "assistant", content: data.text });
 
-    // 5. Buton Listenerları
-    $('sendBtn')?.addEventListener('click', window.sendMessage);
-    $('msgInput')?.addEventListener('keydown', (e) => {
-      if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.sendMessage(); }
-    });
-    
-    // Göz Takip vb.
-    setInterval(autoLookBehavior, 5000);
-    resetIdle();
-    
-    // Ses Tanıma
-    window.startDictation = function() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) { alert("Ses desteği yok."); return; }
-      const r = new SpeechRecognition();
-      r.lang = "tr-TR";
-      r.start();
-      r.onresult = function(e) {
-        $('msgInput').value = e.results[0][0].transcript;
-        r.stop();
-        window.sendMessage();
-      };
-    };
-  };
+          if(data.audio) {
+            const audio = new Audio("data:audio/mp3;base64," + data.audio);
+            audio.play().catch(e => console.log("Ses hatası:", e));
+          }
+        } else {
+          window.typeWriter("Evladım bir şeyler ters gitti, bir daha dene.");
+        }
 
-  // --- Göz Takip Yardımcıları ---
-  let isTracking = false, isMouseActive = false, sleepTimer = null, gazeTimer = null;
-  const eyeL = $('eyeL'), eyeR = $('eyeR'), frame = $('mobileFrame');
+      } catch(e) {
+        console.error("Chat Error:", e);
+        const brand = $('brandWrapper');
+        if(brand) brand.classList.remove('thinking');
+        window.typeWriter("Evladım tansiyonum düştü, internetine bir bakıver.");
+      }
+    };
 
-  window.toggleCam = function() {
-    if(!frame) return;
-    if(frame.classList.contains('tracking-active')) {
-      frame.classList.remove('tracking-active'); $('camBtn').classList.remove('active'); isTracking = false;
-    } else {
-      frame.classList.add('tracking-active'); $('camBtn').classList.add('active'); isTracking = true; wakeUp();
-    }
-  };
+    // 4) Typewriter
+    window.typeWriter = function(text) {
+      const chatDiv = $('chat');
+      const brand = $('brandWrapper');
+      if(!chatDiv) return;
 
-  function setGaze(x, y) {
-    const gx = Math.min(Math.max(x * 20, -20), 20), gy = Math.min(Math.max(y * 15, -15), 15);
-    [eyeL, eyeR].forEach(e => { if(e) { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); } });
-  }
-  function setLids(top, bot=0) {
-    [eyeL, eyeR].forEach(e => { if(e) { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); } });
-  }
-  function resetIdle() { clearTimeout(sleepTimer); sleepTimer = setTimeout(goSleep, 30000); }
-  function goSleep() { if(frame) { frame.classList.add('sleeping'); setLids(100, 100); } }
-  function wakeUp() { if(frame) { frame.classList.remove('sleeping'); setLids(0, 0); resetIdle(); } }
-  function centerEyes() { setGaze(0, 0); }
-  function autoLookBehavior() {
-    if (!frame || isMouseActive || frame.classList.contains('sleeping') || !isTracking) return;
-    setGaze((Math.random() - 0.5) * 0.8, (Math.random() - 0.5) * 0.5);
-    setTimeout(() => setGaze(0, 0), 1000);
-  }
+      if(brand) brand.classList.add('talking');
+      const bubble = document.createElement("div");
+      bubble.className = "bubble bot";
+      chatDiv.appendChild(bubble);
 
-  if(frame) {
-    window.addEventListener('pointermove', (e) => {
-      if(!isTracking || frame.classList.contains('sleeping')) { if(frame.classList.contains('sleeping')) wakeUp(); }
-      resetIdle(); isMouseActive = true; clearTimeout(gazeTimer);
-      const rect = frame.getBoundingClientRect();
-      setGaze(((e.clientX - rect.left) / rect.width) * 2 - 1, ((e.clientY - rect.top) / rect.height) * 2 - 1);
-      gazeTimer = setTimeout(() => { isMouseActive = false; centerEyes(); }, 2000);
-    });
-  }
-</script>
+      let i = 0;
+      function type() {
+        if(i < text.length) {
+          bubble.textContent += text.charAt(i);
+          i++;
+          chatDiv.scrollTop = chatDiv.scrollHeight;
+          setTimeout(type, 20);
+        } else {
+          if(brand) brand.classList.remove('talking');
+        }
+      }
+      type();
+    };
 
+    // 5) Bildirim refresh (basit)
+    window.refreshNotifications = async function() {
+      const list = $('notifList');
+      const badge = $('notifBadge');
+      if(!list) return;
+
+      try {
+        const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${user.id || 'guest'}`);
+        const data = await res.json();
+        const items = data.items || [];
+
+        if(badge) badge.style.display = items.length ? "block" : "none";
+
+        if(!items.length) {
+          list.innerHTML = `<div class="notif-item"><div class="notif-content"><div class="notif-title">Sakin</div><div class="notif-desc">Hatırlatma yok evladım.</div></div></div>`;
+          return;
+        }
+
+        list.innerHTML = items.map(it => `
+          <div class="notif-item">
+            <div class="notif-icon">🔔</div>
+            <div class="notif-content">
+              <div class="notif-title">${it.title}</div>
+              <div class="notif-desc">${it.message}</div>
+            </div>
+          </div>
+        `).join("");
+      } catch(e) {
+        console.log("Notif error:", e);
+      }
+    };
+
+    // --- Göz Takip Yardımcıları ---
+    let isTracking = false, isMouseActive = false, sleepTimer = null, gazeTimer = null;
+    const eyeL = $('eyeL'), eyeR = $('eyeR'), frame = $('mobileFrame');
+
+    function setGaze(x, y) {
+      const gx = Math.min(Math.max(x * 20, -20), 20), gy = Math.min(Math.max(y * 15, -15), 15);
+      [eyeL, eyeR].forEach(e => { if(e) { e.style.setProperty('--gx', gx+'px'); e.style.setProperty('--gy', gy+'px'); } });
+    }
+    function setLids(top, bot=0) {
+      [eyeL, eyeR].forEach(e => { if(e) { e.style.setProperty('--lidTop', top+'%'); e.style.setProperty('--lidBot', bot+'%'); } });
+    }
+    function resetIdle() { clearTimeout(sleepTimer); sleepTimer = setTimeout(goSleep, 30000); }
+    function goSleep() { if(frame) { frame.classList.add('sleeping'); setLids(100, 100); } }
+    function wakeUp() { if(frame) { frame.classList.remove('sleeping'); setLids(0, 0); resetIdle(); } }
+    function centerEyes() { setGaze(0, 0); }
+    function autoLookBehavior() {
+      if (!frame || isMouseActive || frame.classList.contains('sleeping') || !isTracking) return;
+      setGaze((Math.random() - 0.5) * 0.8, (Math.random() - 0.5) * 0.5);
+      setTimeout(() => setGaze(0, 0), 1000);
+    }
+
+    window.toggleCam = function() {
+      if(!frame) return;
+      if(frame.classList.contains('tracking-active')) {
+        frame.classList.remove('tracking-active');
+        $('camBtn')?.classList.remove('active');
+        isTracking = false;
+      } else {
+        frame.classList.add('tracking-active');
+        $('camBtn')?.classList.add('active');
+        isTracking = true;
+        wakeUp();
+      }
+    };
+
+    // --- BAŞLANGIÇ ---
+    window.addEventListener('DOMContentLoaded', async () => {
+      console.log("Caynana v2.7 Başlatılıyor...");
+
+      // Partials
+      try { await initPartials(); } catch(e) { console.log("Partials hatası:", e); }
+
+      // Auth init
+      if(typeof initAuth === 'function') initAuth();
+
+      // Notif init
+      try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) {}
+
+      // BUTON BAĞLANTILARI (KRİTİK)
+      $('googleLoginBtn')?.addEventListener('click', () => window.handleLogin('google'));
+      $('appleLoginBtn')?.addEventListener('click', () => window.handleLogin('apple'));
+      $('termsAcceptBtn')?.addEventListener('click', acceptTermsAndEnter);
+
+      $('hambBtn')?.addEventListener('click', window.toggleMenu);
+      $('menuOverlay')?.addEventListener('click', (e) => { if(e.target?.id === 'menuOverlay') window.toggleMenu(); });
+
+      $('notifBtn')?.addEventListener('click', window.toggleNotif);
+      document.addEventListener('click', (e) => {
+        const dd = $('notifDropdown');
+        const btn = $('notifBtn');
+        if(!dd || !btn) return;
+        if(dd.classList.contains('show') && !dd.contains(e.target) && !btn.contains(e.target)){
+          dd.classList.remove('show');
+        }
+      });
+
+      $('sendBtn')?.addEventListener('click', window.sendMessage);
+      $('msgInput')?.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); window.sendMessage(); }
+      });
+
+      $('camBtn')?.addEventListener('click', window.toggleCam);
+      $('openTrackBtn')?.addEventListener('click', window.toggleCam);
+      $('closeTrackBtn')?.addEventListener('click', window.toggleCam);
+
+      // Session kontrol
+      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if(user && user.isSessionActive && user.email) {
+        if(!user.terms_accepted_at) $('termsOverlay')?.classList.add('active');
+        else window.enterApp();
+        $('loginOverlay')?.classList.remove('active');
+      }
+
+      setInterval(autoLookBehavior, 5000);
+      resetIdle();
+
+      // Pointer gaze
+      if(frame) {
+        window.addEventListener('pointermove', (e) => {
+          if(!isTracking) return;
+          if(frame.classList.contains('sleeping')) wakeUp();
+          resetIdle();
+          isMouseActive = true;
+          clearTimeout(gazeTimer);
+
+          const rect = frame.getBoundingClientRect();
+          setGaze(((e.clientX - rect.left) / rect.width) * 2 - 1, ((e.clientY - rect.top) / rect.height) * 2 - 1);
+
+          gazeTimer = setTimeout(() => { isMouseActive = false; centerEyes(); }, 2000);
+        });
+      }
+
+      // Ses tanıma
+      window.startDictation = function() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) { alert("Ses desteği yok."); return; }
+        const r = new SpeechRecognition();
+        r.lang = "tr-TR";
+        r.start();
+        r.onresult = function(ev) {
+          $('msgInput').value = ev.results[0][0].transcript;
+          r.stop();
+          window.sendMessage();
+        };
+      };
+
+      $('micBtn')?.addEventListener('click', window.startDictation);
+      $('logoutBtn')?.addEventListener('click', window.logout);
+    });
+  </script>
 </body>
 </html>
