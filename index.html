@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Caynana AI v3.1 Stable</title>
+  <title>Caynana AI v3.2 Final Stable</title>
   <link rel="icon" href="data:,">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
@@ -59,22 +59,17 @@
     .bubble.bot { align-self: flex-start; background: #1c1c1c; border-left: 2px solid var(--gold); color: #ddd; border-top-left-radius: 2px; }
     .bubble.user { align-self: flex-end; background: #222; border-right: 2px solid var(--pistachio); color: #fff; border-top-right-radius: 2px; text-align: right; }
 
-    /* --- DOCK (YATAY BAR - DARALTILMIŞ YÜKSEKLİK) --- */
+    /* --- DOCK --- */
     .input-dock { flex: 0 0 auto; background: transparent; padding: 0 10px; z-index: 3000; display: flex; flex-direction: column; gap: 0; align-items: center; position: relative; margin-bottom: 5px; }
-    
-    /* Göz takibi butonu üstte yüzer */
     .track-btn-wrapper { width: 100%; display: flex; justify-content: center; height: 24px; overflow: hidden; transition: 0.3s; opacity: 1; }
     .mobile-frame.tracking-active .track-btn-wrapper { height: 0; opacity: 0; }
     .track-toggle-btn { background: rgba(255,179,0,0.1); color: var(--gold); border: 1px solid var(--gold); padding: 2px 12px; border-radius: 12px; font-size: 10px; cursor: pointer; backdrop-filter: blur(4px); }
 
-    /* Dock Gövde: Genişlik full'e yakın ama yükseklik dar */
     .dock-inner { width: 100%; height: 50px; display: flex; align-items: center; gap: 5px; background: #1a1a1a; border: 1px solid #333; border-radius: 25px; padding: 0 5px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); transition: 0.3s; }
-    
     .icon-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
     .icon-btn svg { width: 18px; height: 18px; stroke: #aaa; stroke-width: 2; fill: none; transition: 0.2s; }
     .icon-btn:hover svg { stroke: var(--gold); }
     
-    /* Textarea: Scroll yok, tek satır gibi durur ama genişler */
     textarea { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 14px; padding: 10px 5px; height: 40px; max-height: 40px; font-family: inherit; resize: none; white-space: nowrap; overflow-x: hidden; }
     textarea::placeholder { color: #555; }
 
@@ -105,8 +100,8 @@
     .mc-icon { font-size: 18px; }
     .mc-text { font-size: 10px; color: #bbb; }
 
-    /* REGL (ÖZEL GİZLE AÇ) */
-    .regl-module { display: none; background: #2a0e0e; border: 1px solid #5c1818; border-radius: 8px; margin-top: auto; margin-bottom: 10px; overflow: hidden; }
+    /* REGL */
+    .regl-module { display: none; background: #2a0e0e; border: 1px solid #5c1818; border-radius: 8px; margin-top: auto; margin-bottom: 10px; }
     .regl-header { padding: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 11px; color: #ff8a80; font-weight: bold; }
     .regl-body { display: none; padding: 0 10px 10px 10px; font-size: 10px; color: #ccc; border-top: 1px solid #5c1818; }
     .regl-body.open { display: block; }
@@ -127,17 +122,16 @@
     .lid { position: absolute; left: 0; width: 100%; background: var(--bg); z-index: 10; transition: height 0.3s; }
     .lid.top { top: 0; height: 0%; border-bottom: 2px solid #111; }
     .lid.bot { bottom: 0; height: 0%; border-top: 2px solid #111; }
-    
-    /* UYKU EFEKTİ */
     .mobile-frame.sleeping .lid.top { height: 60%; }
     .mobile-frame.sleeping .lid.bot { height: 20%; }
     .mobile-frame.sleeping .iris { opacity: 0.6; }
 
     #camVideo { display: none; }
     
-    /* Overlays */
+    /* LOGIN OVERLAY */
     .full-overlay { position: absolute; inset: 0; background: #000; z-index: 6000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
     .full-overlay.active { opacity: 1; pointer-events: auto; }
+    .login-card { width: 100%; max-width: 300px; text-align: center; }
     .auth-btn { width: 200px; padding: 10px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; border: 1px solid #333; background: #fff; font-size: 12px; font-weight: bold; }
   </style>
 </head>
@@ -146,10 +140,7 @@
 <div class="mobile-frame" id="mobileFrame">
 
   <div class="topbar">
-    <div class="left-controls">
-      <button class="hamb-btn" onclick="window.toggleMenu()">☰</button>
-    </div>
-
+    <div class="left-controls"><button class="hamb-btn" onclick="window.toggleMenu()">☰</button></div>
     <div class="brand-wrapper" id="brandWrapper">
       <div class="logo-area">
         <svg class="seesaw-svg" viewBox="0 0 40 20">
@@ -164,37 +155,22 @@
       </div>
       <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
     </div>
-
     <div class="right-controls">
       <div class="yp-container" id="ypContainer">
         <div class="yp-text">YP: <span id="ypValue">0</span>%</div>
         <div class="yp-bar-bg"><div class="yp-bar-fill" id="ypFill"></div></div>
-        <div class="yp-popup" id="ypPopup">
-          <strong>YP Nedir?</strong><br>
-          Bu senin "Yakınlaşma Puanın" evladım.<br>
-          • Sık gelirsen artar (+5)<br>
-          • Konuşursan artar (+0.5)<br>
-          • Gelmezsen küserim (-10)<br>
-          Aranı iyi tut!
-        </div>
+        <div class="yp-popup" id="ypPopup"><strong>YP Nedir?</strong><br>Yakınlaşma Puanı.<br>Girdikçe artar, girmezsen azalır.</div>
       </div>
-      <button class="icon-btn-top">
-        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        <div class="badge" id="notifBadge"></div>
-      </button>
-      <button class="icon-btn-top" onclick="location.href='pages/profil.html'">
-        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      </button>
+      <button class="icon-btn-top"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></button>
+      <button class="icon-btn-top" onclick="location.href='pages/profil.html'"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></button>
     </div>
   </div>
 
   <div class="menu-overlay" id="menuOverlay" onclick="if(event.target.id==='menuOverlay') window.toggleMenu()">
     <div class="menu-sidebar no-scroll">
       <button class="new-chat-btn" onclick="window.newChat()"><span>+</span> YENİ SOHBET</button>
-      
       <div class="section-title">Son Sohbetler</div>
       <div class="recent-chats-list" id="recentChatsList"></div>
-
       <div class="section-title">Asistan</div>
       <div class="menu-grid">
         <div class="menu-card"><span class="mc-icon">🛍️</span><span class="mc-text">Alışveriş</span></div>
@@ -204,29 +180,21 @@
         <div class="menu-card"><span class="mc-icon">📅</span><span class="mc-text">Özel Gün</span></div>
         <div class="menu-card"><span class="mc-icon">⏰</span><span class="mc-text">Hatırlatıcı</span></div>
       </div>
-
       <div class="section-title">Mistik</div>
       <div class="menu-grid">
-        <div class="menu-card" onclick="window.openFal(); window.toggleMenu()"><span class="mc-icon">☕</span><span class="mc-text">Kahve</span></div>
+        <div class="menu-card" onclick="window.openFal()"><span class="mc-icon">☕</span><span class="mc-text">Kahve</span></div>
         <div class="menu-card"><span class="mc-icon">🔮</span><span class="mc-text">Tarot</span></div>
         <div class="menu-card" onclick="location.href='pages/burc.html'"><span class="mc-icon">♈</span><span class="mc-text">Burç</span></div>
         <div class="menu-card"><span class="mc-icon">🌙</span><span class="mc-text">Rüya</span></div>
       </div>
-
       <div class="regl-module" id="reglModule">
-        <div class="regl-header" onclick="document.getElementById('reglBody').classList.toggle('open')">
-          <span>🩸 Regl Takibi</span> <span>▼</span>
-        </div>
-        <div class="regl-body" id="reglBody">
-          Son: 12 Ocak<br>Beklenen: 9 Şubat<br>
-          <small>Profilinden düzenle</small>
-        </div>
+        <div class="regl-header" onclick="document.getElementById('reglBody').classList.toggle('open')"><span>🩸 Regl Takibi</span><span>▼</span></div>
+        <div class="regl-body" id="reglBody">Son: 12 Ocak<br>Beklenen: 9 Şubat</div>
       </div>
-
       <div class="menu-actions">
         <a class="action-link delete-acc" id="deleteAccBtn">⚠️ Hesabımı Sil</a>
-        <a class="action-link" onclick="localStorage.clear(); location.reload()">🛡️ Güvenli Çıkış</a>
-        <div style="text-align:center; font-size:9px; color:#444; margin-top:10px;">@CaynanaAI By Ozyigits 2026 - v3.1</div>
+        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
+        <div style="text-align:center; font-size:9px; color:#444; margin-top:10px;">@CaynanaAI By Ozyigits 2026 - v3.2</div>
       </div>
     </div>
   </div>
@@ -238,23 +206,18 @@
         <div class="eye" id="eyeR"><div class="iris"><div class="pupil"></div></div><div class="lid top"></div><div class="lid bot"></div></div>
       </div>
       <div class="mouth-wrapper"><div class="mouth"></div></div>
-      <button class="track-toggle-btn" style="margin-top:10px; color:#fff; border-color:#555;" onclick="window.toggleCam()">Kapat</button>
+      <button class="track-toggle-btn" style="margin-top:10px; color:#fff;" onclick="window.toggleCam()">Kapat</button>
     </div>
   </div>
 
   <div class="chat-area no-scroll" id="chat"></div>
 
   <div class="input-dock">
-    <div class="track-btn-wrapper">
-      <button class="track-toggle-btn" onclick="window.toggleCam()">👁️ TAKİP ET</button>
-    </div>
+    <div class="track-btn-wrapper"><button class="track-toggle-btn" onclick="window.toggleCam()">👁️ TAKİP ET</button></div>
     <div class="dock-inner">
       <button class="icon-btn" onclick="window.toggleCam()"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
-      
       <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
-      
       <button class="icon-btn" id="micBtn"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
-      
       <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg></button>
     </div>
   </div>
@@ -273,15 +236,9 @@
 
 <div class="full-overlay" id="falOverlay" style="background:#111; z-index:7000;">
   <button onclick="document.getElementById('falOverlay').style.display='none'" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:30px; color:#fff;">&times;</button>
-  <div style="text-align:center; margin-top:60px;">
-    <h2 style="color:#d9f99d;">Kaynana Fal</h2>
-    <p style="color:#888;">Fincanı kapat, niyet et, resmini yükle.</p>
-  </div>
-  <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-    <label class="send-btn" style="width:80px; height:80px;">
-      <svg viewBox="0 0 24 24" width="30" height="30"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-      <input type="file" accept="image/*" style="display:none;" onchange="alert('Fal resmi alındı evladım.'); document.getElementById('falOverlay').style.display='none';">
-    </label>
+  <div style="text-align:center; margin-top:60px; color:#d9f99d;"><h2>Kaynana Fal</h2></div>
+  <div style="flex:1; display:flex; justify-content:center; align-items:center;">
+    <label class="send-btn" style="width:80px; height:80px;"><input type="file" style="display:none;" onchange="alert('Fal resmi alındı.'); document.getElementById('falOverlay').style.display='none';"><svg viewBox="0 0 24 24" width="30"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></label>
   </div>
 </div>
 
@@ -300,94 +257,94 @@
 
 <script type="module">
 const BASE_DOMAIN = "https://caynana-api-py310-final.onrender.com";
-const STORAGE_KEY = "caynana_v3_user";
-let chatHistory = [];
-let deleteCounter = 0;
-let idleTimer = null;
-let isTracking = false;
-
+const STORAGE_KEY = "caynana_user_v2";
+let chatHistory = [], deleteCounter = 0, idleTimer = null, isTracking = false;
 const $ = (id) => document.getElementById(id);
 
-// --- 1. YP BALONCUĞU ---
-$("ypContainer").onclick = (e) => {
-  e.stopPropagation();
-  $("ypPopup").classList.toggle("show");
+// --- 1. INIT & LOGIN CHECK ---
+window.onload = function() {
+  const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+  
+  if(user && user.id) {
+    // Giriş yapılmış
+    $("loginOverlay").classList.remove("active");
+    checkGender();
+    renderHistory();
+    updateYP("visit");
+    typeWriter(`Hoş geldin ${user.name || 'evladım'}.`);
+  } else {
+    // Giriş yapılmamış
+    $("loginOverlay").classList.add("active");
+  }
+
+  resetIdle();
+  setInterval(autoLook, 4000); // Göz animasyonu
 };
-document.body.onclick = () => $("ypPopup").classList.remove("show");
 
-function updateYP(action) {
-  let user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  let yp = user.yp || 50;
-  if(action==="msg") yp += 0.5;
-  if(action==="visit") yp += 5;
-  yp = Math.min(100, Math.max(0, yp));
-  $("ypValue").innerText = Math.floor(yp);
-  $("ypFill").style.width = yp+"%";
-  user.yp = yp;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-}
+// --- 2. LOGIN / LOGOUT ---
+$("googleLogin").onclick = () => {
+  // Demo Login
+  const u = {id:"u_123", name:"Sultan", gender:"Kadın", yp:50};
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+  location.reload(); // Temiz başlangıç
+};
 
-// --- 2. CHAT MANTIĞI (DÜZELTİLDİ) ---
+$("logoutBtn").onclick = () => {
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+};
+
+$("deleteAccBtn").onclick = () => {
+  deleteCounter++;
+  if(deleteCounter===1) alert("Hesabını silmek istediğine emin misin?");
+  else if(deleteCounter===2) alert("Son şans! Her şey silinecek.");
+  else if(deleteCounter===3) { localStorage.clear(); location.reload(); }
+};
+
+// --- 3. CHAT ---
+$("sendBtn").onclick = sendMessage;
+$("msgInput").onkeydown = (e) => { if(e.key==="Enter") sendMessage(); };
+
 async function sendMessage() {
   const inp = $("msgInput");
   const txt = inp.value.trim();
   if(!txt) return;
 
-  // UI
   addBubble(txt, "user");
   inp.value = "";
-  
-  // Animasyon
   $("brandWrapper").classList.add("user-typing");
   updateYP("msg");
-
-  // History Update
   chatHistory.push({ role: "user", content: txt });
   saveHistory(txt);
 
-  // Thinking State
   setTimeout(() => {
     $("brandWrapper").classList.remove("user-typing");
     $("brandWrapper").classList.add("thinking");
-  }, 300);
+  }, 400);
 
   try {
     const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    
-    // API CALL (CORS Fix: JSON gönderiyoruz)
     const res = await fetch(`${BASE_DOMAIN}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            message: txt,
-            user_id: user.id || "guest_123",
-            history: chatHistory, 
-            persona: "normal"
-        })
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: txt, user_id: user.id || "guest", history: chatHistory })
     });
-
-    if(!res.ok) throw new Error("Sunucu Hatası: " + res.status);
-    
     const data = await res.json();
-    const reply = data.assistant_text || "Bir şeyler oldu, tekrar et evladım.";
+    const reply = data.assistant_text || "Bir şeyler oldu.";
 
     $("brandWrapper").classList.remove("thinking");
     $("brandWrapper").classList.add("bot-typing");
-
     chatHistory.push({ role: "assistant", content: reply });
     typeWriter(reply, () => $("brandWrapper").classList.remove("bot-typing"));
-
   } catch(e) {
-    console.error(e);
     $("brandWrapper").classList.remove("thinking");
-    addBubble("Evladım internetin mi koptu? Cevap veremiyorum.", "bot");
+    addBubble("Bağlantı hatası evladım.", "bot");
   }
 }
 
-function addBubble(txt, type) {
+function addBubble(t, type) {
   const d = document.createElement("div");
   d.className = `bubble ${type}`;
-  d.innerText = txt;
+  d.innerText = t;
   $("chat").appendChild(d);
   $("chat").scrollTop = $("chat").scrollHeight;
 }
@@ -405,84 +362,50 @@ function typeWriter(txt, cb) {
   }, 20);
 }
 
-// --- 3. REGL KONTROL ---
+// --- 4. EXTRAS ---
 function checkGender() {
   const u = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  // Case-insensitive check
-  if(u.gender && (u.gender.toLowerCase() === "kadın" || u.gender.toLowerCase() === "kadin")) {
-    $("reglModule").style.display = "block";
-  } else {
-    $("reglModule").style.display = "none";
+  $("reglModule").style.display = (u.gender === "Kadın") ? "block" : "none";
+}
+
+function updateYP(action) {
+  let user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  let yp = user.yp || 50;
+  if(action==="msg") yp+=0.5; if(action==="visit") yp+=5;
+  yp = Math.min(100, Math.max(0, yp));
+  $("ypValue").innerText = Math.floor(yp);
+  $("ypFill").style.width = yp+"%";
+  user.yp = yp;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+}
+
+$("ypContainer").onclick = (e) => { e.stopPropagation(); $("ypPopup").classList.toggle("show"); };
+document.body.onclick = () => $("ypPopup").classList.remove("show");
+
+// --- 5. GÖZ ---
+function autoLook() {
+  if($("mobileFrame").classList.contains("sleeping") || isTracking) return;
+  const rx = (Math.random()-0.5)*1.5, ry = (Math.random()-0.5)*0.8;
+  const L=$("eyeL"), R=$("eyeR");
+  if(L && R) {
+    L.style.setProperty('--gx', (rx*10)+'px'); L.style.setProperty('--gy', (ry*5)+'px');
+    R.style.setProperty('--gx', (rx*10)+'px'); R.style.setProperty('--gy', (ry*5)+'px');
+    setTimeout(() => { L.style.setProperty('--gx','0px'); L.style.setProperty('--gy','0px'); R.style.setProperty('--gx','0px'); R.style.setProperty('--gy','0px'); }, 1000);
   }
 }
-
-// --- 4. GÖZ TAKİP & UYKU ---
-let mouseActive = false;
-function autoLook() {
-  // Eğer kamera açıksa veya mouse aktifse rastgele bakma
-  if($("mobileFrame").classList.contains("tracking-active") || mouseActive) return;
-  
-  // Uyku modundaysa bakma
-  if($("mobileFrame").classList.contains("sleeping")) return;
-
-  const eyeL = $("eyeL");
-  const eyeR = $("eyeR");
-  if(!eyeL) return;
-
-  const rx = (Math.random() - 0.5) * 1.5;
-  const ry = (Math.random() - 0.5) * 0.8;
-  
-  eyeL.style.setProperty('--gx', (rx*10)+'px');
-  eyeL.style.setProperty('--gy', (ry*5)+'px');
-  eyeR.style.setProperty('--gx', (rx*10)+'px');
-  eyeR.style.setProperty('--gy', (ry*5)+'px');
-
-  setTimeout(() => {
-      eyeL.style.setProperty('--gx', '0px');
-      eyeL.style.setProperty('--gy', '0px');
-      eyeR.style.setProperty('--gx', '0px');
-      eyeR.style.setProperty('--gy', '0px');
-  }, 1000);
-}
-
 function resetIdle() {
   $("mobileFrame").classList.remove("sleeping");
   clearTimeout(idleTimer);
-  idleTimer = setTimeout(() => {
-    if(!$("mobileFrame").classList.contains("tracking-active")) {
-       $("mobileFrame").classList.add("sleeping");
-    }
-  }, 30000); // 30 sn
+  idleTimer = setTimeout(() => { if(!isTracking) $("mobileFrame").classList.add("sleeping"); }, 30000);
 }
+window.addEventListener("pointermove", resetIdle);
 
-window.addEventListener("pointermove", (e) => {
-  resetIdle();
-  if($("mobileFrame").classList.contains("tracking-active")) return; // Kamera varsa mouse ignore
-  
-  mouseActive = true;
-  const rect = $("mobileFrame").getBoundingClientRect();
-  const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-  const y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-  
-  const eyeL = $("eyeL"); const eyeR = $("eyeR");
-  const gx = Math.min(Math.max(x * 15, -15), 15);
-  const gy = Math.min(Math.max(y * 10, -10), 10);
-  
-  if(eyeL) {
-      eyeL.style.setProperty('--gx', gx+'px'); eyeL.style.setProperty('--gy', gy+'px');
-      eyeR.style.setProperty('--gx', gx+'px'); eyeR.style.setProperty('--gy', gy+'px');
-  }
-  
-  clearTimeout(window.mouseTimer);
-  window.mouseTimer = setTimeout(() => { mouseActive=false; }, 500);
-});
-
-// --- 5. MENU & HISTORY ---
+// --- 6. HISTORY ---
 function saveHistory(msg) {
   let list = JSON.parse(localStorage.getItem("caynana_chats") || "[]");
   if(chatHistory.length===1) {
     list.unshift({id: Date.now(), title: msg.substring(0,10)+"..."});
-    if(list.length>5) list = list.slice(0,5);
+    if(list.length>5) list=list.slice(0,5);
     localStorage.setItem("caynana_chats", JSON.stringify(list));
     renderHistory();
   }
@@ -490,62 +413,21 @@ function saveHistory(msg) {
 function renderHistory() {
   const list = JSON.parse(localStorage.getItem("caynana_chats") || "[]");
   $("recentChatsList").innerHTML = list.map(i => 
-    `<div class="recent-chat-item"><span>${i.title}</span><button class="del-chat" onclick="delChat(${i.id})">🗑️</button></div>`
+    `<div class="recent-chat-item"><span>${i.title}</span><button class="del-chat" onclick="window.delChat(${i.id})">🗑️</button></div>`
   ).join("");
 }
 window.delChat = (id) => {
-  let list = JSON.parse(localStorage.getItem("caynana_chats") || "[]");
-  list = list.filter(x=>x.id!==id);
+  let list = JSON.parse(localStorage.getItem("caynana_chats") || "[]").filter(x=>x.id!==id);
   localStorage.setItem("caynana_chats", JSON.stringify(list));
   renderHistory();
-}
-
-// --- INIT ---
-window.onload = function() {
-  updateYP("visit");
-  renderHistory();
-  checkGender();
-  resetIdle();
-  setInterval(autoLook, 4000);
-
-  if(localStorage.getItem(STORAGE_KEY)) $("loginOverlay").classList.remove("active");
-
-  $("googleLogin").onclick = () => {
-    // KADIN PROFIL SIMULASYONU
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({id:"u1", gender:"Kadın", yp:50}));
-    $("loginOverlay").classList.remove("active");
-    checkGender();
-    typeWriter("Hoş geldin kızım.");
-  };
-
-  $("sendBtn").onclick = sendMessage;
-  $("msgInput").onkeydown = (e) => { if(e.key==="Enter") sendMessage(); };
-  
-  $("micBtn").onclick = () => {
-     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-     if(!SR) { alert("Mikrofon yok."); return; }
-     const r = new SR();
-     r.lang = "tr-TR";
-     r.start();
-     r.onresult = (e) => { $("msgInput").value = e.results[0][0].transcript; sendMessage(); };
-  };
-
-  $("deleteAccBtn").onclick = () => {
-    deleteCounter++;
-    if(deleteCounter===1) alert("Emin misin?");
-    else if(deleteCounter===2) alert("Son şans?");
-    else if(deleteCounter===3) { localStorage.clear(); location.reload(); }
-  }
 };
 
+// Global Toggles
 window.toggleMenu = () => $("menuOverlay").classList.toggle("open");
-window.toggleCam = () => {
-  $("mobileFrame").classList.toggle("tracking-active");
-  resetIdle();
-};
+window.toggleCam = () => { $("mobileFrame").classList.toggle("tracking-active"); isTracking=!isTracking; resetIdle(); };
 window.newChat = () => { chatHistory=[]; $("chat").innerHTML=""; $("menuOverlay").classList.remove("open"); };
-window.openFal = () => $("falOverlay").style.display="flex";
-
+window.openFal = () => { $("falOverlay").style.display="flex"; window.toggleMenu(); };
+window.handleFalFile = () => { alert("Fal resmi yüklendi."); };
 </script>
 </body>
 </html>
