@@ -1,52 +1,201 @@
-// js/config.js - (v13.2 FINAL - DOMAIN & API UYUMLU)
+import { BASE_DOMAIN, STORAGE_KEY } from './config.js';
 
-/*
-  AMAÇ:
-  - Tek ve net backend adresi
-  - chat.js / diğer JS dosyalarıyla %100 uyum
-  - CORS + payload karmaşası çıkarmasın
-*/
+let photoCount = 0;
+let photos = [];
+const loadingMessages = [
+  "Vay vay vay...",
+  "Neler görüyorum neler...",
+  "Bir yol var ama ucu kapalı gibi...",
+  "Bak sen şu işe, fincan kabarmış...",
+  "Kısmetin taşmış evladım...",
+  "Biraz bekle gözlüğümü sileyim..."
+];
 
-// --------------------------------------------------
-// 1. BACKEND (TEK KAYNAK – BEYİN)
-// --------------------------------------------------
-export const BASE_DOMAIN = "https://caynana-api-py310-final.onrender.com";
+function safeJson(s, fallback={}){ try{ return JSON.parse(s||""); }catch{ return fallback; } }
+function getUser(){ return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
+function getIdToken(){ return (localStorage.getItem("google_id_token") || "").trim(); }
 
-// API endpoint'leri (tek yerden yönetim)
-export const API_CHAT   = `${BASE_DOMAIN}/api/chat`;
-export const API_SPEECH = `${BASE_DOMAIN}/api/speech`;
-export const API_HEALTH = `${BASE_DOMAIN}/healthz`;
-export const API_PROFILE_GET    = `${BASE_DOMAIN}/api/profile/get`;
-export const API_PROFILE_UPDATE = `${BASE_DOMAIN}/api/profile/update`;
-export const API_REMINDERS_TODAY = `${BASE_DOMAIN}/api/reminders/today`;
-export const API_FAL_READ       = `${BASE_DOMAIN}/api/fal/read`;
-export const API_SHOPPING       = `${BASE_DOMAIN}/api/shopping/analyze`;
+export function openFalPanel() {
+  const overlay = document.getElementById('falOverlay');
+  if (!overlay) return;
+  overlay.classList.add('active');
+  resetFal();
+}
 
-// --------------------------------------------------
-// 2. GOOGLE (KİMLİK)
-// --------------------------------------------------
-export const GOOGLE_CLIENT_ID =
-  "1030744341756-bo7iqng4lftnmcm4l154cfu5sgmahr98.apps.googleusercontent.com";
+export function closeFalPanel() {
+  const overlay = document.getElementById('falOverlay');
+  if (!overlay) return;
+  overlay.classList.remove('active');
+}
 
-// --------------------------------------------------
-// 3. SUPABASE (KALICI HAFIZA – FRONTEND OKUMA)
-// ⚠️ publishable key, server secret DEĞİL
-// --------------------------------------------------
-export const SUPABASE_URL =
-  "https://uujfzidelfjciltfbqvf.supabase.co";
+function resetFal() {
+  photoCount = 0;
+  photos = [];
 
-export const SUPABASE_KEY =
-  "sb_publishable_i8UzxtVtXNWM-UV0Kk3lbQ_TkJsPBf";
+  const s1 = document.getElementById('falStep1');
+  const s2 = document.getElementById('falStep2');
+  const r  = document.getElementById('falResult');
 
-// --------------------------------------------------
-// 4. UYGULAMA AYARLARI
-// --------------------------------------------------
-export const APP_VERSION = "v13.6-CORS-FINAL";
+  if (s1) s1.style.display = 'flex';
+  if (s2) s2.style.display = 'none';
+  if (r)  r.style.display  = 'none';
 
-// LocalStorage tek anahtar (tüm modüller aynı şeyi kullansın)
-export const STORAGE_KEY = "caynana_user_v13";
+  updateStatus("Fincanın içini çek bakayım evladım.");
+}
 
-// --------------------------------------------------
-// 5. DEBUG / GELİŞTİRME
-// --------------------------------------------------
-export const IS_PROD = location.hostname.includes("caynana.ai");
+function updateStatus(text) {
+  const el = document.getElementById('falStatus');
+  if (el) el.innerText = text;
+}
+
+// Fotoğraf Çekme İşlemi
+export async function handleFalPhoto(fileInput) {
+  const file = fileInput?.files?.[0];
+  if (!file) return;
+
+  updateStatus("Resim yükleniyor, bekle...");
+
+  const reader = new FileReader();
+  reader.onload = async function (e) {
+    try {
+      const raw = String(e?.target?.result || "");
+      const base64 = raw.includes(",") ? raw.split(",")[1] : raw;
+      if (!base64) {
+        updateStatus("Resim okunamadı, tekrar dene.");
+        if (fileInput) fileInput.value = "";
+        return;
+      }
+
+      // İlk resimde fincan kontrolü yap
+      if (photoCount === 0) {
+        updateStatus("Dur bakayım bu fincan mı...");
+
+        try {
+          const idToken = getIdToken();
+
+          const checkRes = await fetch(`${BASE_DOMAIN}/api/fal/check`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              image: base64,
+              google_id_token: idToken || ""
+            })
+          });
+
+          if (!checkRes.ok) {
+            const errText = await checkRes.text();
+            try {
+              const errJson = JSON.parse(errText);
+              alert("Hata: " + (errJson.detail || errJson.message || errText));
+            } catch {
+              alert("Sunucu Hatası: " + errText);
+            }
+            updateStatus("Hata oldu, tekrar dene.");
+            if (fileInput) fileInput.value = "";
+            return;
+          }
+
+          const checkData = await checkRes.json();
+          if (!checkData.ok) {
+            alert(checkData.reason || "Bilinmeyen hata.");
+            updateStatus("Düzgün çek şunu!");
+            if (fileInput) fileInput.value = "";
+            return;
+          }
+        } catch (e) {
+          console.error(e);
+          alert("İnternet bağlantını kontrol et evladım.");
+          updateStatus("Bağlantı hatası.");
+          if (fileInput) fileInput.value = "";
+          return;
+        }
+      }
+
+      photos.push(base64);
+      photoCount++;
+
+      if (photoCount < 3) {
+        updateStatus(`Tamamdır. Şimdi ${photoCount + 1}. açıyı çek. (Tabak veya yan taraf)`);
+      } else {
+        startFalAnalysis();
+      }
+
+      if (fileInput) fileInput.value = "";
+    } catch (err) {
+      console.error(err);
+      updateStatus("Bir terslik oldu, tekrar dene.");
+      if (fileInput) fileInput.value = "";
+    }
+  };
+
+  reader.readAsDataURL(file);
+}
+
+async function startFalAnalysis() {
+  const s1 = document.getElementById('falStep1');
+  const s2 = document.getElementById('falStep2');
+
+  if (s1) s1.style.display = 'none';
+  if (s2) s2.style.display = 'flex';
+
+  const statusEl = document.getElementById('loadingText');
+  let msgIndex = 0;
+  const msgInterval = setInterval(() => {
+    if (statusEl) statusEl.innerText = loadingMessages[msgIndex % loadingMessages.length];
+    msgIndex++;
+  }, 2000);
+
+  const user = getUser();
+  const userId = user?.id || "CYN-DEMO-USER";
+  const email = user?.email || "";
+  const idToken = getIdToken();
+
+  try {
+    const res = await fetch(`${BASE_DOMAIN}/api/fal/read`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+        email,
+        google_id_token: idToken || "",
+        images: photos
+      })
+    });
+
+    const data = await res.json().catch(() => ({}));
+    clearInterval(msgInterval);
+
+    if (!res.ok) {
+      alert(data.detail || "Fal bakarken bir sorun çıktı.");
+      // UI'ı toparla
+      closeFalPanel();
+      return;
+    }
+
+    showResult(data);
+
+  } catch (err) {
+    clearInterval(msgInterval);
+    alert("Bağlantı koptu evladım.");
+    closeFalPanel();
+  }
+}
+
+function showResult(data) {
+  const s2 = document.getElementById('falStep2');
+  const resDiv = document.getElementById('falResult');
+  const txtDiv = document.getElementById('falText');
+
+  if (s2) s2.style.display = 'none';
+  if (resDiv) resDiv.style.display = 'flex';
+
+  if (!txtDiv) return;
+
+  if (!data?.ok && data?.limit_reached) {
+    txtDiv.innerHTML = `<h3 style="color:#ff5252">Bugünlük Bitti!</h3><p>${String(data.text || "")}</p>`;
+  } else if (!data?.ok) {
+    txtDiv.innerText = data?.text || "Bir hata oldu.";
+  } else {
+    txtDiv.innerText = data?.text || "";
+  }
+}
