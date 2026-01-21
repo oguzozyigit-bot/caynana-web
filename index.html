@@ -648,31 +648,42 @@
   const badge = $("notifBadge");
   if(!list) return;
 
-  const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id || "guest")}`);
+  try{
+    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id || "guest")}`);
+    const data = await res.json();
+    const items = data.items || [];
 
-  // devamı...
+    if(badge) badge.style.display = items.length ? "block" : "none";
+
+    if(!items.length){
+      list.innerHTML = `
+        <div class="notif-item">
+          <div class="notif-icon">🧿</div>
+          <div class="notif-content">
+            <div class="notif-title">Sakin</div>
+            <div class="notif-desc">Hatırlatma yok evladım.</div>
+          </div>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = items.map(it => `
+      <div class="notif-item">
+        <div class="notif-icon">🔔</div>
+        <div class="notif-content">
+          <div class="notif-title">${escapeHtml(it.title)}</div>
+          <div class="notif-desc">${escapeHtml(it.message)}</div>
+        </div>
+      </div>
+    `).join("");
+
+  } catch(e){
+    console.log("Notif error:", e);
+    // istersen UI'ye de hata basabiliriz, ama şimdilik sessiz kalsın
+  }
 }
 
-    try{
-      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id || "guest")}`);
-      const data = await res.json();
-      const items = data.items || [];
-
-      if(badge) badge.style.display = items.length ? "block" : "none";
-
-      if(!items.length){
-        list.innerHTML = `
-          <div class="notif-item">
-            <div class="notif-icon">🧿</div>
-            <div class="notif-content">
-              <div class="notif-title">Sakin</div>
-              <div class="notif-desc">Hatırlatma yok evladım.</div>
-            </div>
-          </div>`;
-        return;
-      }
 
       list.innerHTML = items.map(it => `
         <div class="notif-item">
