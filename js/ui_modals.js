@@ -1,4 +1,4 @@
-/* js/ui_modals.js (v1.2 - TEK EKRAN / ANAYASA UYUMLU + TERMS HOOKS + SAFE MODAL CLOSE) */
+/* js/ui_modals.js (v1.1 - TEK EKRAN / ANAYASA UYUMLU) */
 
 // --- ANA UI BAŞLATICI ---
 export function initUi() {
@@ -9,37 +9,6 @@ export function initUi() {
   setupPersonaModal();
   setupNotifications();
   setupPhotoModal();
-
-  // ✅ Auth.js'nin çağırdığı global UI hook'ları
-  setupGlobalUiHooks();
-}
-
-/* =========================
-   GLOBAL UI HOOKS (Auth ile uyum)
-========================= */
-function setupGlobalUiHooks() {
-  // ✅ Terms Overlay aç/kapat (auth.js window.showTermsOverlay?.() çağırıyor)
-  window.showTermsOverlay = () => {
-    const modal = document.getElementById("termsModal");
-    if (modal) modal.style.display = "flex";
-  };
-
-  window.hideTermsOverlay = () => {
-    const modal = document.getElementById("termsModal");
-    if (modal) modal.style.display = "none";
-  };
-
-  // ✅ Google prompt görünmezse fallback (auth.js window.showGoogleButtonFallback?.())
-  window.showGoogleButtonFallback = (reason = "unknown") => {
-    const authModal = document.getElementById("authModal");
-    if (authModal) authModal.style.display = "flex";
-
-    const hint = document.getElementById("googleFallbackHint");
-    if (hint) {
-      hint.style.display = "block";
-      hint.innerText = `Google penceresi açılamadı (${reason}). Aşağıdaki butonla deneyebilirsin.`;
-    }
-  };
 }
 
 // --- MENÜ (DRAWER) ---
@@ -79,6 +48,7 @@ function setupDrawerLinks(toggleDrawer) {
   }
 
   // Giriş (opsiyonel) - Auth modal varsa açar.
+  // Not: V1’de Google giriş zorunlu ise zaten app açılışında göster.
   const openLogin = document.getElementById("openLoginBtn");
   if (openLogin) {
     openLogin.addEventListener("click", () => {
@@ -89,18 +59,14 @@ function setupDrawerLinks(toggleDrawer) {
   }
 
   // Sayfa içerikleri (tek ekranı bozmadan modal)
-  bindPageModal(
-    "aboutBtn",
-    "Hakkımızda",
-    "Caynana.ai, yapay zekânın geleneksel aklıdır.<br>Anne şefkatiyle yaklaşır ama lafını da esirgemez."
-  );
-  bindPageModal(
-    "faqBtn",
-    "Sık Sorulan Sorular",
-    "<b>Ücretli mi?</b><br>Hayır, temel kullanım ücretsiz.<br><br><b>Fal gerçek mi?</b><br>Eğlence amaçlıdır evladım."
-  );
-  bindPageModal("contactBtn", "İletişim", "Bize her zaman yazabilirsin: iletisim@caynana.ai");
-  bindPageModal("privacyBtn", "Gizlilik", "Verilerin bizde güvende. Kimseyle paylaşmıyoruz.");
+  bindPageModal("aboutBtn", "Hakkımızda",
+    "Caynana.ai, yapay zekânın geleneksel aklıdır.<br>Anne şefkatiyle yaklaşır ama lafını da esirgemez.");
+  bindPageModal("faqBtn", "Sık Sorulan Sorular",
+    "<b>Ücretli mi?</b><br>Hayır, temel kullanım ücretsiz.<br><br><b>Fal gerçek mi?</b><br>Eğlence amaçlıdır evladım.");
+  bindPageModal("contactBtn", "İletişim",
+    "Bize her zaman yazabilirsin: iletisim@caynana.ai");
+  bindPageModal("privacyBtn", "Gizlilik",
+    "Verilerin bizde güvende. Kimseyle paylaşmıyoruz.");
 
   function bindPageModal(btnId, title, content) {
     const btn = document.getElementById(btnId);
@@ -183,62 +149,27 @@ function setupPhotoModal() {
 
 // --- GENEL MODAL KAPATMA (MASK) ---
 function setupModals() {
-  // ✅ Mask tıklayınca kapatma (anayasa kurallarıyla)
   document.querySelectorAll(".modalMask").forEach((mask) => {
     mask.addEventListener("click", (e) => {
       if (e.target !== mask) return;
 
-      // Mask'in kendisi genelde "modal" değildir; parent modalı yakala
-      const modal = mask.closest(".modal") || mask; // senin HTML'de modal sınıfı yoksa mask'i kapatır
-      const modalId = modal?.id || mask.id || "";
-
-      // ✅ Zorunlu profil kapatılamaz (close X gizliyse)
-      if (modalId === "profileModal") {
+      // Zorunlu profil kapatılamaz
+      if (mask.id === "profileModal") {
         const closeBtn = document.getElementById("profileCloseX");
         if (closeBtn && closeBtn.style.display === "none") return;
       }
 
-      // ✅ Terms zorunluysa mask ile kapatma yok (tam ekran sözleşme)
-      if (modalId === "termsModal") return;
-
-      // Auth modal da mask ile kapanabilir (zorunlu değilse)
-      if (modal && modal.style) modal.style.display = "none";
-      else mask.style.display = "none";
+      mask.style.display = "none";
     });
   });
 
-  // Auth modal kapatma (çift init olursa çift event olmasın diye clone)
+  // Auth modal kapatma
   const authModal = document.getElementById("authModal");
   const authClose = document.getElementById("authClose");
   const authCloseX = document.getElementById("authCloseX");
 
   if (authModal) {
-    if (authClose) {
-      const newBtn = authClose.cloneNode(true);
-      authClose.parentNode.replaceChild(newBtn, authClose);
-      newBtn.addEventListener("click", () => (authModal.style.display = "none"));
-    }
-    if (authCloseX) {
-      const newX = authCloseX.cloneNode(true);
-      authCloseX.parentNode.replaceChild(newX, authCloseX);
-      newX.addEventListener("click", () => (authModal.style.display = "none"));
-    }
-  }
-
-  // ✅ Terms modal kapatma butonları (varsa)
-  const termsModal = document.getElementById("termsModal");
-  const termsClose = document.getElementById("termsClose");
-  const termsCloseX = document.getElementById("termsCloseX");
-  if (termsModal) {
-    if (termsClose) {
-      const b = termsClose.cloneNode(true);
-      termsClose.parentNode.replaceChild(b, termsClose);
-      b.addEventListener("click", () => (termsModal.style.display = "none"));
-    }
-    if (termsCloseX) {
-      const x = termsCloseX.cloneNode(true);
-      termsCloseX.parentNode.replaceChild(x, termsCloseX);
-      x.addEventListener("click", () => (termsModal.style.display = "none"));
-    }
+    if (authClose) authClose.addEventListener("click", () => (authModal.style.display = "none"));
+    if (authCloseX) authCloseX.addEventListener("click", () => (authModal.style.display = "none"));
   }
 }
