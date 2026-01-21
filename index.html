@@ -24,7 +24,12 @@
     flex:0 0 76px;background:var(--glass);border-bottom:1px solid var(--border);
     display:flex;align-items:center;padding:0 12px;z-index:3000;gap:10px;
   }
-  .left-controls{display:flex;gap:10px;align-items:center;flex:0 0 auto;min-width:46px}
+
+  /* ✅ Sol ve sağ kolon eşit genişlik -> marka tam ortalanır */
+  .left-controls{
+    display:flex;gap:10px;align-items:center;flex:0 0 auto;
+    min-width:112px;justify-content:flex-start;
+  }
   .hamb-btn{background:none;border:none;cursor:pointer;color:#9a9a9a;font-size:24px;padding:0}
 
   /* Center brand */
@@ -68,13 +73,23 @@
   .seesaw-svg{width:36px;height:18px;overflow:visible}
   .seesaw-bar{transform-origin:20px 8px;transition:transform .25s ease}
 
-  /* Tahteravalli davranışı */
-  .brand-wrapper.usering .seesaw-bar{transform:rotate(-12deg)} /* yeşil tarafa */
-  .brand-wrapper.botting .seesaw-bar{transform:rotate(12deg)}  /* turuncu tarafa */
-  .brand-wrapper.thinking .seesaw-bar{animation:wiggle .35s infinite alternate ease-in-out}
-  .brand-wrapper.talking  .seesaw-bar{animation:wiggle .35s infinite alternate ease-in-out}
+  /* ✅ Tahteravalli davranışı (artık sağda da çalışsın) */
+  .brand-wrapper.usering .seesaw-bar,
+  .caynana-gfx.usering .seesaw-bar{transform:rotate(-12deg)}
+  .brand-wrapper.botting .seesaw-bar,
+  .caynana-gfx.botting .seesaw-bar{transform:rotate(12deg)}
+  .brand-wrapper.thinking .seesaw-bar,
+  .caynana-gfx.thinking .seesaw-bar{animation:wiggle .35s infinite alternate ease-in-out}
+  .brand-wrapper.talking  .seesaw-bar,
+  .caynana-gfx.talking  .seesaw-bar{animation:wiggle .35s infinite alternate ease-in-out}
+
   @keyframes wiggle{from{transform:rotate(-10deg)}to{transform:rotate(10deg)}}
-  .brand-wrapper.thinking #orangeBall{animation:breath .8s infinite alternate ease-in-out;transform-box:fill-box;transform-origin:center}
+
+  .brand-wrapper.thinking #orangeBall,
+  .caynana-gfx.thinking #orangeBall{
+    animation:breath .8s infinite alternate ease-in-out;
+    transform-box:fill-box;transform-origin:center
+  }
   @keyframes breath{from{transform:scale(1);filter:brightness(1)}to{transform:scale(1.5);filter:brightness(1.3)}}
 
   /* Right stack */
@@ -82,6 +97,13 @@
     flex:0 0 auto;
     display:flex;flex-direction:column;align-items:flex-end;justify-content:center;
     gap:6px;min-width:112px;
+  }
+
+  /* ✅ Sağ tarafa taşınan Caynana grafiği */
+  .caynana-gfx{
+    display:flex;align-items:center;justify-content:flex-end;
+    width:112px; /* hizalama için */
+    margin-bottom:2px;
   }
 
   /* YP */
@@ -124,27 +146,44 @@
   .chat-area{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:14px;scroll-behavior:smooth;scrollbar-width:none}
   .chat-area::-webkit-scrollbar{display:none}
   .bubble{max-width:85%;padding:12px 14px;border-radius:18px;font-size:15px;line-height:1.4;word-wrap:break-word;flex-shrink:0;animation:pop .2s ease}
-  .bubble.bot{align-self:flex-start;background:#1c1c1c;border-left:3px solid var(--gold);color:#dedede;border-top-left-radius:4px;min-height:40px}
+  .bubble.bot{align-self:flex-start;background:#1c1c1c;border-left:3px solid var(--gold);color:#dedede;border-top-left-radius:4px;min-height:40px;position:relative}
   .bubble.user{align-self:flex-end;background:#222;border-right:3px solid var(--pistachio);color:#fff;border-top-right-radius:4px;text-align:right}
   @keyframes pop{from{transform:scale(.98);opacity:.6}to{transform:scale(1);opacity:1}}
 
-  /* DOCK */
+  /* ✅ Beklerken turuncu çizgi yavaş dolsun */
+  .bubble.bot.loading{opacity:.95}
+  .bubble.bot.loading::before{
+    content:"";
+    position:absolute;
+    left:-3px; top:0;
+    width:3px; height:0%;
+    background:var(--gold);
+    border-radius:3px;
+    animation:loadFill 1.6s ease-in-out infinite;
+  }
+  @keyframes loadFill{
+    0%{height:0%}
+    60%{height:100%}
+    100%{height:100%}
+  }
+
+  /* DOCK (✅ biraz daralt) */
   .input-dock{
-    flex:0 0 auto;background:var(--glass);padding:6px 12px 8px;z-index:3000;border-top:1px solid var(--border);
+    flex:0 0 auto;background:var(--glass);padding:4px 10px 6px;z-index:3000;border-top:1px solid var(--border);
     display:flex;flex-direction:column;gap:6px
   }
   .dock-inner{
-    display:flex;align-items:flex-end;gap:8px;background:#171717;border:1px solid #2f2f2f;border-radius:20px;padding:4px 6px;
+    display:flex;align-items:flex-end;gap:8px;background:#171717;border:1px solid #2f2f2f;border-radius:18px;padding:3px 6px;
   }
-  .icon-btn{width:40px;height:40px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:.2s}
+  .icon-btn{width:38px;height:38px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:.2s}
   .icon-btn svg{width:20px;height:20px;stroke:#9a9a9a;stroke-width:2;fill:none;transition:.2s}
   .icon-btn:hover svg,.icon-btn.active svg{stroke:var(--gold)}
   .icon-btn.active{background:rgba(255,179,0,.15)}
-  .send-btn{width:40px;height:40px;border-radius:50%;background:var(--pistachio);color:#000;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;box-shadow:0 4px 10px rgba(190,242,100,.26)}
+  .send-btn{width:38px;height:38px;border-radius:50%;background:var(--pistachio);color:#000;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;box-shadow:0 4px 10px rgba(190,242,100,.26)}
   .send-btn svg{stroke:#000;fill:none;width:20px;height:20px}
   textarea{
-    flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:16px;resize:none;
-    padding:8px 8px;max-height:80px;min-height:20px;font-family:inherit;scrollbar-width:none
+    flex:1;background:transparent;border:none;outline:none;color:#fff;font-size:15px;resize:none;
+    padding:6px 6px;max-height:60px;min-height:20px;font-family:inherit;scrollbar-width:none
   }
 
   /* FOOTER */
@@ -157,7 +196,7 @@
   .footer-links a:hover{color:var(--gold)}
   .footer-brand{font-size:12px;color:#8c8c8c;font-weight:900;letter-spacing:.4px;margin-top:2px}
   .footer-year{font-size:12px;color:#6f6f6f;font-weight:900;margin-top:4px}
-  .footer-ver{font-size:10px;color:#5f5f5f;font-family:monospace;margin-top:2px}
+  .footer-ver-inline{font-size:10px;color:#5f5f5f;font-family:monospace;margin-left:6px}
 
   /* LOGIN */
   .full-overlay{position:absolute;inset:0;background:#000;z-index:6000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.4s ease;padding:20px;overflow-y:auto}
@@ -344,14 +383,7 @@
           <div class="eye"><div class="lid"></div><div class="pupil" data-eye="r"></div></div>
         </div>
 
-        <svg class="seesaw-svg" viewBox="0 0 40 20" aria-hidden="true">
-          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
-          <g class="seesaw-bar" id="seesawBar">
-            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
-            <circle cx="3" cy="5" r="3" fill="#bef264" />
-            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
-          </g>
-        </svg>
+        <!-- ✅ Seesaw buradan kaldırıldı (sağ tarafa taşındı) -->
 
         <div class="brand-name">Caynana AI</div>
       </div>
@@ -359,6 +391,18 @@
     </div>
 
     <div class="right-stack">
+      <!-- ✅ Caynana grafiği bildirim+profilin üstünde -->
+      <div class="caynana-gfx" id="caynanaGfx" aria-hidden="true">
+        <svg class="seesaw-svg" viewBox="0 0 40 20" style="width:44px;height:22px;overflow:visible">
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+          <g class="seesaw-bar" id="seesawBar">
+            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+            <circle cx="3" cy="5" r="3" fill="#bef264" />
+            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+          </g>
+        </svg>
+      </div>
+
       <div class="yp-chip" title="Samimiyet (YP)">
         <div class="yp-label">SAMİMİ</div>
         <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
@@ -414,8 +458,7 @@
       <a href="pages/iletisim.html">İletişim</a>
     </div>
     <div class="footer-brand">@CaynanaAI By Ozyigits</div>
-    <div class="footer-year">2026</div>
-    <div class="footer-ver">v2.7</div>
+    <div class="footer-year">2026 <span class="footer-ver-inline">v2.7</span></div>
   </div>
 </div>
 
@@ -429,6 +472,29 @@
   import { openFalPanel, closeFalPanel, handleFalPhoto } from './js/fal.js';
 
   const $ = (id) => document.getElementById(id);
+
+  // ---------------------------
+  // Mini Memory (lokal) - balık hafıza fix
+  // ---------------------------
+  const MEM_KEY = "caynana_user_mem_v1";
+  function loadMem(){ try{return JSON.parse(localStorage.getItem(MEM_KEY)||"{}");}catch{return {};} }
+  function saveMem(m){ localStorage.setItem(MEM_KEY, JSON.stringify(m||{})); }
+
+  function learnFromText(t){
+    const s = (t||"").toLowerCase();
+    const m = loadMem();
+
+    // "ben düzcedeyim" / "düzce'deyim"
+    const cityMatch =
+      s.match(/\bben\s+([a-zçğıöşü]+)(?:'|’)?deyim\b/i) ||
+      s.match(/\b([a-zçğıöşü]+)(?:'|’)?deyim\b/i);
+
+    if(cityMatch && cityMatch[1]){
+      m.city = cityMatch[1];
+      saveMem(m);
+    }
+    return m;
+  }
 
   // ---------------------------
   // YP (Samimiyet) Engine
@@ -456,191 +522,200 @@
   }
   function applyDailyYP(){
     const s = loadYP();
-    const today = todayStr();
-    const lastSeen = s.last_seen_day || today;
-    const missed = Math.max(0, daysBetween(lastSeen, today));
-    if(missed >= 1){
-      const current = typeof s.yp === "number" ? s.yp : 50;
-      s.yp = clamp(current - (10 * missed));
-    }
-    if(s.last_bonus_day !== today){
-      const current = typeof s.yp === "number" ? s.yp : 50;
-      s.yp = clamp(current + 5);
-      s.last_bonus_day = today;
-    }
-    s.last_seen_day = today;
-    saveYP(s);
-    renderYP();
-  }
-  function addYP(delta){
-    const s = loadYP();
+function applyDailyYP(){
+  const s = loadYP();
+  const today = todayStr();
+  const lastSeen = s.last_seen_day || today;
+  const missed = Math.max(0, daysBetween(lastSeen, today));
+
+  // gün kaçırdıysa düşür
+  if(missed >= 1){
     const current = typeof s.yp === "number" ? s.yp : 50;
-    s.yp = clamp(current + delta);
-    saveYP(s);
-    renderYP();
+    s.yp = clamp(current - (10 * missed));
   }
 
-  // ---------------------------
-  // Chat Sessions (Son 5 sohbet)
-  // ---------------------------
-  const CHATS_KEY = "caynana_chats_v1";
-  let currentChatId = null;
+  // günlük bonus (aynı gün 1 kez)
+  if(s.last_bonus_day !== today){
+    const current = typeof s.yp === "number" ? s.yp : 50;
+    s.yp = clamp(current + 5);
+    s.last_bonus_day = today;
+  }
 
-  function loadChats(){ try { return JSON.parse(localStorage.getItem(CHATS_KEY)||"[]"); } catch { return []; } }
-  function saveChats(arr){ localStorage.setItem(CHATS_KEY, JSON.stringify(arr)); }
+  s.last_seen_day = today;
+  saveYP(s);
+  renderYP();
+}
 
-  function newChat(){
+function addYP(delta){
+  const s = loadYP();
+  const current = typeof s.yp === "number" ? s.yp : 50;
+  s.yp = clamp(current + delta);
+  saveYP(s);
+  renderYP();
+}
+
+// ---------------------------
+// Chat Sessions (Son 5 sohbet)
+// ---------------------------
+const CHATS_KEY = "caynana_chats_v1";
+let currentChatId = null;
+
+function loadChats(){ try { return JSON.parse(localStorage.getItem(CHATS_KEY)||"[]"); } catch { return []; } }
+function saveChats(arr){ localStorage.setItem(CHATS_KEY, JSON.stringify(arr)); }
+
+function newChat(){
+  const id = "c_" + Date.now();
+  const chat = { id, title: "Yeni sohbet", msgs: [], updatedAt: Date.now() };
+  const all = loadChats();
+  all.unshift(chat);
+  saveChats(all.slice(0, 30));
+  currentChatId = id;
+  $("chat").innerHTML = "";
+  typeWriterLib("Sıfırdan başladık evladım, buyur.", "chat");
+  renderChatList();
+}
+
+function updateChatTitleFromFirstUser(chat){
+  const firstUser = (chat.msgs || []).find(m => m.role === "user");
+  if(firstUser){
+    const t = (firstUser.content || "").trim().slice(0,10);
+    chat.title = t || "Sohbet";
+  }
+}
+
+function pushMsg(role, content){
+  const all = loadChats();
+  if(!all.length){
     const id = "c_" + Date.now();
-    const chat = { id, title: "Yeni sohbet", msgs: [], updatedAt: Date.now() };
-    const all = loadChats();
-    all.unshift(chat);
-    saveChats(all.slice(0, 30));
+    all.unshift({ id, title:"Yeni sohbet", msgs:[], updatedAt: Date.now() });
     currentChatId = id;
+  }
+  let chat = all.find(c => c.id === currentChatId) || all[0];
+  currentChatId = chat.id;
+
+  chat.msgs = chat.msgs || [];
+  chat.msgs.push({ role, content, t: Date.now() });
+  chat.updatedAt = Date.now();
+  updateChatTitleFromFirstUser(chat);
+
+  const rest = all.filter(c => c.id !== chat.id);
+  const merged = [chat, ...rest].sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
+  saveChats(merged.slice(0,30));
+  renderChatList();
+}
+
+// ✅ HISTORY BUILDER (SON 16 MESAJ) - (şimdilik local; backend entegrasyonu chat.js’de)
+function buildHistoryForBackend(maxTurns = 16){
+  const all = loadChats().sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
+  const chat = all.find(c => c.id === currentChatId) || all[0];
+  const msgs = (chat?.msgs || []).slice(-maxTurns);
+
+  return msgs.map(m => ({
+    role: (m.role === "assistant") ? "assistant" : "user",
+    content: String(m.content || "")
+  }));
+}
+
+function escapeHtml(s){
+  return String(s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function renderChatList(){
+  const list = $("historyList");
+  if(!list) return;
+  const all = loadChats().sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
+  const top5 = all.slice(0,5);
+
+  list.innerHTML = top5.map(c => `
+    <div class="history-item" data-id="${c.id}">
+      <div class="history-text">${escapeHtml(c.title || "Sohbet")}</div>
+      <button class="delete-chat-btn" data-del="${c.id}" title="Sil">🗑️</button>
+    </div>
+  `).join("");
+
+  list.querySelectorAll(".history-item").forEach(el=>{
+    el.addEventListener("click", (e)=>{
+      const del = e.target?.getAttribute?.("data-del");
+      if(del) return;
+      const id = el.getAttribute("data-id");
+      openChat(id);
+    });
+  });
+
+  list.querySelectorAll("[data-del]").forEach(btn=>{
+    btn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      const id = btn.getAttribute("data-del");
+      deleteChat(id);
+    });
+  });
+}
+
+function openChat(id){
+  const all = loadChats();
+  const chat = all.find(c=>c.id===id);
+  if(!chat) return;
+  currentChatId = id;
+  $("chat").innerHTML = "";
+  (chat.msgs||[]).forEach(m=>{
+    if(m.role==="user") addUserBubble(m.content);
+    else typeWriterLib(m.content, "chat");
+  });
+  toggleMenu(false);
+}
+
+function deleteChat(id){
+  const ok = confirm("Bu sohbet silinsin mi evladım?");
+  if(!ok) return;
+  const all = loadChats().filter(c=>c.id!==id);
+  saveChats(all);
+  if(currentChatId===id){
+    currentChatId = all[0]?.id || null;
     $("chat").innerHTML = "";
-    typeWriterLib("Sıfırdan başladık evladım, buyur.", "chat");
-    renderChatList();
   }
+  renderChatList();
+}
 
-  function updateChatTitleFromFirstUser(chat){
-    const firstUser = (chat.msgs || []).find(m => m.role === "user");
-    if(firstUser){
-      const t = (firstUser.content || "").trim().slice(0,10);
-      chat.title = t || "Sohbet";
-    }
-  }
+// ---------------------------
+// Menu / Notif toggles
+// ---------------------------
+function toggleMenu(force){
+  const el = $("menuOverlay");
+  if(!el) return;
+  if(typeof force==="boolean") el.classList.toggle("open", force);
+  else el.classList.toggle("open");
+}
 
-  function pushMsg(role, content){
-    const all = loadChats();
-    if(!all.length){
-      const id = "c_" + Date.now();
-      all.unshift({ id, title:"Yeni sohbet", msgs:[], updatedAt: Date.now() });
-      currentChatId = id;
-    }
-    let chat = all.find(c => c.id === currentChatId) || all[0];
-    currentChatId = chat.id;
+function toggleNotif(force){
+  const el = $("notifDropdown");
+  if(!el) return;
+  if(typeof force==="boolean") el.classList.toggle("show", force);
+  else el.classList.toggle("show");
+}
 
-    chat.msgs = chat.msgs || [];
-    chat.msgs.push({ role, content, t: Date.now() });
-    chat.updatedAt = Date.now();
-    updateChatTitleFromFirstUser(chat);
+// ---------------------------
+// Terms
+// ---------------------------
+async function acceptTermsAndEnter(){
+  const cb = $("termsCheck");
+  if(!cb || !cb.checked){ alert("Onay kutusunu işaretle evladım."); return; }
+  const ok = await acceptTerms();
+  if(ok) enterApp();
+  else alert("Onay kaydedilemedi evladım.");
+}
 
-    const rest = all.filter(c => c.id !== chat.id);
-    const merged = [chat, ...rest].sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
-    saveChats(merged.slice(0,30));
-    renderChatList();
-  }
+function enterApp(){
+  $("loginOverlay")?.classList.remove("active");
+  $("termsOverlay")?.classList.remove("active");
 
-  // ✅ HISTORY BUILDER (SON 16 MESAJ)
-  function buildHistoryForBackend(maxTurns = 16){
-    const all = loadChats().sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
-    const chat = all.find(c => c.id === currentChatId) || all[0];
-    const msgs = (chat?.msgs || []).slice(-maxTurns);
+  const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  const name = user.fullname || user.email || "Evladım";
 
-    return msgs.map(m => ({
-      role: (m.role === "assistant") ? "assistant" : "user",
-      content: String(m.content || "")
-    }));
-  }
+  setTimeout(()=> typeWriterLib(`Hoş geldin ${name}. Ben Caynana.`, "chat"), 250);
+  refreshNotifications?.();
+}
 
-  function escapeHtml(s){
-    return String(s||"").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
-
-  function renderChatList(){
-    const list = $("historyList");
-    if(!list) return;
-    const all = loadChats().sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
-    const top5 = all.slice(0,5);
-
-    list.innerHTML = top5.map(c => `
-      <div class="history-item" data-id="${c.id}">
-        <div class="history-text">${escapeHtml(c.title || "Sohbet")}</div>
-        <button class="delete-chat-btn" data-del="${c.id}" title="Sil">🗑️</button>
-      </div>
-    `).join("");
-
-    list.querySelectorAll(".history-item").forEach(el=>{
-      el.addEventListener("click", (e)=>{
-        const del = e.target?.getAttribute?.("data-del");
-        if(del) return;
-        const id = el.getAttribute("data-id");
-        openChat(id);
-      });
-    });
-    list.querySelectorAll("[data-del]").forEach(btn=>{
-      btn.addEventListener("click", (e)=>{
-        e.stopPropagation();
-        const id = btn.getAttribute("data-del");
-        deleteChat(id);
-      });
-    });
-  }
-
-  function openChat(id){
-    const all = loadChats();
-    const chat = all.find(c=>c.id===id);
-    if(!chat) return;
-    currentChatId = id;
-    $("chat").innerHTML = "";
-    (chat.msgs||[]).forEach(m=>{
-      if(m.role==="user") addUserBubble(m.content);
-      else typeWriterLib(m.content, "chat");
-    });
-    toggleMenu(false);
-  }
-
-  function deleteChat(id){
-    const ok = confirm("Bu sohbet silinsin mi evladım?");
-    if(!ok) return;
-    const all = loadChats().filter(c=>c.id!==id);
-    saveChats(all);
-    if(currentChatId===id){
-      currentChatId = all[0]?.id || null;
-      $("chat").innerHTML = "";
-    }
-    renderChatList();
-  }
-
-  // ---------------------------
-  // Menu / Notif toggles
-  // ---------------------------
-  function toggleMenu(force){
-    const el = $("menuOverlay");
-    if(!el) return;
-    if(typeof force==="boolean") el.classList.toggle("open", force);
-    else el.classList.toggle("open");
-  }
-
-  function toggleNotif(force){
-    const el = $("notifDropdown");
-    if(!el) return;
-    if(typeof force==="boolean") el.classList.toggle("show", force);
-    else el.classList.toggle("show");
-  }
-
-  // ---------------------------
-  // Terms
-  // ---------------------------
-  async function acceptTermsAndEnter(){
-    const cb = $("termsCheck");
-    if(!cb || !cb.checked){ alert("Onay kutusunu işaretle evladım."); return; }
-    const ok = await acceptTerms();
-    if(ok) enterApp();
-    else alert("Onay kaydedilemedi evladım.");
-  }
-
-  function enterApp(){
-    $("loginOverlay")?.classList.remove("active");
-    $("termsOverlay")?.classList.remove("active");
-
-    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    const name = user.fullname || user.email || "Evladım";
-
-    setTimeout(()=> typeWriterLib(`Hoş geldin ${name}. Ben Caynana.`, "chat"), 250);
-    refreshNotifications?.();
-  }
-
-  // ---------------------------
+// ---------------------------
 // Notif fetch
 // ---------------------------
 async function refreshNotifications(){
@@ -683,419 +758,440 @@ async function refreshNotifications(){
   }
 }
 
-  // ---------------------------
-  // Brand seesaw
-  // ---------------------------
-  function setBrandState(state){
-    const b = $("brandWrapper");
-    if(!b) return;
-    b.classList.remove("usering","botting","thinking","talking");
-    if(state) b.classList.add(state);
+// ---------------------------
+// Brand seesaw (logo + sağdaki grafiği birlikte yönet)
+// ---------------------------
+function setBrandState(state){
+  const b = $("brandWrapper");
+  const g = $("caynanaGfx");
+  if(b) b.classList.remove("usering","botting","thinking","talking");
+  if(g) g.classList.remove("usering","botting","thinking","talking");
+  if(state){
+    if(b) b.classList.add(state);
+    if(g) g.classList.add(state);
   }
+}
 
-  // ---------------------------
-  // Eyes engine (blink / look / sleep)
-  // ---------------------------
-  const EYES = {
-    asleep:false,
-    drowsy:false,
-    camOn:false,
-    lastActivity:Date.now(),
-    target:{x:0.5,y:0.35},  // normalized
-    cur:{x:0.5,y:0.35},
-    wanderTimer:null,
-    blinkTimer:null,
-    sleepTimer:null,
-    raf:null
-  };
+// ---------------------------
+// Eyes engine (blink / look / sleep + takip komutu)
+// ---------------------------
+const EYES = {
+  asleep:false,
+  drowsy:false,
+  camOn:false,
+  follow:false,
+  lastActivity:Date.now(),
+  target:{x:0.5,y:0.35},
+  cur:{x:0.5,y:0.35},
+  wanderTimer:null,
+  blinkTimer:null,
+  sleepTimer:null,
+  raf:null
+};
 
-  function setEyesClass(cls, on){
-    const el = $("eyes");
-    if(!el) return;
-    if(on) el.classList.add(cls);
-    else el.classList.remove(cls);
-  }
+function setEyesClass(cls, on){
+  const el = $("eyes");
+  if(!el) return;
+  if(on) el.classList.add(cls);
+  else el.classList.remove(cls);
+}
 
-  function hardWake(){
-    EYES.asleep = false;
-    EYES.drowsy = false;
-    setEyesClass("sleep", false);
-    setEyesClass("drowse", false);
-    // mini blink wake
-    doBlink();
-  }
+function hardWake(){
+  EYES.asleep = false;
+  EYES.drowsy = false;
+  setEyesClass("sleep", false);
+  setEyesClass("drowse", false);
+  doBlink();
+}
 
-  function markActivity(){
-    EYES.lastActivity = Date.now();
-    if(EYES.asleep || EYES.drowsy) hardWake();
-  }
+function markActivity(){
+  EYES.lastActivity = Date.now();
+  if(EYES.asleep || EYES.drowsy) hardWake();
+}
 
-  function doBlink(){
-    const el = $("eyes");
-    if(!el) return;
-    el.classList.add("blink");
-    setTimeout(()=> el.classList.remove("blink"), 140);
-  }
+function doBlink(){
+  const el = $("eyes");
+  if(!el) return;
+  el.classList.add("blink");
+  setTimeout(()=> el.classList.remove("blink"), 140);
+}
 
-  async function goToSleepSequence(){
-    if(EYES.asleep) return;
-    const el = $("eyes");
-    if(!el) return;
+async function goToSleepSequence(){
+  if(EYES.asleep) return;
+  const el = $("eyes");
+  if(!el) return;
 
-    // önce hafif uykulu
-    EYES.drowsy = true;
-    el.classList.add("drowse");
+  EYES.drowsy = true;
+  el.classList.add("drowse");
 
-    // 2-3 kez göz kırpıp dal
-    doBlink();
-    await new Promise(r=>setTimeout(r, 420));
-    doBlink();
-    await new Promise(r=>setTimeout(r, 520));
-    doBlink();
-    await new Promise(r=>setTimeout(r, 520));
+  doBlink(); await new Promise(r=>setTimeout(r, 420));
+  doBlink(); await new Promise(r=>setTimeout(r, 520));
+  doBlink(); await new Promise(r=>setTimeout(r, 520));
 
-    // uyku
-    EYES.asleep = true;
-    EYES.drowsy = false;
-    el.classList.remove("drowse");
-    el.classList.add("sleep");
-  }
+  EYES.asleep = true;
+  EYES.drowsy = false;
+  el.classList.remove("drowse");
+  el.classList.add("sleep");
+}
 
-  function setEyesTargetClientXY(clientX, clientY){
-    const frame = $("mobileFrame");
-    if(!frame) return;
-    const r = frame.getBoundingClientRect();
-    const nx = (clientX - r.left) / r.width;
-    const ny = (clientY - r.top) / r.height;
-    EYES.target.x = Math.max(0, Math.min(1, nx));
-    EYES.target.y = Math.max(0, Math.min(1, ny));
-  }
+function setEyesTargetClientXY(clientX, clientY){
+  const frame = $("mobileFrame");
+  if(!frame) return;
+  const r = frame.getBoundingClientRect();
+  const nx = (clientX - r.left) / r.width;
+  const ny = (clientY - r.top) / r.height;
+  EYES.target.x = Math.max(0, Math.min(1, nx));
+  EYES.target.y = Math.max(0, Math.min(1, ny));
+}
 
-  function setEyesTargetToInput(){
-    const input = $("msgInput");
-    if(!input) return;
-    const r = input.getBoundingClientRect();
-    setEyesTargetClientXY(r.left + r.width*0.65, r.top + r.height*0.55);
-  }
+function setEyesTargetToInput(){
+  const input = $("msgInput");
+  if(!input) return;
+  const r = input.getBoundingClientRect();
+  setEyesTargetClientXY(r.left + r.width*0.65, r.top + r.height*0.55);
+}
 
-  function setEyesTargetWander(){
-    // hafif dolaşsın
-    const nx = 0.35 + Math.random()*0.3;
-    const ny = 0.22 + Math.random()*0.22;
-    EYES.target.x = nx;
-    EYES.target.y = ny;
-  }
+function setEyesTargetWander(){
+  const nx = 0.35 + Math.random()*0.3;
+  const ny = 0.22 + Math.random()*0.22;
+  EYES.target.x = nx;
+  EYES.target.y = ny;
+}
 
-  function tickEyes(){
-    const el = $("eyes");
-    if(!el){
-      EYES.raf = requestAnimationFrame(tickEyes);
-      return;
-    }
-
-    // idle logic
-    const idleMs = Date.now() - EYES.lastActivity;
-
-    // 30 saniye: uyku
-    if(!EYES.asleep && idleMs > 30000){
-      goToSleepSequence();
-    } else if(!EYES.asleep && idleMs > 12000){
-      // 12s sonra hafif drowsy göster (tam uyku değil)
-      if(!EYES.drowsy) { EYES.drowsy = true; el.classList.add("drowse"); }
-    } else {
-      if(EYES.drowsy){ EYES.drowsy=false; el.classList.remove("drowse"); }
-    }
-
-    // eğer kamera açık: daha “takip” hissi (hedef biraz daha aşağı-orta)
-    if(EYES.camOn && !EYES.asleep){
-      // kamera varken hedefi biraz merkezde tut ama küçük hareketler olsun
-      EYES.target.x = 0.5 + (Math.sin(Date.now()/900) * 0.03);
-      EYES.target.y = 0.36 + (Math.cos(Date.now()/1200) * 0.03);
-    }
-
-    // smooth follow
-    const sp = EYES.asleep ? 0.02 : 0.12;
-    EYES.cur.x += (EYES.target.x - EYES.cur.x) * sp;
-    EYES.cur.y += (EYES.target.y - EYES.cur.y) * sp;
-
-    // pupil offset inside eye
-    const dx = (EYES.cur.x - 0.5) * 10;   // px
-    const dy = (EYES.cur.y - 0.35) * 10;  // px (biraz yukarı bias)
-    const px = Math.max(-6, Math.min(6, dx));
-    const py = Math.max(-5, Math.min(5, dy));
-
-    el.querySelectorAll(".pupil").forEach(p=>{
-      p.style.transform = `translate(${px}px, ${py}px)`;
-      p.style.opacity = EYES.asleep ? "0" : "1";
-    });
-
+function tickEyes(){
+  const el = $("eyes");
+  if(!el){
     EYES.raf = requestAnimationFrame(tickEyes);
+    return;
   }
 
-  function initEyes(){
-    const el = $("eyes");
-    if(!el) return;
+  const idleMs = Date.now() - EYES.lastActivity;
 
-    // random blink
-    const scheduleBlink = () => {
-      const t = 2600 + Math.random()*4200; // 2.6s - 6.8s
-      EYES.blinkTimer = setTimeout(()=>{
-        if(!EYES.asleep) doBlink();
-        scheduleBlink();
-      }, t);
-    };
-    scheduleBlink();
-
-    // wander
-    const scheduleWander = () => {
-      const t = 1800 + Math.random()*2600;
-      EYES.wanderTimer = setTimeout(()=>{
-        if(!EYES.asleep && !EYES.camOn){
-          // idle değilse biraz “kıpır” ya da input’a baksın
-          const idleMs = Date.now() - EYES.lastActivity;
-          if(idleMs < 2000) setEyesTargetToInput();
-          else setEyesTargetWander();
-        }
-        scheduleWander();
-      }, t);
-    };
-    scheduleWander();
-
-    // global activity wake
-    ["pointerdown","keydown","mousemove","touchstart"].forEach(evt=>{
-      document.addEventListener(evt, (e)=>{
-        markActivity();
-        // mouse ile geziyorsa bakış takip
-        if(evt==="mousemove" && !EYES.camOn && !EYES.asleep){
-          setEyesTargetClientXY(e.clientX, e.clientY);
-        }
-      }, { passive:true });
-    });
-
-    // input: yazarken aşağı baksın
-    $("msgInput")?.addEventListener("input", ()=>{
-      markActivity();
-      if(!EYES.camOn && !EYES.asleep) setEyesTargetToInput();
-    });
-    $("msgInput")?.addEventListener("focus", ()=>{
-      markActivity();
-      if(!EYES.camOn && !EYES.asleep) setEyesTargetToInput();
-    });
-
-    // start loop
-    if(EYES.raf) cancelAnimationFrame(EYES.raf);
-    EYES.raf = requestAnimationFrame(tickEyes);
+  if(!EYES.asleep && idleMs > 30000){
+    goToSleepSequence();
+  } else if(!EYES.asleep && idleMs > 12000){
+    if(!EYES.drowsy) { EYES.drowsy = true; el.classList.add("drowse"); }
+  } else {
+    if(EYES.drowsy){ EYES.drowsy=false; el.classList.remove("drowse"); }
   }
 
-  // ---------------------------
-  // SEND (tek kaynak)
-  // ---------------------------
-  async function doSend(forcedText=null){
-    const inputEl = $("msgInput");
-    const txt = (forcedText ?? inputEl?.value ?? "").trim();
-    if(!txt) return;
-
-    markActivity();
-
-    // YP: her mesaj +0.5
-    addYP(0.5);
-
-    setBrandState("usering");
-    setTimeout(()=> setBrandState("thinking"), 140);
-
-    addUserBubble(txt);
-    if(inputEl && forcedText==null) inputEl.value = "";
-
-    pushMsg("user", txt);
-
-    const out = await fetchTextResponse(txt, "chat");
-    const reply = out?.text || "Evladım bir şeyler ters gitti.";
-
-    setBrandState("botting");
-    setTimeout(()=> setBrandState("talking"), 120);
-
-    pushMsg("assistant", reply);
-    typeWriterLib(reply, "chat");
-
-    setTimeout(()=> setBrandState(null), 520);
+  if(EYES.camOn && !EYES.asleep){
+    EYES.target.x = 0.5 + (Math.sin(Date.now()/900) * 0.03);
+    EYES.target.y = 0.36 + (Math.cos(Date.now()/1200) * 0.03);
   }
 
-  // ---------------------------
-  // Delete account (3 confirm)
-  // ---------------------------
-  async function deleteAccountTriple(){
-    if(!confirm("Hesabını silmek istiyor musun?")) return;
-    if(!confirm("Emin misin? Geri dönüş yok evladım.")) return;
-    if(!confirm("Son kez soruyorum: HESABIN SİLİNECEK. Onaylıyor musun?")) return;
+  const sp = EYES.asleep ? 0.02 : 0.12;
+  EYES.cur.x += (EYES.target.x - EYES.cur.x) * sp;
+  EYES.cur.y += (EYES.target.y - EYES.cur.y) * sp;
 
-    try{
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(CHATS_KEY);
-      localStorage.removeItem(YP_KEY);
-    }catch(e){}
+  const dx = (EYES.cur.x - 0.5) * 10;
+  const dy = (EYES.cur.y - 0.35) * 10;
+  const px = Math.max(-6, Math.min(6, dx));
+  const py = Math.max(-5, Math.min(5, dy));
 
-    alert("Tamamdır. Hesap verileri bu cihazdan silindi.");
-    location.href = "/index.html";
-  }
-
-  // ---------------------------
-  // Kadınsa: Regl Takibi menü ekle
-  // ---------------------------
-  function isFemaleProfile(){
-    try{
-      const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      const g = (user.gender || user.sex || "").toString().toLowerCase();
-      if(g.includes("kad") || g==="female" || g==="f") return true;
-
-      // bazı projelerde profil ayrı tutuluyor olabilir:
-      const p = JSON.parse(localStorage.getItem("caynana_profile_v2") || "{}");
-      const g2 = (p.gender || p.sex || "").toString().toLowerCase();
-      return (g2.includes("kad") || g2==="female" || g2==="f");
-    }catch(e){
-      return false;
-    }
-  }
-
-  function injectPeriodMenuIfNeeded(){
-    const menu = $("mainMenu");
-    if(!menu) return;
-    if(!isFemaleProfile()) return;
-    if(menu.querySelector('[data-action="period"]')) return;
-
-    const div = document.createElement("div");
-    div.className = "menu-action";
-    div.setAttribute("data-action","period");
-    div.innerHTML = `<div class="ico">🩸</div><div><div>Regl Takibi</div><small>Döngü / hatırlatma</small></div>`;
-    menu.appendChild(div);
-
-    div.addEventListener("click", ()=> handleMenuAction("period"));
-  }
-
-  // ---------------------------
-  // Menu actions
-  // ---------------------------
-  function handleMenuAction(action){
-    toggleMenu(false);
-
-    if(action==="fal"){ openFalPanel(); return; }
-    if(action==="tarot"){ location.href="pages/tarot.html"; return; }
-    if(action==="horoscope"){ location.href="pages/burc.html"; return; }
-    if(action==="dream"){ location.href="pages/ruya.html"; return; }
-    if(action==="translate"){ doSend("Tercüman: Metni yapıştır, dili söyle (TR/EN/DE/AR vs)."); return; }
-
-    if(action==="shopping"){ doSend("Alışveriş moduna geçelim: Ne almak istiyorsun?"); return; }
-    if(action==="diet"){ doSend("Diyet: Bugün hedefin nedir; kilo mu, koruma mı?"); return; }
-    if(action==="health"){ doSend("Sağlık: Ne şikayetin var evladım?"); return; }
-    if(action==="special"){ doSend("Özel Gün: Hangi tarihleri hatırlatayım?"); return; }
-    if(action==="period"){ location.href="pages/regl.html"; return; }
-  }
-
-  // ---------------------------
-  // Camera toggle (eyes follow)
-  // ---------------------------
-  function toggleCamEyes(on){
-    EYES.camOn = !!on;
-    markActivity();
-  }
-
-  // ---------------------------
-  // Boot
-  // ---------------------------
-  document.addEventListener("DOMContentLoaded", async () => {
-
-    // 0) Eyes
-    try { initEyes(); } catch(e){}
-
-    // 1) AUTH (ÖNCE)
-    if (typeof initAuth === "function") initAuth();
-
-    // Login buttons
-    $("googleLoginBtn")?.addEventListener("click", () => handleLogin("google"));
-    $("appleLoginBtn")?.addEventListener("click", () => handleLogin("apple"));
-
-    // 2) YP
-    try { applyDailyYP(); } catch(e){}
-
-    // 3) Partials & Notif
-    try { await initPartials(); } catch(e){}
-    try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e){}
-
-    // 4) Profile
-    $("profileBtn")?.addEventListener("click", () => location.href="pages/profil.html");
-
-    // 5) Menu
-    $("hambBtn")?.addEventListener("click", () => toggleMenu());
-    $("menuOverlay")?.addEventListener("click", (e) => { if (e.target?.id === "menuOverlay") toggleMenu(false); });
-
-    // 6) Notifications
-    $("notifBtn")?.addEventListener("click", () => { toggleNotif(); refreshNotifications(); });
-    document.addEventListener("click", (e) => {
-      const dd = $("notifDropdown");
-      const btn = $("notifBtn");
-      if (!dd || !btn) return;
-      if (dd.classList.contains("show") && !dd.contains(e.target) && !btn.contains(e.target)) dd.classList.remove("show");
-    });
-
-    // 7) Terms
-    $("termsAcceptBtn")?.addEventListener("click", acceptTermsAndEnter);
-
-    // 8) Chat send
-    $("sendBtn")?.addEventListener("click", () => doSend());
-    $("msgInput")?.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); doSend(); }
-      else markActivity();
-    });
-
-    // 9) New chat
-    $("newChatBtn")?.addEventListener("click", () => newChat());
-
-    // 10) Menu actions
-    document.querySelectorAll(".menu-action").forEach(el => {
-      el.addEventListener("click", () => handleMenuAction(el.getAttribute("data-action")));
-    });
-
-    // 11) Logout / Delete account
-    $("logoutBtn")?.addEventListener("click", () => logout());
-    $("deleteAccountBtn")?.addEventListener("click", deleteAccountTriple);
-
-    // 12) Fal hooks
-    window.openFal = openFalPanel;
-    window.closeFal = closeFalPanel;
-    window.handleFalFile = handleFalPhoto;
-
-    // 13) Camera btn -> eyes follow mode
-    $("camBtn")?.addEventListener("click", ()=>{
-      // senin projende kamera aç/kapa ayrı modül olabilir;
-      // burada sadece göz davranışı değişsin:
-      toggleCamEyes(!EYES.camOn);
-      // küçük feedback blink
-      if(!EYES.asleep) doBlink();
-    });
-
-    // 14) Session check
-    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-
-    renderChatList();
-
-    const chats = loadChats();
-    if (chats.length && !currentChatId) {
-      currentChatId = chats.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0))[0]?.id || null;
-    }
-
-    // kadınsa menüye regl ekle
-    injectPeriodMenuIfNeeded();
-
-    if (user && user.isSessionActive && user.email) {
-      $("loginOverlay")?.classList.remove("active");
-      if (!user.terms_accepted_at) $("termsOverlay")?.classList.add("active");
-      else enterApp();
-    }
-
-    if (!loadChats().length) newChat();
-
-    refreshNotifications();
+  el.querySelectorAll(".pupil").forEach(p=>{
+    p.style.transform = `translate(${px}px, ${py}px)`;
+    p.style.opacity = EYES.asleep ? "0" : "1";
   });
 
-</script>
-</body>
-</html>                                                                                       "
+  EYES.raf = requestAnimationFrame(tickEyes);
+}
+
+function initEyes(){
+  const el = $("eyes");
+  if(!el) return;
+
+  const scheduleBlink = () => {
+    const t = 2600 + Math.random()*4200;
+    EYES.blinkTimer = setTimeout(()=>{
+      if(!EYES.asleep) doBlink();
+      scheduleBlink();
+    }, t);
+  };
+  scheduleBlink();
+
+  const scheduleWander = () => {
+    const t = 1800 + Math.random()*2600;
+    EYES.wanderTimer = setTimeout(()=>{
+      if(!EYES.asleep && !EYES.camOn){
+        const idleMs = Date.now() - EYES.lastActivity;
+        if(idleMs < 2000) setEyesTargetToInput();
+        else setEyesTargetWander();
+      }
+      scheduleWander();
+    }, t);
+  };
+  scheduleWander();
+
+  ["pointerdown","keydown","mousemove","touchstart"].forEach(evt=>{
+    document.addEventListener(evt, (e)=>{
+      markActivity();
+      if(evt==="mousemove" && EYES.follow && !EYES.camOn && !EYES.asleep){
+        setEyesTargetClientXY(e.clientX, e.clientY);
+      }
+    }, { passive:true });
+  });
+
+  $("msgInput")?.addEventListener("input", ()=>{
+    markActivity();
+    if(!EYES.camOn && !EYES.asleep) setEyesTargetToInput();
+  });
+  $("msgInput")?.addEventListener("focus", ()=>{
+    markActivity();
+    if(!EYES.camOn && !EYES.asleep) setEyesTargetToInput();
+  });
+
+  if(EYES.raf) cancelAnimationFrame(EYES.raf);
+  EYES.raf = requestAnimationFrame(tickEyes);
+}
+
+// ---------------------------
+// SEND (tek kaynak) + takip komutları + mini memory + loading balon
+// ---------------------------
+async function doSend(forcedText=null){
+  const inputEl = $("msgInput");
+  const txt = (forcedText ?? inputEl?.value ?? "").trim();
+  if(!txt) return;
+
+  const low = txt.toLowerCase();
+
+  // göz takip komutları
+  if(low.includes("takip et")){
+    EYES.follow = true;
+    markActivity();
+    doBlink();
+    const ans = "Tamam evladım, gözüm sende. 👀";
+    pushMsg("assistant", ans);
+    typeWriterLib(ans, "chat");
+    return;
+  }
+  if(low.includes("takibi kapat") || low.includes("takip kapat")){
+    EYES.follow = false;
+    markActivity();
+    doBlink();
+    const ans = "Peki evladım, takibi kapattım.";
+    pushMsg("assistant", ans);
+    typeWriterLib(ans, "chat");
+    return;
+  }
+
+  // mini memory öğren
+  learnFromText(txt);
+
+  // "neredeyim" hızlı cevap
+  if(low.includes("ben neredeyim") || low.includes("neredeyim")){
+    const m = loadMem();
+    const ans = m.city ? `Düzce demiştin evladım: ${m.city}.` : "Evladım daha söylemedin ki, neredesin?";
+    pushMsg("assistant", ans);
+    typeWriterLib(ans, "chat");
+    return;
+  }
+
+  markActivity();
+
+  // YP: her mesaj +0.5
+  addYP(0.5);
+
+  setBrandState("usering");
+  setTimeout(()=> setBrandState("thinking"), 140);
+
+  addUserBubble(txt);
+  if(inputEl && forcedText==null) inputEl.value = "";
+
+  pushMsg("user", txt);
+
+  // loading balon
+  const holder = document.createElement("div");
+  holder.className = "bubble bot loading";
+  holder.textContent = "…";
+  $("chat")?.appendChild(holder);
+  holder.scrollIntoView({behavior:"smooth", block:"end"});
+
+  // backend’e küçük bağlam ekle (şehir)
+  const m = loadMem();
+  const ctx = m.city ? `(Kullanıcı bilgisi: Kullanıcı ${m.city} şehrinde.)\n` : "";
+
+  const out = await fetchTextResponse(ctx + txt, "chat");
+  const reply = out?.text || "Evladım bir şeyler ters gitti.";
+  try{ holder.remove(); }catch(e){}
+
+  setBrandState("botting");
+  setTimeout(()=> setBrandState("talking"), 120);
+
+  pushMsg("assistant", reply);
+  typeWriterLib(reply, "chat");
+
+  setTimeout(()=> setBrandState(null), 520);
+}
+
+// ---------------------------
+// Delete account (3 confirm)
+// ---------------------------
+async function deleteAccountTriple(){
+  if(!confirm("Hesabını silmek istiyor musun?")) return;
+  if(!confirm("Emin misin? Geri dönüş yok evladım.")) return;
+  if(!confirm("Son kez soruyorum: HESABIN SİLİNECEK. Onaylıyor musun?")) return;
+
+  try{
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(CHATS_KEY);
+    localStorage.removeItem(YP_KEY);
+    localStorage.removeItem(MEM_KEY);
+  }catch(e){}
+
+  alert("Tamamdır. Hesap verileri bu cihazdan silindi.");
+  location.href = "/index.html";
+}
+
+// ---------------------------
+// Kadınsa: Regl Takibi menü ekle
+// ---------------------------
+function isFemaleProfile(){
+  try{
+    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+    const g = (user.gender || user.sex || "").toString().toLowerCase();
+    if(g.includes("kad") || g==="female" || g==="f") return true;
+
+    const p = JSON.parse(localStorage.getItem("caynana_profile_v2") || "{}");
+    const g2 = (p.gender || p.sex || "").toString().toLowerCase();
+    return (g2.includes("kad") || g2==="female" || g2==="f");
+  }catch(e){
+    return false;
+  }
+}
+
+function injectPeriodMenuIfNeeded(){
+  const menu = $("mainMenu");
+  if(!menu) return;
+  if(!isFemaleProfile()) return;
+  if(menu.querySelector('[data-action="period"]')) return;
+
+  const div = document.createElement("div");
+  div.className = "menu-action";
+  div.setAttribute("data-action","period");
+  div.innerHTML = `<div class="ico">🩸</div><div><div>Regl Takibi</div><small>Döngü / hatırlatma</small></div>`;
+  menu.appendChild(div);
+
+  div.addEventListener("click", ()=> handleMenuAction("period"));
+}
+
+// ---------------------------
+// Menu actions
+// ---------------------------
+function handleMenuAction(action){
+  toggleMenu(false);
+
+  if(action==="fal"){ openFalPanel(); return; }
+  if(action==="tarot"){ location.href="pages/tarot.html"; return; }
+  if(action==="horoscope"){ location.href="pages/burc.html"; return; }
+  if(action==="dream"){ location.href="pages/ruya.html"; return; }
+  if(action==="translate"){ doSend("Tercüman: Metni yapıştır, dili söyle (TR/EN/DE/AR vs)."); return; }
+
+  if(action==="shopping"){ doSend("Alışveriş moduna geçelim: Ne almak istiyorsun?"); return; }
+  if(action==="diet"){ doSend("Diyet: Bugün hedefin nedir; kilo mu, koruma mı?"); return; }
+  if(action==="health"){ doSend("Sağlık: Ne şikayetin var evladım?"); return; }
+  if(action==="special"){ doSend("Özel Gün: Hangi tarihleri hatırlatayım?"); return; }
+  if(action==="period"){ location.href="pages/regl.html"; return; }
+}
+
+// ---------------------------
+// Camera toggle (eyes follow)
+// ---------------------------
+function toggleCamEyes(on){
+  EYES.camOn = !!on;
+  markActivity();
+}
+
+// ---------------------------
+// Boot
+// ---------------------------
+document.addEventListener("DOMContentLoaded", async () => {
+
+  // 0) Eyes
+  try { initEyes(); } catch(e){}
+
+  // 1) AUTH (ÖNCE)
+  if (typeof initAuth === "function") initAuth();
+
+  // Login buttons
+  $("googleLoginBtn")?.addEventListener("click", () => handleLogin("google"));
+  $("appleLoginBtn")?.addEventListener("click", () => handleLogin("apple"));
+
+  // 2) YP
+  try { applyDailyYP(); } catch(e){}
+
+  // 3) Partials & Notif
+  try { await initPartials(); } catch(e){}
+  try { initNotif({ baseUrl: BASE_DOMAIN }); } catch(e){}
+
+  // 4) Profile
+  $("profileBtn")?.addEventListener("click", () => location.href="pages/profil.html");
+
+  // 5) Menu
+  $("hambBtn")?.addEventListener("click", () => toggleMenu());
+  $("menuOverlay")?.addEventListener("click", (e) => { if (e.target?.id === "menuOverlay") toggleMenu(false); });
+
+  // 6) Notifications
+  $("notifBtn")?.addEventListener("click", () => { toggleNotif(); refreshNotifications(); });
+  document.addEventListener("click", (e) => {
+    const dd = $("notifDropdown");
+    const btn = $("notifBtn");
+    if (!dd || !btn) return;
+    if (dd.classList.contains("show") && !dd.contains(e.target) && !btn.contains(e.target)) dd.classList.remove("show");
+  });
+
+  // 7) Terms
+  $("termsAcceptBtn")?.addEventListener("click", acceptTermsAndEnter);
+
+  // 8) Chat send
+  $("sendBtn")?.addEventListener("click", () => doSend());
+  $("msgInput")?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); doSend(); }
+    else markActivity();
+  });
+
+  // 9) New chat
+  $("newChatBtn")?.addEventListener("click", () => newChat());
+
+  // 10) Menu actions
+  document.querySelectorAll(".menu-action").forEach(el => {
+    el.addEventListener("click", () => handleMenuAction(el.getAttribute("data-action")));
+  });
+
+  // 11) Logout / Delete account
+  $("logoutBtn")?.addEventListener("click", () => logout());
+  $("deleteAccountBtn")?.addEventListener("click", deleteAccountTriple);
+
+  // 12) Fal hooks
+  window.openFal = openFalPanel;
+  window.closeFal = closeFalPanel;
+  window.handleFalFile = handleFalPhoto;
+
+  // 13) Camera btn -> eyes follow mode
+  $("camBtn")?.addEventListener("click", ()=>{
+    toggleCamEyes(!EYES.camOn);
+    if(!EYES.asleep) doBlink();
+  });
+
+  // 14) Session check
+  const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+  renderChatList();
+
+  const chats = loadChats();
+  if (chats.length && !currentChatId) {
+    currentChatId = chats.sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0))[0]?.id || null;
+  }
+
+  injectPeriodMenuIfNeeded();
+
+  if (user && user.isSessionActive && user.email) {
+    $("loginOverlay")?.classList.remove("active");
+    if (!user.terms_accepted_at) $("termsOverlay")?.classList.add("active");
+    else enterApp();
+  }
+
+  if (!loadChats().length) newChat();
+
+  refreshNotifications();
+});
