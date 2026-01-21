@@ -644,14 +644,19 @@
   // Notif fetch
   // ---------------------------
   async function refreshNotifications(){
-    const list = $("notifList");
-    const badge = $("notifBadge");
-    if(!list) return;
+  const list = $("notifList");
+  const badge = $("notifBadge");
+  if(!list) return;
+
+  const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+  const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id || "guest")}`);
+
+  // devamı...
+}
 
     try{
       const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id || 
-        guest")}`);
+      const res = await fetch(`${BASE_DOMAIN}/api/reminders/today?user_id=${encodeURIComponent(user.id || "guest")}`);
       const data = await res.json();
       const items = data.items || [];
 
