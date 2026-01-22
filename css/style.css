@@ -3,7 +3,7 @@
 body, html { margin:0; padding:0; width:100%; height:100dvh; background:var(--bg-outer); font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color:var(--text); overflow:hidden; display:flex; align-items:center; justify-content:center; }
 ::-webkit-scrollbar { display:none; }
 
-.mobile-frame { width:100%; height:100%; max-width:480px; background:var(--bg); position:relative; display:flex; flex-direction:column; overflow:hidden; }
+.mobile-frame { width:100%; height:100%; max-width:480px; background:var(--bg); position:relative; display:flex; flex-direction:column; overflow:hidden; box-shadow: 0 0 50px rgba(255,255,255,0.05); }
 @media(min-width:500px){ .mobile-frame { height:95dvh; border-radius:24px; border:1px solid #333; } }
 
 /* TOPBAR */
@@ -21,7 +21,9 @@ body, html { margin:0; padding:0; width:100%; height:100dvh; background:var(--bg
 .brand-wrapper.usering .seesaw-bar { transform:rotate(-15deg); }
 .brand-wrapper.botting .seesaw-bar { transform:rotate(15deg); }
 .brand-wrapper.thinking .seesaw-bar { animation:rock 1s infinite ease-in-out; }
+.brand-wrapper.thinking #orangeBall { animation: breath .8s infinite alternate; transform-box:fill-box; transform-origin:center; }
 @keyframes rock { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+@keyframes breath { from{transform:scale(1)} to{transform:scale(1.5)} }
 
 /* YP & ICONS */
 .yp-chip { display:flex; align-items:center; gap:6px; padding:4px 8px; border:1px solid #333; background:#151515; border-radius:99px; }
@@ -30,7 +32,7 @@ body, html { margin:0; padding:0; width:100%; height:100dvh; background:var(--bg
 .yp-fill { height:100%; width:50%; background:linear-gradient(90deg,#ff5252,#ffb300,#bef264); transition:width .5s; }
 .yp-num { font-size:9px; color:#ccc; font-weight:700; width:22px; text-align:right; }
 
-.notif-row { display:flex; align-items:center; gap:5px; }
+.notif-row { display:flex; align-items:center; gap:5px; position:relative; }
 .icon-btn-top { background:none; border:none; cursor:pointer; padding:6px; display:flex; align-items:center; position:relative; }
 .icon-btn-top svg { width:22px; height:22px; stroke:#aaa; fill:none; stroke-width:2; }
 .badge { position:absolute; top:4px; right:4px; width:6px; height:6px; background:#ff5252; border-radius:50%; display:none; }
