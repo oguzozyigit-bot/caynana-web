@@ -1,203 +1,526 @@
-import { APP_MODULES, STORAGE_KEY } from "./config.js"; // Config'den modülleri çekiyoruz
-import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.js";
-import { initEyes, showPage, closePage } from "./ui.js";
+// js/main.js (v5.2 PREMIUM - NO HTML LOSS)
+// HTML'e dokunmadan: giriş, terms, menü, notif, fal, chat, animasyonları bağlar.
+
+import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
+import { initAuth, handleLogin, logout, acceptTerms } from "./auth.js";
 import { initNotif } from "./notif.js";
 import { fetchTextResponse, addUserBubble, typeWriter } from "./chat.js";
 import { openFalPanel, closeFalPanel, handleFalPhoto } from "./fal.js";
-import { openDedikoduPanel } from "./dedikodu.js";
 
 const $ = (id) => document.getElementById(id);
-window.currentAppMode = 'chat';
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-document.addEventListener("DOMContentLoaded", async () => {
-    initEyes();
-    
-    // Google Scriptini Bekle (Çalışmazsa test butonu zaten var)
-    const gsiReady = await waitForGsi();
-    if(gsiReady) {
-        const hint = $('loginHint');
-        if(hint) hint.textContent = "Hadi giriş yap.";
-        initAuth();
-    } else {
-        const hint = $('loginHint');
-        if(hint) hint.textContent = "Google yüklenemedi, Test Girişini kullan.";
-    }
+function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
+function getUser() { return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
+function setUser(u) { localStorage.setItem(STORAGE_KEY, JSON.stringify(u || {})); }
 
-    // --- EVENT LISTENERS ---
-
-    // 1. Menü Aç/Kapa
-    $('hambBtn')?.addEventListener('click', () => $('menuOverlay').classList.add('open'));
-    $('menuOverlay')?.addEventListener('click', (e) => {
-        if(e.target.id === 'menuOverlay') $('menuOverlay').classList.remove('open');
-    });
-
-    // 2. Mesaj Gönder
-    $('sendBtn')?.addEventListener('click', sendMessage);
-    $('msgInput')?.addEventListener('keydown', (e) => { if(e.key==='Enter') sendMessage(); });
-
-    // 3. Bildirimler
-    $('notifBtn')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        $('notifDropdown').classList.toggle('show');
-    });
-    document.addEventListener('click', (e) => {
-        if(!$('notifBtn').contains(e.target)) $('notifDropdown').classList.remove('show');
-    });
-
-    // 4. LOGIN BUTONLARI
-    $('googleLoginBtn')?.addEventListener('click', () => handleLogin('google'));
-    $('appleLoginBtn')?.addEventListener('click', () => handleLogin('apple'));
-    
-    // 🔥 TEST GİRİŞİ (BYPASS) BUTONU (DÜZELTİLDİ VE TAMAMLANDI) 🔥
-    $('devLoginBtn')?.addEventListener('click', () => {
-        const fakeUser = {
-            id: "test-user-id",
-            email: "test@caynana.ai",
-            name: "Test Kullanıcısı",
-            avatar: "https://via.placeholder.com/150",
-            termsAccepted: true,
-            isSessionActive: true
-        };
-        // Kaydet ve yenile
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(fakeUser));
-        localStorage.setItem("google_id_token", "dev_token_bypass"); // Token varmış gibi yap
-        window.location.reload();
-    });
-
-    // 5. Sözleşme Onayı
-    $('termsAcceptBtn')?.addEventListener('click', async () => {
-        if($('termsCheck').checked) {
-            await acceptTerms();
-            $('termsOverlay').style.display = 'none';
-            checkSession();
-        } else {
-            alert("Sözleşmeyi onayla evladım.");
-        }
-    });
-
-    // 6. UI İşlevleri (Fal, Modal vb.)
-    $('closeFalBtn')?.addEventListener('click', closeFalPanel);
-    $('falInput')?.addEventListener('change', (e) => handleFalPhoto(e.target));
-    $('closePageBtn')?.addEventListener('click', closePage);
-
-    // 7. 🔥 DINAMİK MENÜ OLUŞTURUCU (Config.js'den Çeker) 🔥
-    const grid = $('mainMenu');
-    if(grid && APP_MODULES && APP_MODULES.modules) {
-        grid.innerHTML = ""; // Temizle
-        
-        // Config'deki her grubu ve item'ı dön
-        APP_MODULES.modules.forEach(group => {
-            group.items.forEach(item => {
-                const div = document.createElement('div');
-                div.className = "menu-action";
-                div.innerHTML = `<div class="ico">${item.icon}</div><div>${item.name}</div>`;
-                
-                // Tıklama Olayı
-                div.onclick = () => {
-                    $('menuOverlay').classList.remove('open'); // Menüyü kapat
-                    handleMenuAction(item.action);
-                };
-                
-                grid.appendChild(div);
-            });
-        });
-    }
-
-    // 8. Çıkış İşlemleri
-    $('logoutBtn')?.addEventListener('click', logout);
-    $('deleteAccountBtn')?.addEventListener('click', () => { if(confirm("Silmek istediğine emin misin?")) logout(); });
-
-    // 9. Kamera/Göz Takip
-    const toggleCam = () => { $('mobileFrame').classList.toggle('tracking-active'); };
-    $('camBtn')?.addEventListener('click', toggleCam);
-    $('trackToggleBtn')?.addEventListener('click', toggleCam);
-    $('mainTrackBtn')?.addEventListener('click', toggleCam);
-
-    checkSession();
-});
-
-// --- MENÜ AKSİYON YÖNETİCİSİ ---
-function handleMenuAction(action) {
-    // 1. Fal & Dedikodu (Overlay)
-    if (action === 'fal') openFalPanel();
-    else if (action === 'dedikodu') openDedikoduPanel();
-    
-    // 2. Mod Değiştiren Sohbetler
-    else if (action.startsWith('mode_')) {
-        const mode = action.replace('mode_', ''); // shopping, diet, health...
-        window.currentAppMode = mode;
-        
-        let msg = "Konuş bakalım.";
-        if(mode === 'shopping') msg = "Alışveriş modundayız, ne lazım?";
-        if(mode === 'diet') msg = "Diyet konuşalım, boyun kilon kaç?";
-        if(mode === 'health') msg = "Neren ağrıyor evladım?";
-        if(mode === 'trans') msg = "Çevireceğin şeyi yaz.";
-        
-        sendMessage(msg);
-    }
-    
-    // 3. Sayfa Yönlendirmeleri
-    else if (action.startsWith('page_')) {
-        const page = action.replace('page_', '');
-        window.location.href = `pages/${page}.html`;
-    }
-    
-    // 4. Varsayılan Chat
-    else if (action === 'chat') {
-        window.currentAppMode = 'chat';
-        sendMessage("Sohbet edelim.");
-    }
+function firstName(full = "") {
+  const s = String(full || "").trim();
+  if (!s) return "";
+  return s.split(/\s+/)[0];
 }
 
-async function sendMessage(overrideText) {
-    const inp = $('msgInput');
-    const txt = typeof overrideText === 'string' ? overrideText : inp.value.trim();
-    if(!txt) return;
+// --------------------
+// GLOBAL UI HOOKS (auth.js çağırır)
+// --------------------
+window.enterApp = () => {
+  $("loginOverlay")?.classList.remove("active");
+  $("loginOverlay") && ($("loginOverlay").style.display = "none");
+  refreshPremiumBars();
+};
 
-    if(!localStorage.getItem("google_id_token")) {
-        alert("Önce giriş yap evladım.");
+window.showTermsOverlay = () => {
+  const t = $("termsOverlay");
+  if (!t) return;
+  t.classList.add("active");
+  t.style.display = "flex";
+};
+
+// Google prompt gösterilemezse dev hint
+window.showGoogleButtonFallback = (reason = "unknown") => {
+  const hint = $("loginHint");
+  if (hint) hint.textContent = `Google penceresi açılamadı (${reason}). Alttaki butonu tekrar dene.`;
+};
+
+// --------------------
+// Premium UI state
+// --------------------
+function refreshPremiumBars() {
+  const u = getUser();
+  const logged = !!(u?.isSessionActive && u?.id && u?.provider !== "guest");
+  document.body.classList.toggle("is-logged", logged);
+
+  const name = (u.hitap || firstName(u.fullname) || u.email || "MİSAFİR").toUpperCase();
+  const hint = $("loginHint");
+  if (hint && !logged) hint.textContent = "Servisler hazır. Google ile devam et evladım.";
+
+  // Samimiyet meter (şimdilik local)
+  const yp = Number((u?.yp_percent ?? 50));
+  const p = Math.max(5, Math.min(100, yp));
+  if ($("ypNum")) $("ypNum").textContent = `${p}%`;
+  if ($("ypFill")) $("ypFill").style.width = `${p}%`;
+
+  // Profil butonu login yoksa overlay açsın
+  const profileBtn = $("profileBtn");
+  if (profileBtn) {
+    profileBtn.onclick = () => {
+      if (!logged) {
+        $("loginOverlay")?.classList.add("active");
+        $("loginOverlay") && ($("loginOverlay").style.display = "flex");
         return;
+      }
+      location.href = "pages/profil.html";
+    };
+  }
+
+  // Menü footer aksiyonları login yoksa auth açsın
+  $("logoutBtn") && ($("logoutBtn").onclick = () => {
+    if (!logged) {
+      $("loginOverlay")?.classList.add("active");
+      $("loginOverlay") && ($("loginOverlay").style.display = "flex");
+      return;
     }
+    logout();
+  });
 
-    addUserBubble(txt);
-    inp.value = "";
+  $("deleteAccountBtn") && ($("deleteAccountBtn").onclick = async () => {
+    if (!logged) {
+      alert("Önce giriş yap evladım.");
+      return;
+    }
+    await deleteAccount();
+  });
 
-    const chat = $('chat');
-    const loadBubble = document.createElement('div');
-    loadBubble.className = 'bubble bot loading';
-    loadBubble.textContent = "…";
-    chat.appendChild(loadBubble);
-    chat.scrollTop = chat.scrollHeight;
-
-    $('brandWrapper').classList.add('thinking');
-    
-    const res = await fetchTextResponse(txt);
-    
-    loadBubble.remove();
-    $('brandWrapper').classList.remove('thinking');
-    $('brandWrapper').classList.add('talking');
-    $('mobileFrame').classList.add('talking');
-
-    typeWriter(res.text);
-
-    setTimeout(() => {
-        $('brandWrapper').classList.remove('talking');
-        $('mobileFrame').classList.remove('talking');
-    }, Math.max(2000, res.text.length * 50));
+  // Brand title subtitle (premium hissi)
+  const bw = $("brandWrapper");
+  if (bw) bw.dataset.user = logged ? name : "MİSAFİR";
 }
 
-function checkSession() {
-    const user = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if(user && user.id) {
-        $('loginOverlay').classList.remove('active');
-        if(!user.termsAccepted) {
-            $('termsOverlay').style.display = 'flex';
-        } else {
-            $('termsOverlay').style.display = 'none';
-            initNotif();
-            if($('chat').children.length === 0) setTimeout(() => typeWriter(`Hoş geldin ${user.name || 'evladım'}.`), 500);
-        }
-    } else {
-        $('loginOverlay').classList.add('active');
-    }
+// --------------------
+// Menu (grid doldur + aksiyon bağla)
+// --------------------
+const MENU_ITEMS = [
+  { key: "chat",       label: "Sohbet",     sub: "Dertleş",      ico: "💬" },
+  { key: "dedikodu",   label: "Dedikodu",   sub: "Özel oda",     ico: "🕵️" },
+  { key: "shopping",   label: "Alışveriş",  sub: "Tasarruf et",  ico: "🛍️" },
+  { key: "translate",  label: "Tercüman",   sub: "Çeviri",       ico: "🌍" },
+  { key: "diet",       label: "Diyet",      sub: "Plan",         ico: "🥗" },
+  { key: "health",     label: "Sağlık",     sub: "Danış",        ico: "❤️" },
+  { key: "special",    label: "Özel Gün",   sub: "Hatırla",      ico: "🎉" },
+  { key: "reminder",   label: "Hatırlatıcı",sub: "Alarm",        ico: "⏰" },
+  { key: "fal",        label: "Kahve Falı", sub: "Günde 1",      ico: "☕" },
+  { key: "tarot",      label: "Tarot",      sub: "Kart seç",     ico: "🃏" },
+  { key: "horoscope",  label: "Burç",       sub: "Günlük",       ico: "♈" },
+  { key: "dream",      label: "Rüya",       sub: "Yorumla",      ico: "🌙" },
+];
+
+function populateMenuGrid() {
+  const grid = $("mainMenu");
+  if (!grid) return;
+
+  // boşsa doldur; doluysa dokunma
+  if (grid.children.length > 0) return;
+
+  grid.innerHTML = MENU_ITEMS.map(m => `
+    <div class="menu-action" data-action="${m.key}">
+      <div class="ico">${m.ico}</div>
+      <div><div>${m.label}</div><small>${m.sub}</small></div>
+    </div>
+  `).join("");
 }
+
+function openMenu() { $("menuOverlay")?.classList.add("open"); }
+function closeMenu() { $("menuOverlay")?.classList.remove("open"); }
+
+async function handleMenuAction(action) {
+  closeMenu();
+
+  if (action === "fal") { openFalPanel(); return; }
+  if (action === "reminder") { location.href = "pages/hatirlatici.html"; return; }
+  if (action === "tarot") { location.href = "pages/tarot.html"; return; }
+  if (action === "horoscope") { location.href = "pages/burc.html"; return; }
+  if (action === "dream") { location.href = "pages/ruya.html"; return; }
+
+  // chat modları
+  if (action === "dedikodu") { await sendForced("Dedikodu modundayız. Anlat bakalım… 😏", "dedikodu"); return; }
+  if (action === "shopping") { await sendForced("Alışverişe geçtik. Ne alacaksın?", "shopping"); return; }
+  if (action === "translate") { await sendForced("Çeviri: metni yapıştır, dilini söyle.", "trans"); return; }
+  if (action === "diet") { await sendForced("Diyet: hedefin ne? kilo mu koruma mı?", "diet"); return; }
+  if (action === "health") { await sendForced("Sağlık: ne şikayetin var?", "health"); return; }
+  if (action === "special") { await sendForced("Özel gün: hangi tarihleri ekleyelim?", "chat"); return; }
+  if (action === "chat") { await sendForced("Anlat bakalım evladım.", "chat"); return; }
+
+  // fallback
+  location.href = `pages/${action}.html`;
+}
+
+// --------------------
+// Chat send
+// --------------------
+let currentMode = "chat";
+let chatHistory = [];
+
+function setBrandState(state) {
+  const bw = $("brandWrapper");
+  const mf = $("mobileFrame");
+  if (bw) {
+    bw.classList.remove("usering","botting","thinking","talking");
+    if (state) bw.classList.add(state);
+  }
+  if (mf) {
+    mf.classList.remove("usering","botting","thinking","talking");
+    if (state) mf.classList.add(state);
+  }
+}
+
+async function sendForced(text, mode="chat") {
+  currentMode = mode;
+  await doSend(text, true);
+}
+
+async function doSend(forcedText = null, isSystem = false) {
+  const input = $("msgInput");
+  const txt = String(forcedText ?? input?.value ?? "").trim();
+  if (!txt) return;
+
+  // UI: user bubble
+  setBrandState("usering");
+  addUserBubble(txt);
+  if (input && forcedText === null) input.value = "";
+
+  // history
+  chatHistory.push({ role: "user", content: txt });
+
+  // loading
+  setTimeout(() => setBrandState("thinking"), 120);
+  const holder = document.createElement("div");
+  holder.className = "bubble bot loading";
+  holder.textContent = "…";
+  $("chat")?.appendChild(holder);
+  holder.scrollIntoView({ behavior: "smooth", block: "end" });
+
+  let reply = "Evladım bir şeyler ters gitti.";
+  try {
+    const out = await fetchTextResponse(txt, currentMode, chatHistory);
+    reply = out?.text || reply;
+  } catch (e) {}
+
+  try { holder.remove(); } catch (e) {}
+
+  setBrandState("botting");
+  setTimeout(() => setBrandState("talking"), 120);
+  typeWriter(reply, "chat");
+  chatHistory.push({ role: "assistant", content: reply });
+  setTimeout(() => setBrandState(null), 650);
+}
+
+// --------------------
+// Eyes tracking (premium smooth, donmasız)
+// --------------------
+function setGaze(x, y) {
+  const L = $("eyeL"), R = $("eyeR");
+  if (!L || !R) return;
+  const gx = Math.min(Math.max(x * 20, -20), 20);
+  const gy = Math.min(Math.max(y * 14, -14), 14);
+  L.style.setProperty("--gx", gx + "px"); L.style.setProperty("--gy", gy + "px");
+  R.style.setProperty("--gx", gx + "px"); R.style.setProperty("--gy", gy + "px");
+}
+function setLids(top, bot=0) {
+  const L = $("eyeL"), R = $("eyeR");
+  if (!L || !R) return;
+  [L, R].forEach(e => {
+    e.querySelector(".lid-top").style.height = top + "%";
+    e.querySelector(".lid-bot").style.height = bot + "%";
+  });
+}
+
+let isTracking = false;
+let idleTimer = null;
+
+function resetIdle() {
+  $("mobileFrame")?.classList.remove("sleeping");
+  setLids(0,0);
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(() => {
+    if (!isTracking) {
+      $("mobileFrame")?.classList.add("sleeping");
+      setLids(60,20);
+    }
+  }, 30000);
+}
+
+function autoLook() {
+  if ($("mobileFrame")?.classList.contains("sleeping") || isTracking) return;
+  const rx = (Math.random()-0.5)*1.6;
+  const ry = (Math.random()-0.5)*0.6;
+  setGaze(rx, ry);
+  setTimeout(() => setGaze(0,0), 900);
+}
+
+// pointermove throttle
+let _raf=0, _lastEvt=null, _rect=null, _rectAt=0, _idleAt=0;
+function getRect(){
+  const now = performance.now();
+  if(!_rect || (now - _rectAt) > 250){
+    _rect = $("mobileFrame")?.getBoundingClientRect() || null;
+    _rectAt = now;
+  }
+  return _rect;
+}
+window.addEventListener("resize", ()=>{ _rect=null; });
+
+window.addEventListener("pointermove", (e)=>{
+  _lastEvt = e;
+  const now = performance.now();
+  if(now - _idleAt > 500){ _idleAt = now; resetIdle(); }
+  if(isTracking) return;
+  if(_raf) return;
+  _raf = requestAnimationFrame(()=>{
+    _raf=0;
+    const r = getRect();
+    if(!r || r.width<=0 || r.height<=0) return;
+    const x = ((_lastEvt.clientX - r.left) / r.width) * 2 - 1;
+    const y = ((_lastEvt.clientY - r.top) / r.height) * 2 - 1;
+    setGaze(x,y);
+  });
+}, { passive:true });
+
+// --------------------
+// Fal binding
+// --------------------
+function bindFalUI(){
+  // close
+  $("closeFalBtn") && ($("closeFalBtn").onclick = () => closeFalPanel());
+
+  // input
+  const fi = $("falInput");
+  if (fi) {
+    fi.onchange = () => handleFalPhoto(fi);
+  }
+
+  // fix invalid #gold in HTML
+  const lt = $("loadingText");
+  if (lt) lt.style.color = "var(--gold)";
+}
+
+// --------------------
+// Page overlay (tek ekran içerik)
+/// --------------------
+function openPage(title, html){
+  const po = $("pageOverlay");
+  if(!po) return;
+  $("pageTitle").textContent = title || "";
+  $("pageContent").innerHTML = html || "";
+  po.classList.add("active");
+  po.style.display = "flex";
+}
+function closePage(){
+  const po = $("pageOverlay");
+  if(!po) return;
+  po.classList.remove("active");
+  po.style.display = "none";
+}
+function bindPageOverlay(){
+  $("closePageBtn") && ($("closePageBtn").onclick = closePage);
+  $("pageOverlay") && ($("pageOverlay").onclick = (e)=>{ if(e.target === $("pageOverlay")) closePage(); });
+}
+
+// --------------------
+// Account delete
+// --------------------
+async function deleteAccount(){
+  const u = getUser();
+  if(!u?.id) return;
+  if(!confirm("Hesabını kalıcı silmek istiyor musun?")) return;
+
+  const idToken = (localStorage.getItem("google_id_token") || "").trim();
+
+  // 1) profile/delete dene
+  try{
+    const r = await fetch(`${BASE_DOMAIN}/api/profile/delete`, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ user_id: u.id, email: u.email || "", google_id_token: idToken || "" })
+    });
+    if(r.ok){
+      alert("Hesabın silindi.");
+      localStorage.clear();
+      location.reload();
+      return;
+    }
+  }catch(e){}
+
+  // 2) fallback deleted_at
+  try{
+    const r2 = await fetch(`${BASE_DOMAIN}/api/profile/update`, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        user_id: u.id,
+        meta:{ email:u.email || "", deleted_at:new Date().toISOString() },
+        google_id_token: idToken || ""
+      })
+    });
+    if(r2.ok){
+      alert("Silme talebin alındı.");
+      localStorage.clear();
+      location.reload();
+      return;
+    }
+  }catch(e){}
+
+  alert("Silme endpoint'i yok/çalışmıyor. Backend'e eklenmeli.");
+}
+
+// --------------------
+// Login / Terms
+// --------------------
+async function waitForGsi(timeoutMs = 8000){
+  const t0 = Date.now();
+  while(Date.now() - t0 < timeoutMs){
+    if(window.google?.accounts?.id) return true;
+    await sleep(60);
+  }
+  return false;
+}
+
+function bindAuthUI(){
+  $("googleLoginBtn") && ($("googleLoginBtn").onclick = () => handleLogin("google"));
+  $("appleLoginBtn") && ($("appleLoginBtn").onclick = () => alert("Apple yakında evladım."));
+  $("devLoginBtn") && ($("devLoginBtn").onclick = () => {
+    const fake = { id:"dev@local", email:"dev@local", fullname:"Test Kullanıcı", avatar:"", provider:"dev", isSessionActive:true, lastLoginAt:new Date().toISOString() };
+    setUser(fake);
+    $("loginOverlay")?.classList.remove("active");
+    $("loginOverlay") && ($("loginOverlay").style.display = "none");
+    refreshPremiumBars();
+  });
+
+  $("termsAcceptBtn") && ($("termsAcceptBtn").onclick = async () => {
+    if(!$("termsCheck")?.checked) return alert("Onayla evladım.");
+    const ok = await acceptTerms();
+    if(!ok) return alert("Sözleşme kaydedilemedi.");
+    $("termsOverlay")?.classList.remove("active");
+    $("termsOverlay") && ($("termsOverlay").style.display = "none");
+    refreshPremiumBars();
+  });
+}
+
+// --------------------
+// Notif UI
+// --------------------
+function bindNotifUI(){
+  $("notifBtn") && ($("notifBtn").onclick = () => {
+    $("notifDropdown")?.classList.toggle("show");
+    if($("notifBadge")) $("notifBadge").style.display = "none";
+  });
+
+  // dışarı tıkla kapan
+  document.addEventListener("click", (e)=>{
+    const dd = $("notifDropdown");
+    if(!dd) return;
+    if(e.target?.closest?.("#notifBtn")) return;
+    if(e.target?.closest?.("#notifDropdown")) return;
+    dd.classList.remove("show");
+  });
+}
+
+// --------------------
+// Menu UI binding
+// --------------------
+function bindMenuUI(){
+  $("hambBtn") && ($("hambBtn").onclick = openMenu);
+  $("menuOverlay") && ($("menuOverlay").onclick = (e)=>{ if(e.target === $("menuOverlay")) closeMenu(); });
+
+  $("newChatBtn") && ($("newChatBtn").onclick = () => {
+    closeMenu();
+    $("chat") && ($("chat").innerHTML = "");
+    chatHistory = [];
+    setBrandState(null);
+  });
+
+  // grid delegation
+  $("mainMenu") && ($("mainMenu").onclick = (e)=>{
+    const it = e.target?.closest?.(".menu-action");
+    if(!it) return;
+    handleMenuAction(it.getAttribute("data-action"));
+  });
+}
+
+// --------------------
+// Buttons
+// --------------------
+function bindComposer(){
+  $("sendBtn") && ($("sendBtn").onclick = ()=> doSend());
+  $("msgInput") && ($("msgInput").addEventListener("keydown", (e)=>{
+    if(e.key === "Enter" && !e.shiftKey){
+      e.preventDefault();
+      doSend();
+    }
+  }));
+
+  // tracking toggle
+  const toggle = ()=>{
+    $("mobileFrame")?.classList.toggle("tracking-active");
+    isTracking = !isTracking;
+    resetIdle();
+  };
+  $("camBtn") && ($("camBtn").onclick = toggle);
+  $("mainTrackBtn") && ($("mainTrackBtn").onclick = toggle);
+  $("trackToggleBtn") && ($("trackToggleBtn").onclick = toggle);
+}
+
+// --------------------
+// BOOT
+// --------------------
+document.addEventListener("DOMContentLoaded", async ()=>{
+  // premium class (CSS patch bunu kullanıyor)
+  document.body.classList.add("premium-ui");
+
+  populateMenuGrid();
+  bindMenuUI();
+  bindNotifUI();
+  bindComposer();
+  bindFalUI();
+  bindPageOverlay();
+  bindAuthUI();
+
+  // profile btn route
+  $("profileBtn") && ($("profileBtn").onclick = () => {
+    const u = getUser();
+    const logged = !!(u?.isSessionActive && u?.id && u?.provider !== "guest");
+    if(!logged){
+      $("loginOverlay")?.classList.add("active");
+      $("loginOverlay") && ($("loginOverlay").style.display = "flex");
+      return;
+    }
+    location.href = "pages/profil.html";
+  });
+
+  // init notif + auth
+  try { await initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) {}
+  const okGsi = await waitForGsi();
+  if(okGsi) $("loginHint") && ($("loginHint").textContent = "Google hazır. Devam et evladım.");
+  initAuth();
+
+  // logout / delete
+  $("logoutBtn") && ($("logoutBtn").onclick = () => logout());
+  $("deleteAccountBtn") && ($("deleteAccountBtn").onclick = () => deleteAccount());
+
+  // session check
+  const u = getUser();
+  const logged = !!(u?.isSessionActive && u?.id);
+  if(logged){
+    $("loginOverlay")?.classList.remove("active");
+    $("loginOverlay") && ($("loginOverlay").style.display = "none");
+    if(!u.terms_accepted_at){
+      window.showTermsOverlay?.();
+    }
+  } else {
+    $("loginOverlay")?.classList.add("active");
+    $("loginOverlay") && ($("loginOverlay").style.display = "flex");
+  }
+
+  refreshPremiumBars();
+  resetIdle();
+  setInterval(autoLook, 4000);
+});
