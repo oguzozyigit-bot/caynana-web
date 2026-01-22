@@ -19,7 +19,7 @@ export function openFalPanel() {
   const overlay = document.getElementById('falOverlay');
   if (!overlay) return;
 
-  overlay.style.display = "flex";      // ✅ display:none fix
+  overlay.style.display = "flex";     // ✅ display fix
   overlay.classList.add('active');
   resetFal();
 }
@@ -29,7 +29,7 @@ export function closeFalPanel() {
   if (!overlay) return;
 
   overlay.classList.remove('active');
-  overlay.style.display = "none";      // ✅ geri kapat
+  overlay.style.display = "none";
 }
 
 function resetFal() {
@@ -53,6 +53,8 @@ function updateStatus(text) {
 }
 
 export async function handleFalPhoto(fileInput) {
+  if (photoCount >= 3) return;
+
   const file = fileInput?.files?.[0];
   if (!file) return;
 
@@ -112,11 +114,8 @@ export async function handleFalPhoto(fileInput) {
       photos.push(base64);
       photoCount++;
 
-      if (photoCount < 3) {
-        updateStatus(`Tamamdır. Şimdi ${photoCount + 1}. açıyı çek. (Tabak veya yan taraf)`);
-      } else {
-        startFalAnalysis();
-      }
+      if (photoCount < 3) updateStatus(`Tamamdır. Şimdi ${photoCount + 1}. açıyı çek. (Tabak veya yan taraf)`);
+      else startFalAnalysis();
 
       if (fileInput) fileInput.value = "";
     } catch (err) {
@@ -151,12 +150,7 @@ async function startFalAnalysis() {
     const res = await fetch(`${BASE_DOMAIN}/api/fal/read`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: userId,
-        email,
-        google_id_token: idToken || "",
-        images: photos
-      })
+      body: JSON.stringify({ user_id: userId, email, google_id_token: idToken || "", images: photos })
     });
 
     const data = await res.json().catch(() => ({}));
