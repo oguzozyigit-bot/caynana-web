@@ -1,3 +1,4 @@
+import { APP_MODULES } from "./config.js";
 import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.js";
 import { initEyes, showPage, closePage } from "./ui.js";
 import { initNotif } from "./notif.js";
