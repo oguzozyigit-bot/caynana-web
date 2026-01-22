@@ -1,52 +1,22 @@
-import { API_URL, SPEAK_URL, FAL_CHECK_URL, AUTH_ME_URL } from "./config.js";
+import { BASE_DOMAIN } from "./config.js";
 
-export function getToken(){
-  return localStorage.getItem("caynana_token") || "";
-}
-export function setToken(t){
-  if(t) localStorage.setItem("caynana_token", t);
-  else localStorage.removeItem("caynana_token");
-}
 export function authHeaders(){
-  const t = getToken();
+  const t = localStorage.getItem("google_id_token") || "";
   return t ? { "Authorization": "Bearer " + t } : {};
 }
 
-export async function apiChat(payload){
-  const r = await fetch(API_URL, {
+export async function apiPOST(endpoint, body){
+  const res = await fetch(`${BASE_DOMAIN}${endpoint}`, {
     method:"POST",
     headers:{ "Content-Type":"application/json", ...authHeaders() },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(body)
   });
-  const j = await r.json();
-  return { ok: r.ok, data: j };
+  return res;
 }
 
-export async function apiSpeak(text, persona){
-  const r = await fetch(SPEAK_URL, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json", ...authHeaders() },
-    body: JSON.stringify({ text, persona })
+export async function apiGET(endpoint){
+  const res = await fetch(`${BASE_DOMAIN}${endpoint}`, {
+    headers:{ ...authHeaders() }
   });
-  // speak bazen json error döner
-  const ct = r.headers.get("content-type") || "";
-  if(ct.includes("application/json")){
-    return { ok:false, error: (await r.json()).error || "TTS hata" };
-  }
-  return { ok:r.ok, blob: await r.blob() };
-}
-
-export async function apiFalCheck(image){
-  const r = await fetch(FAL_CHECK_URL, {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ image })
-  });
-  return { ok:r.ok, data: await r.json() };
-}
-
-export async function apiMe(){
-  const r = await fetch(AUTH_ME_URL, { method:"GET", headers:{ ...authHeaders() } });
-  if(!r.ok) return null;
-  return await r.json();
+  return await res.json();
 }
