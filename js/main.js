@@ -12,26 +12,30 @@ window.currentAppMode = 'chat';
 document.addEventListener("DOMContentLoaded", async () => {
     initEyes();
     
+    // Google Scriptini Bekle (Çalışmazsa test butonu zaten var)
     const gsiReady = await waitForGsi();
     if(gsiReady) {
-        const gBtn = $('googleLoginBtn');
-        const aBtn = $('appleLoginBtn');
         const hint = $('loginHint');
-        if(gBtn) gBtn.classList.remove('disabled');
-        if(aBtn) aBtn.classList.remove('disabled');
         if(hint) hint.textContent = "Hadi giriş yap.";
         initAuth();
+    } else {
+        const hint = $('loginHint');
+        if(hint) hint.textContent = "Google yüklenemedi, Test Girişini kullan.";
     }
 
-    // Event Listeners
+    // --- EVENT LISTENERS ---
+
+    // 1. Menü Aç/Kapa
     $('hambBtn')?.addEventListener('click', () => $('menuOverlay').classList.add('open'));
     $('menuOverlay')?.addEventListener('click', (e) => {
         if(e.target.id === 'menuOverlay') $('menuOverlay').classList.remove('open');
     });
 
+    // 2. Mesaj Gönder
     $('sendBtn')?.addEventListener('click', sendMessage);
     $('msgInput')?.addEventListener('keydown', (e) => { if(e.key==='Enter') sendMessage(); });
 
+    // 3. Bildirimler
     $('notifBtn')?.addEventListener('click', (e) => {
         e.stopPropagation();
         $('notifDropdown').classList.toggle('show');
@@ -40,8 +44,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         if(!$('notifBtn').contains(e.target)) $('notifDropdown').classList.remove('show');
     });
 
+    // 4. LOGIN BUTONLARI
     $('googleLoginBtn')?.addEventListener('click', () => handleLogin('google'));
     $('appleLoginBtn')?.addEventListener('click', () => handleLogin('apple'));
+    
+    // 🔥 TEST GİRİŞİ (BYPASS) BUTONU 🔥
+    $('devLoginBtn')?.addEventListener('click', () => {
+        const fakeUser = {
+            id: "test-user-id",
+            email: "test@caynana.ai",
+            name: "Test Kullanıcısı",
+            avatar: "https://via.placeholder.com/150",
+            termsAccepted: true,
+            isSessionActive: true
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(fakeUser));
+        localStorage.setItem("google_id_token", "dev_token_bypass"); // Sahte token
+        window.location.reload(); // Sayfayı yenile ve içeri gir
+    });
+
+    // 5. Sözleşme Onayı
     $('termsAcceptBtn')?.addEventListener('click', async () => {
         if($('termsCheck').checked) {
             await acceptTerms();
@@ -52,11 +74,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 
+    // 6. Diğer UI İşlevleri (Fal, Modal vb.)
     $('closeFalBtn')?.addEventListener('click', closeFalPanel);
     $('falInput')?.addEventListener('change', (e) => handleFalPhoto(e.target));
     $('closePageBtn')?.addEventListener('click', closePage);
 
-    // Menü Butonları
+    // 7. Grid Menü Butonları
     const actions = {
         'fal': openFalPanel,
         'dedikodu': openDedikoduPanel,
@@ -90,9 +113,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
+    // 8. Çıkış İşlemleri
     $('logoutBtn')?.addEventListener('click', logout);
     $('deleteAccountBtn')?.addEventListener('click', () => { if(confirm("Silmek istediğine emin misin?")) logout(); });
 
+    // 9. Kamera/Göz Takip
     const toggleCam = () => { $('mobileFrame').classList.toggle('tracking-active'); };
     $('camBtn')?.addEventListener('click', toggleCam);
     $('trackToggleBtn')?.addEventListener('click', toggleCam);
@@ -106,6 +131,7 @@ async function sendMessage(overrideText) {
     const txt = typeof overrideText === 'string' ? overrideText : inp.value.trim();
     if(!txt) return;
 
+    // Token yoksa uyarı ver
     if(!localStorage.getItem("google_id_token")) {
         alert("Önce giriş yap evladım.");
         return;
@@ -123,6 +149,7 @@ async function sendMessage(overrideText) {
 
     $('brandWrapper').classList.add('thinking');
     
+    // API'ye gönder
     const res = await fetchTextResponse(txt);
     
     loadBubble.remove();
@@ -140,6 +167,7 @@ async function sendMessage(overrideText) {
 
 function checkSession() {
     const user = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    // Eğer kullanıcı varsa login ekranını kaldır
     if(user && user.id) {
         $('loginOverlay').classList.remove('active');
         if(!user.termsAccepted) {
@@ -150,6 +178,7 @@ function checkSession() {
             if($('chat').children.length === 0) setTimeout(() => typeWriter(`Hoş geldin ${user.name || 'evladım'}.`), 500);
         }
     } else {
+        // Yoksa login ekranını göster
         $('loginOverlay').classList.add('active');
     }
 }
