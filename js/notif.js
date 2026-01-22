@@ -1,3 +1,4 @@
+// js/notif.js (FINAL - SAFE RENDER ONLY)
 import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
 
 let RUNTIME_BASE = null;
@@ -45,7 +46,7 @@ async function fetchNotificationsToday(){
 
 function renderNotifications(items){
   const badge = document.getElementById("notifBadge");
-  const list = document.getElementById("notifList");
+  const list  = document.getElementById("notifList");
   if(!list) return;
 
   if(badge) badge.style.display = items.length ? "block" : "none";
@@ -63,11 +64,13 @@ function renderNotifications(items){
     return;
   }
 
+  // ✅ inline onclick yok: data-url
   list.innerHTML = items.map(it => {
-    const clickable = it.action_url ? "cursor:pointer;" : "";
-    const onclick = it.action_url ? `location.href='${it.action_url}'` : "";
+    const url = String(it.action_url || "").trim();
+    const dataUrl = url ? ` data-url="${escapeHtml(url)}"` : "";
+    const style = url ? ` style="cursor:pointer;"` : "";
     return `
-      <div class="notif-item" style="${clickable}" onclick="${onclick}">
+      <div class="notif-item"${style}${dataUrl}>
         <div class="notif-icon">${iconFor(it.type)}</div>
         <div class="notif-content">
           <div class="notif-title">${escapeHtml(it.title || "")}</div>
@@ -77,53 +80,24 @@ function renderNotifications(items){
       </div>
     `;
   }).join("");
+
+  // ✅ tıklama delegasyonu (list içinde)
+  list.onclick = (e) => {
+    const item = e.target?.closest?.(".notif-item");
+    if(!item) return;
+    const url = item.getAttribute("data-url");
+    if(url) location.href = url;
+  };
 }
 
-export async function loadNotifPartial({ containerId = "notifMount" } = {}){
-  const mount = document.getElementById(containerId);
-  if(!mount) return;
+export async function initNotif({ baseUrl } = {}) {
+  if (baseUrl) RUNTIME_BASE = baseUrl;
 
-  // Zaten doluysa tekrar yükleme (index.html'de varsa koru)
-  if (mount.children.length > 0 || (mount.innerHTML || "").trim().length > 0) return;
-
-  // Eğer HTML boşsa partial yükle (Fallback)
-  try{
-    const res = await fetch("./partials/notif.html", { cache: "no-cache" });
-    if(!res.ok) throw new Error("notif partial http " + res.status);
-    mount.innerHTML = await res.text();
-  }catch(e){
-    // Partial yoksa manuel bas
-    mount.innerHTML = `
-      <button class="notif-btn" id="notifBtn">
-        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-        <div class="badge" id="notifBadge" style="display:none;"></div>
-      </button>
-      <div class="notification-dropdown" id="notifDropdown">
-        <div class="notif-header">Bildirimler</div>
-        <div class="notif-list" id="notifList"></div>
-      </div>
-    `;
-  }
-}
-
-export async function initNotifications(){
   async function refresh(){
     const items = await fetchNotificationsToday();
     renderNotifications(items);
   }
 
-  // İlk yükleme
   await refresh();
-
-  // Dakikada bir güncelle
   setInterval(refresh, 60_000);
-
-  // NOT: Buradaki click listener'ları sildim çünkü index.html zaten yönetiyor.
-  // Çakışma engellendi.
-}
-
-export async function initNotif({ baseUrl } = {}) {
-  if (baseUrl) RUNTIME_BASE = baseUrl;
-  await loadNotifPartial({ containerId: "notifMount" });
-  return initNotifications();
 }
