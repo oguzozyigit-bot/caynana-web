@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Caynana AI v5.1 Modular</title>
+    <title>Caynana AI v5.2 (Test Mode)</title>
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="css/style.css">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -99,7 +99,7 @@
             <a href="pages/gizlilik.html">Gizlilik</a>
             <a href="pages/iletisim.html">İletişim</a>
         </div>
-        <div class="footer-brand">@CaynanaAI v5.1</div>
+        <div class="footer-brand">@CaynanaAI v5.2</div>
     </div>
 </div>
 
@@ -135,8 +135,14 @@
     <div class="login-card">
         <div class="brand-name" style="font-size:24px; margin-bottom:5px;">Caynana.AI</div>
         <div style="font-size:12px; color:#888; margin-bottom:20px;">Yapay Zekânın Geleneksel Aklı</div>
-        <button class="auth-btn google disabled" id="googleLoginBtn">Google ile Devam Et</button>
+        
+        <button class="auth-btn google" id="googleLoginBtn">Google ile Devam Et</button>
         <button class="auth-btn apple disabled" id="appleLoginBtn">Apple ile Devam Et</button>
+        
+        <button class="auth-btn" id="devLoginBtn" style="border:1px dashed #666; color:#aaa; margin-top:10px; background:#111;">
+            🛠️ Test Girişi (Google Yok)
+        </button>
+
         <div id="loginHint" style="font-size:10px; color:#555; margin-top:5px;">Servisler yükleniyor...</div>
     </div>
 </div>
