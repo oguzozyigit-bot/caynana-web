@@ -6,7 +6,6 @@ let RUNTIME_BASE = null;
 function escapeHtml(s=""){
   return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
-
 function iconFor(type){
   if(type==="match") return "⚽";
   if(type==="horoscope") return "♈";
@@ -19,7 +18,6 @@ function iconFor(type){
   if(type==="period_check") return "🌙";
   return "🔔";
 }
-
 function timeLabel(daysLeft){
   if(daysLeft === 0) return "Bugün";
   if(daysLeft === 1) return "1 gün kaldı";
@@ -64,7 +62,6 @@ function renderNotifications(items){
     return;
   }
 
-  // ✅ inline onclick yok: data-url
   list.innerHTML = items.map(it => {
     const url = String(it.action_url || "").trim();
     const dataUrl = url ? ` data-url="${escapeHtml(url)}"` : "";
@@ -81,7 +78,6 @@ function renderNotifications(items){
     `;
   }).join("");
 
-  // ✅ tıklama delegasyonu (list içinde)
   list.onclick = (e) => {
     const item = e.target?.closest?.(".notif-item");
     if(!item) return;
