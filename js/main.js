@@ -100,18 +100,25 @@ function refreshPremiumBars() {
 // Menu (grid doldur + aksiyon bağla)
 // --------------------
 const MENU_ITEMS = [
-  { key: "chat",       label: "Sohbet",     sub: "Dertleş",      ico: "💬" },
-  { key: "dedikodu",   label: "Dedikodu",   sub: "Özel oda",     ico: "🕵️" },
-  { key: "shopping",   label: "Alışveriş",  sub: "Tasarruf et",  ico: "🛍️" },
-  { key: "translate",  label: "Tercüman",   sub: "Çeviri",       ico: "🌍" },
-  { key: "diet",       label: "Diyet",      sub: "Plan",         ico: "🥗" },
-  { key: "health",     label: "Sağlık",     sub: "Danış",        ico: "❤️" },
-  { key: "special",    label: "Özel Gün",   sub: "Hatırla",      ico: "🎉" },
-  { key: "reminder",   label: "Hatırlatıcı",sub: "Alarm",        ico: "⏰" },
-  { key: "fal",        label: "Kahve Falı", sub: "Günde 1",      ico: "☕" },
-  { key: "tarot",      label: "Tarot",      sub: "Kart seç",     ico: "🃏" },
-  { key: "horoscope",  label: "Burç",       sub: "Günlük",       ico: "♈" },
-  { key: "dream",      label: "Rüya",       sub: "Yorumla",      ico: "🌙" },
+  { key: "chat",       label: "Sohbet",      sub: "Dertleş",      ico: "💬" },
+  { key: "dedikodu",   label: "Dedikodu",    sub: "Özel oda",     ico: "🕵️" },
+  { key: "shopping",   label: "Alışveriş",   sub: "Tasarruf et",  ico: "🛍️" },
+  { key: "translate",  label: "Tercüman",    sub: "Çeviri",       ico: "🌍" },
+  { key: "diet",       label: "Diyet",       sub: "Plan",         ico: "🥗" },
+  { key: "health",     label: "Sağlık",      sub: "Danış",        ico: "❤️" },
+  { key: "special",    label: "Özel Gün",    sub: "Hatırla",      ico: "🎉" },
+  { key: "reminder",   label: "Hatırlatıcı", sub: "Alarm",        ico: "⏰" },
+  { key: "fal",        label: "Kahve Falı",  sub: "Günde 1",      ico: "☕" },
+  { key: "tarot",      label: "Tarot",       sub: "Kart seç",     ico: "🃏" },
+  { key: "horoscope",  label: "Burç",        sub: "Günlük",       ico: "♈" },
+  { key: "dream",      label: "Rüya",        sub: "Yorumla",      ico: "🌙" },
+
+  // ✅ PRO EK: Yan menü sayfaları (ikonlu, overlay ile açılır)
+  { key: "about",      label: "Hakkımızda",  sub: "Biz kimiz?",   ico: "ℹ️" },
+  { key: "faq",        label: "SSS",         sub: "Sorular",      ico: "❓" },
+  { key: "privacy",    label: "Gizlilik",    sub: "Güven",        ico: "🔒" },
+  { key: "contact",    label: "İletişim",    sub: "Bize yaz",     ico: "✉️" },
+  { key: "terms",      label: "Sözleşme",    sub: "Kurallar",     ico: "📄" },
 ];
 
 function populateMenuGrid() {
@@ -132,8 +139,79 @@ function populateMenuGrid() {
 function openMenu() { $("menuOverlay")?.classList.add("open"); }
 function closeMenu() { $("menuOverlay")?.classList.remove("open"); }
 
+// ✅ PRO: Sayfa içerikleri (girişte güven veren metinler)
+const STATIC_PAGES = {
+  about: {
+    title: "Hakkımızda",
+    html: `
+      <h2>Caynana.AI</h2>
+      <p><b>Yapay Zekânın Geleneksel Aklı</b> yaklaşımıyla sohbetten gündelik rehberliğe kadar yanında olan dijital asistandır.</p>
+      <ul>
+        <li>Hızlı, pratik ve samimi deneyim</li>
+        <li>Gizlilik ve güven odaklı yaklaşım</li>
+        <li>Şeffaf sözleşme ve hesap yönetimi</li>
+      </ul>
+      <p style="color:#9aa; font-size:12px;">@CaynanaAI By Ozyigits2026</p>
+    `
+  },
+  faq: {
+    title: "SSS",
+    html: `
+      <h2>Sık Sorulan Sorular</h2>
+      <p><b>Ücretli mi?</b> Şimdilik ücretsiz üyelikle giriş yapılır.</p>
+      <p><b>Fal kesin mi?</b> Hayır, eğlence amaçlı yapay zeka yorumudur.</p>
+      <p><b>Apple girişi?</b> Hazırlanıyor. Şimdilik Google ile devam edebilirsin.</p>
+      <p style="color:#9aa; font-size:12px;">@CaynanaAI By Ozyigits2026</p>
+    `
+  },
+  privacy: {
+    title: "Gizlilik",
+    html: `
+      <h2>Gizlilik Politikası</h2>
+      <p>Verileriniz; hizmeti sunmak, güvenliği sağlamak ve deneyimi iyileştirmek için işlenir.</p>
+      <ul>
+        <li>Gereksiz veri toplamayız</li>
+        <li>Yetkisiz erişime karşı koruma uygularız</li>
+        <li>Şeffaf bilgilendirme prensibi</li>
+      </ul>
+      <p style="color:#9aa; font-size:12px;">@CaynanaAI By Ozyigits2026</p>
+    `
+  },
+  contact: {
+    title: "İletişim",
+    html: `
+      <h2>İletişim</h2>
+      <p>Görüş/öneri için bize yazabilirsin.</p>
+      <p><b>Not:</b> İstersen buraya gerçek iletişim mailini/kanalını sonra ekleriz.</p>
+      <p style="color:#9aa; font-size:12px;">@CaynanaAI By Ozyigits2026</p>
+    `
+  },
+  terms: {
+    title: "Sözleşme",
+    html: `
+      <h2>Kullanıcı Sözleşmesi</h2>
+      <p>1) Caynana AI eğlence ve rehberlik amaçlıdır. Kritik kararlar için profesyonel görüş al.</p>
+      <p>2) Fal ve yorumlar yapay zekâ üretimidir.</p>
+      <p>3) Veriler hizmeti sunmak ve güvenliği sağlamak amacıyla işlenir.</p>
+      <p style="color:#9aa; font-size:12px;">@CaynanaAI By Ozyigits2026</p>
+    `
+  }
+};
+
+function openPageByKey(key){
+  const p = STATIC_PAGES[key];
+  if(!p) return;
+  openPage(p.title, p.html);
+}
+
 async function handleMenuAction(action) {
   closeMenu();
+
+  // ✅ PRO: statik sayfalar overlay
+  if (["about","faq","privacy","contact","terms"].includes(action)) {
+    openPageByKey(action);
+    return;
+  }
 
   if (action === "fal") { openFalPanel(); return; }
   if (action === "reminder") { location.href = "pages/hatirlatici.html"; return; }
@@ -178,6 +256,17 @@ async function sendForced(text, mode="chat") {
   await doSend(text, true);
 }
 
+// ✅ PRO: “kim yazdı/yarattı” özel cevap
+function specialAnswerIfNeeded(txt){
+  const s = String(txt || "").trim();
+
+  // kim yazdı / kim yarattı
+  if (/(seni\s*kim\s*(yazd[ıi]|yaratt[ıi]|yapt[ıi])|kim\s*yazd[ıi]\s*seni|kim\s*yaratt[ıi])/i.test(s)){
+    return "Benim arkamda işinde tecrübeli oldukça büyük bir yazılım kadrosu var. Beni şu yazdı ya da yarattı diye kesin isim veremem; ama akıl takımının başı Oğuz Özyiğit, onu söyleyebilirim.";
+  }
+  return null;
+}
+
 async function doSend(forcedText = null, isSystem = false) {
   const input = $("msgInput");
   const txt = String(forcedText ?? input?.value ?? "").trim();
@@ -190,6 +279,17 @@ async function doSend(forcedText = null, isSystem = false) {
 
   // history
   chatHistory.push({ role: "user", content: txt });
+
+  // ✅ PRO: özel cevap varsa backend'e gitme
+  const special = specialAnswerIfNeeded(txt);
+  if (special) {
+    setBrandState("botting");
+    setTimeout(() => setBrandState("talking"), 120);
+    typeWriter(special, "chat");
+    chatHistory.push({ role: "assistant", content: special });
+    setTimeout(() => setBrandState(null), 650);
+    return;
+  }
 
   // loading
   setTimeout(() => setBrandState("thinking"), 120);
@@ -305,7 +405,7 @@ function bindFalUI(){
 
 // --------------------
 // Page overlay (tek ekran içerik)
-/// --------------------
+// --------------------
 function openPage(title, html){
   const po = $("pageOverlay");
   if(!po) return;
@@ -323,6 +423,37 @@ function closePage(){
 function bindPageOverlay(){
   $("closePageBtn") && ($("closePageBtn").onclick = closePage);
   $("pageOverlay") && ($("pageOverlay").onclick = (e)=>{ if(e.target === $("pageOverlay")) closePage(); });
+}
+
+// ✅ PRO: Footer + Login alt linkleri overlay'e bağla (HTML'e dokunmadan)
+function bindStaticLinks(){
+  // footer linkleri (pages/*.html ise yakala, overlay aç)
+  document.querySelectorAll(".footer-links a").forEach(a=>{
+    a.addEventListener("click", (e)=>{
+      const href = (a.getAttribute("href") || "").toLowerCase();
+      // eğer zaten data-page varsa ona göre
+      const dp = a.getAttribute("data-page");
+      if(dp && STATIC_PAGES[dp]){
+        e.preventDefault();
+        openPageByKey(dp);
+        return;
+      }
+      if(href.includes("hakkimizda")) { e.preventDefault(); openPageByKey("about"); return; }
+      if(href.includes("sss"))       { e.preventDefault(); openPageByKey("faq"); return; }
+      if(href.includes("gizlilik"))  { e.preventDefault(); openPageByKey("privacy"); return; }
+      if(href.includes("iletisim"))  { e.preventDefault(); openPageByKey("contact"); return; }
+    });
+  });
+
+  // login alt linkleri varsa (data-page veya href ile)
+  document.querySelectorAll("[data-page]").forEach(a=>{
+    const k = a.getAttribute("data-page");
+    if(!k || !STATIC_PAGES[k]) return;
+    a.addEventListener("click", (e)=>{
+      e.preventDefault();
+      openPageByKey(k);
+    });
+  });
 }
 
 // --------------------
@@ -386,7 +517,12 @@ async function waitForGsi(timeoutMs = 8000){
 
 function bindAuthUI(){
   $("googleLoginBtn") && ($("googleLoginBtn").onclick = () => handleLogin("google"));
-  $("appleLoginBtn") && ($("appleLoginBtn").onclick = () => alert("Apple yakında evladım."));
+
+  // ✅ PRO: Apple tıklayana Kaynana dili (hazırlanıyor)
+  $("appleLoginBtn") && ($("appleLoginBtn").onclick = () => {
+    alert("Evladım Apple daha hazırlanıyor… Şimdilik Google’la gel, elin boş dönme 🙂");
+  });
+
   $("devLoginBtn") && ($("devLoginBtn").onclick = () => {
     const fake = { id:"dev@local", email:"dev@local", fullname:"Test Kullanıcı", avatar:"", provider:"dev", isSessionActive:true, lastLoginAt:new Date().toISOString() };
     setUser(fake);
@@ -483,6 +619,9 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   bindFalUI();
   bindPageOverlay();
   bindAuthUI();
+
+  // ✅ PRO: footer/login linkleri overlay'e bağla
+  bindStaticLinks();
 
   // profile btn route
   $("profileBtn") && ($("profileBtn").onclick = () => {
