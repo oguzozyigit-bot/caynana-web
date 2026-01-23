@@ -37,6 +37,16 @@ body, html { margin:0; padding:0; width:100%; height:100dvh; background:var(--bg
 .icon-btn-top svg { width:22px; height:22px; stroke:#aaa; fill:none; stroke-width:2; }
 .badge { position:absolute; top:4px; right:4px; width:6px; height:6px; background:#ff5252; border-radius:50%; display:none; }
 
+/* --- Bildirim dropdown (HTML'de var, CSS eksikti) --- */
+.notification-dropdown { position:absolute; top:58px; right:0; width:280px; background:#1c1c1c; border:1px solid #333; border-radius:12px; z-index:4000; display:none; flex-direction:column; overflow:hidden; }
+.notification-dropdown.show { display:flex; animation:slideDown .2s ease; }
+@keyframes slideDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+.notif-header { padding:10px 12px; font-size:12px; font-weight:800; color:#fff; border-bottom:1px solid #2a2a2a; background:#181818; }
+.notif-list { max-height:320px; overflow-y:auto; }
+.notif-item { padding:10px 12px; border-bottom:1px solid #2a2a2a; display:flex; gap:8px; }
+.notif-title { font-size:12px; color:#fff; font-weight:600; }
+.notif-desc { font-size:11px; color:#aaa; }
+
 /* EYES & FACE */
 .face-container { flex:0 0 0px; background:linear-gradient(to bottom, var(--bg), transparent); overflow:hidden; transition:flex-basis .5s; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; z-index:2500; }
 .mobile-frame.tracking-active .face-container { flex-basis:160px; }
@@ -92,14 +102,15 @@ textarea { flex:1; background:transparent; border:none; outline:none; color:#fff
 .menu-action .ico { font-size:20px; }
 .menu-action div div { font-size:13px; color:#ddd; font-weight:600; }
 .menu-action small { font-size:10px; color:#777; margin-top:2px; }
-.recent-chat-item { display:flex; justify-content:space-between; align-items:center; padding:10px; background:#1a1a1a; border-radius:8px; font-size:13px; color:#ccc; cursor:pointer; margin-bottom:5px; }
+.history-list { display:flex; flex-direction:column; gap:6px; }
+.recent-chat-item { display:flex; justify-content:space-between; align-items:center; padding:10px; background:#1a1a1a; border-radius:8px; font-size:13px; color:#ccc; cursor:pointer; }
 .del-chat { background:none; border:none; color:#ff5252; cursor:pointer; padding:0 6px; }
 .menu-footer-actions { margin-top:auto; padding-top:20px; border-top:1px solid #222; display:flex; flex-direction:column; gap:8px; }
 .action-link { font-size:12px; color:#ccc; padding:12px; cursor:pointer; display:block; background:#1a1a1a; border-radius:8px; text-align:center; font-weight:500; }
 .delete-acc { color:#b71c1c; background:transparent; border:1px solid #333; }
 
 /* OVERLAYS */
-.full-overlay { position:absolute; inset:0; background:#000; z-index:6000; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:.3s; padding:20px; }
+.full-overlay { position:fixed; inset:0; background:#000; z-index:6000; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:.3s; padding:20px; }
 .full-overlay.active { opacity:1; pointer-events:auto; }
 .login-card { width:100%; max-width:320px; text-align:center; }
 .auth-btn { width:100%; padding:12px; border-radius:12px; margin-bottom:12px; cursor:pointer; border:1px solid #ddd; background:#fff; font-size:14px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:10px; }
@@ -107,13 +118,14 @@ textarea { flex:1; background:transparent; border:none; outline:none; color:#fff
 .auth-btn.google { color:#222; }
 .auth-btn.apple { background:#000; color:#fff; border:1px solid #333; }
 .close-overlay-btn { position:absolute; top:20px; right:20px; font-size:30px; color:#fff; cursor:pointer; }
-.notification-dropdown { position:absolute; top:65px; right:10px; width:280px; background:#1c1c1c; border:1px solid #333; border-radius:12px; z-index:4000; display:none; flex-direction:column; }
-.notification-dropdown.show { display:flex; animation:slideDown .2s ease; }
-@keyframes slideDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
-.notif-item { padding:10px; border-bottom:1px solid #2a2a2a; display:flex; gap:8px; }
-.notif-title { font-size:12px; color:#fff; font-weight:600; }
-.notif-desc { font-size:11px; color:#aaa; }
+
+/* Terms checkbox satırı (HTML'de var, CSS eksikti) */
+.agreement-box { display:flex; align-items:center; justify-content:flex-start; gap:8px; text-align:left; margin:10px 0 12px; font-size:11px; color:#bbb; }
+.agreement-box input { transform:scale(1.05); }
+
+/* FOOTER */
 .footer-container { text-align:center; padding:10px 0; border-top:1px solid #1a1a1a; width:100%; }
-.footer-links { display:flex; justify-content:center; gap:12px; margin-bottom:5px; }
+.footer-links { display:flex; justify-content:center; gap:12px; margin-bottom:5px; flex-wrap:wrap; padding:0 12px; }
 .footer-links a { color:#555; font-size:10px; text-decoration:none; }
 .footer-brand { font-size:9px; color:#444; font-weight:600; }
+.footer-copy { font-size:10px; color:#555; text-align:center; margin-top:8px; }
