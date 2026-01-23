@@ -1,164 +1,184 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Caynana AI v5.2 (Test Mode)</title>
-    <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="css/style.css">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Caynana AI v5.2 (Test Mode)</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
 <div class="mobile-frame" id="mobileFrame">
-    <div class="topbar">
-        <div class="left-controls"><button class="hamb-btn" id="hambBtn">☰</button></div>
-        
-        <div class="brand-wrapper" id="brandWrapper">
-            <div class="logo-area">
-                <svg class="seesaw-svg" viewBox="0 0 40 20">
-                    <g class="seesaw-bar" id="seesawBar">
-                        <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
-                        <circle cx="3" cy="5" r="3" fill="#bef264" />
-                        <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
-                    </g>
-                    <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
-                </svg>
-                <div class="brand-name">Caynana AI</div>
-            </div>
-            <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
-        </div>
+  <div class="topbar">
+    <div class="left-controls"><button class="hamb-btn" id="hambBtn">☰</button></div>
 
-        <div class="right-controls">
-            <div class="yp-chip">
-                <div class="yp-label">SAMİMİYET</div>
-                <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
-                <div class="yp-num" id="ypNum">50%</div>
-            </div>
-            <div class="notif-row">
-                <button class="icon-btn-top" id="notifBtn">
-                    <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                    <div class="badge" id="notifBadge"></div>
-                </button>
-                <div class="notification-dropdown" id="notifDropdown">
-                    <div class="notif-header">Bildirimler</div>
-                    <div class="notif-list" id="notifList"></div>
-                </div>
-                <button class="icon-btn-top" id="profileBtn">
-                    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                </button>
-            </div>
-        </div>
+    <div class="brand-wrapper" id="brandWrapper">
+      <div class="logo-area">
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
+          <g class="seesaw-bar" id="seesawBar">
+            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+            <circle cx="3" cy="5" r="3" fill="#bef264" />
+            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+          </g>
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+        </svg>
+        <div class="brand-name">Caynana AI</div>
+      </div>
+      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
     </div>
 
-    <div class="menu-overlay" id="menuOverlay">
-        <div class="menu-sidebar">
-            <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET</button>
-            <div class="section-title">Son Sohbetler</div>
-            <div class="history-list" id="historyList"></div>
+    <div class="right-controls">
+      <div class="yp-chip">
+        <div class="yp-label">SAMİMİYET</div>
+        <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+        <div class="yp-num" id="ypNum">50%</div>
+      </div>
 
-            <div class="section-title">Asistan</div>
-            <div class="menu-grid" id="mainMenu">
-                </div>
-
-            <div class="menu-footer-actions">
-                <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
-                <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
-                <div class="footer-copy">@CaynanaAI By Ozyigits</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="face-container" id="faceContainer">
-        <div class="face-panel-inner">
-            <div class="eyes-row">
-                <div class="eye" id="eyeL"><div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div><div class="lid-top"></div><div class="lid-bot"></div></div>
-                <div class="eye" id="eyeR"><div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div><div class="lid-top"></div><div class="lid-bot"></div></div>
-            </div>
-            <div class="mouth-wrapper"><div class="mouth"></div></div>
-            <button class="track-toggle-btn" id="trackToggleBtn">Kapat</button>
-        </div>
-    </div>
-
-    <div class="chat-area" id="chat"></div>
-
-    <div class="input-dock">
-        <div class="track-btn-row"><button class="track-toggle-btn" id="mainTrackBtn">👁️ TAKİP ET</button></div>
-        <div class="dock-inner">
-            <button class="icon-btn" id="camBtn"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
-            <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
-            <button class="icon-btn" id="micBtn"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
-            <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg></button>
-        </div>
-    </div>
-
-    <div class="footer-container">
-        <div class="footer-links">
-            <a href="pages/hakkimizda.html">Hakkımızda</a>
-            <a href="pages/sss.html">SSS</a>
-            <a href="pages/gizlilik.html">Gizlilik</a>
-            <a href="pages/iletisim.html">İletişim</a>
-        </div>
-        <div class="footer-brand">@CaynanaAI v5.2</div>
-    </div>
-</div>
-
-<div class="full-overlay" id="falOverlay">
-    <div class="close-overlay-btn" id="closeFalBtn">&times;</div>
-    <div style="text-align:center; margin-top:60px; color:#d9f99d;"><h2>Kaynana Fal</h2></div>
-    <div id="falStep1" style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:10px;">
-        <div id="falStatus" style="font-size:13px; color:#ccc;">Fincanı çek evladım</div>
-        <label class="send-btn" style="width:80px; height:80px;">
-            <input type="file" id="falInput" style="display:none;" accept="image/*">
-            <svg viewBox="0 0 24 24" width="30"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        </label>
-    </div>
-    <div id="falStep2" style="display:none; flex-direction:column; justify-content:center; align-items:center;">
-        <div id="loadingText" style="color:var(--gold); font-size:14px;">Bakıyorum...</div>
-    </div>
-    <div id="falResult" style="display:none; padding:20px; overflow-y:auto; max-height:80%;">
-        <div id="falText" style="color:#eee; font-size:14px; line-height:1.6;"></div>
-    </div>
-</div>
-
-<div class="full-overlay" id="pageOverlay">
-    <div class="login-card" style="max-width:90%; max-height:90%; overflow-y:auto;">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
-            <div id="pageTitle" style="font-weight:800; color:#fff;">Başlık</div>
-            <button id="closePageBtn" style="background:none; border:none; color:#ff5252; font-size:20px;">&times;</button>
-        </div>
-        <div id="pageContent" style="text-align:left; font-size:13px; color:#ddd;"></div>
-    </div>
-</div>
-
-<div class="full-overlay active" id="loginOverlay">
-    <div class="login-card">
-        <div class="brand-name" style="font-size:24px; margin-bottom:5px;">Caynana.AI</div>
-        <div style="font-size:12px; color:#888; margin-bottom:20px;">Yapay Zekânın Geleneksel Aklı</div>
-        
-        <button class="auth-btn google" id="googleLoginBtn">Google ile Devam Et</button>
-        <button class="auth-btn apple disabled" id="appleLoginBtn">Apple ile Devam Et</button>
-        
-        <button class="auth-btn" id="devLoginBtn" style="border:1px dashed #666; color:#aaa; margin-top:10px; background:#111;">
-            🛠️ Test Girişi (Google Yok)
+      <div class="notif-row">
+        <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <div class="badge" id="notifBadge"></div>
         </button>
 
-        <div id="loginHint" style="font-size:10px; color:#555; margin-top:5px;">Servisler yükleniyor...</div>
+        <div class="notification-dropdown" id="notifDropdown">
+          <div class="notif-header">Bildirimler</div>
+          <div class="notif-list" id="notifList"></div>
+        </div>
+
+        <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </button>
+      </div>
     </div>
+  </div>
+
+  <!-- MENU -->
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-sidebar">
+      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET</button>
+
+      <div class="section-title">Son Sohbetler</div>
+      <div class="history-list" id="historyList"></div>
+
+      <div class="section-title">Asistan</div>
+      <div class="menu-grid" id="mainMenu"></div>
+
+      <div class="menu-footer-actions">
+        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
+        <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
+        <div class="footer-copy">@CaynanaAI By Ozyigits2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FACE -->
+  <div class="face-container" id="faceContainer">
+    <div class="face-panel-inner">
+      <div class="eyes-row">
+        <div class="eye" id="eyeL"><div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div><div class="lid-top"></div><div class="lid-bot"></div></div>
+        <div class="eye" id="eyeR"><div class="sclera"><div class="iris"><div class="pupil"></div><div class="reflection"></div></div></div><div class="lid-top"></div><div class="lid-bot"></div></div>
+      </div>
+      <div class="mouth-wrapper"><div class="mouth"></div></div>
+      <button class="track-toggle-btn" id="trackToggleBtn">Kapat</button>
+    </div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="chat-area" id="chat"></div>
+
+  <!-- DOCK -->
+  <div class="input-dock">
+    <div class="track-btn-row"><button class="track-toggle-btn" id="mainTrackBtn">👁️ TAKİP ET</button></div>
+    <div class="dock-inner">
+      <button class="icon-btn" id="camBtn" aria-label="Kamera">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+      </button>
+      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
+      <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+      </button>
+      <button class="send-btn" id="sendBtn" aria-label="Gönder">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- FOOTER (her sayfada sabit) -->
+  <div class="footer-container">
+    <div class="footer-links">
+      <a href="#" data-page="about">Hakkımızda</a>
+      <a href="#" data-page="faq">SSS</a>
+      <a href="#" data-page="privacy">Gizlilik</a>
+      <a href="#" data-page="contact">İletişim</a>
+    </div>
+    <div class="footer-brand">@CaynanaAI By Ozyigits2026</div>
+  </div>
 </div>
 
-<div class="full-overlay" id="termsOverlay">
-    <div class="login-card">
-        <div class="brand-name">Sözleşme</div>
-        <div style="font-size:12px; color:#888; margin-bottom:10px;">Okudum de geç evladım.</div>
-        <div style="border:1px solid #333; height:150px; overflow-y:auto; font-size:10px; text-align:left; padding:10px; margin-bottom:10px; background:#111;">
-            <p>1. Caynana AI eğlence amaçlıdır. Ciddiye alıp küsme.</p>
-            <p>2. Fal ve yorumlar yapay zeka üretimidir.</p>
-        </div>
-        <div class="agreement-box"><input type="checkbox" id="termsCheck"> <label for="termsCheck">Okudum, onaylıyorum.</label></div>
-        <button class="auth-btn" id="termsAcceptBtn">Onayla ve Gir</button>
+<!-- PAGE OVERLAY (Hakkımızda/SSS/Gizlilik/İletişim/Sözleşme burada açılıyor) -->
+<div class="full-overlay" id="pageOverlay">
+  <div class="login-card" style="max-width:90%; max-height:90%; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
+      <div id="pageTitle" style="font-weight:800; color:#fff;">Başlık</div>
+      <button id="closePageBtn" style="background:none; border:none; color:#ff5252; font-size:20px;">&times;</button>
     </div>
+    <div id="pageContent" style="text-align:left; font-size:13px; color:#ddd;"></div>
+  </div>
 </div>
+
+<!-- LOGIN -->
+<div class="full-overlay active" id="loginOverlay">
+  <div class="login-card">
+    <div class="brand-name" style="font-size:24px; margin-bottom:5px;">Caynana.AI</div>
+    <div style="font-size:12px; color:#888; margin-bottom:10px;">Yapay Zekânın Geleneksel Aklı</div>
+
+    <div class="login-sub">
+      <b>Ücretsiz üyelik</b> için lütfen giriş yapın. İlk defa girişte sözleşme onayı istenir.
+    </div>
+
+    <button class="auth-btn google" id="googleLoginBtn">Google ile Devam Et</button>
+
+    <button class="auth-btn apple disabled" id="appleLoginBtn">Apple ile Devam Et</button>
+    <div class="coming-soon">Apple girişi hazırlanıyor… (şimdilik nazlanıyor 😄)</div>
+
+    <button class="auth-btn" id="devLoginBtn" style="border:1px dashed #666; color:#aaa; margin-top:6px; background:#111;">
+      🛠️ Test Girişi (Google Yok)
+    </button>
+
+    <div class="trust-links">
+      <a href="#" data-page="about">Hakkımızda</a>
+      <a href="#" data-page="faq">SSS</a>
+      <a href="#" data-page="privacy">Gizlilik</a>
+      <a href="#" data-page="contact">İletişim</a>
+      <a href="#" data-page="terms">Sözleşme</a>
+    </div>
+
+    <div id="loginHint" style="font-size:10px; color:#555; margin-top:12px;">Servisler yükleniyor...</div>
+  </div>
+</div>
+
+<!-- TERMS (ilk girişte zorunlu) -->
+<div class="full-overlay" id="termsOverlay">
+  <div class="login-card">
+    <div class="brand-name">Sözleşme</div>
+    <div style="font-size:12px; color:#888; margin-bottom:10px;">Okudum de geç evladım.</div>
+    <div style="border:1px solid #333; height:150px; overflow-y:auto; font-size:10px; text-align:left; padding:10px; margin-bottom:10px; background:#111;">
+      <p>1. Caynana AI eğlence amaçlıdır. Ciddiye alıp küsme.</p>
+      <p>2. Fal ve yorumlar yapay zeka üretimidir.</p>
+      <p>3. Kişisel veriler, hizmeti sunmak ve güvenliği sağlamak için işlenir.</p>
+    </div>
+    <div class="agreement-box">
+      <input type="checkbox" id="termsCheck">
+      <label for="termsCheck">Okudum, onaylıyorum.</label>
+    </div>
+    <button class="auth-btn" id="termsAcceptBtn">Onayla ve Gir</button>
+  </div>
+</div>
+
+<!-- küçük toast -->
+<div class="toast" id="toast"></div>
 
 <script type="module" src="js/main.js"></script>
 </body>
