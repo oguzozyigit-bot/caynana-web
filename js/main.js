@@ -1,4 +1,5 @@
 // js/main.js (FINAL - Single Bind, Pages, Terms Gate, Delete Account via backend token)
+// + ChatStore sohbet listesi + kalıcı hafıza (son 10) + menüden geçiş/silme
 
 import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
 import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.js";
@@ -174,12 +175,15 @@ async function handleMenuAction(action) {
   if (action === "horoscope") { location.href = "pages/burc.html"; return; }
   if (action === "dream") { location.href = "pages/ruya.html"; return; }
 
-  if (action === "dedikodu") { await sendForced("Dedikodu modundayız. Anlat bakalım… 😏", "dedikodu"); return; }
-  if (action === "shopping") { await sendForced("Alışverişe geçtik. Ne alacaksın?", "shopping"); return; }
-  if (action === "translate") { await sendForced("Çeviri: metni yapıştır, dilini söyle.", "trans"); return; }
-  if (action === "diet") { await sendForced("Diyet: hedefin ne? kilo mu koruma mı?", "diet"); return; }
-  if (action === "health") { await sendForced("Sağlık: ne şikayetin var?", "health"); return; }
-  if (action === "chat") { await sendForced("Anlat bakalım evladım.", "chat"); return; }
+  // NOT: Sen “ilk mesajı kullanıcı yazsın” dedin.
+  // Bu yüzden burada otomatik zorla mesaj göndermiyoruz.
+  // Sadece mode değiştiriyoruz (UI’da bir şey yazdırmıyoruz).
+  if (action === "dedikodu") { currentMode = "dedikodu"; return; }
+  if (action === "shopping") { currentMode = "shopping"; return; }
+  if (action === "translate") { currentMode = "trans"; return; }
+  if (action === "diet") { currentMode = "diet"; return; }
+  if (action === "health") { currentMode = "health"; return; }
+  if (action === "chat") { currentMode = "chat"; return; }
 
   location.href = `pages/${action}.html`;
 }
@@ -188,6 +192,8 @@ async function handleMenuAction(action) {
 // CHAT
 // --------------------
 let currentMode = "chat";
+// chatHistory artık “tek kaynak” değil; UI için ChatStore var.
+// Yine de backend çağrısında anlık history’yi ChatStore’dan alacağız.
 let chatHistory = [];
 
 function setBrandState(state) {
@@ -203,9 +209,15 @@ function setBrandState(state) {
   }
 }
 
-async function sendForced(text, mode="chat") {
-  currentMode = mode;
-  await doSend(text);
+// ChatStore → UI’yı ve chatHistory’yi senkronla
+function syncFromStore(){
+  try{
+    const h = ChatStore.history() || [];
+    // ChatStore mesajları {role, content, at} olabilir
+    chatHistory = h.map(m => ({ role: m.role, content: m.content }));
+  }catch(e){
+    chatHistory = [];
+  }
 }
 
 async function doSend(forcedText = null) {
@@ -217,7 +229,9 @@ async function doSend(forcedText = null) {
   addUserBubble(txt);
   if (input && forcedText === null) input.value = "";
 
-  chatHistory.push({ role: "user", content: txt });
+  // ✅ Kalıcı hafızaya yaz
+  ChatStore.add("user", txt);
+  syncFromStore();
 
   setTimeout(() => setBrandState("thinking"), 120);
   const holder = document.createElement("div");
@@ -227,6 +241,7 @@ async function doSend(forcedText = null) {
 
   let reply = "Evladım bir şeyler ters gitti.";
   try {
+    // ✅ Backend’e giden history: ChatStore’dan (son 30 zaten chat.js limitliyor)
     const out = await fetchTextResponse(txt, currentMode, chatHistory);
     reply = out?.text || reply;
   } catch (e) {}
@@ -236,7 +251,11 @@ async function doSend(forcedText = null) {
   setBrandState("botting");
   setTimeout(() => setBrandState("talking"), 120);
   typeWriter(reply, "chat");
-  chatHistory.push({ role: "assistant", content: reply });
+
+  // ✅ Asistan cevabını da kalıcı hafızaya yaz
+  ChatStore.add("assistant", reply);
+  syncFromStore();
+
   setTimeout(() => setBrandState(null), 650);
 }
 
@@ -253,8 +272,6 @@ function bindFalUI(){
 
 // --------------------
 // DELETE ACCOUNT (FINAL)
-/// 1) backend token al (/api/auth/google)
-/// 2) profile/set -> deleted_at
 // --------------------
 async function deleteAccount(){
   const u0 = getUser();
@@ -277,7 +294,7 @@ async function deleteAccount(){
         body: JSON.stringify({
           user_id: uid,
           meta: { email, deleted_at: new Date().toISOString() },
-          token, access_token: token // backend body’den okuyorsa da yakalasın
+          token, access_token: token
         })
       });
     };
@@ -298,7 +315,6 @@ async function deleteAccount(){
       return;
     }
 
-    // silindi: terms + session temizle
     localStorage.removeItem(termsKey(email));
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("google_id_token");
@@ -351,17 +367,63 @@ function bindNotifUI(){
 }
 
 // --------------------
+// HISTORY LIST (Hamburger menü)
+// --------------------
+function renderHistoryList(){
+  const listEl = $("historyList");
+  if(!listEl) return;
+
+  const items = ChatStore.list(); // son 10
+  listEl.innerHTML = "";
+
+  items.forEach(c => {
+    const row = document.createElement("div");
+    row.className = "history-row";
+    row.setAttribute("data-id", c.id);
+
+    // title basit: boşsa "Sohbet"
+    const title = (c.title || "Sohbet").toString();
+
+    row.innerHTML = `
+      <div class="history-title">${title}</div>
+      <button class="history-del" aria-label="Sil">🗑️</button>
+    `;
+
+    // sohbete geç
+    row.addEventListener("click", () => {
+      ChatStore.currentId = c.id;
+      ChatStore.load($("chat"));
+      syncFromStore();
+      closeMenu();
+    });
+
+    // sil
+    row.querySelector(".history-del")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      ChatStore.deleteChat(c.id);
+      renderHistoryList();
+    });
+
+    listEl.appendChild(row);
+  });
+}
+
+// --------------------
 // MENU UI
 // --------------------
 function bindMenuUI(){
   $("hambBtn") && ($("hambBtn").onclick = openMenu);
   $("menuOverlay") && ($("menuOverlay").onclick = (e)=>{ if(e.target === $("menuOverlay")) closeMenu(); });
 
+  // ✅ Yeni sohbet artık ChatStore ile
   $("newChatBtn") && ($("newChatBtn").onclick = () => {
-    closeMenu();
-    if ($("chat")) $("chat").innerHTML = "";
-    chatHistory = [];
+    ChatStore.newChat();
+    ChatStore.load($("chat"));
+    syncFromStore();
+    renderHistoryList();
     setBrandState(null);
+    currentMode = "chat";
+    closeMenu();
   });
 
   $("mainMenu") && ($("mainMenu").onclick = (e)=>{
@@ -383,6 +445,7 @@ function bindComposer(){
     }
   }));
 
+  // kamera butonu fal paneli (mevcut akış)
   $("camBtn") && ($("camBtn").onclick = () => openFalPanel());
 }
 
@@ -433,60 +496,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   refreshPremiumBars();
+
+  // ✅ ChatStore: ilk açılışta sohbeti yükle ve menüye bas
+  try{
+    ChatStore.init();
+    ChatStore.load($("chat"));
+    syncFromStore();
+    renderHistoryList();
+  }catch(e){}
 });
-// ================================
-// CHATSTORE ↔ MENU ENTEGRASYONU
-// ================================
-(function initChatStoreMenu(){
-  if (typeof ChatStore === "undefined") return;
-
-  const chatEl = $("chat");
-  const historyList = $("historyList");
-  const newChatBtn = $("newChatBtn");
-
-  // İlk açılış
-  ChatStore.init();
-  ChatStore.load(chatEl);
-  renderHistory();
-
-  // Yeni sohbet
-  if (newChatBtn) {
-    newChatBtn.addEventListener("click", () => {
-      ChatStore.newChat();
-      ChatStore.load(chatEl);
-      renderHistory();
-      closeMenu();
-    });
-  }
-
-  // Listeyi çiz
-  function renderHistory(){
-    if (!historyList) return;
-    historyList.innerHTML = "";
-
-    ChatStore.list().forEach(c => {
-      const row = document.createElement("div");
-      row.className = "history-row";
-      row.innerHTML = `
-        <span class="title">${c.title || "Sohbet"}</span>
-        <button class="del">🗑️</button>
-      `;
-
-      // Sohbete geç
-      row.addEventListener("click", () => {
-        ChatStore.currentId = c.id;
-        ChatStore.load(chatEl);
-        closeMenu();
-      });
-
-      // Sil
-      row.querySelector(".del").addEventListener("click", (e) => {
-        e.stopPropagation();
-        ChatStore.deleteChat(c.id);
-        renderHistory();
-      });
-
-      historyList.appendChild(row);
-    });
-  }
-})();
