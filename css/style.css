@@ -270,3 +270,36 @@ button:focus, a:focus, textarea:focus{
   background: rgba(17,17,17,.92);
   backdrop-filter: blur(8px);
 }
+/* MENU ICONS: OYUNCAK HİSSİNİ AL, PRO YAP */
+.menu-action .ico {
+  width: 36px;
+  height: 36px;
+  font-size: 18px;              /* emoji küçüldü */
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;          /* daha köşeli = daha ciddi */
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.4);
+}
+
+/* Kart içeriği daha net */
+.menu-action div div {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+.menu-action small {
+  font-size: 11px;
+  color: #8a8a8a;
+}
+
+/* Basma hissi (mobil çok fark eder) */
+.menu-action:active {
+  transform: scale(.97);
+  background: rgba(255,255,255,.06);
+}
+
+/* Hover varsa (tablet / desktop) */
+.menu-action:hover {
+  background: rgba(255,255,255,.06);
+}
