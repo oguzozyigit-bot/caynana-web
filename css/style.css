@@ -242,3 +242,11 @@ button:focus, a:focus, textarea:focus{
   outline:2px solid rgba(255,179,0,.25);
   outline-offset:2px;
 }
+/* MENU AÇIKKEN ARKAYI KİLİTLE (MOBİL DOSTU) */
+.menu-overlay.open {
+  z-index: 9999;
+}
+
+.menu-overlay.open ~ * {
+  pointer-events: none;
+}
