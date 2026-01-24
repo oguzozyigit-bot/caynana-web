@@ -763,3 +763,5 @@ button:focus, a:focus, textarea:focus{
 .menu-action[data-action="terms"] .ico::before{
   color: rgba(255,82,82,.85) !important; /* kırmızı */
 }
+/* Menüde HTML'in "Asistan" başlığını gizle (biz zaten grup başlığı basıyoruz) */
+.menu-sidebar .section-title:nth-of-type(2){ display:none !important; }
