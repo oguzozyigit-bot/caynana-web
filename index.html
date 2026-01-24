@@ -11,34 +11,59 @@
 <body>
 
 <div class="mobile-frame" id="mobileFrame">
-  <!-- TOPBAR -->
   <div class="topbar">
-    <div class="left-controls">
-      <button class="hamb-btn" id="hambBtn">☰</button>
-    </div>
+    <div class="left-controls"><button class="hamb-btn" id="hambBtn">☰</button></div>
 
     <div class="brand-wrapper" id="brandWrapper">
       <div class="logo-area">
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
+          <g class="seesaw-bar" id="seesawBar">
+            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+            <circle cx="3" cy="5" r="3" fill="#bef264" />
+            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+          </g>
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+        </svg>
         <div class="brand-name">Caynana AI</div>
       </div>
       <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
     </div>
 
     <div class="right-controls">
-      <button class="icon-btn-top" id="profileBtn">👤</button>
+      <div class="yp-chip">
+        <div class="yp-label">SAMİMİYET</div>
+        <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+        <div class="yp-num" id="ypNum">10%</div>
+      </div>
+
+      <div class="notif-row">
+        <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <div class="badge" id="notifBadge"></div>
+        </button>
+
+        <div class="notification-dropdown" id="notifDropdown">
+          <div class="notif-header">Bildirimler</div>
+          <div class="notif-list" id="notifList"></div>
+        </div>
+
+        <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- MENU -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
-
-      <button class="new-chat-btn" id="newChatBtn">
-        <span>+</span> YENİ SOHBET BAŞLAT
-      </button>
+      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
 
       <div class="section-title">SOHBETLER</div>
       <div class="history-list" id="historyList"></div>
+
+      <div class="section-title">Asistan</div>
+      <div class="menu-grid" id="mainMenu"></div>
 
       <div class="menu-footer-actions">
         <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
@@ -51,87 +76,116 @@
   <!-- CHAT -->
   <div class="chat-area" id="chat"></div>
 
-  <!-- INPUT -->
+  <!-- DOCK -->
   <div class="input-dock">
     <div class="dock-inner">
-      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?"></textarea>
-      <button class="send-btn" id="sendBtn">➤</button>
+      <button class="icon-btn" id="camBtn" aria-label="Kamera">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+      </button>
+      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
+      <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+      </button>
+      <button class="send-btn" id="sendBtn" aria-label="Gönder">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+      </button>
     </div>
+  </div>
+
+  <!-- FOOTER (her sayfada sabit) -->
+  <div class="footer-container">
+    <div class="footer-links">
+  <a href="/pages/hakkimizda.html">Hakkımızda</a>
+  <a href="/pages/sss.html">SSS</a>
+  <a href="/pages/gizlilik.html">Gizlilik</a>
+  <a href="/pages/iletisim.html">İletişim</a>
+</div>
+    <div class="footer-brand">@CaynanaAI By Ozyigits 2026</div>
   </div>
 </div>
 
-<script type="module">
-import { fetchTextResponse, addUserBubble, typeWriter } from "/js/chat.js";
-import { ChatStore } from "/js/chat_store.js";
+<!-- PAGE OVERLAY (Hakkımızda/SSS/Gizlilik/İletişim/Sözleşme burada açılıyor) -->
+<div class="full-overlay" id="pageOverlay">
+  <div class="login-card" style="max-width:90%; max-height:90%; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
+      <div id="pageTitle" style="font-weight:800; color:#fff;">Başlık</div>
+      <button id="closePageBtn" style="background:none; border:none; color:#ff5252; font-size:20px;">&times;</button>
+    </div>
+    <div id="pageContent" style="text-align:left; font-size:13px; color:#ddd;"></div>
+  </div>
+</div>
 
-const chatEl = document.getElementById("chat");
-const input = document.getElementById("msgInput");
-const historyList = document.getElementById("historyList");
+<!-- LOGIN -->
+<div class="full-overlay active" id="loginOverlay">
+  <div class="login-card login-premium">
 
-// INIT
-ChatStore.init();
-ChatStore.load(chatEl);
-renderHistoryList();
+    <!-- Tahtaravalli (animasyon) -->
+    <div class="login-seesaw-wrap" aria-hidden="true">
+      <svg class="login-seesaw" viewBox="0 0 220 70">
+        <!-- bar -->
+        <g class="login-seesaw-bar">
+          <line x1="20" y1="30" x2="200" y2="30" stroke="rgba(255,255,255,.65)" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="30" cy="20" r="10" fill="#bef264"/>
+          <circle cx="190" cy="20" r="10" fill="#ffb300"/>
+        </g>
+        <!-- pivot -->
+        <polygon points="105,55 115,55 110,30" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3"/>
+      </svg>
+    </div>
 
-// SEND
-async function send(){
-  const text = input.value.trim();
-  if(!text) return;
+    <div class="brand-name" style="font-size:24px; margin:6px 0 4px;">Caynana.AI</div>
+    <div class="login-slogan">Yapay Zekânın Geleneksel Aklı</div>
 
-  addUserBubble(text);
-  ChatStore.add("user", text);
-  input.value="";
+    <div class="login-sub">
+      <b>Ücretsiz üyelik</b> için lütfen giriş yapın.
+    </div>
 
-  const res = await fetchTextResponse(text,"chat",ChatStore.history());
-  typeWriter(res.text);
-  ChatStore.add("assistant",res.text);
-}
+    <button class="auth-btn google" id="googleLoginBtn">Google ile Devam Et</button>
 
-sendBtn.onclick = send;
-input.addEventListener("keydown",e=>{
-  if(e.key==="Enter" && !e.shiftKey){
-    e.preventDefault(); send();
-  }
-});
+    <button class="auth-btn apple disabled" id="appleLoginBtn">Apple ile Devam Et</button>
+    <div class="coming-soon">Apple girişi hazırlanıyor… (şimdilik nazlanıyor 😄)</div>
 
-// MENU
-hambBtn.onclick = ()=> menuOverlay.classList.add("open");
-menuOverlay.onclick = e=>{
-  if(e.target === menuOverlay) menuOverlay.classList.remove("open");
-};
+    <!-- /pages linkleri -->
+    <div class="trust-links trust-links-clean">
+  <a href="/pages/hakkimizda.html">Hakkımızda</a>
+  <a href="/pages/sss.html">SSS</a>
+  <a href="/pages/gizlilik.html">Gizlilik</a>
+  <a href="/pages/iletisim.html">İletişim</a>
+  <a href="/pages/sozlesme.html">Sözleşme</a>
+  <a href="/pages/uyelik.html">Üyelik</a>
+</div>
+    
+    <div class="login-footer">@CaynanaAI By Ozyigits 2026</div>
 
-// NEW CHAT
-newChatBtn.onclick = ()=>{
-  ChatStore.newChat();
-  ChatStore.load(chatEl);
-  renderHistoryList();
-  menuOverlay.classList.remove("open");
-};
+    <div id="loginHint" class="login-hint">Servisler yükleniyor...</div>
+  </div>
+</div>
 
-// HISTORY LIST
-function renderHistoryList(){
-  historyList.innerHTML="";
-  ChatStore.list().forEach(c=>{
-    const row=document.createElement("div");
-    row.className="history-row";
-    row.innerHTML=`
-      <span>${c.title}</span>
-      <button class="del">🗑️</button>
-    `;
-    row.onclick=()=>{
-      ChatStore.currentId=c.id;
-      ChatStore.load(chatEl);
-      menuOverlay.classList.remove("open");
-    };
-    row.querySelector(".del").onclick=(e)=>{
-      e.stopPropagation();
-      ChatStore.deleteChat(c.id);
-      renderHistoryList();
-    };
-    historyList.appendChild(row);
-  });
-}
-</script>
+<!-- TERMS (ilk girişte zorunlu) -->
+<div class="full-overlay" id="termsOverlay">
+  <div class="login-card login-premium">
+    <div class="terms-head">
+      <div class="brand-name">Sözleşme</div>
+      <button id="closeTermsBtn" class="x-btn" aria-label="Kapat">×</button>
+    </div>
 
+    <div class="terms-frame-wrap">
+      <iframe id="termsFrame" src="/pages/sozlesme.html" title="Kullanıcı Sözleşmesi"></iframe>
+    </div>
+
+    <div class="agreement-box">
+      <input type="checkbox" id="termsCheck">
+      <label for="termsCheck">Okudum, onaylıyorum.</label>
+    </div>
+
+    <button class="auth-btn" id="termsAcceptBtn">Onayla ve Gir</button>
+    <div class="login-footer">@CaynanaAI By Ozyigits 2026</div>
+  </div>
+</div>
+
+<!-- küçük toast -->
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/js/main.js"></script>
 </body>
 </html>
