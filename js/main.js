@@ -259,44 +259,52 @@ function bindFalUI(){
 // --------------------
 async function deleteAccount(){
   const u = getUser();
-  if(!u?.id) return;
-  if(!confirm("Hesabını kalıcı silmek istiyor musun?")) return;
+  if(!u?.id){
+    alert("Önce giriş yap evladım.");
+    return;
+  }
+
+  if(!confirm("Hesabını silmek istiyor musun? Bu işlem geri alınamaz.")) return;
 
   const idToken = (localStorage.getItem("google_id_token") || "").trim();
+  if(!idToken){
+    alert("Google oturumu doğrulanamadı. Çıkış yapıp tekrar giriş yap.");
+    return;
+  }
 
-  try{
-    const r = await fetch(`${BASE_DOMAIN}/api/profile/delete`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ user_id: u.id, email: u.email || "", google_id_token: idToken || "" })
-    });
-    if(r.ok){
-      alert("Hesabın silindi.");
-      localStorage.clear();
-      location.reload();
-      return;
-    }
-  }catch(e){}
-
-  try{
-    const r2 = await fetch(`${BASE_DOMAIN}/api/profile/update`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
+  try {
+    const r = await fetch(`${BASE_DOMAIN}/api/profile/update`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         user_id: u.id,
-        meta:{ email:u.email || "", deleted_at:new Date().toISOString() },
-        google_id_token: idToken || ""
+        meta: {
+          email: u.email || u.id,
+          deleted_at: new Date().toISOString()
+        },
+        google_id_token: idToken
       })
     });
-    if(r2.ok){
-      alert("Silme talebin alındı.");
-      localStorage.clear();
-      location.reload();
-      return;
-    }
-  }catch(e){}
 
-  alert("Silme endpoint'i yok/çalışmıyor. Backend'e eklenmeli.");
+    if(!r.ok){
+      const t = await r.text();
+      throw new Error(t || "Silme başarısız");
+    }
+
+    // ✅ Sözleşme onayı da temizlensin (hesap silindi)
+    const termsKey = `caynana_terms_accepted_at::${String(u.email||u.id).toLowerCase()}`;
+    localStorage.removeItem(termsKey);
+
+    // ✅ Oturumu temizle
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem("google_id_token");
+
+    alert("Hesabın silindi.");
+    location.reload();
+  } catch (e) {
+    console.error(e);
+    alert("Hesap silinemedi. Lütfen tekrar dene.");
+  }
 }
 
 // --------------------
