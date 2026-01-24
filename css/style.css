@@ -527,3 +527,30 @@ button:focus, a:focus, textarea:focus{
 .menu-action[data-action="privacy"]::after{ content:"⌁"; }
 .menu-action[data-action="contact"]::after{ content:"✉"; }
 .menu-action[data-action="terms"]::after{ content:"≡"; }
+/* --- MENU: 2 GRUP GÖRÜNÜMÜ (ASİSTAN / SAYFALAR) --- */
+
+/* Sayfalar grubunun başladığı ilk elemana (Hakkımızda) başlık ekle */
+.menu-action[data-action="about"]{
+  margin-top: 12px !important;
+  position: relative;
+}
+
+.menu-action[data-action="about"]::marker{ content:""; }
+
+/* Başlık + ayırıcı */
+.menu-action[data-action="about"]::before{
+  content:"SAYFALAR";
+  position:absolute;
+  left:0;
+  top:-22px;
+  font-size:10px;
+  letter-spacing:1.5px;
+  font-weight:800;
+  color: rgba(255,255,255,.35);
+}
+
+/* Üst çizgi */
+.menu-action[data-action="about"]{
+  border-top: 1px solid rgba(255,255,255,.08) !important;
+  padding-top: 18px !important;
+}
