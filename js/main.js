@@ -5,6 +5,7 @@ import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.j
 import { initNotif } from "./notif.js";
 import { fetchTextResponse, addUserBubble, typeWriter } from "./chat.js";
 import { openFalPanel, closeFalPanel, handleFalPhoto } from "./fal.js";
+import { ChatStore } from "./chat_store.js";
 
 const $ = (id) => document.getElementById(id);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -433,3 +434,59 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   refreshPremiumBars();
 });
+// ================================
+// CHATSTORE ↔ MENU ENTEGRASYONU
+// ================================
+(function initChatStoreMenu(){
+  if (typeof ChatStore === "undefined") return;
+
+  const chatEl = $("chat");
+  const historyList = $("historyList");
+  const newChatBtn = $("newChatBtn");
+
+  // İlk açılış
+  ChatStore.init();
+  ChatStore.load(chatEl);
+  renderHistory();
+
+  // Yeni sohbet
+  if (newChatBtn) {
+    newChatBtn.addEventListener("click", () => {
+      ChatStore.newChat();
+      ChatStore.load(chatEl);
+      renderHistory();
+      closeMenu();
+    });
+  }
+
+  // Listeyi çiz
+  function renderHistory(){
+    if (!historyList) return;
+    historyList.innerHTML = "";
+
+    ChatStore.list().forEach(c => {
+      const row = document.createElement("div");
+      row.className = "history-row";
+      row.innerHTML = `
+        <span class="title">${c.title || "Sohbet"}</span>
+        <button class="del">🗑️</button>
+      `;
+
+      // Sohbete geç
+      row.addEventListener("click", () => {
+        ChatStore.currentId = c.id;
+        ChatStore.load(chatEl);
+        closeMenu();
+      });
+
+      // Sil
+      row.querySelector(".del").addEventListener("click", (e) => {
+        e.stopPropagation();
+        ChatStore.deleteChat(c.id);
+        renderHistory();
+      });
+
+      historyList.appendChild(row);
+    });
+  }
+})();
