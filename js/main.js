@@ -258,7 +258,6 @@ function bindFalUI(){
 // Account delete
 // --------------------
 async function deleteAccount(){
-  // 1) Kullanıcıyı başta sabitle (sonra storage boşalınca patlamasın)
   const u0 = getUser();
   const uid = (u0?.id || "").trim();
   const email = (u0?.email || uid).trim().toLowerCase();
@@ -277,7 +276,8 @@ async function deleteAccount(){
   }
 
   try {
-    const r = await fetch(`${BASE_DOMAIN}/api/profile/update`, {
+    // ✅ DÜZELTİLDİ: update değil set
+    const r = await fetch(`${BASE_DOMAIN}/api/profile/set`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -298,17 +298,15 @@ async function deleteAccount(){
       return;
     }
 
-    // 2) Terms kaydını temizle (silinen hesap tekrar açılırsa sözleşme istesin)
+    // terms kaydını temizle
     const termsKey = `caynana_terms_accepted_at::${email}`;
     localStorage.removeItem(termsKey);
 
-    // 3) Session temizle
+    // session temizle
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("google_id_token");
 
     alert("Hesabın silindi.");
-
-    // 4) reload yok, direkt login
     window.location.href = "/";
     return;
 
@@ -317,7 +315,6 @@ async function deleteAccount(){
     alert("Hesap silinemedi. Lütfen tekrar dene.");
   }
 }
-
 
 // --------------------
 // Login / Terms (Google Fix)
