@@ -1,27 +1,46 @@
-// js/main.js (v5.2 FINAL - CLEAN FIX: Pages + Google + Terms + Delete Account)
-// Statik sayfalar /pages/*.html. Google giriş auth.js üzerinden.
-// Hesap silme: backend /api/profile/set + Authorization doğrulamalı.
+// --- BACKEND SESSION TOKEN (api/auth/google -> api token) ---
+const API_TOKEN_KEY = "caynana_api_token";
 
-import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
-import { initAuth, handleLogin, logout, acceptTerms } from "./auth.js";
-import { initNotif } from "./notif.js";
-import { fetchTextResponse, addUserBubble, typeWriter } from "./chat.js";
-import { openFalPanel, closeFalPanel, handleFalPhoto } from "./fal.js";
-
-const $ = (id) => document.getElementById(id);
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
-function getUser() { return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
-
-function firstName(full = "") {
-  const s = String(full || "").trim();
-  if (!s) return "";
-  return s.split(/\s+/)[0];
+function getApiToken(){
+  return (localStorage.getItem(API_TOKEN_KEY) || "").trim();
+}
+function setApiToken(t){
+  if(t) localStorage.setItem(API_TOKEN_KEY, t);
+}
+function clearApiToken(){
+  localStorage.removeItem(API_TOKEN_KEY);
 }
 
-function termsKey(email=""){
-  return `caynana_terms_accepted_at::${String(email||"").toLowerCase().trim()}`;
+/**
+ * Backend Google token'ı doğrudan kabul etmiyor.
+ * Önce /api/auth/google ile backend session token alıyoruz.
+ */
+async function ensureBackendSessionToken(){
+  const existing = getApiToken();
+  if(existing) return existing;
+
+  const googleIdToken = (localStorage.getItem("google_id_token") || "").trim();
+  if(!googleIdToken) throw new Error("google_id_token missing");
+
+  const r = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ google_id_token: googleIdToken })
+  });
+
+  const txt = await r.text().catch(()=> "");
+  if(!r.ok) throw new Error(`auth/google failed: ${r.status} ${txt}`);
+
+  let data = {};
+  try { data = JSON.parse(txt || "{}"); } catch(e) {}
+
+  // olası token alan adları (backend hangisini döndürüyorsa)
+  const token =
+    (data.token || data.access_token || data.api_token || data.jwt || data.session_token || "").trim();
+
+  if(!token) throw new Error("auth/google token not found in response");
+  setApiToken(token);
+  return token;
 }
 
 // --------------------
@@ -274,60 +293,59 @@ async function deleteAccount(){
   const email = (u0?.email || uid).trim().toLowerCase();
 
   if(!uid) return alert("Önce giriş yap evladım.");
-
   if(!confirm("Hesabını silmek istiyor musun? Bu işlem geri alınamaz.")) return;
 
-  const idToken = (localStorage.getItem("google_id_token") || "").trim();
-  if(!idToken) return alert("Google oturumu doğrulanamadı. Çıkış yapıp tekrar giriş yap.");
-
-  // 1) Token backend tarafından görülebiliyor mu? (whoami)
-  try{
-    const who = await fetch(`${BASE_DOMAIN}/api/auth/whoami`, {
-      method: "GET",
-      headers: { "Authorization": `Bearer ${idToken}` }
-    });
-    if(!who.ok){
-      const t = await who.text().catch(()=> "");
-      console.error("whoami failed:", who.status, t);
-      return alert("Token yok veya geçersiz. Çıkış yapıp tekrar giriş yap.");
-    }
-  }catch(e){
-    console.error("whoami exception:", e);
-    return alert("Backend'e ulaşılamadı. Tekrar dene.");
-  }
-
-  // 2) Profil meta set -> deleted_at
   try {
+    const apiToken = await ensureBackendSessionToken();
+
     const r = await fetch(`${BASE_DOMAIN}/api/profile/set`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${idToken}`
+        "Content-Type":"application/json",
+        "Authorization": `Bearer ${apiToken}`
       },
       body: JSON.stringify({
         user_id: uid,
-        meta: {
-          email,
-          deleted_at: new Date().toISOString()
-        },
-        // ek garanti alanlar (backend hangisini okuyorsa)
-        google_id_token: idToken,
-        id_token: idToken,
-        token: idToken
+        meta: { email, deleted_at: new Date().toISOString() }
       })
     });
 
     const bodyText = await r.text().catch(()=> "");
-
     if(!r.ok){
       console.error("deleteAccount failed:", r.status, bodyText);
-      return alert(`Hesap silinemedi. (${r.status})`);
+
+      // 401 ise token yenile 1 kez dene
+      if(r.status === 401){
+        clearApiToken();
+        const apiToken2 = await ensureBackendSessionToken();
+        const r2 = await fetch(`${BASE_DOMAIN}/api/profile/set`, {
+          method: "POST",
+          headers: {
+            "Content-Type":"application/json",
+            "Authorization": `Bearer ${apiToken2}`
+          },
+          body: JSON.stringify({
+            user_id: uid,
+            meta: { email, deleted_at: new Date().toISOString() }
+          })
+        });
+        const t2 = await r2.text().catch(()=> "");
+        if(!r2.ok){
+          console.error("deleteAccount retry failed:", r2.status, t2);
+          alert(`Hesap silinemedi. (${r2.status})`);
+          return;
+        }
+      } else {
+        alert(`Hesap silinemedi. (${r.status})`);
+        return;
+      }
     }
 
     // terms + session temizle
     localStorage.removeItem(termsKey(email));
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("google_id_token");
+    clearApiToken();
 
     alert("Hesabın silindi.");
     window.location.href = "/";
@@ -439,9 +457,11 @@ function bindComposer(){
 // --------------------
 // BOOT
 // --------------------
-document.addEventListener("DOMContentLoaded", async ()=>{
+document.addEventListener("DOMContentLoaded", async () => {
+  // ---- UI BASE ----
   document.body.classList.add("premium-ui");
 
+  // ---- MENÜ / UI BAĞLARI ----
   populateMenuGrid();
   bindMenuUI();
   bindNotifUI();
@@ -449,29 +469,50 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   bindFalUI();
   bindAuthUI();
 
-  try { await initNotif({ baseUrl: BASE_DOMAIN }); } catch(e) {}
+  // ---- NOTIF INIT ----
+  try { await initNotif({ baseUrl: BASE_DOMAIN }); } catch(e){}
 
-  const okGsi = await waitForGsi();
-  if(okGsi && $("loginHint")) $("loginHint").textContent = "Google hazır. Devam et evladım.";
-
-  try { initAuth(); } catch(e) {
-    window.showGoogleButtonFallback?.("initAuth hata");
+  // ---- GOOGLE GSI ----
+  try {
+    await waitForGsi();
+    $("loginHint") && ($("loginHint").textContent = "Google hazır. Devam et evladım.");
+    initAuth();
+  } catch(e){
+    window.showGoogleButtonFallback?.("GSI yüklenemedi");
   }
 
-  // session check
+  // ---- SESSION CHECK (TEK YER) ----
   const u = getUser();
-  const logged = !!(u?.isSessionActive && u?.id && u?.provider && u?.provider !== "guest");
+  const logged =
+    !!(u?.isSessionActive && u?.id && u?.provider && u?.provider !== "guest");
 
-  if(logged){
+  if (logged) {
+    // login overlay kapat
     $("loginOverlay")?.classList.remove("active");
-    if ($("loginOverlay")) $("loginOverlay").style.display = "none";
-    if(!u.terms_accepted_at){
+    $("loginOverlay") && ($("loginOverlay").style.display = "none");
+
+    // ilk girişte sözleşme
+    if (!u.terms_accepted_at) {
       window.showTermsOverlay?.();
     }
   } else {
+    // login overlay aç
     $("loginOverlay")?.classList.add("active");
-    if ($("loginOverlay")) $("loginOverlay").style.display = "flex";
+    $("loginOverlay") && ($("loginOverlay").style.display = "flex");
   }
 
+  // ---- HEADER / MENU BUTONLARI (TEK BIND) ----
+  $("logoutBtn") && ($("logoutBtn").onclick = () => logout());
+
+  $("deleteAccountBtn") && ($("deleteAccountBtn").onclick = async () => {
+    const u2 = getUser();
+    const okLogged =
+      !!(u2?.isSessionActive && u2?.id && u2?.provider && u2?.provider !== "guest");
+    if (!okLogged) return alert("Önce giriş yap evladım.");
+    await deleteAccount();
+  });
+
+  // ---- ÜST BAR / PREMIUM ----
   refreshPremiumBars();
 });
+
