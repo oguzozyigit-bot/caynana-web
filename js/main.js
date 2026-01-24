@@ -258,8 +258,12 @@ function bindFalUI(){
 // Account delete
 // --------------------
 async function deleteAccount(){
-  const u = getUser();
-  if(!u?.id){
+  // 1) Kullanıcıyı başta sabitle (sonra storage boşalınca patlamasın)
+  const u0 = getUser();
+  const uid = (u0?.id || "").trim();
+  const email = (u0?.email || uid).trim().toLowerCase();
+
+  if(!uid){
     alert("Önce giriş yap evladım.");
     return;
   }
@@ -277,38 +281,43 @@ async function deleteAccount(){
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        user_id: u.id,
+        user_id: uid,
         meta: {
-          email: u.email || u.id,
+          email: email,
           deleted_at: new Date().toISOString()
         },
         google_id_token: idToken
       })
     });
 
+    const bodyText = await r.text().catch(()=> "");
+
     if(!r.ok){
-      const t = await r.text();
-      throw new Error(t || "Silme başarısız");
+      console.error("deleteAccount failed:", r.status, bodyText);
+      alert(`Hesap silinemedi. (${r.status})`);
+      return;
     }
 
-    // ✅ terms kaydını da sil (yeniden girerse sözleşme sorulsun)
-    const termsKey = `caynana_terms_accepted_at::${String(u.email||u.id).toLowerCase()}`;
+    // 2) Terms kaydını temizle (silinen hesap tekrar açılırsa sözleşme istesin)
+    const termsKey = `caynana_terms_accepted_at::${email}`;
     localStorage.removeItem(termsKey);
 
-    // ✅ session temizle
+    // 3) Session temizle
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("google_id_token");
 
     alert("Hesabın silindi.");
 
-    // ❗️reload YOK
+    // 4) reload yok, direkt login
     window.location.href = "/";
+    return;
 
   } catch (e) {
-    console.error(e);
+    console.error("deleteAccount exception:", e);
     alert("Hesap silinemedi. Lütfen tekrar dene.");
   }
 }
+
 
 // --------------------
 // Login / Terms (Google Fix)
