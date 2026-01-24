@@ -731,3 +731,35 @@ button:focus, a:focus, textarea:focus{
 .menu-action[data-action="about"] .ico::before{
   color: rgba(255,82,82,.80) !important;
 }
+/* ===============================
+   MENU – GRUPLARA GÖRE IKON RENKLERİ (FINAL)
+   =============================== */
+
+/* ASTRO AI – zaten vardı ama garantiye alıyoruz */
+.menu-action[data-action="fal"] .ico::before,
+.menu-action[data-action="tarot"] .ico::before,
+.menu-action[data-action="horoscope"] .ico::before,
+.menu-action[data-action="dream"] .ico::before{
+  color: rgba(190,242,100,.85) !important; /* pistachio */
+}
+
+/* ASİSTAN – turuncu */
+.menu-action[data-action="chat"] .ico::before,
+.menu-action[data-action="dedikodu"] .ico::before,
+.menu-action[data-action="shopping"] .ico::before,
+.menu-action[data-action="translate"] .ico::before,
+.menu-action[data-action="diet"] .ico::before,
+.menu-action[data-action="health"] .ico::before,
+.menu-action[data-action="special"] .ico::before,
+.menu-action[data-action="reminder"] .ico::before{
+  color: rgba(255,179,0,.85) !important; /* turuncu */
+}
+
+/* KURUMSAL – kırmızı */
+.menu-action[data-action="about"] .ico::before,
+.menu-action[data-action="faq"] .ico::before,
+.menu-action[data-action="privacy"] .ico::before,
+.menu-action[data-action="contact"] .ico::before,
+.menu-action[data-action="terms"] .ico::before{
+  color: rgba(255,82,82,.85) !important; /* kırmızı */
+}
