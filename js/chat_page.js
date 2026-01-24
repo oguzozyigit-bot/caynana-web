@@ -1,12 +1,14 @@
-// js/chat_page.js (FINAL - Bu sayfa için özel controller)
-// Gerekenler: /js/chat.js, /js/chat_store.js, /js/config.js (STORAGE_KEY)
+// js/chat_page.js (FINAL - ChatGPT UI sayfası controller)
+// Gerekenler: /js/chat.js, /js/chat_store.js
+
+import { fetchTextResponse } from "./chat.js";
+import { ChatStore } from "./chat_store.js";
+
 // Login zorunlu: token yoksa index'e yolla
 const t = (localStorage.getItem("google_id_token") || "").trim();
 if (!t) {
   window.location.href = "/index.html";
 }
-import { fetchTextResponse } from "./chat.js";
-import { ChatStore } from "./chat_store.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -35,18 +37,6 @@ function scrollBottom() {
   messages.scrollTop = messages.scrollHeight;
 }
 
-function clearWelcomeIfNeeded() {
-  // İçeride message bubble varsa welcome'ı temizle
-  const hasBubble = messages.querySelector(".bubble");
-  if (hasBubble) return;
-
-  // Eğer store boş değilse welcome'ı temizleyelim
-  const h = ChatStore.history();
-  if (h && h.length) {
-    messages.innerHTML = "";
-  }
-}
-
 function bubble(role, text) {
   const div = document.createElement("div");
   div.className = `bubble ${role === "user" ? "user" : "bot"}`;
@@ -59,9 +49,11 @@ function bubble(role, text) {
 function typingIndicator() {
   const div = document.createElement("div");
   div.className = "bubble bot";
-  div.innerHTML = `<span class="typing-indicator">
+  div.innerHTML = `
+    <span class="typing-indicator">
       <span></span><span></span><span></span>
-    </span>`;
+    </span>
+  `;
   messages.appendChild(div);
   scrollBottom();
   return div;
@@ -69,7 +61,8 @@ function typingIndicator() {
 
 function setSendActive() {
   const hasText = !!(msgInput.value || "").trim();
-  sendBtn.classList.toggle("active", hasText);
+  const hasFile = !!pendingFile;
+  sendBtn.classList.toggle("active", hasText || hasFile);
 }
 
 function autoGrow() {
@@ -114,13 +107,11 @@ function renderHistory() {
 }
 
 function loadCurrentChat() {
-  // Store'dan yükle
   messages.innerHTML = "";
   const h = ChatStore.history() || [];
 
-  // Welcome ekranını ancak tamamen boşsa göster
   if (h.length === 0) {
-    // HTML'deki welcome kalıbını tekrar bas (aynı görünüm kalsın)
+    // welcome (asistan otomatik mesaj yazmaz)
     messages.innerHTML = `
       <div style="text-align:center; margin-top:20vh; color:#444;">
         <i class="fa-solid fa-comments" style="font-size:48px; margin-bottom:20px; color:#333;"></i>
@@ -134,58 +125,31 @@ function loadCurrentChat() {
   h.forEach((m) => bubble(m.role, m.content));
 }
 
-// ------------------------
-// Send flow
-// ------------------------
 function storeHistoryAsRoleContent() {
-  // chat.js normalizeHistory zaten {role,content} bekliyor; store bunu {role,content,at} tutuyor
   const h = ChatStore.history() || [];
   return h.map((x) => ({ role: x.role, content: x.content }));
 }
 
-async function send() {
-  const text = (msgInput.value || "").trim();
-  if (!text && !pendingFile) return;
-
-  // Welcome temizle
-  if ((ChatStore.history() || []).length === 0) {
-    messages.innerHTML = "";
-  }
-
-  // Dosya varsa önce onu mesaj olarak ekle (meta)
-  if (pendingFile) {
-    const meta = `[DOSYA] ${pendingFile.name}`;
-    bubble("user", `📎 ${pendingFile.name} eklendi`);
-    ChatStore.add("user", meta);
-    pendingFile = null;
-    if (filePreview) filePreview.style.display = "none";
-  }
-
-  if (text) {
-    bubble("user", text);
-    ChatStore.add("user", text);
-  }
-
-  msgInput.value = "";
-  autoGrow();
+// ------------------------
+// File attach
+// ------------------------
+function clearFile() {
+  pendingFile = null;
+  if (fileInput) fileInput.value = "";
+  if (filePreview) filePreview.style.display = "none";
   setSendActive();
-
-  // loading
-  const loader = typingIndicator();
-
-  let reply = "Evladım bir şeyler ters gitti.";
-  try {
-    const out = await fetchTextResponse(text || "Dosya eklendi", "chat", storeHistoryAsRoleContent());
-    reply = out?.text || reply;
-  } catch {}
-
-  try { loader.remove(); } catch {}
-  bubble("assistant", reply);
-  ChatStore.add("assistant", reply);
-
-  // başlık store içinde ilk user mesajında otomatik ayarlanıyor
-  renderHistory();
 }
+window.clearFile = clearFile;
+
+attachBtn?.addEventListener("click", () => fileInput?.click());
+fileInput?.addEventListener("change", (e) => {
+  const f = e.target.files?.[0];
+  if (!f) return;
+  pendingFile = f;
+  if (fileName) fileName.textContent = f.name;
+  if (filePreview) filePreview.style.display = "flex";
+  setSendActive();
+});
 
 // ------------------------
 // Mic (STT)
@@ -212,29 +176,53 @@ function startSTT() {
 }
 
 // ------------------------
-// File attach
+// Send flow
 // ------------------------
-function clearFile() {
-  pendingFile = null;
-  if (fileInput) fileInput.value = "";
-  if (filePreview) filePreview.style.display = "none";
-}
-window.clearFile = clearFile;
+async function send() {
+  const text = (msgInput.value || "").trim();
+  if (!text && !pendingFile) return;
 
-attachBtn?.addEventListener("click", () => fileInput?.click());
-fileInput?.addEventListener("change", (e) => {
-  const f = e.target.files?.[0];
-  if (!f) return;
-  pendingFile = f;
-  if (fileName) fileName.textContent = f.name;
-  if (filePreview) filePreview.style.display = "flex";
-});
+  // Welcome temizle (ilk gerçek mesajda)
+  const h0 = ChatStore.history() || [];
+  if (h0.length === 0) messages.innerHTML = "";
+
+  // Dosya varsa önce meta olarak ekle (şimdilik upload yok)
+  if (pendingFile) {
+    const meta = `[DOSYA] ${pendingFile.name}`;
+    bubble("user", `📎 ${pendingFile.name}`);
+    ChatStore.add("user", meta);
+    pendingFile = null;
+    if (filePreview) filePreview.style.display = "none";
+  }
+
+  if (text) {
+    bubble("user", text);
+    ChatStore.add("user", text);
+  }
+
+  msgInput.value = "";
+  autoGrow();
+  setSendActive();
+
+  const loader = typingIndicator();
+
+  let reply = "Evladım bir şeyler ters gitti.";
+  try {
+    const out = await fetchTextResponse(text || "Dosya eklendi", "chat", storeHistoryAsRoleContent());
+    reply = out?.text || reply;
+  } catch {}
+
+  try { loader.remove(); } catch {}
+  bubble("assistant", reply);
+  ChatStore.add("assistant", reply);
+
+  renderHistory();
+}
 
 // ------------------------
 // Events
 // ------------------------
 menuToggle?.addEventListener("click", () => sidebar.classList.toggle("open"));
-
 newChatBtn?.addEventListener("click", () => {
   ChatStore.newChat();
   loadCurrentChat();
