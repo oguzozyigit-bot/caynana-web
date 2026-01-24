@@ -606,3 +606,59 @@ button:focus, a:focus, textarea:focus{
 .menu-action[data-action="dream"]::after{
   color: rgba(190,242,100,.75);
 }
+/* ===============================
+   MENU GRUP BAŞLIKLARI – ÇAKIŞMASIZ
+   =============================== */
+
+/* Ortak başlık stili */
+.menu-action[data-group]{
+  margin-top: 6px;
+}
+
+/* ASİSTAN */
+.menu-action[data-action="chat"]{
+  margin-top: 28px !important;
+}
+.menu-action[data-action="chat"]::after{
+  content:"ASİSTAN";
+  display:block;
+  position:relative;
+  top:-18px;
+  margin-bottom:-6px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:1.6px;
+  color: rgba(255,255,255,.35);
+}
+
+/* ASTRO AI */
+.menu-action[data-action="fal"]{
+  margin-top: 28px !important;
+}
+.menu-action[data-action="fal"]::after{
+  content:"ASTRO AI";
+  display:block;
+  position:relative;
+  top:-18px;
+  margin-bottom:-6px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:1.6px;
+  color: rgba(190,242,100,.45);
+}
+
+/* KURUMSAL */
+.menu-action[data-action="about"]{
+  margin-top: 28px !important;
+}
+.menu-action[data-action="about"]::after{
+  content:"KURUMSAL";
+  display:block;
+  position:relative;
+  top:-18px;
+  margin-bottom:-6px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:1.6px;
+  color: rgba(255,255,255,.35);
+}
