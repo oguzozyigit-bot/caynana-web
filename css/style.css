@@ -419,3 +419,111 @@ button:focus, a:focus, textarea:focus{
 .menu-action[data-action="privacy"]::after{ content:"⌁"; }
 .menu-action[data-action="contact"]::after{ content:"✉"; }
 .menu-action[data-action="terms"]::after{ content:"≡"; }
+/* MENU'YÜ GRID'DEN TEK SATIR LİSTEYE ÇEVİR */
+.menu-grid{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+}
+
+/* Kartı liste satırı yap */
+.menu-action{
+  position:relative;
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:flex-start !important;
+  text-align:left !important;
+  padding:14px 14px 14px 52px !important; /* solda ikon alanı */
+  border-radius:14px !important;
+}
+
+/* Emoji ikon alanını kapat (çocuk hissi gitmesi için) */
+.menu-action .ico{ display:none !important; }
+
+/* Solda minimal ikon “chip” */
+.menu-action::before{
+  content:"";
+  position:absolute;
+  left:14px;
+  top:50%;
+  transform:translateY(-50%);
+  width:28px;
+  height:28px;
+  border-radius:10px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.35);
+}
+
+/* Chip içine minimal işaret (ikon yerine) */
+.menu-action::after{
+  content:"·";  /* default */
+  position:absolute;
+  left:14px;
+  top:50%;
+  transform:translateY(-50%);
+  width:28px;
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: rgba(255,255,255,.85);
+  font-weight:900;
+  font-size:14px;
+  letter-spacing:.5px;
+}
+
+/* Başlık/altbaşlık hizası */
+.menu-action > div{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.menu-action div div{
+  font-size:15px !important;
+  font-weight:750 !important;
+  letter-spacing:.2px;
+}
+.menu-action small{
+  font-size:12px !important;
+  color:#9a9a9a !important;
+  margin:0 !important;
+}
+
+/* Minimal renk: sadece çok hafif sol şerit */
+.menu-action{
+  box-shadow: 0 10px 20px rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+.menu-action[data-action]{
+  border-left: 3px solid rgba(190,242,100,.18); /* çok sakin pistachio */
+}
+.menu-action:hover{
+  border-left-color: rgba(255,179,0,.22);
+}
+.menu-action:active{
+  transform: scale(.985);
+  background: rgba(255,255,255,.06);
+}
+
+/* Her item için minimal ikon işaretleri (monokrom) */
+.menu-action[data-action="chat"]::after{ content:"◦"; }
+.menu-action[data-action="dedikodu"]::after{ content:"≋"; }
+.menu-action[data-action="shopping"]::after{ content:"▦"; }
+.menu-action[data-action="translate"]::after{ content:"⇄"; }
+.menu-action[data-action="diet"]::after{ content:"∿"; }
+.menu-action[data-action="health"]::after{ content:"＋"; }
+.menu-action[data-action="special"]::after{ content:"✦"; }
+.menu-action[data-action="reminder"]::after{ content:"⏱"; }
+.menu-action[data-action="fal"]::after{ content:"◌"; }
+.menu-action[data-action="tarot"]::after{ content:"▤"; }
+.menu-action[data-action="horoscope"]::after{ content:"◐"; }
+.menu-action[data-action="dream"]::after{ content:"◑"; }
+
+.menu-action[data-action="about"]::after{ content:"i"; }
+.menu-action[data-action="faq"]::after{ content:"?"; }
+.menu-action[data-action="privacy"]::after{ content:"⌁"; }
+.menu-action[data-action="contact"]::after{ content:"✉"; }
+.menu-action[data-action="terms"]::after{ content:"≡"; }
