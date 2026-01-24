@@ -1,4 +1,4 @@
-// js/chat.js (FINAL - Profile-first memory + name capture + history limit + login required)
+// js/chat.js (FINAL - Profile-first memory + name capture + history limit + login required + CHAT_ID FIX)
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -9,61 +9,60 @@ import { STORAGE_KEY } from "./config.js";
   - Profil doluysa (hitap/fullname) öncelikle oradan hitap
   - Profil yoksa user "adım/ismim ..." diyorsa yakala, profile’a yaz
   - Backend’e son 30 mesaj gider
-  - İlk mesajı asistan yazmaz (main.js kontrolünde)
-  - Hitap: önce profile.hitap, yoksa profile.fullname'in ilk adı, yoksa yakalanan isim
+  - chat_id localStorage ile taşınır (SOHBET HAFIZASI)
 */
 
 const SAFETY_PATTERNS = {
   self_harm: /intihar|ölmek istiyorum|kendimi as(?:ıcam|acağım)|bileklerimi kes/i
 };
 
-function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
-function getProfile() { return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
-function setProfile(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p || {})); }
+function safeJson(s, fb = {}) {
+  try { return JSON.parse(s || ""); } catch { return fb; }
+}
+function getProfile() {
+  return safeJson(localStorage.getItem(STORAGE_KEY), {});
+}
+function setProfile(p) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(p || {}));
+}
 
 function hasLoginToken() {
   return !!(localStorage.getItem("google_id_token") || "").trim();
 }
 
-function firstNameFromFullname(full=""){
-  const s = String(full||"").trim();
-  if(!s) return "";
+function firstNameFromFullname(full = "") {
+  const s = String(full || "").trim();
+  if (!s) return "";
   return s.split(/\s+/)[0];
 }
 
 // --------------------
 // NAME CAPTURE (profil yoksa)
 // --------------------
-function extractNameFromText(text=""){
-  const s = String(text||"").trim();
+function extractNameFromText(text = "") {
+  const s = String(text || "").trim();
 
-  // adım X / ismim X
   let m = s.match(/\b(adım|ismim)\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
-  if(m && m[2]) return m[2];
+  if (m && m[2]) return m[2];
 
-  // ben X (çok agresif olmasın)
   m = s.match(/\bben\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
-  if(m && m[1]) return m[1];
+  if (m && m[1]) return m[1];
 
   return "";
 }
 
-function maybePersistNameFromUserMessage(userMessage){
+function maybePersistNameFromUserMessage(userMessage) {
   const p = getProfile();
 
-  // Profilde zaten fullname/hitap varsa elleme
-  const has = !!(String(p.hitap||"").trim() || String(p.fullname||"").trim());
-  if(has) return;
+  const has = !!(String(p.hitap || "").trim() || String(p.fullname || "").trim());
+  if (has) return;
 
   const name = extractNameFromText(userMessage);
-  if(!name) return;
+  if (!name) return;
 
-  // fullname olarak yakalananı yaz (tek kelimeyse zaten ad)
   p.fullname = name;
-
-  // hitap = ilk isim
   const fn = firstNameFromFullname(name);
-  if(!p.hitap) p.hitap = fn || name;
+  if (!p.hitap) p.hitap = fn || name;
 
   setProfile(p);
 }
@@ -100,7 +99,7 @@ function limitHistory(history, maxItems = 30) {
 // --------------------
 function pickAssistantText(data) {
   if (!data || typeof data !== "object") return "";
-  const keys = ["assistant_text","text","assistant","reply","answer","output"];
+  const keys = ["assistant_text", "text", "assistant", "reply", "answer", "output"];
   for (const k of keys) {
     const v = String(data[k] || "").trim();
     if (v) return v;
@@ -108,7 +107,9 @@ function pickAssistantText(data) {
   return "";
 }
 
-async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
+async function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
 
 // --------------------
 // MAIN
@@ -138,7 +139,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     };
   }
 
-  // Profil yoksa ad yakala ve profile’a yaz
+  // Profil yoksa ad yakala
   maybePersistNameFromUserMessage(message);
 
   const profile = getProfile();
@@ -146,7 +147,6 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
 
   const cleanHistory = limitHistory(normalizeHistory(history), 30);
 
-  // Hitap önceliği: hitap > fullname(first name)
   const displayName =
     String(profile.hitap || "").trim() ||
     firstNameFromFullname(profile.fullname || "") ||
@@ -156,7 +156,6 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     hitap: profile.hitap || null,
     fullname: profile.fullname || null,
     display_name: displayName || null,
-
     botName: profile.botName || null,
     dob: profile.dob || null,
     gender: profile.gender || null,
@@ -173,18 +172,13 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     text: message,
     message: message,
     user_id: userId,
+    chat_id: localStorage.getItem("caynana_chat_id"), // ✅ SOHBET HAFIZASI
     mode,
     history: cleanHistory,
-
-    // 🔥 KİŞİSEL VERİ KAYNAĞI
     profile: memoryProfile,
-
-    // 🔥 Hitap kuralını backend’e taşımak için ekstra ipucu
-    // Backend yok sayarsa sorun olmaz; kullanan backend ise hitap oturur.
     system_hint: displayName
-      ? `Kullanıcıya "${displayName}" diye hitap et. Profil doluysa profili öncelikle kullan.`
-      : `Profil doluysa profili öncelikle kullan. Kullanıcı adını söylediyse onu hatırla.`,
-
+      ? `Kullanıcıya "${displayName}" diye hitap et.`
+      : `Profil doluysa profili öncelikle kullan.`,
     web: "auto",
     enable_web_search: true
   };
@@ -206,6 +200,11 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
 
     let data = {};
     try { data = await res.json(); } catch {}
+
+    // ✅ chat_id’yi sakla (EN KRİTİK SATIR)
+    if (data.chat_id) {
+      localStorage.setItem("caynana_chat_id", data.chat_id);
+    }
 
     const out = pickAssistantText(data);
     return { text: out || "Bir aksilik oldu evladım." };
