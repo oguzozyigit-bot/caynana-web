@@ -142,7 +142,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
   maybePersistNameFromUserMessage(message);
 
   const profile = getProfile();
-  const userId = (profile?.id || "").trim() || "guest";
+  const userId = (profile?.email || profile?.id || "").trim() || "guest";
 
   const cleanHistory = limitHistory(normalizeHistory(history), 30);
 
