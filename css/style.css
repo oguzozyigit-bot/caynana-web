@@ -767,3 +767,59 @@ button:focus, a:focus, textarea:focus{
 .menu-sidebar .section-title:nth-of-type(2){ display:none !important; }
 /* "Son Sohbetler" kalsın, bir sonraki section-title gizlensin */
 .menu-sidebar .section-title + .history-list + .section-title{ display:none !important; }
+/* =========================
+   PREMIUM LOGIN OVERLAY
+   ========================= */
+#loginOverlay{
+  background: radial-gradient(1200px 600px at 50% -10%, rgba(190,242,100,.10), transparent 55%),
+              linear-gradient(#0b0b0b, #000);
+}
+
+#loginOverlay .login-card{
+  background: rgba(20,20,20,.96);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:18px;
+  box-shadow: 0 30px 80px rgba(0,0,0,.6);
+  padding:22px;
+}
+
+#loginOverlay .brand-name{
+  font-size:22px;
+  letter-spacing:.2px;
+}
+
+#loginOverlay .auth-btn{
+  border-radius:14px;
+}
+
+#loginOverlay .auth-btn.google{
+  background:#fff;
+  color:#111;
+}
+
+#loginOverlay .auth-btn.apple{
+  background:#111;
+  color:#fff;
+  border:1px solid #333;
+}
+
+#loginOverlay .auth-btn.disabled{
+  opacity:.6;
+}
+
+#loginOverlay .login-sub{
+  margin:10px 0 14px;
+  color:#9a9a9a;
+  font-size:12px;
+  line-height:1.5;
+}
+
+#loginOverlay .trust-links{
+  margin-top:14px;
+  gap:8px;
+}
+
+#loginOverlay .trust-links a{
+  background:#111;
+  border:1px solid #2a2a2a;
+}
