@@ -250,3 +250,23 @@ button:focus, a:focus, textarea:focus{
 .menu-overlay.open ~ * {
   pointer-events: none;
 }
+/* MENU: MOBİLDE DAHA RAHAT SCROLL + YENİ SOHBET STICKY */
+.menu-sidebar {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.new-chat-btn {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 10px 18px rgba(0,0,0,.35);
+}
+
+.section-title {
+  position: sticky;
+  top: 56px; /* new-chat yüksekliği altı */
+  z-index: 1;
+  background: rgba(17,17,17,.92);
+  backdrop-filter: blur(8px);
+}
