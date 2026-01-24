@@ -1,6 +1,10 @@
 // js/chat_page.js (FINAL - Bu sayfa için özel controller)
 // Gerekenler: /js/chat.js, /js/chat_store.js, /js/config.js (STORAGE_KEY)
-
+// Login zorunlu: token yoksa index'e yolla
+const t = (localStorage.getItem("google_id_token") || "").trim();
+if (!t) {
+  window.location.href = "/index.html";
+}
 import { fetchTextResponse } from "./chat.js";
 import { ChatStore } from "./chat_store.js";
 
