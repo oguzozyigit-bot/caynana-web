@@ -1,20 +1,34 @@
-// --- BACKEND SESSION TOKEN (api/auth/google -> api token) ---
+// js/main.js (FINAL - Single Bind, Pages, Terms Gate, Delete Account via backend token)
+
+import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
+import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.js";
+import { initNotif } from "./notif.js";
+import { fetchTextResponse, addUserBubble, typeWriter } from "./chat.js";
+import { openFalPanel, closeFalPanel, handleFalPhoto } from "./fal.js";
+
+const $ = (id) => document.getElementById(id);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
 const API_TOKEN_KEY = "caynana_api_token";
 
-function getApiToken(){
-  return (localStorage.getItem(API_TOKEN_KEY) || "").trim();
-}
-function setApiToken(t){
-  if(t) localStorage.setItem(API_TOKEN_KEY, t);
-}
-function clearApiToken(){
-  localStorage.removeItem(API_TOKEN_KEY);
+function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
+function getUser() { return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
+
+function firstName(full = "") {
+  const s = String(full || "").trim();
+  if (!s) return "";
+  return s.split(/\s+/)[0];
 }
 
-/**
- * Backend Google token'ı doğrudan kabul etmiyor.
- * Önce /api/auth/google ile backend session token alıyoruz.
- */
+function termsKey(email=""){
+  return `caynana_terms_accepted_at::${String(email||"").toLowerCase().trim()}`;
+}
+
+function getApiToken(){ return (localStorage.getItem(API_TOKEN_KEY) || "").trim(); }
+function setApiToken(t){ if(t) localStorage.setItem(API_TOKEN_KEY, t); }
+function clearApiToken(){ localStorage.removeItem(API_TOKEN_KEY); }
+
+// --- backend token al (Google token -> backend token) ---
 async function ensureBackendSessionToken(){
   const existing = getApiToken();
   if(existing) return existing;
@@ -25,7 +39,11 @@ async function ensureBackendSessionToken(){
   const r = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
     method: "POST",
     headers: { "Content-Type":"application/json" },
-    body: JSON.stringify({ google_id_token: googleIdToken })
+    body: JSON.stringify({
+      google_id_token: googleIdToken,
+      id_token: googleIdToken,
+      token: googleIdToken
+    })
   });
 
   const txt = await r.text().catch(()=> "");
@@ -34,9 +52,16 @@ async function ensureBackendSessionToken(){
   let data = {};
   try { data = JSON.parse(txt || "{}"); } catch(e) {}
 
-  // olası token alan adları (backend hangisini döndürüyorsa)
   const token =
-    (data.token || data.access_token || data.api_token || data.jwt || data.session_token || "").trim();
+    (data.token ||
+     data.access_token ||
+     data.api_token ||
+     data.jwt ||
+     data.session_token ||
+     data.auth_token ||
+     data.bearer ||
+     data.accessToken ||
+     "").trim();
 
   if(!token) throw new Error("auth/google token not found in response");
   setApiToken(token);
@@ -44,7 +69,7 @@ async function ensureBackendSessionToken(){
 }
 
 // --------------------
-// GLOBAL UI HOOKS (auth.js çağırır)
+// GLOBAL HOOKS
 // --------------------
 window.enterApp = () => {
   $("loginOverlay")?.classList.remove("active");
@@ -65,7 +90,7 @@ window.showGoogleButtonFallback = (reason = "unknown") => {
 };
 
 // --------------------
-// Premium UI state
+// UI STATE
 // --------------------
 function refreshPremiumBars() {
   const u = getUser();
@@ -73,54 +98,18 @@ function refreshPremiumBars() {
   document.body.classList.toggle("is-logged", logged);
 
   const name = (u.hitap || firstName(u.fullname) || u.email || "MİSAFİR").toUpperCase();
-  const hint = $("loginHint");
-  if (hint && !logged) hint.textContent = "Servisler hazır. Google ile devam et evladım.";
 
   const yp = Number((u?.yp_percent ?? 50));
   const p = Math.max(5, Math.min(100, yp));
   if ($("ypNum")) $("ypNum").textContent = `${p}%`;
   if ($("ypFill")) $("ypFill").style.width = `${p}%`;
 
-  const profileBtn = $("profileBtn");
-  if (profileBtn) {
-    profileBtn.onclick = () => {
-      if (!logged) {
-        $("loginOverlay")?.classList.add("active");
-        if ($("loginOverlay")) $("loginOverlay").style.display = "flex";
-        return;
-      }
-      location.href = "pages/profil.html";
-    };
-  }
-
-  // logout
-  const logoutBtn = $("logoutBtn");
-  if (logoutBtn) {
-    logoutBtn.onclick = () => {
-      if (!logged) {
-        $("loginOverlay")?.classList.add("active");
-        if ($("loginOverlay")) $("loginOverlay").style.display = "flex";
-        return;
-      }
-      logout();
-    };
-  }
-
-  // delete
-  const delBtn = $("deleteAccountBtn");
-  if (delBtn) {
-    delBtn.onclick = async () => {
-      if (!logged) return alert("Önce giriş yap evladım.");
-      await deleteAccount();
-    };
-  }
-
   const bw = $("brandWrapper");
   if (bw) bw.dataset.user = logged ? name : "MİSAFİR";
 }
 
 // --------------------
-// Menu
+// MENU
 // --------------------
 const MENU_ITEMS = [
   { key: "chat",       label: "Sohbet",      sub: "Dertleş",      ico: "💬" },
@@ -129,8 +118,6 @@ const MENU_ITEMS = [
   { key: "translate",  label: "Tercüman",    sub: "Çeviri",       ico: "🌍" },
   { key: "diet",       label: "Diyet",       sub: "Plan",         ico: "🥗" },
   { key: "health",     label: "Sağlık",      sub: "Danış",        ico: "❤️" },
-  { key: "special",    label: "Özel Gün",    sub: "Hatırla",      ico: "🎉" },
-  { key: "reminder",   label: "Hatırlatıcı", sub: "Alarm",        ico: "⏰" },
   { key: "fal",        label: "Kahve Falı",  sub: "Günde 1",      ico: "☕" },
   { key: "tarot",      label: "Tarot",       sub: "Kart seç",     ico: "🃏" },
   { key: "horoscope",  label: "Burç",        sub: "Günlük",       ico: "♈" },
@@ -182,7 +169,6 @@ async function handleMenuAction(action) {
   }
 
   if (action === "fal") { openFalPanel(); return; }
-  if (action === "reminder") { location.href = "pages/hatirlatici.html"; return; }
   if (action === "tarot") { location.href = "pages/tarot.html"; return; }
   if (action === "horoscope") { location.href = "pages/burc.html"; return; }
   if (action === "dream") { location.href = "pages/ruya.html"; return; }
@@ -192,14 +178,13 @@ async function handleMenuAction(action) {
   if (action === "translate") { await sendForced("Çeviri: metni yapıştır, dilini söyle.", "trans"); return; }
   if (action === "diet") { await sendForced("Diyet: hedefin ne? kilo mu koruma mı?", "diet"); return; }
   if (action === "health") { await sendForced("Sağlık: ne şikayetin var?", "health"); return; }
-  if (action === "special") { await sendForced("Özel gün: hangi tarihleri ekleyelim?", "chat"); return; }
   if (action === "chat") { await sendForced("Anlat bakalım evladım.", "chat"); return; }
 
   location.href = `pages/${action}.html`;
 }
 
 // --------------------
-// Chat
+// CHAT
 // --------------------
 let currentMode = "chat";
 let chatHistory = [];
@@ -219,15 +204,7 @@ function setBrandState(state) {
 
 async function sendForced(text, mode="chat") {
   currentMode = mode;
-  await doSend(text, true);
-}
-
-function specialAnswerIfNeeded(txt){
-  const s = String(txt || "").trim();
-  if (/(seni\s*kim\s*(yazd[ıi]|yaratt[ıi]|yapt[ıi])|kim\s*yazd[ıi]\s*seni|kim\s*yaratt[ıi])/i.test(s)){
-    return "Benim arkamda işinde tecrübeli oldukça büyük bir yazılım kadrosu var. Beni şu yazdı ya da yarattı diye kesin isim veremem; ama akıl takımının başı Oğuz Özyiğit, onu söyleyebilirim.";
-  }
-  return null;
+  await doSend(text);
 }
 
 async function doSend(forcedText = null) {
@@ -241,22 +218,11 @@ async function doSend(forcedText = null) {
 
   chatHistory.push({ role: "user", content: txt });
 
-  const special = specialAnswerIfNeeded(txt);
-  if (special) {
-    setBrandState("botting");
-    setTimeout(() => setBrandState("talking"), 120);
-    typeWriter(special, "chat");
-    chatHistory.push({ role: "assistant", content: special });
-    setTimeout(() => setBrandState(null), 650);
-    return;
-  }
-
   setTimeout(() => setBrandState("thinking"), 120);
   const holder = document.createElement("div");
   holder.className = "bubble bot loading";
   holder.textContent = "…";
   $("chat")?.appendChild(holder);
-  holder.scrollIntoView({ behavior: "smooth", block: "end" });
 
   let reply = "Evladım bir şeyler ters gitti.";
   try {
@@ -274,7 +240,7 @@ async function doSend(forcedText = null) {
 }
 
 // --------------------
-// Fal
+// FAL
 // --------------------
 function bindFalUI(){
   $("closeFalBtn") && ($("closeFalBtn").onclick = () => closeFalPanel());
@@ -285,7 +251,9 @@ function bindFalUI(){
 }
 
 // --------------------
-// DELETE ACCOUNT (FINAL: token doğrula -> profile/set)
+// DELETE ACCOUNT (FINAL)
+/// 1) backend token al (/api/auth/google)
+/// 2) profile/set -> deleted_at
 // --------------------
 async function deleteAccount(){
   const u0 = getUser();
@@ -295,53 +263,41 @@ async function deleteAccount(){
   if(!uid) return alert("Önce giriş yap evladım.");
   if(!confirm("Hesabını silmek istiyor musun? Bu işlem geri alınamaz.")) return;
 
-  try {
-    const apiToken = await ensureBackendSessionToken();
+  try{
+    let apiToken = await ensureBackendSessionToken();
 
-    const r = await fetch(`${BASE_DOMAIN}/api/profile/set`, {
-      method: "POST",
-      headers: {
-        "Content-Type":"application/json",
-        "Authorization": `Bearer ${apiToken}`
-      },
-      body: JSON.stringify({
-        user_id: uid,
-        meta: { email, deleted_at: new Date().toISOString() }
-      })
-    });
+    const callSet = async (token) => {
+      return fetch(`${BASE_DOMAIN}/api/profile/set`, {
+        method: "POST",
+        headers: {
+          "Content-Type":"application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          user_id: uid,
+          meta: { email, deleted_at: new Date().toISOString() },
+          token, access_token: token // backend body’den okuyorsa da yakalasın
+        })
+      });
+    };
 
-    const bodyText = await r.text().catch(()=> "");
-    if(!r.ok){
-      console.error("deleteAccount failed:", r.status, bodyText);
+    let r = await callSet(apiToken);
+    let txt = await r.text().catch(()=> "");
 
-      // 401 ise token yenile 1 kez dene
-      if(r.status === 401){
-        clearApiToken();
-        const apiToken2 = await ensureBackendSessionToken();
-        const r2 = await fetch(`${BASE_DOMAIN}/api/profile/set`, {
-          method: "POST",
-          headers: {
-            "Content-Type":"application/json",
-            "Authorization": `Bearer ${apiToken2}`
-          },
-          body: JSON.stringify({
-            user_id: uid,
-            meta: { email, deleted_at: new Date().toISOString() }
-          })
-        });
-        const t2 = await r2.text().catch(()=> "");
-        if(!r2.ok){
-          console.error("deleteAccount retry failed:", r2.status, t2);
-          alert(`Hesap silinemedi. (${r2.status})`);
-          return;
-        }
-      } else {
-        alert(`Hesap silinemedi. (${r.status})`);
-        return;
-      }
+    if(!r.ok && r.status === 401){
+      clearApiToken();
+      apiToken = await ensureBackendSessionToken();
+      r = await callSet(apiToken);
+      txt = await r.text().catch(()=> "");
     }
 
-    // terms + session temizle
+    if(!r.ok){
+      console.error("deleteAccount failed:", r.status, txt);
+      alert(`Hesap silinemedi. (${r.status})`);
+      return;
+    }
+
+    // silindi: terms + session temizle
     localStorage.removeItem(termsKey(email));
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("google_id_token");
@@ -349,42 +305,17 @@ async function deleteAccount(){
 
     alert("Hesabın silindi.");
     window.location.href = "/";
-  } catch (e) {
+  }catch(e){
     console.error("deleteAccount exception:", e);
     alert("Hesap silinemedi. Lütfen tekrar dene.");
   }
 }
 
 // --------------------
-// Login / Terms
+// AUTH UI
 // --------------------
-async function waitForGsi(timeoutMs = 8000){
-  const t0 = Date.now();
-  while(Date.now() - t0 < timeoutMs){
-    if(window.google?.accounts?.id) return true;
-    await sleep(60);
-  }
-  return false;
-}
-
-async function googleLoginSmart(){
-  const hint = $("loginHint");
-  try{
-    if(window.google?.accounts?.id){
-      window.google.accounts.id.prompt((n)=>{
-        if (n?.isNotDisplayed?.() || n?.isSkippedMoment?.()){
-          if(hint) hint.textContent = "Google penceresi açılamadı. Tekrar deniyorum...";
-          handleLogin("google");
-        }
-      });
-      return;
-    }
-  }catch(e){}
-  handleLogin("google");
-}
-
 function bindAuthUI(){
-  $("googleLoginBtn") && ($("googleLoginBtn").onclick = () => googleLoginSmart());
+  $("googleLoginBtn") && ($("googleLoginBtn").onclick = () => handleLogin("google"));
 
   $("appleLoginBtn") && ($("appleLoginBtn").onclick = () => {
     alert("Evladım Apple daha hazırlanıyor… Şimdilik Google’la gel 🙂");
@@ -401,7 +332,7 @@ function bindAuthUI(){
 }
 
 // --------------------
-// Notif
+// NOTIF UI
 // --------------------
 function bindNotifUI(){
   $("notifBtn") && ($("notifBtn").onclick = () => {
@@ -419,7 +350,7 @@ function bindNotifUI(){
 }
 
 // --------------------
-// Menu UI
+// MENU UI
 // --------------------
 function bindMenuUI(){
   $("hambBtn") && ($("hambBtn").onclick = openMenu);
@@ -440,7 +371,7 @@ function bindMenuUI(){
 }
 
 // --------------------
-// Composer
+// COMPOSER
 // --------------------
 function bindComposer(){
   $("sendBtn") && ($("sendBtn").onclick = ()=> doSend());
@@ -455,13 +386,11 @@ function bindComposer(){
 }
 
 // --------------------
-// BOOT
+// BOOT (TEK YER)
 // --------------------
 document.addEventListener("DOMContentLoaded", async () => {
-  // ---- UI BASE ----
   document.body.classList.add("premium-ui");
 
-  // ---- MENÜ / UI BAĞLARI ----
   populateMenuGrid();
   bindMenuUI();
   bindNotifUI();
@@ -469,50 +398,38 @@ document.addEventListener("DOMContentLoaded", async () => {
   bindFalUI();
   bindAuthUI();
 
-  // ---- NOTIF INIT ----
   try { await initNotif({ baseUrl: BASE_DOMAIN }); } catch(e){}
 
-  // ---- GOOGLE GSI ----
-  try {
+  // GSI
+  try{
     await waitForGsi();
     $("loginHint") && ($("loginHint").textContent = "Google hazır. Devam et evladım.");
     initAuth();
-  } catch(e){
+  }catch(e){
     window.showGoogleButtonFallback?.("GSI yüklenemedi");
   }
 
-  // ---- SESSION CHECK (TEK YER) ----
+  // session
   const u = getUser();
-  const logged =
-    !!(u?.isSessionActive && u?.id && u?.provider && u?.provider !== "guest");
+  const logged = !!(u?.isSessionActive && u?.id && u?.provider && u?.provider !== "guest");
 
   if (logged) {
-    // login overlay kapat
     $("loginOverlay")?.classList.remove("active");
     $("loginOverlay") && ($("loginOverlay").style.display = "none");
-
-    // ilk girişte sözleşme
-    if (!u.terms_accepted_at) {
-      window.showTermsOverlay?.();
-    }
+    if (!u.terms_accepted_at) window.showTermsOverlay?.();
   } else {
-    // login overlay aç
     $("loginOverlay")?.classList.add("active");
     $("loginOverlay") && ($("loginOverlay").style.display = "flex");
   }
 
-  // ---- HEADER / MENU BUTONLARI (TEK BIND) ----
+  // tek bind: logout + delete
   $("logoutBtn") && ($("logoutBtn").onclick = () => logout());
-
   $("deleteAccountBtn") && ($("deleteAccountBtn").onclick = async () => {
     const u2 = getUser();
-    const okLogged =
-      !!(u2?.isSessionActive && u2?.id && u2?.provider && u2?.provider !== "guest");
-    if (!okLogged) return alert("Önce giriş yap evladım.");
+    const okLogged = !!(u2?.isSessionActive && u2?.id && u2?.provider && u2?.provider !== "guest");
+    if(!okLogged) return alert("Önce giriş yap evladım.");
     await deleteAccount();
   });
 
-  // ---- ÜST BAR / PREMIUM ----
   refreshPremiumBars();
 });
-
