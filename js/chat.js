@@ -1,4 +1,4 @@
-// js/chat.js (FINAL - Profile-first memory + name capture + history limit + login required + CHAT_ID FIX)
+// js/chat.js (FINAL - Profile-first memory + name capture + history limit + login required + CHAT_ID FIX + USER-SCOPED CHAT_ID)
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -10,6 +10,7 @@ import { STORAGE_KEY } from "./config.js";
   - Profil yoksa user "adım/ismim ..." diyorsa yakala, profile’a yaz
   - Backend’e son 30 mesaj gider
   - chat_id localStorage ile taşınır (SOHBET HAFIZASI)
+  - chat_id kullanıcıya özel saklanır (caynana_chat_id:<user_id>)
 */
 
 const SAFETY_PATTERNS = {
@@ -34,6 +35,24 @@ function firstNameFromFullname(full = "") {
   const s = String(full || "").trim();
   if (!s) return "";
   return s.split(/\s+/)[0];
+}
+
+// --------------------
+// CHAT_ID (USER SCOPED) - YENİ
+// --------------------
+function getChatKeyForUser(userId) {
+  const u = String(userId || "").trim().toLowerCase();
+  return u ? `caynana_chat_id:${u}` : "caynana_chat_id";
+}
+function readChatId(userId) {
+  const key = getChatKeyForUser(userId);
+  const v = (localStorage.getItem(key) || "").trim();
+  if (!v || v === "null" || v === "undefined") return null;
+  return v;
+}
+function writeChatId(userId, chatId) {
+  const key = getChatKeyForUser(userId);
+  if (chatId) localStorage.setItem(key, String(chatId));
 }
 
 // --------------------
@@ -143,7 +162,21 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
   maybePersistNameFromUserMessage(message);
 
   const profile = getProfile();
-  const userId = (profile?.email || profile?.id || "").trim() || "guest";
+
+  // ✅ Guest fallback KALDIRILDI (EN KRİTİK)
+  const userId =
+    String(profile?.email || "").trim() ||
+    String(profile?.user_id || "").trim() ||
+    String(profile?.id || "").trim() ||
+    "";
+
+  if (!userId) {
+    return {
+      text: "Profilde user_id yok. Çıkış yapıp tekrar giriş yapman lazım evladım.",
+      error: true,
+      code: "NO_USER_ID"
+    };
+  }
 
   const cleanHistory = limitHistory(normalizeHistory(history), 30);
 
@@ -172,7 +205,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     text: message,
     message: message,
     user_id: userId,
-    chat_id: localStorage.getItem("caynana_chat_id"), // ✅ SOHBET HAFIZASI
+    chat_id: readChatId(userId), // ✅ SOHBET HAFIZASI (KULLANICIYA ÖZEL)
     mode,
     profile: memoryProfile,
     system_hint: displayName
@@ -200,9 +233,9 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     let data = {};
     try { data = await res.json(); } catch {}
 
-    // ✅ chat_id’yi sakla (EN KRİTİK SATIR)
+    // ✅ chat_id’yi sakla (KULLANICIYA ÖZEL)
     if (data.chat_id) {
-      localStorage.setItem("caynana_chat_id", data.chat_id);
+      writeChatId(userId, data.chat_id);
     }
 
     const out = pickAssistantText(data);
