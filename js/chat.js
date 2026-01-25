@@ -2,6 +2,7 @@
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
+import { ChatStore } from "./chat_store.js";
 
 /*
   KİLİT DAVRANIŞ:
@@ -27,8 +28,11 @@ function setProfile(p) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(p || {}));
 }
 
+// ✅ login kontrolü: backend token varsa da geçerli say
 function hasLoginToken() {
-  return !!(localStorage.getItem("google_id_token") || "").trim();
+  const apiToken = (localStorage.getItem("caynana_api_token") || "").trim();
+  const google = (localStorage.getItem("google_id_token") || "").trim();
+  return !!(apiToken || google);
 }
 
 function firstNameFromFullname(full = "") {
@@ -201,18 +205,24 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     isProfileCompleted: !!profile.isProfileCompleted
   };
 
+  // ✅ UI sohbeti değişince backend'e de aynı server chat_id ile devam et:
+  // 1) önce ChatStore'da mevcut server_id varsa onu kullan
+  // 2) yoksa user-scoped localStorage chat_id'ye düş
+  const serverChatId = (ChatStore.getCurrentServerId?.() || null);
+
   const payload = {
     text: message,
     message: message,
     user_id: userId,
-    chat_id: readChatId(userId), // ✅ SOHBET HAFIZASI (KULLANICIYA ÖZEL)
+    chat_id: (serverChatId || readChatId(userId)), // ✅ SOHBET HAFIZASI (KULLANICIYA ÖZEL + MENU SENKRONU)
     mode,
     profile: memoryProfile,
     system_hint: displayName
       ? `Kullanıcıya "${displayName}" diye hitap et.`
       : `Profil doluysa profili öncelikle kullan.`,
     web: "auto",
-    enable_web_search: true
+    enable_web_search: true,
+    history: cleanHistory // ✅ zaten hesaplıyorduk, gönderiyoruz (eksiltme yok, iyileştirme)
   };
 
   const attempt = async () => {
@@ -233,9 +243,10 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     let data = {};
     try { data = await res.json(); } catch {}
 
-    // ✅ chat_id’yi sakla (KULLANICIYA ÖZEL)
+    // ✅ chat_id’yi sakla (KULLANICIYA ÖZEL) + ChatStore server_id senkronu
     if (data.chat_id) {
       writeChatId(userId, data.chat_id);
+      ChatStore.setServerId?.(data.chat_id);
     }
 
     const out = pickAssistantText(data);
