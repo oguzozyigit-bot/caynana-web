@@ -1,4 +1,6 @@
 // js/chat.js (FINAL - Profile-first memory + name capture + history limit + login required + CHAT_ID FIX + USER-SCOPED CHAT_ID)
+// ✅ FIX: payload.history artık ChatStore'dan geliyor (balık hafıza biter)
+// ✅ FIX: user/assistant mesajları ChatStore'a ekleniyor (her request'te son 30 mesaj gider)
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -9,7 +11,7 @@ import { ChatStore } from "./chat_store.js";
   - Guest yok (google_id_token yoksa cevap yok)
   - Profil doluysa (hitap/fullname) öncelikle oradan hitap
   - Profil yoksa user "adım/ismim ..." diyorsa yakala, profile’a yaz
-  - Backend’e son 30 mesaj gider
+  - Backend’e son 30 mesaj gider (✅ artık ChatStore kaynaklı)
   - chat_id localStorage ile taşınır (SOHBET HAFIZASI)
   - chat_id kullanıcıya özel saklanır (caynana_chat_id:<user_id>)
 */
@@ -42,7 +44,7 @@ function firstNameFromFullname(full = "") {
 }
 
 // --------------------
-// CHAT_ID (USER SCOPED) - YENİ
+// CHAT_ID (USER SCOPED)
 // --------------------
 function getChatKeyForUser(userId) {
   const u = String(userId || "").trim().toLowerCase();
@@ -91,33 +93,6 @@ function maybePersistNameFromUserMessage(userMessage) {
 }
 
 // --------------------
-// HISTORY NORMALIZE
-// --------------------
-function normalizeHistory(history = []) {
-  if (!Array.isArray(history)) return [];
-  return history
-    .map((h) => {
-      if (!h || typeof h !== "object") return null;
-
-      const roleRaw = String(h.role || h.type || "").toLowerCase();
-      const role =
-        roleRaw === "assistant" || roleRaw === "bot" ? "assistant" :
-        roleRaw === "user" ? "user" :
-        null;
-
-      const content = String(h.content ?? h.text ?? h.message ?? "").trim();
-      if (!role || !content) return null;
-      return { role, content };
-    })
-    .filter(Boolean);
-}
-
-function limitHistory(history, maxItems = 30) {
-  if (history.length <= maxItems) return history;
-  return history.slice(history.length - maxItems);
-}
-
-// --------------------
 // RESPONSE PICKER
 // --------------------
 function pickAssistantText(data) {
@@ -141,13 +116,10 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
   const message = String(msg || "").trim();
   if (!message) return { text: "", error: true };
 
+  // mode paramını koru (UI eski çağrıları bozmasın)
   let mode = "chat";
-  let history = [];
-  if (Array.isArray(modeOrHistory)) {
-    history = modeOrHistory;
-  } else {
+  if (!Array.isArray(modeOrHistory)) {
     mode = String(modeOrHistory || "chat").trim() || "chat";
-    history = maybeHistory;
   }
 
   if (!hasLoginToken()) {
@@ -182,8 +154,6 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     };
   }
 
-  const cleanHistory = limitHistory(normalizeHistory(history), 30);
-
   const displayName =
     String(profile.hitap || "").trim() ||
     firstNameFromFullname(profile.fullname || "") ||
@@ -205,6 +175,29 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     isProfileCompleted: !!profile.isProfileCompleted
   };
 
+  // ✅ 1) USER mesajını store'a ekle (history bununla güncellenecek)
+  try { ChatStore.add?.("user", message); } catch {}
+
+  // ✅ 2) Backend'e gidecek history HER ZAMAN ChatStore'dan (balık hafıza biter)
+  const historyForApi = (() => {
+    try {
+      if (typeof ChatStore.getLastForApi === "function") return ChatStore.getLastForApi(30);
+    } catch {}
+    // fallback: eski parametreleri bozmamak için (ama asıl hedef ChatStore)
+    try {
+      const raw = Array.isArray(modeOrHistory) ? modeOrHistory : (Array.isArray(maybeHistory) ? maybeHistory : []);
+      return raw
+        .map(h => ({
+          role: String(h?.role || "").toLowerCase(),
+          content: String(h?.content ?? h?.text ?? h?.message ?? "").trim()
+        }))
+        .filter(x => (x.role === "user" || x.role === "assistant") && x.content)
+        .slice(-30);
+    } catch {
+      return [];
+    }
+  })();
+
   // ✅ UI sohbeti değişince backend'e de aynı server chat_id ile devam et:
   // 1) önce ChatStore'da mevcut server_id varsa onu kullan
   // 2) yoksa user-scoped localStorage chat_id'ye düş
@@ -222,7 +215,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
       : `Profil doluysa profili öncelikle kullan.`,
     web: "auto",
     enable_web_search: true,
-    history: cleanHistory // ✅ zaten hesaplıyorduk, gönderiyoruz (eksiltme yok, iyileştirme)
+    history: historyForApi // ✅ KİLİT SATIR: artık store’dan gidiyor
   };
 
   const attempt = async () => {
@@ -249,8 +242,12 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
       ChatStore.setServerId?.(data.chat_id);
     }
 
-    const out = pickAssistantText(data);
-    return { text: out || "Bir aksilik oldu evladım." };
+    const out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
+
+    // ✅ 3) ASSISTANT cevabını store'a ekle
+    try { ChatStore.add?.("assistant", out); } catch {}
+
+    return { text: out };
   };
 
   try {
