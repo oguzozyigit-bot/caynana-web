@@ -1,9 +1,22 @@
-// js/auth.js (FINAL - Google GSI + JWT base64url decode + terms kalıcı + backend token cache)
+// js/auth.js (FINAL - Google GSI + JWT base64url UTF-8 decode + terms kalıcı + backend token cache)
+// ✅ FIX: FedCM AbortError (prompt spam / çift init) -> kilit + throttle + cancel
+// ✅ FIX: Türkçe karakter bozulması -> JWT payload UTF-8 decode (TextDecoder)
+// ✅ FIX: ID gmail değil -> 2 harf + 8 rakam random, ardışık yok (kalıcı)
 
 import { GOOGLE_CLIENT_ID, STORAGE_KEY, BASE_DOMAIN } from "./config.js";
 
 const API_TOKEN_KEY = "caynana_api_token";
+const STABLE_ID_KEY = "caynana_stable_id_v1";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+function getAuthState(){
+  if(!window.__CAYNANA_AUTH__) window.__CAYNANA_AUTH__ = {
+    inited: false,
+    promptInFlight: false,
+    lastPromptAt: 0
+  };
+  return window.__CAYNANA_AUTH__;
+}
 
 export async function waitForGsi(timeoutMs = 8000){
   const t0 = Date.now();
@@ -14,18 +27,28 @@ export async function waitForGsi(timeoutMs = 8000){
   return false;
 }
 
-// --- Base64URL JWT decode (FIX) ---
+// ---------------------------
+// ✅ JWT decode (UTF-8 correct)
+// ---------------------------
+function base64UrlToBytes(base64Url){
+  let b64 = String(base64Url || "").replace(/-/g, "+").replace(/_/g, "/");
+  const pad = b64.length % 4;
+  if (pad) b64 += "=".repeat(4 - pad);
+
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
 function parseJwt(idToken = ""){
   try{
     const parts = String(idToken).split(".");
     if(parts.length < 2) return null;
 
-    let base64Url = parts[1];
-    base64Url = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const pad = base64Url.length % 4;
-    if(pad) base64Url += "=".repeat(4 - pad);
-
-    return JSON.parse(atob(base64Url));
+    const bytes = base64UrlToBytes(parts[1]);
+    const json = new TextDecoder("utf-8", { fatal:false }).decode(bytes);
+    return JSON.parse(json);
   }catch(e){
     console.error("parseJwt failed:", e);
     return null;
@@ -43,7 +66,58 @@ function clearApiToken(){
   localStorage.removeItem(API_TOKEN_KEY);
 }
 
+// ---------------------------
+// ✅ Random ID: 2 harf + 8 rakam (ardışık yok)
+// ---------------------------
+function randInt(min, max){
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function pickLetter(except){
+  const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let ch = "";
+  for(let t=0;t<50;t++){
+    ch = A[randInt(0, A.length-1)];
+    if(ch !== except) return ch;
+  }
+  return ch || "X";
+}
+
+function buildNonSequentialDigits(len=8){
+  const digits = [];
+  for(let i=0;i<len;i++){
+    let d = randInt(0,9);
+    for(let t=0;t<120;t++){
+      const prev = digits[i-1];
+      const prev2 = digits[i-2];
+
+      const ok1 = (prev === undefined) ? true : (d !== prev && Math.abs(d - prev) !== 1);
+      const ok2 = (prev2 === undefined) ? true : (d !== prev2);
+
+      if(ok1 && ok2) break;
+      d = randInt(0,9);
+    }
+    digits.push(d);
+  }
+  return digits.join("");
+}
+
+function getOrCreateStableId(){
+  const existing = (localStorage.getItem(STABLE_ID_KEY) || "").trim();
+  if(existing) return existing;
+
+  const a = pickLetter("");
+  const b = pickLetter(a);
+  const nums = buildNonSequentialDigits(8);
+  const id = `${a}${b}${nums}`;
+
+  localStorage.setItem(STABLE_ID_KEY, id);
+  return id;
+}
+
+// ---------------------------
 // Backend session token al (Google id_token -> backend token)
+// ---------------------------
 async function fetchBackendToken(googleIdToken){
   const r = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
     method: "POST",
@@ -61,7 +135,6 @@ async function fetchBackendToken(googleIdToken){
   let data = {};
   try { data = JSON.parse(txt || "{}"); } catch(e) {}
 
-  // olası alan adları
   const token =
     (data.token ||
      data.access_token ||
@@ -78,7 +151,9 @@ async function fetchBackendToken(googleIdToken){
   return token;
 }
 
+// ---------------------------
 // Google callback
+// ---------------------------
 async function handleGoogleResponse(res){
   try{
     const idToken = (res?.credential || "").trim();
@@ -95,12 +170,24 @@ async function handleGoogleResponse(res){
     const email = String(payload.email).toLowerCase().trim();
     const savedTermsAt = localStorage.getItem(termsKey(email)) || null;
 
+    // ✅ ID gmail değil: kalıcı random ID
+    const stableId = getOrCreateStableId();
+
     // user (main.js ile uyumlu)
     const user = {
-      id: email,
+      id: stableId,
+      user_id: stableId,
       email: email,
+
+      // ✅ Türkçe karakter bozulmaz (UTF-8 decode fix)
       fullname: payload.name || "",
+      name: payload.name || "",
+      display_name: payload.name || "",
+
+      // ✅ profil sayfası picture/avatar arıyor olabilir
+      picture: payload.picture || "",
       avatar: payload.picture || "",
+
       provider: "google",
       isSessionActive: true,
       lastLoginAt: new Date().toISOString(),
@@ -114,11 +201,11 @@ async function handleGoogleResponse(res){
     try{
       await fetchBackendToken(idToken);
     }catch(e){
-      // Token alınamazsa login yine olur; sadece silme/updateside sorun olur
       console.warn("backend token alınamadı:", e);
       clearApiToken();
     }
 
+    // ✅ reload (mevcut akışın)
     window.location.reload();
   }catch(e){
     console.error("handleGoogleResponse error:", e);
@@ -126,27 +213,75 @@ async function handleGoogleResponse(res){
   }
 }
 
+// ---------------------------
+// initAuth (tek sefer, FedCM uyumlu)
+// ---------------------------
 export function initAuth() {
+  const st = getAuthState();
+  if(st.inited) return;
+
   if (!window.google?.accounts?.id) return;
+  if(!GOOGLE_CLIENT_ID){
+    console.error("GOOGLE_CLIENT_ID missing in config.js");
+    return;
+  }
+
+  st.inited = true;
 
   window.google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
     callback: handleGoogleResponse,
-    auto_select: false
+    auto_select: false,
+
+    // ✅ FedCM stabilitesi
+    use_fedcm_for_prompt: true,
+    cancel_on_tap_outside: false
   });
 }
 
+// ---------------------------
+// handleLogin (prompt spam yok, AbortError önleme)
+// ---------------------------
 export function handleLogin(provider) {
   if(provider === "google") {
-    if(window.google?.accounts?.id){
-      window.google.accounts.id.prompt((n)=>{
-        if(n?.isNotDisplayed?.() || n?.isSkippedMoment?.()){
-          window.showGoogleButtonFallback?.("prompt not displayed");
-        }
-      });
-    } else {
+    if(!window.google?.accounts?.id){
       alert("Google servisi yüklenemedi (GSI).");
+      return;
     }
+
+    // init garanti
+    initAuth();
+
+    const st = getAuthState();
+    const now = Date.now();
+
+    // ✅ 1) spam engeli
+    if(st.promptInFlight) return;
+    if(now - (st.lastPromptAt || 0) < 1200) return;
+
+    st.promptInFlight = true;
+    st.lastPromptAt = now;
+
+    try{
+      // ✅ 2) önceki prompt kalıntısını temizle (varsa)
+      try{ window.google.accounts.id.cancel?.(); }catch(e){}
+
+      // ✅ 3) prompt tek sefer (moment kontrolü)
+      window.google.accounts.id.prompt((n)=>{
+        try{
+          if(n?.isNotDisplayed?.() || n?.isSkippedMoment?.() || n?.isDismissedMoment?.()){
+            window.showGoogleButtonFallback?.("prompt not displayed");
+          }
+        }catch(e){}
+        // kilidi bırak
+        setTimeout(()=>{ st.promptInFlight = false; }, 600);
+      });
+    }catch(e){
+      console.error("google prompt error:", e);
+      window.showGoogleButtonFallback?.("prompt error");
+      st.promptInFlight = false;
+    }
+
   } else {
     alert("Apple girişi yakında evladım.");
   }
@@ -154,7 +289,7 @@ export function handleLogin(provider) {
 
 export async function acceptTerms() {
   const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-  const email = String(user?.email || user?.id || "").toLowerCase().trim();
+  const email = String(user?.email || "").toLowerCase().trim();
   if(!email) return false;
 
   const ts = new Date().toISOString();
@@ -168,10 +303,10 @@ export async function acceptTerms() {
 export function logout() {
   if(confirm("Gidiyor musun evladım?")){
     try{ window.google?.accounts?.id?.disableAutoSelect?.(); }catch(e){}
-    // termsKey KALIR (çıkış sonrası tekrar sözleşme sormasın)
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("google_id_token");
     localStorage.removeItem(API_TOKEN_KEY);
+    // stable id kalsın (istersen sileriz ama genelde kalsın)
     window.location.reload();
   }
 }
