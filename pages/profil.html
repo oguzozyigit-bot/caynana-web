@@ -65,11 +65,32 @@
   }
   .hero-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .hero-title{ font-weight:900; font-size:13px; letter-spacing:.2px; }
+
+  /* yüzde chip */
   .hero-badge{
     font-size:11px; font-weight:900; padding:6px 10px; border-radius:999px;
     border:1px solid rgba(255,255,255,.10);
     background:rgba(0,0,0,.35);
   }
+
+  /* durum chip (low/ok/great) */
+  .hero-chip{
+    margin-top:10px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-size:11px;
+    font-weight:900;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(0,0,0,.28);
+    width:max-content;
+  }
+  .hero-chip.low{ border-color: rgba(255,179,0,.35); color:#ffb300; }
+  .hero-chip.ok{ border-color: rgba(190,242,100,.35); color:#bef264; }
+  .hero-chip.great{ border-color: rgba(34,197,94,.35); color:#22c55e; }
+
   .hero-sub{ margin-top:8px; font-size:12px; color:rgba(255,255,255,.72); line-height:1.35; }
   .bar{
     margin-top:12px;
@@ -201,16 +222,21 @@
 
       <div class="hero-top">
         <div class="hero-title">Kaynana Samimiyet Göstergesi</div>
-        <div class="hero-badge" id="heroBadge">%10</div>
+        <div class="hero-badge" id="heroPct">%10</div>
       </div>
+
       <div class="hero-sub" id="heroSub">
         Biraz daha doldur, Kaynana “gelinim/damadım” moduna geçsin 😄
       </div>
-      <div class="bar"><span></span></div>
+
+      <div class="bar"><span id="heroBar"></span></div>
+
       <div class="hero-foot">
         <div id="heroHint">Doldurdukça yeşile döner.</div>
-        <div id="heroPts">+0 / +5</div>
+        <div id="heroPts">Kaynana Samimiyeti: 10%</div>
       </div>
+
+      <div class="hero-chip low" id="heroChip">+1 yaklaştın</div>
     </div>
 
     <div class="card">
@@ -456,6 +482,7 @@
   const PROFILE_KEY = "caynana_profile_v2";
   const PROFILE_BONUS_KEY = "caynana_profile_bonus_v1";
   const GENERATED_IDS_KEY = "caynana_generated_ids_v1";
+
   const pad2 = (n) => String(n).padStart(2, "0");
 
   const TR_CITIES_81 = [
@@ -469,21 +496,6 @@
     "Kırıkkale","Batman","Şırnak","Bartın","Ardahan","Iğdır","Yalova","Karabük","Kilis","Osmaniye","Düzce"
   ];
 
-  /* ✅ Karakter bozulması düzelt (OÄŸuz -> Oğuz) */
-  function fixMojibakeTR(s){
-    s = String(s ?? "");
-    const looksBroken = /Ã.|Â.|Ä.|Å.|Ø.|Ð.|Þ.|Ý.|Ã¶|Ã¼|ÄŸ|ÅŸ|Ä±|Ä°/i.test(s);
-    if(!looksBroken) return s;
-    try{
-      const bytes = Uint8Array.from(s, ch => ch.charCodeAt(0));
-      const fixed = new TextDecoder("utf-8", { fatal:false }).decode(bytes);
-      if(/Ã.|Â.|Ä.|Å./.test(fixed)) return s;
-      return fixed;
-    }catch(e){
-      try{ return decodeURIComponent(escape(s)); }catch(e2){ return s; }
-    }
-  }
-
   function toast(msg){
     const t = document.getElementById("toast");
     if(!t) return;
@@ -494,6 +506,8 @@
   }
 
   function norm(v){ return String(v || "").trim(); }
+
+  // ---- ID generator (2 harf + 8 rakam, ardışık yok) ----
   function randInt(min, max){ return Math.floor(Math.random() * (max - min + 1)) + min; }
   function pickLetter(except){
     const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -550,18 +564,22 @@
 
   function ensureIdentity(user){
     if(!user || typeof user !== "object") user = {};
+
+    // normalize
     user.id = norm(user.id);
-    user.email = norm(user.email);
     user.user_id = norm(user.user_id);
+    user.email = norm(user.email);
 
-    if(!user.id) user.id = generateStableRandomId();
-    if(!user.user_id) user.user_id = user.email || user.id;
+    // id garanti
+    if(!user.id && user.user_id) user.id = user.user_id;
+    if(!user.user_id && user.id) user.user_id = user.id;
 
-    // isim varsa düzelt
-    const nm = fixMojibakeTR(user.fullname || user.name || user.display_name || "");
-    if(nm && nm !== (user.fullname || user.name || user.display_name || "")){
-      user.fullname = nm; user.name = nm; user.display_name = nm;
+    if(!user.id){
+      const newId = generateStableRandomId();
+      user.id = newId;
+      user.user_id = user.user_id || newId;
     }
+
     return user;
   }
 
@@ -627,6 +645,7 @@
     s.dataset.filled = "1";
   }
 
+  // --- dm helpers ---
   function isValidDM(d, m){
     const dd = parseInt(d,10);
     const mm = parseInt(m,10);
@@ -654,7 +673,7 @@
     }
   }
 
-  /* ✅ Yıl/Ay/Gün akışı */
+  // ✅ Yıl/Ay/Gün akışı
   function refreshBirthFlow(){
     const y = document.getElementById("yearSelect")?.value || "";
     const m = document.getElementById("monthSelect")?.value || "";
@@ -728,7 +747,7 @@
     }
   }
 
-  /* ✅ Progress hesap */
+  // -------------------- Progress --------------------
   function readMetaDraft(){
     const gender = document.getElementById('formGender')?.value || "";
     const bd = getBirthDate().value || "";
@@ -758,7 +777,6 @@
       period_length_days: document.getElementById('periodLength')?.value || ""
     };
 
-    // children draft read
     const cc = parseInt(meta.child_count || "0", 10) || 0;
     const maxKids = Math.min(cc, 5);
     const kids = [];
@@ -782,7 +800,6 @@
       !!String(meta.birth_date||"").trim() &&
       !!String(meta.region||"").trim() &&
       !!String(meta.birth_city||"").trim();
-
     if(!baseOk) return false;
 
     if(String(meta.marital_status||"") === "Evli"){
@@ -808,8 +825,6 @@
   }
 
   function computeCompletion(meta){
-    // “kafa karışmasın” diye basit, anlaşılır puanlama
-    // Temel 6 alan: her biri 12 puan = 72
     let score = 0;
     const add = (ok, pts)=>{ if(ok) score += pts; };
 
@@ -820,36 +835,31 @@
     add(!!String(meta.region||"").trim(), 12);
     add(!!String(meta.birth_city||"").trim(), 12);
 
-    // Evli ekstra: spouse + any day (maks 14)
     if(String(meta.marital_status||"") === "Evli"){
       add(!!String(meta.spouse_name||"").trim(), 7);
       const anyDay = !!(meta.spouse_bday_dm || meta.wedding_dm || meta.engagement_dm || meta.met_dm);
       add(anyDay, 7);
     }else{
-      // bekar seçtiyse küçük artı (seçim yaptı)
       add(!!String(meta.marital_status||"").trim(), 6);
     }
 
-    // Çocuk: sayısı>0 ise en az bir veri (maks 8)
     const cc = parseInt(meta.child_count || "0", 10) || 0;
     if(cc > 0){
       const kids = Array.isArray(meta.children) ? meta.children : [];
       const hasKidData = kids.some(k => (k?.name && String(k.name).trim()) || (k?.bday_dm && String(k.bday_dm).trim()));
       add(hasKidData, 8);
     }else{
-      add(true, 4); // çocuk yok seçimi
+      add(true, 4);
     }
 
-    // Regl takip: açıksa 3 alan (maks 10)
     if(meta.period_tracking_enabled){
       add(!!String(meta.last_period_start||"").trim(), 4);
       add(!!String(meta.cycle_length_days||"").trim(), 3);
       add(!!String(meta.period_length_days||"").trim(), 3);
     }else{
-      add(true, 4); // kapalı seçimi
+      add(true, 4);
     }
 
-    // takım: ufak bonus (maks 4)
     add(!!String(meta.team||"").trim(), 4);
 
     score = Math.max(0, Math.min(100, Math.round(score)));
@@ -857,12 +867,14 @@
   }
 
   function renderProgress(){
+    const u = getUser();
     const meta = readMetaDraft();
     const pct = computeCompletion(meta);
+
     document.documentElement.style.setProperty("--p", String(pct));
 
-    const badge = document.getElementById("heroBadge");
-    if(badge) badge.textContent = `%${pct}`;
+    const heroPct = document.getElementById("heroPct");
+    if(heroPct) heroPct.textContent = `%${pct}`;
 
     const sub = document.getElementById("heroSub");
     if(sub){
@@ -873,70 +885,392 @@
     }
 
     const pts = document.getElementById("heroPts");
-if(pts){
-  // “Samimiyet” göstergesi: STORAGE_KEY içindeki yp_percent varsa onu baz al,
-  // yoksa completion yüzdesinden türet (fallback)
-  let base = 0;
-  try{
-    const u = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    base = Number(u?.yp_percent ?? 0);
-  }catch(e){ base = 0; }
+    if(pts){
+      const base = Number(u?.yp_percent ?? 10);
+      const shown = base > 0 ? base : pct;
+      pts.textContent = `Kaynana Samimiyeti: ${Math.round(shown)}%`;
+    }
 
-  const shown = base > 0 ? base : pct; // fallback: completion
+    const chip = document.getElementById("heroChip");
+    if(chip){
+      chip.classList.remove("low","ok","great");
+      if(pct < 35){
+        chip.textContent = "+1 yaklaştın";
+        chip.classList.add("low");
+      }else if(pct < 70){
+        chip.textContent = "+1 daha!";
+        chip.classList.add("ok");
+      }else if(pct < 95){
+        chip.textContent = "Son düzlüktesin";
+        chip.classList.add("great");
+      }else{
+        chip.textContent = "Tebrikler! +5 hazır 🧿";
+        chip.classList.add("great");
+      }
+    }
 
-  // metin
-  pts.textContent = `Kaynana Samimiyeti: ${Math.round(shown)}%`;
-
-  // küçük rozet: doldurdukça +1 yaklaştın / bitince tebrik
-  const badge = document.getElementById("heroBadge");
-  if(badge){
-    if(pct < 35){
-      badge.textContent = "+1 yaklaştın";
-      badge.classList.remove("ok","great");
-      badge.classList.add("low");
-    }else if(pct < 70){
-      badge.textContent = "+1 daha!";
-      badge.classList.remove("low","great");
-      badge.classList.add("ok");
-    }else if(pct < 95){
-      badge.textContent = "Son düzlüktesin";
-      badge.classList.remove("low","ok");
-      badge.classList.add("great");
-    }else{
-      badge.textContent = "Tebrikler! +5 hazır 🧿";
-      badge.classList.remove("low","ok");
-      badge.classList.add("great");
+    // bar rengi
+    const bar = document.getElementById("heroBar");
+    if(bar){
+      const hue = Math.round((Math.max(0, Math.min(100, pct)) / 100) * 120);
+      bar.style.background = `linear-gradient(90deg, hsl(${hue}, 85%, 55%), hsl(${Math.min(120, hue+10)}, 85%, 45%))`;
+      bar.style.boxShadow = `0 10px 28px hsla(${hue}, 85%, 55%, .22)`;
     }
   }
 
-  // progress bar rengi: % arttıkça yeşile kaydır (premium hissi)
-  const bar = document.getElementById("heroBar");
-  if(bar){
-    bar.style.width = `${Math.max(0, Math.min(100, pct))}%`;
-    // kırmızı(0) -> sarı(55) -> yeşil(120)
-    const hue = Math.round((Math.max(0, Math.min(100, pct)) / 100) * 120);
-    bar.style.background = `linear-gradient(90deg, hsl(${hue}, 85%, 55%), hsl(${Math.min(120, hue+10)}, 85%, 45%))`;
-    bar.style.boxShadow = `0 10px 28px hsla(${hue}, 85%, 55%, .22)`;
+  // -------------------- UI toggles --------------------
+  window.goBack = function(){
+    if(window.history.length > 1) window.history.back();
+    else window.location.href = "../index.html";
+  };
+
+  window.copyID = async function(){
+    const t = document.getElementById('formID')?.innerText || "";
+    const ok = await safeCopy(t);
+    toast(ok ? "ID kopyalandı" : "Kopyalanamadı");
+  };
+
+  window.toggleMarriedFields = function(){
+    const val = document.getElementById('formStatus')?.value || "";
+    document.getElementById('marriedFields')?.classList.toggle('show', val === 'Evli');
+    renderProgress();
+  };
+
+  window.toggleGenderFields = function(){
+    const g = document.getElementById('formGender')?.value || "";
+    document.getElementById('periodFields')?.classList.toggle('show', g === 'Kadın');
+    renderProgress();
+  };
+
+  window.toggleChildFields = function(){
+    const val = parseInt(document.getElementById('formChildCount')?.value,10) || 0;
+    const div = document.getElementById('childFields');
+    const container = document.getElementById('childrenContainer');
+    if(!div || !container) return;
+
+    if(val <= 0){
+      div.classList.remove('show');
+      container.innerHTML = "";
+      renderProgress();
+      return;
+    }
+    div.classList.add('show');
+
+    const count = Math.min(val, 5);
+    container.innerHTML = "";
+    for(let i=1;i<=count;i++){
+      const box = document.createElement('div');
+      box.className = "child-card";
+
+      box.innerHTML = `
+        <div class="mini">Çocuk ${i}</div>
+
+        <div class="form-group" style="margin:0;">
+          <label>Ad</label>
+          <input type="text" id="child_name_${i}" placeholder="Örn: Ali">
+        </div>
+
+        <div class="form-group" style="margin:0;">
+          <label>Doğum Günü (Gün / Ay)</label>
+          <div class="date-row">
+            <select id="child_day_${i}"><option value="">G</option></select>
+            <select id="child_month_${i}">
+              <option value="">Ay</option>
+              <option value="01">Oca</option><option value="02">Şub</option><option value="03">Mar</option>
+              <option value="04">Nis</option><option value="05">May</option><option value="06">Haz</option>
+              <option value="07">Tem</option><option value="08">Ağu</option><option value="09">Eyl</option>
+              <option value="10">Eki</option><option value="11">Kas</option><option value="12">Ara</option>
+            </select>
+          </div>
+        </div>
+      `;
+      container.appendChild(box);
+
+      fillDayOptions(`child_day_${i}`, 31);
+
+      // input change -> progress
+      box.querySelectorAll("input,select").forEach(el=>{
+        el.addEventListener("input", renderProgress);
+        el.addEventListener("change", renderProgress);
+      });
+    }
+    renderProgress();
+  };
+
+  // -------------------- Fill form from meta --------------------
+  function fillFormFields(meta){
+    if(!meta || typeof meta !== "object") return;
+
+    if(meta.hitap) document.getElementById('formHitap').value = meta.hitap;
+    if(meta.bot_name) document.getElementById('formBotName').value = meta.bot_name;
+
+    if(meta.gender){
+      document.getElementById('formGender').value = meta.gender;
+      window.toggleGenderFields();
+    }
+    if(meta.marital_status){
+      document.getElementById('formStatus').value = meta.marital_status;
+      window.toggleMarriedFields();
+    }
+
+    if(meta.region) document.getElementById('formCity').value = meta.region;
+    if(meta.birth_city) document.getElementById('formBirthCity').value = meta.birth_city;
+    if(meta.team) document.getElementById('formTeam').value = meta.team;
+
+    if(meta.birth_date) setBirthDate(meta.birth_date);
+
+    if(meta.spouse_name) document.getElementById('formSpouse').value = meta.spouse_name;
+    setDM("spouseBDay","spouseBMonth", meta.spouse_bday_dm);
+    setDM("wDay","wMonth", meta.wedding_dm);
+    setDM("eDay","eMonth", meta.engagement_dm);
+    setDM("mDay","mMonth", meta.met_dm);
+
+    if(meta.child_count !== undefined && meta.child_count !== null){
+      document.getElementById('formChildCount').value = String(meta.child_count);
+      window.toggleChildFields();
+
+      const kids = Array.isArray(meta.children) ? meta.children : [];
+      kids.forEach((k, idx) => {
+        const i = idx + 1;
+        const nameEl = document.getElementById(`child_name_${i}`);
+        if(nameEl && k?.name) nameEl.value = k.name;
+
+        if(k?.bday_dm){
+          const p = String(k.bday_dm).split(".");
+          if(p.length===2){
+            const dEl = document.getElementById(`child_day_${i}`);
+            const mEl = document.getElementById(`child_month_${i}`);
+            if(dEl) dEl.value = p[0];
+            if(mEl) mEl.value = p[1];
+          }
+        }
+      });
+    }
+
+    if(meta.period_tracking_enabled !== undefined){
+      document.getElementById('periodEnabled').value = String(!!meta.period_tracking_enabled);
+    }
+    if(meta.last_period_start){
+      document.getElementById('lastPeriodStart').value = meta.last_period_start;
+    }
+    if(meta.cycle_length_days){
+      document.getElementById('cycleLength').value = meta.cycle_length_days;
+    }
+    if(meta.period_length_days){
+      document.getElementById('periodLength').value = meta.period_length_days;
+    }
   }
 
-  // “Kaynana samimiyet puanın arttı” toast (tek seferlik)
-  // pct 95+ olduğunda göster; award zaten saveProfile içinde yapılıyor.
-  const TOAST_KEY = "caynana_profile_toast_v1";
-  if(pct >= 95){
+  // -------------------- Save profile --------------------
+  window.saveProfile = async function(){
+    const user = getUser();
+
+    const bd = getBirthDate();
+    if(!bd.ok){
+      toast("Doğum tarihini Yıl/Ay/Gün tam seç ya da tamamen boş bırak.");
+      return;
+    }
+
+    // özel gün validasyonu
+    const pairs = [
+      { label:"Eşinin doğum günü", d: document.getElementById("spouseBDay")?.value, m: document.getElementById("spouseBMonth")?.value },
+      { label:"Evlilik günü", d: document.getElementById("wDay")?.value, m: document.getElementById("wMonth")?.value },
+      { label:"Nişan günü", d: document.getElementById("eDay")?.value, m: document.getElementById("eMonth")?.value },
+      { label:"İlk tanışma günü", d: document.getElementById("mDay")?.value, m: document.getElementById("mMonth")?.value }
+    ];
+    for(const p of pairs){
+      const any = !!(p.d || p.m);
+      const full = !!(p.d && p.m);
+      if(any && !full){
+        toast(`${p.label}: Gün/Ay ikilisini ya tam seç, ya boş bırak.`);
+        return;
+      }
+      if(full && !isValidDM(p.d, p.m)){
+        toast(`${p.label}: geçersiz tarih.`);
+        return;
+      }
+    }
+
+    const spouseB = getDM("spouseBDay","spouseBMonth");
+    const wed = getDM("wDay","wMonth");
+    const eng = getDM("eDay","eMonth");
+    const met = getDM("mDay","mMonth");
+
+    // çocuklar
+    const childCount = parseInt(document.getElementById('formChildCount')?.value,10) || 0;
+    const kids = [];
+    const maxKids = Math.min(childCount, 5);
+    for(let i=1;i<=maxKids;i++){
+      const name = (document.getElementById(`child_name_${i}`)?.value || "").trim();
+      const d = document.getElementById(`child_day_${i}`)?.value || "";
+      const m = document.getElementById(`child_month_${i}`)?.value || "";
+
+      if((d && !m) || (!d && m)){
+        toast(`Çocuk ${i}: Gün/Ay ikilisini ya tam seç, ya boş bırak.`);
+        return;
+      }
+      if(d && m && !isValidDM(d,m)){
+        toast(`Çocuk ${i}: geçersiz tarih.`);
+        return;
+      }
+      const dm = (d && m) ? `${d}.${m}` : "";
+      if(name || dm) kids.push({ name, bday_dm: dm });
+    }
+
+    const gender = document.getElementById('formGender')?.value || "";
+    const periodEnabled = (document.getElementById('periodEnabled')?.value === "true");
+    const lastPeriodStart = document.getElementById('lastPeriodStart')?.value || "";
+    const cycleLen = parseInt(document.getElementById('cycleLength')?.value,10) || 28;
+    const periodLen = parseInt(document.getElementById('periodLength')?.value,10) || 5;
+
+    if(gender === "Kadın" && periodEnabled && !lastPeriodStart){
+      toast("Regl takibi açıksa son adet başlangıç tarihi lazım.");
+      return;
+    }
+
+    const meta = {
+      hitap: document.getElementById('formHitap')?.value || "",
+      bot_name: document.getElementById('formBotName')?.value || "",
+      gender,
+      marital_status: document.getElementById('formStatus')?.value || "",
+      region: document.getElementById('formCity')?.value || "",
+      birth_city: document.getElementById('formBirthCity')?.value || "",
+      team: document.getElementById('formTeam')?.value || "",
+      birth_date: bd.value,
+
+      spouse_name: document.getElementById('formSpouse')?.value || "",
+      spouse_bday_dm: spouseB.value,
+      wedding_dm: wed.value,
+      engagement_dm: eng.value,
+      met_dm: met.value,
+
+      child_count: String(childCount),
+      children: kids,
+
+      period_tracking_enabled: (gender === "Kadın") ? periodEnabled : false,
+      last_period_start: (gender === "Kadın" && periodEnabled) ? lastPeriodStart : "",
+      cycle_length_days: (gender === "Kadın" && periodEnabled) ? cycleLen : "",
+      period_length_days: (gender === "Kadın" && periodEnabled) ? periodLen : "",
+
+      reminder_opt_in: true
+    };
+
+    // +5 tek sefer
     try{
-      const userKey = (user?.user_id || user?.email || user?.id || "").toLowerCase();
-      const st = JSON.parse(localStorage.getItem(TOAST_KEY) || "{}");
-      if(userKey && !st[userKey]){
-        const t = document.getElementById("heroToast");
-        if(t){
-          t.textContent = "Profil tamamlandı! Kaynana samimiyet puanın artmaya çok yakın 🧿";
-          t.classList.add("show");
-          setTimeout(()=> t.classList.remove("show"), 2800);
-        }
-        st[userKey] = { shown_at: new Date().toISOString() };
-        localStorage.setItem(TOAST_KEY, JSON.stringify(st));
+      const eligible = isFullProfile(meta);
+      const bonusState = JSON.parse(localStorage.getItem(PROFILE_BONUS_KEY) || "{}");
+      const userKey = (user.user_id || user.email || user.id || "").toLowerCase();
+
+      if(eligible && userKey && !bonusState[userKey]){
+        let u = {};
+        try{ u = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }catch(e){}
+        const cur = Number(u?.yp_percent ?? 10);
+        const next = Math.max(5, Math.min(100, cur + 5));
+        safeUpdateUser({ yp_percent: next });
+
+        bonusState[userKey] = { awarded_at: new Date().toISOString(), added: 5 };
+        localStorage.setItem(PROFILE_BONUS_KEY, JSON.stringify(bonusState));
+
+        toast("Tebrikler! Kaynana samimiyet puanın +5 arttı 🧿");
       }
     }catch(e){}
-  }
-}
 
+    // local kaydet
+    try{
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(meta));
+    }catch(e){
+      toast("Local kaydetme başarısız (storage).");
+      return;
+    }
+
+    safeUpdateUser({ profile_saved: true });
+
+    // server sync
+    try{
+      if(BASE_DOMAIN){
+        const stableUserId = user.user_id || user.email || user.id;
+        await fetch(`${BASE_DOMAIN}/api/profile/update`,{
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ user_id: stableUserId, email: user.email || "", meta })
+        });
+      }
+    }catch(e){
+      console.log("Profil server kaydı başarısız (local OK):", e);
+    }
+
+    toast("Kaydettim evladım. Tamamdır. 🧿");
+    setTimeout(()=> window.location.href = "../index.html", 450);
+  };
+
+  // -------------------- Init --------------------
+  async function init(){
+    const user = getUser();
+
+    // ID / email
+    document.getElementById('formID').innerText = user.id || user.user_id || "—";
+    document.getElementById('emailDisplay').innerText = `Email: ${user.email || "—"}`;
+
+    // fullname + avatar normalize
+    const full = (user.fullname || user.name || user.display_name || "").trim();
+    document.getElementById("formFullname").value = full || "—";
+
+    const pic = (user.picture || user.avatar || user.avatar_url || user.photo_url || "").trim();
+    const img = document.getElementById("avatarImg");
+    if(pic){
+      img.src = pic;
+      img.style.display = "block";
+    }else{
+      img.style.display = "none";
+    }
+
+    // dropdownlar
+    fillCitySelects();
+
+    // doğum tarihi flow
+    fillYearOptions('yearSelect', 1950);
+    refreshBirthFlow();
+    document.getElementById("yearSelect")?.addEventListener("change", refreshBirthFlow);
+    document.getElementById("monthSelect")?.addEventListener("change", refreshBirthFlow);
+    document.getElementById("daySelect")?.addEventListener("change", refreshBirthFlow);
+
+    // evli günleri
+    ["spouseBDay","wDay","eDay","mDay"].forEach(id => fillDayOptions(id, 31));
+
+    // input change -> progress
+    document.querySelectorAll("input,select").forEach(el=>{
+      el.addEventListener("input", renderProgress);
+      el.addEventListener("change", renderProgress);
+    });
+
+    // local meta
+    let localMeta = {};
+    try { localMeta = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}"); } catch {}
+    if(localMeta && Object.keys(localMeta).length){
+      fillFormFields(localMeta);
+    }
+
+    // server meta (en güncel)
+    try{
+      if(BASE_DOMAIN){
+        const stableUserId = user.user_id || user.email || user.id;
+        const url = `${BASE_DOMAIN}/api/profile/get?user_id=${encodeURIComponent(stableUserId)}&email=${encodeURIComponent(user.email || "")}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if(data?.found && data?.meta){
+          fillFormFields(data.meta);
+          try { localStorage.setItem(PROFILE_KEY, JSON.stringify(data.meta)); } catch {}
+        }
+      }
+    }catch(e){
+      console.log("Profil senkron hatası:", e);
+    }
+
+    // ilk render
+    renderProgress();
+  }
+
+  init();
+</script>
+</body>
+</html>
