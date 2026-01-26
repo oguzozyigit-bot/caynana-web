@@ -5,6 +5,7 @@
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
 import { ChatStore } from "./chat_store.js";
+import { getMemoryProfile, setMemoryProfile } from "./memory_profile.js";
 
 /*
   KİLİT DAVRANIŞ:
