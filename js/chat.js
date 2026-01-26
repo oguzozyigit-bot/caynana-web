@@ -1,6 +1,7 @@
 // js/chat.js (FINAL - Profile-first memory + name capture + history limit + login required + CHAT_ID FIX + USER-SCOPED CHAT_ID)
-// ✅ FIX: payload.history artık ChatStore'dan geliyor (balık hafıza biter)
-// ✅ FIX: user/assistant mesajları ChatStore'a ekleniyor (her request'te son 30 mesaj gider)
+// ✅ FIX: payload.history ChatStore'dan gidiyor
+// ✅ FIX: user/assistant mesajları ChatStore'a ekleniyor
+// ✅ FIX: Kalıcı hafıza (memory_profile) sohbet silinse bile unutmaz: önce profil formu, sonra memory_profile, sonra chat geçmişi
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -12,7 +13,8 @@ import { getMemoryProfile, setMemoryProfile } from "./memory_profile.js";
   - Guest yok (google_id_token yoksa cevap yok)
   - Profil doluysa (hitap/fullname) öncelikle oradan hitap
   - Profil yoksa user "adım/ismim ..." diyorsa yakala, profile’a yaz
-  - Backend’e son 30 mesaj gider (✅ artık ChatStore kaynaklı)
+  - Kalıcı hafıza: memory_profile (sohbet silinse bile durur)
+  - Backend’e son 30 mesaj gider
   - chat_id localStorage ile taşınır (SOHBET HAFIZASI)
   - chat_id kullanıcıya özel saklanır (caynana_chat_id:<user_id>)
 */
@@ -63,7 +65,7 @@ function writeChatId(userId, chatId) {
 }
 
 // --------------------
-// NAME CAPTURE (profil yoksa)
+// NAME CAPTURE + MEMORY PERSIST
 // --------------------
 function extractNameFromText(text = "") {
   const s = String(text || "").trim();
@@ -91,6 +93,33 @@ function maybePersistNameFromUserMessage(userMessage) {
   if (!p.hitap) p.hitap = fn || name;
 
   setProfile(p);
+
+  // ✅ kalıcı hafıza: sohbet silinse bile kalsın
+  try {
+    setMemoryProfile({
+      name,
+      hitap: (p.hitap || fn || name),
+      fullname: name
+    });
+  } catch {}
+}
+
+// --------------------
+// PROFILE MERGE (ÖNCELİK: formProfile > memory_profile > boş)
+// --------------------
+function cleanValue(v) {
+  if (v === null || v === undefined) return null;
+  const s = typeof v === "string" ? v.trim() : v;
+  if (s === "") return null;
+  return s;
+}
+function mergeProfiles(formProfile = {}, memProfile = {}) {
+  const out = { ...(memProfile || {}) };
+  for (const [k, v] of Object.entries(formProfile || {})) {
+    const cv = cleanValue(v);
+    if (cv !== null) out[k] = cv;
+  }
+  return out;
 }
 
 // --------------------
@@ -135,12 +164,12 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     };
   }
 
-  // Profil yoksa ad yakala
+  // Profil yoksa ad yakala (+ memory_profile'a yaz)
   maybePersistNameFromUserMessage(message);
 
   const profile = getProfile();
 
-  // ✅ Guest fallback KALDIRILDI (EN KRİTİK)
+  // ✅ Guest fallback yok
   const userId =
     String(profile?.email || "").trim() ||
     String(profile?.user_id || "").trim() ||
@@ -155,12 +184,18 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     };
   }
 
+  // displayName: önce form profil, yoksa memory_profile
+  const memP = (() => { try { return getMemoryProfile() || {}; } catch { return {}; } })();
+
   const displayName =
     String(profile.hitap || "").trim() ||
     firstNameFromFullname(profile.fullname || "") ||
+    String(memP.hitap || "").trim() ||
+    firstNameFromFullname(memP.fullname || memP.name || "") ||
     "";
 
-  const memoryProfile = {
+  // Form profilinden gelen alanlar (zorunlu değil)
+  const formProfile = {
     hitap: profile.hitap || null,
     fullname: profile.fullname || null,
     display_name: displayName || null,
@@ -176,15 +211,18 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     isProfileCompleted: !!profile.isProfileCompleted
   };
 
-  // ✅ 1) USER mesajını store'a ekle (history bununla güncellenecek)
+  // ✅ mergedProfile: önce form dolu alanları, yoksa memory_profile
+  const mergedProfile = mergeProfiles(formProfile, memP);
+
+  // ✅ 1) USER mesajını store'a ekle
   try { ChatStore.add?.("user", message); } catch {}
 
-  // ✅ 2) Backend'e gidecek history HER ZAMAN ChatStore'dan (balık hafıza biter)
+  // ✅ 2) Backend'e gidecek history HER ZAMAN ChatStore'dan
   const historyForApi = (() => {
     try {
       if (typeof ChatStore.getLastForApi === "function") return ChatStore.getLastForApi(30);
     } catch {}
-    // fallback: eski parametreleri bozmamak için (ama asıl hedef ChatStore)
+    // fallback: eski çağrılar
     try {
       const raw = Array.isArray(modeOrHistory) ? modeOrHistory : (Array.isArray(maybeHistory) ? maybeHistory : []);
       return raw
@@ -199,24 +237,29 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     }
   })();
 
-  // ✅ UI sohbeti değişince backend'e de aynı server chat_id ile devam et:
-  // 1) önce ChatStore'da mevcut server_id varsa onu kullan
-  // 2) yoksa user-scoped localStorage chat_id'ye düş
+  // ✅ ChatStore server_id varsa onu kullan; yoksa user-scoped chat_id
   const serverChatId = (ChatStore.getCurrentServerId?.() || null);
 
   const payload = {
     text: message,
     message: message,
     user_id: userId,
-    chat_id: (serverChatId || readChatId(userId)), // ✅ SOHBET HAFIZASI (KULLANICIYA ÖZEL + MENU SENKRONU)
+    chat_id: (serverChatId || readChatId(userId)),
     mode,
-    profile: memoryProfile,
+
+    // ✅ önce profil formu, yoksa memory_profile, yoksa boş
+    profile: mergedProfile,
+
+    // ✅ backend db yoksa buradan raw doldurabilsin
+    user_meta: mergedProfile,
+
     system_hint: displayName
       ? `Kullanıcıya "${displayName}" diye hitap et.`
       : `Profil doluysa profili öncelikle kullan.`,
+
     web: "auto",
     enable_web_search: true,
-    history: historyForApi // ✅ KİLİT SATIR: artık store’dan gidiyor
+    history: historyForApi
   };
 
   const attempt = async () => {
@@ -237,7 +280,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     let data = {};
     try { data = await res.json(); } catch {}
 
-    // ✅ chat_id’yi sakla (KULLANICIYA ÖZEL) + ChatStore server_id senkronu
+    // ✅ chat_id’yi sakla + ChatStore server_id senkronu
     if (data.chat_id) {
       writeChatId(userId, data.chat_id);
       ChatStore.setServerId?.(data.chat_id);
@@ -247,6 +290,19 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
 
     // ✅ 3) ASSISTANT cevabını store'a ekle
     try { ChatStore.add?.("assistant", out); } catch {}
+
+    // ✅ Backend'den profil/memory geri dönüyorsa memory_profile'a yaz (zorunlu değil)
+    // (Şimdilik sadece hitap/name gibi güvenli alanları günceller)
+    try {
+      const mp = getMemoryProfile() || {};
+      const nextPatch = {};
+      const p = (payload.profile || {});
+      if (p.hitap && !mp.hitap) nextPatch.hitap = p.hitap;
+      if (p.fullname && !mp.fullname) nextPatch.fullname = p.fullname;
+      if (p.city && !mp.city) nextPatch.city = p.city;
+      if (p.botName && !mp.botName) nextPatch.botName = p.botName;
+      if (Object.keys(nextPatch).length) setMemoryProfile(nextPatch);
+    } catch {}
 
     return { text: out };
   };
