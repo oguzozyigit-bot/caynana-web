@@ -5,5 +5,5 @@ export const GOOGLE_CLIENT_ID =
 
 export const STORAGE_KEY = "caynana_user_v1";
 
-// ✅ Backend domainin buysa kalsın:
-export const BASE_DOMAIN = "https://caynana.ai";
+// ✅ BACKEND (Render)
+export const BASE_DOMAIN = "https://caynana-api-py310-final.onrender.com";
