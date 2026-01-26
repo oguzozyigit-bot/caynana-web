@@ -320,6 +320,19 @@
   </div>
 </div>
 
+
+    container.innerHTML = "";
+    for(let i=1;i<=count;i++){
+      const box = document.createElement('div');
+      box.className = "child-card";
+
+      box.innerHTML = `
+        <div class="mini">Çocuk ${i}</div>
+
+        <div class="form-group" style="margin:0;">
+          <label>Ad</label>
+          <input type="text" id="child_name_${i}" placeholder="Örn: Ali">
+        </div>
 <script type="module">
   import { BASE_DOMAIN, STORAGE_KEY } from '../js/config.js';
 
@@ -331,18 +344,23 @@
   function fillDayOptions(selectId){
     const s = document.getElementById(selectId);
     if(!s) return;
+    // tekrar init olursa çoğaltmasın
+    if(s.dataset.filled === "1") return;
     for(let i=1;i<=31;i++){
       s.innerHTML += `<option value="${pad2(i)}">${i}</option>`;
     }
+    s.dataset.filled = "1";
   }
 
   function fillYearOptions(selectId, start=1950){
     const s = document.getElementById(selectId);
     if(!s) return;
+    if(s.dataset.filled === "1") return;
     const nowY = new Date().getFullYear();
     for(let y=nowY; y>=start; y--){
       s.innerHTML += `<option value="${y}">${y}</option>`;
     }
+    s.dataset.filled = "1";
   }
 
   function getDM(dayId, monthId){
@@ -354,7 +372,7 @@
 
   function setDM(dayId, monthId, val){
     if(!val) return;
-    const p = val.split(".");
+    const p = String(val).split(".");
     if(p.length===2){
       const d = document.getElementById(dayId);
       const m = document.getElementById(monthId);
@@ -364,9 +382,9 @@
   }
 
   function getBirthDate(){
-    const d = document.getElementById('daySelect').value;
-    const m = document.getElementById('monthSelect').value;
-    const y = document.getElementById('yearSelect').value;
+    const d = document.getElementById('daySelect')?.value || "";
+    const m = document.getElementById('monthSelect')?.value || "";
+    const y = document.getElementById('yearSelect')?.value || "";
 
     const any = !!(d || m || y);
     const full = !!(d && m && y);
@@ -376,24 +394,88 @@
 
   function setBirthDate(val){
     if(!val) return;
-    const p = val.split(".");
+    const p = String(val).split(".");
     if(p.length===3){
-      document.getElementById('daySelect').value = p[0];
-      document.getElementById('monthSelect').value = p[1];
-      document.getElementById('yearSelect').value = p[2];
+      const d = document.getElementById('daySelect');
+      const m = document.getElementById('monthSelect');
+      const y = document.getElementById('yearSelect');
+      if(d) d.value = p[0];
+      if(m) m.value = p[1];
+      if(y) y.value = p[2];
+    }
+  }
+
+  // ✅ ID normalize (bu sayfa kendi içinde emniyetli olsun)
+  function norm(v){ return String(v || "").trim(); }
+
+  function ensureIdentity(user){
+    if(!user || typeof user !== "object") user = {};
+
+    user.id = norm(user.id);
+    user.email = norm(user.email);
+    user.user_id = norm(user.user_id);
+
+    if(!user.id && user.email) user.id = user.email;
+    if(!user.email && user.id && user.id.includes("@")) user.email = user.id;
+    if(!user.user_id) user.user_id = user.email || user.id;
+    if(!user.id) user.id = user.user_id;
+
+    return user;
+  }
+
+  function getUser(){
+    let user = {};
+    try { user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch {}
+    user = ensureIdentity(user);
+
+    // kimlik yoksa bu sayfaya gelmesin
+    if(!user.id){
+      alert("Giriş yapmamışsın!");
+      window.location.href = "../index.html";
+      return null;
+    }
+
+    // normalize edilmiş hali geri yaz
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(user)); } catch {}
+    return user;
+  }
+
+  // ✅ Clipboard: mobil fallback
+  async function safeCopy(text){
+    const t = String(text || "");
+    if(!t) return false;
+    try{
+      await navigator.clipboard.writeText(t);
+      return true;
+    }catch(e){
+      try{
+        const ta = document.createElement("textarea");
+        ta.value = t;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        return true;
+      }catch(e2){
+        return false;
+      }
     }
   }
 
   // --------- toggles ----------
   window.toggleMarriedFields = function(){
-    const val = document.getElementById('formStatus').value;
-    document.getElementById('marriedFields').classList.toggle('show', val === 'Evli');
+    const val = document.getElementById('formStatus')?.value || "";
+    document.getElementById('marriedFields')?.classList.toggle('show', val === 'Evli');
   };
 
   window.toggleChildFields = function(){
-    const val = parseInt(document.getElementById('formChildCount').value,10) || 0;
+    const val = parseInt(document.getElementById('formChildCount')?.value,10) || 0;
     const div = document.getElementById('childFields');
     const container = document.getElementById('childrenContainer');
+
+    if(!div || !container) return;
 
     if(val <= 0){
       div.classList.remove('show');
@@ -437,9 +519,9 @@
   };
 
   window.toggleGenderFields = function(){
-    const g = document.getElementById('formGender').value;
+    const g = document.getElementById('formGender')?.value || "";
     const period = document.getElementById('periodFields');
-    period.classList.toggle('show', g === 'Kadın');
+    period?.classList.toggle('show', g === 'Kadın');
   };
 
   // --------- navigation ----------
@@ -447,15 +529,16 @@
     window.location.href = "../index.html";
   };
 
-  window.copyID = function(){
-    const t = document.getElementById('formID').innerText;
-    navigator.clipboard.writeText(t);
-    alert("ID Kopyalandı");
+  // ✅ copyID artık emniyetli
+  window.copyID = async function(){
+    const t = document.getElementById('formID')?.innerText || "";
+    const ok = await safeCopy(t);
+    alert(ok ? "ID Kopyalandı" : ("Kopyalanamadı. ID: " + t));
   };
 
   // --------- fill form ----------
   function fillFormFields(meta){
-    if(!meta) return;
+    if(!meta || typeof meta !== "object") return;
 
     if(meta.hitap) document.getElementById('formHitap').value = meta.hitap;
     if(meta.bot_name) document.getElementById('formBotName').value = meta.bot_name;
@@ -482,16 +565,18 @@
     setDM("mDay","mMonth", meta.met_dm);
 
     // çocuklar
-    if(meta.child_count){
+    if(meta.child_count !== undefined && meta.child_count !== null){
       document.getElementById('formChildCount').value = String(meta.child_count);
       toggleChildFields();
+
       const kids = Array.isArray(meta.children) ? meta.children : [];
       kids.forEach((k, idx) => {
         const i = idx + 1;
         const nameEl = document.getElementById(`child_name_${i}`);
         if(nameEl && k?.name) nameEl.value = k.name;
+
         if(k?.bday_dm){
-          const p = k.bday_dm.split(".");
+          const p = String(k.bday_dm).split(".");
           if(p.length===2){
             const dEl = document.getElementById(`child_day_${i}`);
             const mEl = document.getElementById(`child_month_${i}`);
@@ -519,6 +604,9 @@
 
   // --------- save ----------
   window.saveProfile = async function(){
+    const user = getUser();
+    if(!user) return;
+
     // doğum tarihi kontrol
     const bd = getBirthDate();
     if(!bd.ok){
@@ -538,7 +626,7 @@
     }
 
     // çocuklar
-    const childCount = parseInt(document.getElementById('formChildCount').value,10) || 0;
+    const childCount = parseInt(document.getElementById('formChildCount')?.value,10) || 0;
     const kids = [];
     const maxKids = Math.min(childCount, 5);
     for(let i=1;i<=maxKids;i++){
@@ -554,29 +642,28 @@
     }
 
     // regl alanları (kadınsa ve enabled true ise)
-    const gender = document.getElementById('formGender').value;
-    const periodEnabled = document.getElementById('periodEnabled').value === "true";
-    const lastPeriodStart = document.getElementById('lastPeriodStart').value;
-    const cycleLen = parseInt(document.getElementById('cycleLength').value,10) || 28;
-    const periodLen = parseInt(document.getElementById('periodLength').value,10) || 5;
+    const gender = document.getElementById('formGender')?.value || "";
+    const periodEnabled = (document.getElementById('periodEnabled')?.value === "true");
+    const lastPeriodStart = document.getElementById('lastPeriodStart')?.value || "";
+    const cycleLen = parseInt(document.getElementById('cycleLength')?.value,10) || 28;
+    const periodLen = parseInt(document.getElementById('periodLength')?.value,10) || 5;
 
-    // regl: enabled ama tarih yoksa uyar (opsiyonel)
     if(gender === "Kadın" && periodEnabled && !lastPeriodStart){
       alert("Regl takibi açıksa 'Son adet başlangıç tarihi' girmen lazım (ya da takibi kapat).");
       return;
     }
 
     const meta = {
-      hitap: document.getElementById('formHitap').value,
-      bot_name: document.getElementById('formBotName').value,
+      hitap: document.getElementById('formHitap')?.value || "",
+      bot_name: document.getElementById('formBotName')?.value || "",
       gender,
-      marital_status: document.getElementById('formStatus').value,
-      region: document.getElementById('formCity').value,
-      team: document.getElementById('formTeam').value,
+      marital_status: document.getElementById('formStatus')?.value || "",
+      region: document.getElementById('formCity')?.value || "",
+      team: document.getElementById('formTeam')?.value || "",
       birth_date: bd.value,
 
       // evli
-      spouse_name: document.getElementById('formSpouse').value,
+      spouse_name: document.getElementById('formSpouse')?.value || "",
       spouse_bday_dm: spouseB.value,
       wedding_dm: wed.value,
       engagement_dm: eng.value,
@@ -596,21 +683,29 @@
       reminder_opt_in: true
     };
 
-    // local: google'dan bağımsız profil kaydı
-    localStorage.setItem(PROFILE_KEY, JSON.stringify(meta));
+    // ✅ local: google'dan bağımsız profil kaydı
+    try{
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(meta));
+    }catch(e){
+      alert("Local kaydetme başarısız (storage).");
+      return;
+    }
 
-    // login objesine karıştırma: sadece işaret koy (opsiyonel)
-    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    user.profile_saved = true;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+    // ✅ login objesine karıştırma: sadece işaret koy
+    try{
+      const u = ensureIdentity(user);
+      u.profile_saved = true;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+    }catch(e){}
 
-    // server'a yaz (hata olsa da local kaydedildi)
+    // ✅ server'a yaz: user_id sağlam gönder (email/id karışmasın)
     try{
       if(BASE_DOMAIN){
+        const stableUserId = user.user_id || user.email || user.id;
         await fetch(`${BASE_DOMAIN}/api/profile/update`,{
           method:"POST",
           headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ user_id: user.id, meta })
+          body: JSON.stringify({ user_id: stableUserId, email: user.email || "", meta })
         });
       }
     }catch(e){
@@ -618,19 +713,14 @@
     }
 
     alert("Kaydettim evladım. Tamamdır. 🧿");
-    // Kaydedince chat'e dön
     window.location.href = "../index.html";
   };
 
   // --------- init ----------
-  function init(){
-    // Kimlik
-    const user = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    if(!user.id){
-      alert("Giriş yapmamışsın!");
-      window.location.href = "../index.html";
-      return;
-    }
+  async function init(){
+    const user = getUser();
+    if(!user) return;
+
     document.getElementById('formID').innerText = user.id;
     document.getElementById('emailDisplay').innerText = `Email: ${user.email || "—"}`;
 
@@ -642,25 +732,27 @@
     ["spouseBDay","wDay","eDay","mDay"].forEach(fillDayOptions);
 
     // local profil
-    const localMeta = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}");
+    let localMeta = {};
+    try { localMeta = JSON.parse(localStorage.getItem(PROFILE_KEY) || "{}"); } catch {}
     if(localMeta && Object.keys(localMeta).length){
       fillFormFields(localMeta);
     }
 
     // server profil (en güncel)
-    (async () => {
-      try{
-        const url = `${BASE_DOMAIN}/api/profile/get?user_id=${user.id}&email=${user.email || ""}`;
+    try{
+      if(BASE_DOMAIN){
+        const stableUserId = user.user_id || user.email || user.id;
+        const url = `${BASE_DOMAIN}/api/profile/get?user_id=${encodeURIComponent(stableUserId)}&email=${encodeURIComponent(user.email || "")}`;
         const res = await fetch(url);
         const data = await res.json();
-        if(data.found && data.meta){
+        if(data?.found && data?.meta){
           fillFormFields(data.meta);
-          localStorage.setItem(PROFILE_KEY, JSON.stringify(data.meta));
+          try { localStorage.setItem(PROFILE_KEY, JSON.stringify(data.meta)); } catch {}
         }
-      }catch(e){
-        console.log("Profil senkron hatası:", e);
       }
-    })();
+    }catch(e){
+      console.log("Profil senkron hatası:", e);
+    }
   }
 
   init();
