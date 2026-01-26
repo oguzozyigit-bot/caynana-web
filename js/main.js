@@ -36,12 +36,6 @@ const API_TOKEN_KEY = "caynana_api_token";
 function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
 function getUser() { return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
 
-function firstName(full = "") {
-  const s = String(full || "").trim();
-  if (!s) return "";
-  return s.split(/\s+/)[0];
-}
-
 function termsKey(email=""){
   return `caynana_terms_accepted_at::${String(email||"").toLowerCase().trim()}`;
 }
