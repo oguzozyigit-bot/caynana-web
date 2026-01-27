@@ -10,7 +10,6 @@
 }
 
 * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-
 body, html {
   margin:0; padding:0;
   width:100%; height:100dvh;
@@ -22,7 +21,6 @@ body, html {
   align-items:center;
   justify-content:center;
 }
-
 ::-webkit-scrollbar { display:none; }
 
 /* =========================
@@ -39,7 +37,6 @@ body, html {
   overflow:hidden;
   box-shadow:0 0 50px rgba(255,255,255,0.05);
 }
-
 @media(min-width:500px){
   .mobile-frame { height:95dvh; border-radius:24px; border:1px solid #333; }
 }
@@ -57,7 +54,6 @@ body, html {
   padding:0 12px;
   z-index:3000;
 }
-
 .left-controls{ width:80px; }
 .right-controls{ display:flex; gap:8px; justify-content:flex-end; width:auto; }
 
@@ -77,7 +73,6 @@ body, html {
   flex:1;
   transition:transform .4s;
 }
-
 .logo-area{ display:flex; align-items:center; gap:6px; }
 .brand-name{ font-weight:800; font-size:15px; color:#fff; }
 .slogan{ font-size:9px; color:#888; font-weight:500; }
@@ -232,6 +227,9 @@ body, html {
   display:flex;
   flex-direction:column;
   gap:10px;
+
+  /* ✅ sohbet input dibinden başlamasın: altta boşluk */
+  padding-bottom: 85px;
 }
 .chat-area:empty::before{
   content:"Kaynana burada evladım… yaz da iki laflayalım 🙂";
@@ -252,21 +250,27 @@ body, html {
   position:relative;
   word-wrap:break-word;
 }
+
+/* ✅ kavis geri: sadece 2px değil, daha yumuşak “kırık köşe” */
 .bubble.bot{
   align-self:flex-start;
   background:#1c1c1c;
   border-left:3px solid var(--gold);
   color:#ddd;
-  border-top-left-radius:2px;
+  border-top-left-radius:10px;   /* önceki 2px çok keskin */
+  border-bottom-left-radius:14px;
 }
 .bubble.user{
   align-self:flex-end;
   background:#222;
   border-right:3px solid var(--pistachio);
   color:#fff;
-  border-top-right-radius:2px;
+  border-top-right-radius:10px;
+  border-bottom-right-radius:14px;
   text-align:right;
 }
+
+/* thinking çizgisi */
 .bubble.bot.loading::before{
   content:"";
   position:absolute;
@@ -274,6 +278,7 @@ body, html {
   height:100%; width:3px;
   background:var(--gold);
   animation:loadBar 1s infinite;
+  border-radius:999px; /* ✅ çizgi kavisli */
 }
 @keyframes pop{ from{transform:scale(.95);opacity:.5} to{transform:scale(1);opacity:1} }
 @keyframes loadBar{ 0%,100%{opacity:.3} 50%{opacity:1} }
@@ -385,7 +390,7 @@ textarea{
 .menu-overlay.open{ opacity:1; pointer-events:auto; z-index:9999; }
 
 /* ❌ KALDIRILDI: menü açınca her şeyi kilitleyen bug
-   .menu-overlay.open ~ *{ pointer-events:none; }
+.menu-overlay.open ~ *{ pointer-events:none; }
 */
 
 .menu-sidebar{
@@ -462,6 +467,72 @@ textarea{
 .del-chat{ background:none; border:none; color:#ff5252; cursor:pointer; padding:0 6px; }
 
 /* =========================
+   MENU LIST (✅ EMOJI/İKONLAR GERİ)
+   ========================= */
+.menu-grid{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.menu-action{
+  position:relative;
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:flex-start;
+  text-align:left;
+
+  padding:14px;
+  border-radius:14px;
+  background: rgba(255,255,255,.035);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 10px 20px rgba(0,0,0,.18);
+  cursor:pointer;
+  transition:.12s;
+  user-select:none;
+
+  border-left: 3px solid rgba(255,255,255,.08);
+}
+.menu-action:hover{ background: rgba(255,255,255,.05); border-left-color: rgba(255,179,0,.16); }
+.menu-action:active{ transform: scale(.985); background: rgba(255,255,255,.06); }
+
+/* ✅ BURASI DEĞİŞTİ: minimal glyph YOK, ikon/emoji VAR */
+.menu-action .ico{
+  width:30px;
+  height:30px;
+  border-radius:10px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-right:12px;
+
+  font-size:18px;    /* ✅ emoji/ikon geri */
+}
+.menu-action .ico::before{ content:none !important; } /* ✅ glyph kapalı */
+
+.menu-action > div{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+.menu-action div div{
+  font-size:15px;
+  font-weight:750;
+  letter-spacing:.2px;
+  color:#e8e8e8;
+}
+.menu-action small{
+  font-size:12px;
+  color:#9a9a9a;
+  margin:0;
+}
+
+/* =========================
    MENU FOOTER ACTIONS
    ========================= */
 .menu-footer-actions{
@@ -525,15 +596,6 @@ textarea{
 .auth-btn.google{ color:#222; }
 .auth-btn.apple{ background:#000; color:#fff; border:1px solid #333; }
 
-.close-overlay-btn{
-  position:absolute;
-  top:20px; right:20px;
-  font-size:30px;
-  color:#fff;
-  cursor:pointer;
-}
-
-/* Terms */
 .agreement-box{
   display:flex;
   align-items:center;
@@ -572,9 +634,6 @@ textarea{
   letter-spacing:.2px;
 }
 
-/* =========================
-   ACCESSIBILITY
-   ========================= */
 button:focus, a:focus, textarea:focus{
   outline:2px solid rgba(255,179,0,.25);
   outline-offset:2px;
