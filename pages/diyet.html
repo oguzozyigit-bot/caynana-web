@@ -8,115 +8,37 @@
   <link rel="stylesheet" href="/css/style.css?v=1" />
 
   <style>
-    :root{
-      --bg:#0e0e0e;
-      --text:#ececec;
-      --soft:rgba(255,255,255,.62);
-      --card:rgba(255,255,255,.04);
-      --border:rgba(255,255,255,.10);
-      --gold:#ffb300;
-      --pist:#bef264;
-      --ok:#22c55e;
-      --danger:#ff5252;
-    }
-
-    /* sayfa container */
-    .diet-frame{
-      width:100%;
-      height:100%;
-      max-width:480px;
-      background:var(--bg);
-      display:flex;
-      flex-direction:column;
-      overflow:hidden;
-      margin:0 auto;
-    }
-
-    .diet-topbar{
-      flex:0 0 65px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:0 12px;
-      background:rgba(20,20,20,.98);
-      border-bottom:1px solid var(--border);
-    }
-    .diet-back{
-      width:38px; height:38px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
-      color:#fff;
-      font-size:18px;
-      display:flex; align-items:center; justify-content:center;
-      cursor:pointer;
-    }
-    .diet-title{
-      display:flex; flex-direction:column; align-items:center;
-      flex:1;
-    }
-    .diet-title .h{
-      font-weight:950;
-      letter-spacing:.2px;
-      font-size:15px;
-      color:#fff;
-    }
-    .diet-title .s{
-      font-size:11px;
-      color:rgba(255,255,255,.55);
-      margin-top:2px;
-      text-align:center;
-      padding:0 8px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width:260px;
-    }
-    .diet-top-actions{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      justify-content:flex-end;
-      width:86px;
-    }
-
-    .chip{
-      display:inline-flex; align-items:center; gap:6px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
-      font-size:11px;
-      font-weight:900;
-      color:rgba(255,255,255,.82);
-      white-space:nowrap;
-    }
-    .chip.ok{ border-color: rgba(34,197,94,.35); color:#22c55e; background:rgba(34,197,94,.08); }
-    .chip.warn{ border-color: rgba(255,179,0,.35); color:#ffb300; background:rgba(255,179,0,.08); }
-    .chip.bad{ border-color: rgba(255,82,82,.35); color:#ff5252; background:rgba(255,82,82,.08); }
-
-    .diet-content{
-      flex:1;
-      overflow:auto;
-      padding:16px;
+    /* Bu sayfa: index topbar + menu + footer aynen, arası diyet */
+    .page-body{
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+      padding: 16px;
       display:flex;
       flex-direction:column;
       gap:12px;
     }
 
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:18px;
-      padding:14px;
-      box-shadow: 0 16px 40px rgba(0,0,0,.35);
+    /* Sadece diyet sayfasında chat alanı yok -> main.js bir şey bozmasın */
+    #chat{ display:none !important; }
+
+    /* Kartlar (senin tasarımın) */
+    :root{
+      --d-bg:#0e0e0e;
+      --d-soft:rgba(255,255,255,.62);
+      --d-border:rgba(255,255,255,.10);
+      --d-card:rgba(255,255,255,.04);
+      --d-gold:#ffb300;
+      --d-pist:#bef264;
+      --d-ok:#22c55e;
+      --d-danger:#ff5252;
     }
 
     .hero{
       position:relative;
       overflow:hidden;
       border-radius:20px;
-      border:1px solid rgba(255,255,255,.10);
+      border:1px solid var(--d-border);
       padding:14px;
       background:
         radial-gradient(900px 420px at 0% 0%, rgba(255,179,0,.12), transparent 55%),
@@ -149,6 +71,21 @@
       gap:6px;
     }
 
+    .chip{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      font-size:11px;
+      font-weight:900;
+      color:rgba(255,255,255,.82);
+      white-space:nowrap;
+    }
+    .chip.ok{ border-color: rgba(34,197,94,.35); color:#22c55e; background:rgba(34,197,94,.08); }
+    .chip.warn{ border-color: rgba(255,179,0,.35); color:#ffb300; background:rgba(255,179,0,.08); }
+    .chip.bad{ border-color: rgba(255,82,82,.35); color:#ff5252; background:rgba(255,82,82,.08); }
+
     .actions{
       display:flex;
       gap:10px;
@@ -180,14 +117,19 @@
       border:1px solid rgba(255,255,255,.10);
       color:rgba(255,255,255,.82);
     }
-    .btn.full{ width:100%; }
 
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:18px;
+      padding:14px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.35);
+    }
     .grid{
       display:grid;
       grid-template-columns:1fr;
       gap:10px;
     }
-
     .meal{
       border-radius:18px;
       border:1px solid rgba(255,255,255,.10);
@@ -214,7 +156,6 @@
       color:rgba(255,255,255,.86);
       white-space:pre-wrap;
     }
-
     .hint{
       font-size:12px;
       color:rgba(255,255,255,.60);
@@ -222,19 +163,17 @@
       margin-top:6px;
     }
 
-    .print-area{ display:none; }
-
     /* PRINT/PDF */
+    .print-area{ display:none; }
     @media print{
       body, html{ background:#fff !important; }
-      .diet-topbar, .actions, .diet-back, .diet-top-actions, .footer-container{ display:none !important; }
-      .diet-content{ padding:0 !important; }
-      .hero, .card{ box-shadow:none !important; border:none !important; }
-      .print-area{ display:block !important; }
+      .topbar, .menu-overlay, .footer-container{ display:none !important; }
+      .page-body{ padding:0_toggle !important; }
       .screen-area{ display:none !important; }
+      .print-area{ display:block !important; }
+      .hero, .card{ box-shadow:none !important; border:none !important; }
     }
 
-    /* PDF görsel layout */
     .print-sheet{
       padding:18px;
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
@@ -296,26 +235,114 @@
       font-size:11px;
       opacity:.7;
     }
+
+    /* Diyet sayfasında üstte sayfa başlığı küçük */
+    .diet-inline-title{
+      font-weight:950;
+      font-size:15px;
+      color:#fff;
+    }
   </style>
 </head>
 
 <body>
-  <div class="diet-frame">
-    <div class="diet-topbar">
-      <button class="diet-back" id="backBtn" title="Geri">←</button>
 
-      <div class="diet-title">
-        <div class="h">Diyet</div>
-        <div class="s" id="dayLine">—</div>
+  <div class="mobile-frame" id="mobileFrame">
+    <!-- TOPBAR (index ile uyumlu id/sınıf) -->
+    <div class="topbar">
+      <div class="left-controls">
+        <button class="hamb-btn" id="hambBtn">☰</button>
       </div>
 
-      <div class="diet-top-actions">
-        <div class="chip" id="bmiChip">—</div>
+      <div class="brand-wrapper" id="brandWrapper">
+        <div class="logo-area">
+          <svg class="seesaw-svg" viewBox="0 0 40 20">
+            <g class="seesaw-bar" id="seesawBar">
+              <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+              <circle cx="3" cy="5" r="3" fill="#bef264" />
+              <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+            </g>
+            <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+          </svg>
+          <div class="brand-name">Caynana AI</div>
+        </div>
+        <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+      </div>
+
+      <div class="right-controls">
+        <div class="notif-row">
+          <div class="notif-topline">
+            <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+              <svg viewBox="0 0 24 24">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+              <div class="badge" id="notifBadge"></div>
+            </button>
+            <div id="planChip" class="plan-chip">FREE</div>
+          </div>
+
+          <div class="notification-dropdown" id="notifDropdown">
+            <div class="notif-header">Bildirimler</div>
+            <div class="notif-list" id="notifList"></div>
+          </div>
+
+          <div class="yp-chip">
+            <div class="yp-label">SAMİMİYET</div>
+            <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+            <div class="yp-num" id="ypNum">19%</div>
+          </div>
+
+          <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </button>
+        </div>
       </div>
     </div>
 
-    <div class="diet-content">
-      <!-- SCREEN AREA -->
+    <!-- MENU (index ile uyumlu) -->
+    <div class="menu-overlay" id="menuOverlay">
+      <div class="menu-sidebar">
+        <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
+
+        <div class="profile-shortcut-wrap" id="profileShortcutMount">
+          <div class="profile-shortcut-btn" id="profileShortcutBtn">
+            <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
+            <div class="profile-shortcut-text">
+              <div class="profile-shortcut-title">Profil Düzenle</div>
+              <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
+        <div class="history-list" id="historyList"></div>
+
+        <div class="menu-block asistan">
+          <div class="block-head">Asistan</div>
+          <div class="menu-grid" id="menuAsistan"></div>
+        </div>
+
+        <div class="menu-block astro">
+          <div class="block-head">Astro AI</div>
+          <div class="menu-grid" id="menuAstro"></div>
+        </div>
+
+        <div class="menu-block kurumsal">
+          <div class="block-head">Kurumsal</div>
+          <div class="menu-grid" id="menuKurumsal"></div>
+        </div>
+
+        <div class="menu-footer-actions">
+          <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
+          <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
+          <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE BODY (üst-alt arasında sadece bu) -->
+    <div class="page-body">
       <div class="screen-area">
         <div class="hero">
           <div class="hero-top">
@@ -326,22 +353,21 @@
             <div class="hero-right">
               <div class="chip" id="statusChip">—</div>
               <div class="chip" id="dateChip">—</div>
+              <div class="chip" id="bmiChip">—</div>
             </div>
           </div>
 
           <div class="actions">
             <button class="btn primary" id="shareBtn">📤 WhatsApp’tan paylaş</button>
             <button class="btn ghost" id="pdfBtn">🧾 PDF indir</button>
-            <button class="btn ghost" id="profileBtn">👤 Profiline git</button>
+            <button class="btn ghost" id="goProfileBtn">👤 Profiline git</button>
           </div>
 
           <div class="hint" id="hintLine"></div>
         </div>
 
         <div class="card">
-          <div class="grid" id="mealsGrid">
-            <!-- meals -->
-          </div>
+          <div class="grid" id="mealsGrid"></div>
         </div>
       </div>
 
@@ -366,217 +392,23 @@
         </div>
       </div>
     </div>
+
+    <!-- FOOTER (index ile aynı) -->
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="/pages/hakkimizda.html">Hakkımızda</a>
+        <a href="/pages/sss.html">SSS</a>
+        <a href="/pages/gizlilik.html">Gizlilik</a>
+        <a href="/pages/iletisim.html">İletişim</a>
+      </div>
+      <div class="footer-brand">@CaynanaAI By Ozyigits 2026</div>
+    </div>
   </div>
 
-<script type="module">
-  import { BASE_DOMAIN, STORAGE_KEY } from "/js/config.js";
+  <!-- main.js (menü+auth+topbar ortak davranışlar için) -->
+  <script type="module" src="/js/main.js"></script>
 
-  const DIET_ENDPOINT = "/api/diet/today";
-
-  const $ = (id) => document.getElementById(id);
-
-  function safeJson(s, fb={}){ try{ return JSON.parse(s||""); }catch(e){ return fb; } }
-  function norm(s){ return String(s||"").trim(); }
-
-  function trDayName(d = new Date()){
-    const days = ["Pazar","Pazartesi","Salı","Çarşamba","Perşembe","Cuma","Cumartesi"];
-    return days[d.getDay()];
-  }
-
-  function todayStr(){
-    const d = new Date();
-    const dd = String(d.getDate()).padStart(2,"0");
-    const mm = String(d.getMonth()+1).padStart(2,"0");
-    const yy = d.getFullYear();
-    return `${dd}.${mm}.${yy}`;
-  }
-
-  function setChip(el, text, kind=""){
-    if(!el) return;
-    el.classList.remove("ok","warn","bad");
-    if(kind) el.classList.add(kind);
-    el.textContent = text;
-  }
-
-  function buildShareText(data){
-    const day = $("dayLine")?.textContent || "";
-    const bmi = data?.bmi != null ? String(data.bmi) : "—";
-    const st = data?.status || "—";
-
-    const plan = data?.plan || {};
-    const lines = [
-      `🍽️ Diyet Menüsü (${day})`,
-      `VKİ: ${bmi} | Durum: ${st}`,
-      "",
-      `Kahvaltı: ${plan.kahvalti || "-"}`,
-      `Ara Öğün: ${plan.ara || "-"}`,
-      `Öğle: ${plan.ogle || "-"}`,
-      `Akşam: ${plan.aksam || "-"}`,
-      "",
-      "@CaynanaAI"
-    ];
-    return lines.join("\n");
-  }
-
-  function renderMeals(plan){
-    const grid = $("mealsGrid");
-    if(!grid) return;
-    grid.innerHTML = "";
-
-    const items = [
-      { key:"kahvalti", title:"Kahvaltı", icon:"🥣" },
-      { key:"ara", title:"Ara Öğün", icon:"🍎" },
-      { key:"ogle", title:"Öğle", icon:"🍽️" },
-      { key:"aksam", title:"Akşam", icon:"🌙" },
-    ];
-
-    items.forEach(it=>{
-      const div = document.createElement("div");
-      div.className = "meal";
-      div.innerHTML = `
-        <div class="meal-head">
-          <div class="mttl">${it.icon} ${it.title}</div>
-        </div>
-        <div class="meal-body">${(plan?.[it.key] || "—").trim()}</div>
-      `;
-      grid.appendChild(div);
-    });
-  }
-
-  function renderPrint(plan, meta){
-    const printGrid = $("printGrid");
-    if(!printGrid) return;
-    printGrid.innerHTML = "";
-
-    const items = [
-      { key:"kahvalti", title:"Kahvaltı" },
-      { key:"ara", title:"Ara Öğün" },
-      { key:"ogle", title:"Öğle" },
-      { key:"aksam", title:"Akşam" },
-    ];
-
-    items.forEach(it=>{
-      const b = document.createElement("div");
-      b.className = "print-box";
-      b.innerHTML = `
-        <div class="h">${it.title}</div>
-        <div class="b">${(plan?.[it.key] || "—").trim()}</div>
-      `;
-      printGrid.appendChild(b);
-    });
-
-    // badges
-    const bmi = meta?.bmi != null ? `VKİ: ${meta.bmi}` : "VKİ: —";
-    const st = meta?.status ? `Durum: ${meta.status}` : "Durum: —";
-    const dt = meta?.date ? `Tarih: ${meta.date}` : `Tarih: ${todayStr()}`;
-
-    $("printBmi").textContent = bmi;
-    $("printStatus").textContent = st;
-    $("printDate").textContent = dt;
-
-    // renk sınıfı
-    const statusKind = (meta?.status || "").toLowerCase();
-    const kind = statusKind.includes("normal") ? "ok" : (statusKind.includes("kilolu") ? "warn" : (statusKind.includes("obez") ? "bad" : ""));
-    ["printBmi","printStatus","printDate"].forEach(id=>{
-      const el = $(id);
-      if(el){
-        el.classList.remove("ok","warn","bad");
-        if(kind) el.classList.add(kind);
-      }
-    });
-
-    $("printDayLine").textContent = $("dayLine")?.textContent || "";
-  }
-
-  async function fetchDiet(){
-    const user = safeJson(localStorage.getItem(STORAGE_KEY), {});
-    const userId = norm(user?.id || user?.user_id || user?.email || "");
-    if(!userId){
-      $("heroSub").textContent = "Evladım önce giriş yap.";
-      $("hintLine").textContent = "";
-      return;
-    }
-
-    // header day
-    const now = new Date();
-    const dayName = trDayName(now);
-    const dayLine = `${dayName} • ${todayStr()}`;
-    $("dayLine").textContent = dayLine;
-
-    try{
-      const res = await fetch(`${BASE_DOMAIN}${DIET_ENDPOINT}`, {
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify({ user_id: userId })
-      });
-
-      const data = await res.json().catch(()=> ({}));
-
-      // tarih
-      setChip($("dateChip"), data?.date ? data.date : todayStr(), "");
-      $("heroTitle").textContent = "Bugünün Diyet Menüsü";
-
-      if(!data?.ok){
-        // profil eksikse yönlendir
-        $("heroSub").textContent = data?.message || "Evladım, diyet için önce profilini doldur.";
-        $("hintLine").textContent = "Boy, kilo, cinsiyet ve doğum tarihi dolu olmalı.";
-        setChip($("statusChip"), "Profil eksik", "warn");
-        setChip($("bmiChip"), "VKİ: —", "warn");
-        renderMeals({ kahvalti:"—", ara:"—", ogle:"—", aksam:"—" });
-        renderPrint({ kahvalti:"—", ara:"—", ogle:"—", aksam:"—" }, { date: data?.date || todayStr(), bmi: null, status:"Profil eksik" });
-        return;
-      }
-
-      const bmi = data?.bmi;
-      const status = data?.status || "";
-
-      const kind =
-        (status || "").toLowerCase().includes("normal") ? "ok" :
-        (status || "").toLowerCase().includes("kilolu") ? "warn" :
-        (status || "").toLowerCase().includes("obez") ? "bad" : "";
-
-      setChip($("statusChip"), `Durum: ${status}`, kind);
-      setChip($("bmiChip"), (bmi != null ? `VKİ: ${bmi}` : "VKİ: —"), kind);
-
-      $("heroSub").textContent = "Evladım, bugün bunu uygula. Yarın 00:00’dan sonra yenisi gelir.";
-      $("hintLine").textContent = "İpucu: Su içmeyi unutma. Şekerli içecek yok, hadi bakalım.";
-
-      const plan = data?.plan || {};
-      renderMeals(plan);
-      renderPrint(plan, data);
-
-      // share handler uses latest data
-      window.__DIET_LAST__ = data;
-
-    }catch(e){
-      $("heroSub").textContent = "Bağlantı gitti gibi… Diyet menüsü çekilemedi.";
-      $("hintLine").textContent = "Birazdan tekrar dene evladım.";
-    }
-  }
-
-  // Buttons
-  $("backBtn").addEventListener("click", ()=>{
-    if(history.length > 1) history.back();
-    else location.href = "/";
-  });
-
-  $("profileBtn").addEventListener("click", ()=>{
-    location.href = "/pages/profil.html";
-  });
-
-  $("shareBtn").addEventListener("click", async ()=>{
-    const data = window.__DIET_LAST__ || {};
-    const text = buildShareText(data);
-    const url = "https://wa.me/?text=" + encodeURIComponent(text);
-    window.open(url, "_blank");
-  });
-
-  $("pdfBtn").addEventListener("click", ()=>{
-    // print-to-PDF (en stabil)
-    window.print();
-  });
-
-  fetchDiet();
-</script>
+  <!-- diet sayfası logic -->
+  <script type="module" src="/js/diet.js"></script>
 </body>
 </html>
