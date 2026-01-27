@@ -10,6 +10,7 @@
 }
 
 * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
 body, html {
   margin:0; padding:0;
   width:100%; height:100dvh;
@@ -21,6 +22,7 @@ body, html {
   align-items:center;
   justify-content:center;
 }
+
 ::-webkit-scrollbar { display:none; }
 
 /* =========================
@@ -36,6 +38,7 @@ body, html {
   flex-direction:column;
   overflow:hidden;
   box-shadow:0 0 50px rgba(255,255,255,0.05);
+  min-height:0; /* ✅ scroll fix */
 }
 @media(min-width:500px){
   .mobile-frame { height:95dvh; border-radius:24px; border:1px solid #333; }
@@ -73,11 +76,12 @@ body, html {
   flex:1;
   transition:transform .4s;
 }
-.logo-area{ display:flex; align-items:center; gap:6px; }
+
+.logo-area{ display:flex; align-items:center; gap:10px; } /* ✅ biraz aç */
 .brand-name{ font-weight:800; font-size:15px; color:#fff; }
 .slogan{ font-size:9px; color:#888; font-weight:500; }
 
-.seesaw-svg{ width:32px; height:16px; overflow:visible; }
+.seesaw-svg{ width:36px; height:18px; overflow:visible; } /* ✅ büyüt */
 .seesaw-bar{
   transform-origin:20px 8px;
   transition:transform .5s cubic-bezier(.17,.88,.32,1.27);
@@ -94,7 +98,7 @@ body, html {
 @keyframes breath{ from{transform:scale(1)} to{transform:scale(1.5)} }
 
 /* =========================
-   SAMIMIYET + ICONS
+   S.P + ICONS
    ========================= */
 .yp-chip{
   display:flex;
@@ -159,77 +163,18 @@ body, html {
 .notif-desc{ font-size:11px; color:#aaa; }
 
 /* =========================
-   FACE / EYES
-   ========================= */
-.face-container{
-  flex:0 0 0px;
-  background:linear-gradient(to bottom, var(--bg), transparent);
-  overflow:hidden;
-  transition:flex-basis .5s;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  position:relative;
-  z-index:2500;
-}
-.mobile-frame.tracking-active .face-container{ flex-basis:160px; }
-
-.face-panel-inner{
-  opacity:0;
-  transition:.4s;
-  transform:translateY(-20px);
-  width:100%;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-}
-.mobile-frame.tracking-active .face-panel-inner{ opacity:1; transform:translateY(0); }
-
-.eyes-row{ display:flex; gap:24px; margin-bottom:8px; }
-.eye{
-  width:80px; height:55px;
-  position:relative;
-  overflow:hidden;
-  border-radius:50%;
-  background:#e0e0e0;
-  border:2px solid #1a1a1a;
-  --gx:0px; --gy:0px;
-}
-.sclera{ width:100%; height:100%; position:relative; overflow:hidden; box-shadow:inset 0 0 10px rgba(0,0,0,.5); }
-.iris{
-  width:30px; height:30px;
-  background:radial-gradient(circle,#5d4037 0%,#281a16 100%);
-  border-radius:50%;
-  position:absolute;
-  top:50%; left:50%;
-  transform:translate(calc(-50% + var(--gx)), calc(-50% + var(--gy)));
-  border:1px solid rgba(255,255,255,.25);
-  transition:transform .1s linear;
-}
-.pupil{ width:10px; height:10px; background:#000; border-radius:50%; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); }
-.lid-top, .lid-bot{ position:absolute; left:0; width:100%; background:var(--bg); z-index:10; transition:height .3s; }
-.lid-top{ top:0; height:var(--lidTop, 0%); border-bottom:2px solid #222; }
-.lid-bot{ bottom:0; height:var(--lidBot, 0%); border-top:2px solid #222; }
-
-.mouth-wrapper{ width:50px; height:20px; display:flex; justify-content:center; margin-top:5px; }
-.mouth{ width:30px; height:5px; background:var(--lip-color); border-radius:10px; opacity:.9; transition:transform .1s; }
-.mobile-frame.talking .mouth{ animation:mouthTalk .2s infinite alternate; }
-@keyframes mouthTalk{ from{transform:scaleX(1)} to{transform:scaleX(1.3) scaleY(1.2)} }
-
-/* =========================
-   CHAT
+   CHAT  ✅ scroll fix
    ========================= */
 .chat-area{
-  flex:1;
+  flex:1 1 auto;
+  min-height:0;
   overflow-y:auto;
   padding:15px;
   display:flex;
   flex-direction:column;
   gap:10px;
-
-  /* ✅ sohbet input dibinden başlamasın: altta boşluk */
-  padding-bottom: 85px;
+  padding-bottom:58px; /* ✅ dock arası */
+  -webkit-overflow-scrolling: touch;
 }
 .chat-area:empty::before{
   content:"Kaynana burada evladım… yaz da iki laflayalım 🙂";
@@ -250,15 +195,12 @@ body, html {
   position:relative;
   word-wrap:break-word;
 }
-
-/* ✅ kavis geri: sadece 2px değil, daha yumuşak “kırık köşe” */
 .bubble.bot{
   align-self:flex-start;
   background:#1c1c1c;
   border-left:3px solid var(--gold);
   color:#ddd;
-  border-top-left-radius:10px;   /* önceki 2px çok keskin */
-  border-bottom-left-radius:14px;
+  border-top-left-radius:10px;
 }
 .bubble.user{
   align-self:flex-end;
@@ -266,11 +208,8 @@ body, html {
   border-right:3px solid var(--pistachio);
   color:#fff;
   border-top-right-radius:10px;
-  border-bottom-right-radius:14px;
   text-align:right;
 }
-
-/* thinking çizgisi */
 .bubble.bot.loading::before{
   content:"";
   position:absolute;
@@ -278,7 +217,7 @@ body, html {
   height:100%; width:3px;
   background:var(--gold);
   animation:loadBar 1s infinite;
-  border-radius:999px; /* ✅ çizgi kavisli */
+  border-radius:999px;
 }
 @keyframes pop{ from{transform:scale(.95);opacity:.5} to{transform:scale(1);opacity:1} }
 @keyframes loadBar{ 0%,100%{opacity:.3} 50%{opacity:1} }
@@ -294,29 +233,6 @@ body, html {
   align-items:center;
   z-index:3000;
 }
-
-.track-btn-row{
-  display:flex;
-  justify-content:center;
-  width:100%;
-  height:24px;
-  overflow:hidden;
-  transition:.3s;
-  opacity:1;
-}
-.mobile-frame.tracking-active .track-btn-row{ height:0; opacity:0; }
-
-.track-toggle-btn{
-  background:rgba(255,179,0,.15);
-  color:var(--gold);
-  border:1px solid var(--gold);
-  padding:3px 12px;
-  border-radius:12px;
-  font-size:9px;
-  cursor:pointer;
-  margin-bottom:5px;
-}
-
 .dock-inner{
   width:100%;
   max-width:380px;
@@ -330,7 +246,6 @@ body, html {
   padding:0 6px;
   box-shadow:0 5px 25px rgba(0,0,0,.3);
 }
-
 .icon-btn{
   width:38px; height:38px;
   border-radius:50%;
@@ -343,8 +258,6 @@ body, html {
   flex-shrink:0;
 }
 .icon-btn svg{ width:20px; height:20px; stroke:#aaa; stroke-width:2; fill:none; }
-.icon-btn:hover svg{ stroke:var(--gold); }
-
 textarea{
   flex:1;
   background:transparent;
@@ -360,7 +273,6 @@ textarea{
   white-space:nowrap;
   overflow:hidden;
 }
-
 .send-btn{
   width:38px; height:38px;
   border-radius:50%;
@@ -375,7 +287,7 @@ textarea{
 .send-btn svg{ width:20px; height:20px; fill:none; stroke:#000; stroke-width:2; }
 
 /* =========================
-   MENU (overlay + sidebar)
+   MENU
    ========================= */
 .menu-overlay{
   position:fixed;
@@ -388,10 +300,6 @@ textarea{
   display:flex;
 }
 .menu-overlay.open{ opacity:1; pointer-events:auto; z-index:9999; }
-
-/* ❌ KALDIRILDI: menü açınca her şeyi kilitleyen bug
-.menu-overlay.open ~ *{ pointer-events:none; }
-*/
 
 .menu-sidebar{
   width:280px;
@@ -415,129 +323,194 @@ textarea{
   color:#000;
   border:none;
   padding:12px;
-  border-radius:10px;
-  font-weight:bold;
+  border-radius:12px;
+  font-weight:900;
   cursor:pointer;
-  margin-bottom:20px;
+  margin-bottom:14px;
   font-size:13px;
   display:flex;
   justify-content:center;
   gap:6px;
-
   position: sticky;
   top: 0;
   z-index: 2;
   box-shadow: 0 10px 18px rgba(0,0,0,.35);
 }
 
-/* Sidebar başlıkları */
+/* ✅ Profil kartı: 3D turuncu buton */
+.profile-shortcut-wrap{ margin: 10px 0 14px; }
+.profile-shortcut-btn{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 12px;
+  border-radius:16px;
+  cursor:pointer;
+  user-select:none;
+  background: linear-gradient(180deg, rgba(255,179,0,.20), rgba(0,0,0,0));
+  border: 1px solid rgba(255,179,0,.45);
+  box-shadow: 0 16px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);
+  transition: transform .12s ease, filter .12s ease;
+}
+.profile-shortcut-btn:active{ transform: translateY(1px); filter: brightness(.98); }
+.profile-shortcut-title{ font-weight:950; color:#ffb300; line-height:1.1; }
+.profile-shortcut-sub{ font-size:12px; color:rgba(255,255,255,.70); margin-top:2px; }
+
+.profile-shortcut-ico{
+  width:34px; height:34px;
+  border-radius:12px;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#ffb300;
+  border:1px solid rgba(255,179,0,.55);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
+  color:#111;
+  position:relative;
+  flex:0 0 34px;
+}
+.profile-shortcut-ico img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+/* küçük + rozeti */
+.profile-shortcut-ico::after{
+  content:"+";
+  position:absolute;
+  right:-6px;
+  top:-6px;
+  width:18px;
+  height:18px;
+  border-radius:999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  font-size:12px;
+  background: var(--pistachio);
+  color:#111;
+  border:2px solid rgba(12,12,12,.98);
+  box-shadow: 0 6px 12px rgba(0,0,0,.35);
+}
+
 .section-title{
   font-size:10px;
   color:#666;
   margin-bottom:8px;
   text-transform:uppercase;
   letter-spacing:1px;
-  font-weight:700;
-  margin-top:15px;
+  font-weight:800;
+  margin-top:10px;
   border-bottom:1px solid #222;
   padding-bottom:5px;
-
-  position: sticky;
-  top: 56px;
-  z-index: 1;
-  background: rgba(17,17,17,.92);
-  backdrop-filter: blur(8px);
 }
 
-/* Son sohbet listesi */
+/* history */
 .history-list{ display:flex; flex-direction:column; gap:6px; }
-.recent-chat-item{
+.history-row{
   display:flex;
+  align-items:center;
   justify-content:space-between;
-  align-items:center;
-  padding:10px;
-  background:#1a1a1a;
-  border-radius:8px;
-  font-size:13px;
-  color:#ccc;
-  cursor:pointer;
-  border:1px solid rgba(255,255,255,.06);
-}
-.recent-chat-item:hover{ border-color:rgba(255,179,0,.30); }
-.del-chat{ background:none; border:none; color:#ff5252; cursor:pointer; padding:0 6px; }
-
-/* =========================
-   MENU LIST (✅ EMOJI/İKONLAR GERİ)
-   ========================= */
-.menu-grid{
-  display:flex;
-  flex-direction:column;
   gap:10px;
-  margin-bottom:10px;
-}
-
-.menu-action{
-  position:relative;
-  display:flex;
-  flex-direction:row;
-  align-items:center;
-  justify-content:flex-start;
-  text-align:left;
-
-  padding:14px;
-  border-radius:14px;
-  background: rgba(255,255,255,.035);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: 0 10px 20px rgba(0,0,0,.18);
+  padding:10px 10px;
+  background:#1a1a1a;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.08);
   cursor:pointer;
-  transition:.12s;
-  user-select:none;
-
-  border-left: 3px solid rgba(255,255,255,.08);
 }
-.menu-action:hover{ background: rgba(255,255,255,.05); border-left-color: rgba(255,179,0,.16); }
-.menu-action:active{ transform: scale(.985); background: rgba(255,255,255,.06); }
-
-/* ✅ BURASI DEĞİŞTİ: minimal glyph YOK, ikon/emoji VAR */
-.menu-action .ico{
-  width:30px;
-  height:30px;
-  border-radius:10px;
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.12);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,.35);
+.history-title{
+  font-size:13px;
+  color:#ddd;
+  font-weight:700;
+  max-width:180px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.history-del{
+  width:34px;
+  height:34px;
+  border-radius:12px;
   display:flex;
   align-items:center;
   justify-content:center;
-  margin-right:12px;
-
-  font-size:18px;    /* ✅ emoji/ikon geri */
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.70);
 }
-.menu-action .ico::before{ content:none !important; } /* ✅ glyph kapalı */
 
-.menu-action > div{
+/* MENU BLOCKS */
+.menu-block{
+  background: rgba(20,20,20,.55);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius:18px;
+  padding:12px;
+  margin:10px 0;
+  box-shadow: 0 14px 30px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.10);
+}
+.block-head{
   display:flex;
-  flex-direction:column;
-  gap:2px;
+  align-items:center;
+  justify-content:space-between;
+  padding:2px 2px 10px;
+  border-bottom:1px solid rgba(255,255,255,.10);
+  margin-bottom:10px;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+  font-weight:900;
+  font-size:11px;
+  opacity:.95;
 }
-.menu-action div div{
-  font-size:15px;
-  font-weight:750;
-  letter-spacing:.2px;
-  color:#e8e8e8;
-}
-.menu-action small{
-  font-size:12px;
-  color:#9a9a9a;
-  margin:0;
+.menu-block.asistan .block-head{ color:#ffb300; }   /* ✅ belirgin */
+.menu-block.astro .block-head{ color:#bef264; }     /* ✅ belirgin */
+.menu-block.kurumsal .block-head{ color:#ff5252; }  /* ✅ belirgin */
+
+.menu-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
 }
 
-/* =========================
-   MENU FOOTER ACTIONS
-   ========================= */
+.menu-action{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border-radius:16px;
+  padding:12px 12px;
+  cursor:pointer;
+  user-select:none;
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,0));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 14px 26px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.12);
+  transition: transform .12s ease, filter .12s ease;
+}
+.menu-action:active{ transform: translateY(1px); filter: brightness(.98); }
+
+/* ✅ İKONLAR GERİ: font-size:0 KALDIR */
+.menu-action .ico{
+  width:38px; height:38px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;     /* ✅ icon visible */
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+  background: rgba(255,255,255,.04);
+}
+.menu-action .ico::before{ content:none !important; } /* ✅ glyph sistemi varsa iptal */
+
+.menu-action > div{ display:flex; flex-direction:column; gap:2px; }
+.menu-action > div > div{ font-size:14px; font-weight:800; color:#e8e8e8; }
+.menu-action small{ display:none; } /* ikinci satır istemiyordun */
+
+/* menu footer */
 .menu-footer-actions{
   margin-top:auto;
-  padding-top:20px;
+  padding-top:14px;
   border-top:1px solid #222;
   display:flex;
   flex-direction:column;
@@ -550,73 +523,19 @@ textarea{
   cursor:pointer;
   display:block;
   background:#1a1a1a;
-  border-radius:8px;
-  text-align:center;
-  font-weight:500;
-}
-.delete-acc{ color:#b71c1c; background:transparent; border:1px solid #333; }
-
-/* =========================
-   OVERLAYS
-   ========================= */
-.full-overlay{
-  position:fixed;
-  inset:0;
-  background:#000;
-  z-index:6000;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  opacity:0;
-  pointer-events:none;
-  transition:.3s;
-  padding:20px;
-}
-.full-overlay.active{ opacity:1; pointer-events:auto; }
-
-.login-card{ width:100%; max-width:320px; text-align:center; }
-
-.auth-btn{
-  width:100%;
-  padding:12px;
   border-radius:12px;
-  margin-bottom:12px;
-  cursor:pointer;
-  border:1px solid #ddd;
-  background:#fff;
-  font-size:14px;
-  font-weight:800;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
+  text-align:center;
+  font-weight:700;
 }
-.auth-btn.disabled{ opacity:.5; pointer-events:none; filter:grayscale(1); }
-.auth-btn.google{ color:#222; }
-.auth-btn.apple{ background:#000; color:#fff; border:1px solid #333; }
+.delete-acc{ color:#ff5252; background:transparent; border:1px solid #333; }
 
-.agreement-box{
-  display:flex;
-  align-items:center;
-  justify-content:flex-start;
-  gap:8px;
-  text-align:left;
-  margin:10px 0 12px;
-  font-size:11px;
-  color:#bbb;
-}
-.agreement-box input{ transform:scale(1.05); }
-
-/* =========================
-   FOOTER
-   ========================= */
 .footer-container{
   text-align:center;
   padding:10px 0;
   border-top:1px solid #1a1a1a;
   width:100%;
   background:linear-gradient(to top, rgba(0,0,0,.55), transparent);
+  flex:0 0 auto;
 }
 .footer-links{
   display:flex;
@@ -634,390 +553,8 @@ textarea{
   letter-spacing:.2px;
 }
 
+/* focus */
 button:focus, a:focus, textarea:focus{
   outline:2px solid rgba(255,179,0,.25);
   outline-offset:2px;
-}
-/* =========================
-   FINAL FIX (tek sefer)
-   ========================= */
-
-/* 1) ÜST BAR: FREE zil yanında, S.P alt satırda, sıkışma yok */
-.right-controls{
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:flex-end !important;
-  gap:6px !important;
-}
-
-.notif-row{
-  display:flex !important;
-  align-items:center !important;
-  gap:10px !important;
-}
-
-#notifBtn{
-  display:flex !important;
-  align-items:center !important;
-  gap:8px !important;
-}
-
-/* FREE chip (zil yanında) */
-.plan-chip{
-  display:inline-flex !important;
-  align-items:center !important;
-  font-size:10px !important;
-  font-weight:900 !important;
-  letter-spacing:.7px !important;
-  padding:5px 10px !important;
-  border-radius:999px !important;
-  border:1px solid rgba(255,255,255,.10) !important;
-  background: rgba(255,255,255,.04) !important;
-  color: rgba(255,255,255,.75) !important;
-}
-
-/* SAMİMİYET yazısı yerine S.P (kısalt) */
-.yp-label{ font-size:0 !important; }
-.yp-label::after{
-  content:"S.P" !important;
-  font-size:10px !important;
-  font-weight:900 !important;
-  letter-spacing:.6px !important;
-  color: rgba(255,255,255,.75) !important;
-}
-
-/* Chip daha kompakt (telefon sıkışmasın) */
-.yp-chip{ padding:4px 8px !important; gap:6px !important; }
-.yp-meter{ width:34px !important; }
-.yp-num{ width:20px !important; }
-
-/* Tahtaravalli Caynana yazısına çok yaklaşmasın */
-.logo-area{ gap:10px !important; }
-.seesaw-svg{ width:34px !important; height:17px !important; margin-right:2px !important; }
-
-/* 2) ÜST BAR: ana sayfa profil ikonu KAPALI (profil sadece sol menüden) */
-#profileBtn{ display:none !important; }
-
-/* 3) MENÜ: turuncu profil ikonu geri (Profil Düzenle kartı) */
-.profile-shortcut-ico{
-  background:#ffb300 !important;
-  border-color:#ffb300 !important;
-  color:#111 !important;
-}
-
-/* 4) Sohbet başlığının yanındaki kibar çöp kutusu geri gelsin */
-.history-del{ display:flex !important; }
-.del-chat{ display:none !important; } /* eski tip kırmızı çöp varsa gizle */
-
-/* 5) Sohbet yokken “Yeni sohbet / çöp” görünmesin:
-   - geçmiş listede başlık boş/sohbet ise sakla (JS daha iyi ama burada da toparlar) */
-.history-row[data-id="new"],
-.history-row[data-title="Sohbet"],
-.history-row[data-title="Yeni sohbet"]{ display:none !important; }
-
-/* 6) CHAT: sohbet ALTTAN başlasın + dock yukarı kaymasın */
-.mobile-frame{ min-height:0 !important; }
-.chat-area{
-  flex:1 1 auto !important;
-  min-height:0 !important;
-  display:flex !important;
-  flex-direction:column !important;
-  justify-content:flex-end !important; /* alttan dolar */
-  padding-bottom:95px !important;      /* dock + footer için boşluk */
-}
-
-/* Chat boşken çıkan yazı dock’u yukarı itmesin */
-.chat-area:empty::before{
-  display:none !important;
-}
-
-/* 7) Dock & footer hep altta sabit kalsın (flex taşma fix) */
-.input-dock{ flex:0 0 auto !important; }
-.footer-container{ flex:0 0 auto !important; }
-/* ===== FINAL TWEAK (son dokunuş) ===== */
-
-/* 1) Çöp kutusu geri gelsin (kibar çöp) */
-.history-del{ display:flex !important; }
-.del-chat{ display:none !important; } /* eski kırmızı çöp varsa gizle */
-
-/* 2) Profil kısayol ikonu TURUNCU geri (foto olsa bile turuncu halka görünsün) */
-.profile-shortcut-ico{
-  background:#ffb300 !important;
-  border:2px solid #ffb300 !important;
-  color:#111 !important;
-  box-shadow: 0 10px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14) !important;
-  overflow:hidden !important;
-}
-.profile-shortcut-ico img{
-  width:100% !important;
-  height:100% !important;
-  object-fit:cover !important;
-  display:block !important;
-}
-
-/* 3) Sohbet ile yazma penceresi arası: fazla açıldı → azalt */
-.chat-area{
-  padding-bottom: 58px !important;   /* 85/120 gibi değerleri override eder */
-}
-
-/* 4) (Opsiyonel ama iyi) Sohbet boşken de dock yerinden oynamasın */
-.chat-area:empty{ padding-bottom: 58px !important; }
-/* =========================
-   MASTER OVERRIDE (FINAL)
-   - Eksiltme yok, sadece en sona override
-   ========================= */
-
-/* CHAT SCROLL kesin düzelsin */
-.chat-area{
-  min-height:0 !important;
-  overflow-y:auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  overscroll-behavior: contain !important;
-  touch-action: pan-y !important;
-
-  /* chat içerik üstten aksın, scroll doğal çalışsın */
-  justify-content:flex-start !important;
-
-  /* dock altında kalmasın */
-  padding-bottom: 85px !important;
-}
-
-/* boşken de scroll kilit olmasın */
-.chat-area:empty{
-  min-height:0 !important;
-}
-
-/* Menü block başlıkları daha belirgin */
-.menu-block.asistan .block-head{ color:#ffb300 !important; }
-.menu-block.astro .block-head{ color:#bef264 !important; }
-.menu-block.kurumsal .block-head{ color:#ff5252 !important; }
-.block-head small{ display:none !important; }
-
-/* Kibar çöp kovası görünür */
-.history-del{ display:flex !important; }
-
-/* Profil + rozeti kapalı (index’te de kapalı ama garanti) */
-#profileShortcutIco::after{ content:none !important; display:none !important; }
-
-/* Login tahtaravalli animasyonu (kibar hareket) */
-.login-seesaw-bar{
-  transform-origin:110px 30px;
-  animation: loginRock 1.2s ease-in-out infinite;
-}
-@keyframes loginRock{
-  0%,100%{ transform:rotate(-4deg); }
-  50%{ transform:rotate(4deg); }
-}
-/* =========================
-   MASTER CHAT + HISTORY (FINAL)
-   ========================= */
-
-/* 1) Sohbet aşağıdan başlasın (ama scroll kilitlenmesin) */
-.chat-area{
-  min-height:0 !important;
-  overflow-y:auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  overscroll-behavior: contain !important;
-  touch-action: pan-y !important;
-
-  display:flex !important;
-  flex-direction:column !important;
-  justify-content:flex-end !important;   /* ✅ altta birikir */
-
-  padding-bottom: 85px !important;       /* dock + footer */
-}
-
-/* boşken yazı yok (dock yukarı zıplamasın) */
-.chat-area:empty::before{ display:none !important; }
-
-/* 2) History çöp: sağda, zeminsiz modern */
-.history-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.history-del{
-  background: transparent !important;
-  border: 1px solid rgba(255,255,255,.12) !important;
-  width:34px !important; height:34px !important;
-  border-radius:12px !important;
-  box-shadow:none !important;
-  color: rgba(255,255,255,.65) !important;
-}
-.history-del:hover{ border-color: rgba(255,179,0,.35) !important; color: rgba(255,179,0,.95) !important; }
-
-/* 3) Menü blok alt yazıları gizli */
-.block-head small{ display:none !important; }
-/* WhatsApp özel buton */
-.diet-btn.whatsapp{
-  background: linear-gradient(180deg, #25D366, #1EBE5D);
-  color:#0b2a16;
-  border:none;
-  box-shadow:
-    0 16px 28px rgba(37,211,102,.35),
-    inset 0 1px 0 rgba(255,255,255,.35);
-}
-
-.diet-btn.whatsapp:active{
-  transform: translateY(1px);
-  filter: brightness(.95);
-}
-/* ===== MENU ICON + ITEM FIX (FINAL) ===== */
-
-/* Menü butonlarını zorla görünür yap */
-.menu-action{
-  display:flex !important;
-  align-items:center !important;
-  gap:12px !important;
-  min-height:52px !important;
-  opacity:1 !important;
-  visibility:visible !important;
-}
-
-/* Emoji ikonları geri getir */
-.menu-action .ico{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  font-size:20px !important;
-  line-height:1 !important;
-  width:30px !important;
-  height:30px !important;
-  background: rgba(255,255,255,.06) !important;
-  border-radius:10px !important;
-}
-
-/* Eski glyph sistemi tamamen kapalı kalsın */
-.menu-action .ico::before{
-  content:none !important;
-}
-
-/* Menü grid kesin görünsün */
-.menu-grid{
-  display:flex !important;
-  flex-direction:column !important;
-  gap:10px !important;
-}
-/* =========================
-   PROFIL KISAYOLU (Premium 3D Turuncu + Küçük Avatar)
-   ========================= */
-
-/* Kapsayıcı: Menüde konumlandırma */
-.profile-shortcut-wrap {
-  margin: 12px 0 16px; /* Üst-alt boşluk */
-  padding: 0 4px;
-}
-
-/* Butonun kendisi (3D Turuncu/Siyah) */
-.profile-shortcut-btn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 14px;
-  border-radius: 18px;
-  cursor: pointer;
-  user-select: none;
-  position: relative;
-  overflow: hidden;
-
-  /* Zemin: Koyu turuncu gradyan (Premium hissi) */
-  background: linear-gradient(180deg, rgba(45, 25, 0, 0.95), rgba(20, 10, 0, 0.98));
-  
-  /* Kenarlık: Turuncu parıltılı */
-  border: 1px solid rgba(255, 179, 0, 0.4);
-  border-bottom-color: rgba(255, 179, 0, 0.2);
-
-  /* 3D Gölge ve İç Işık */
-  box-shadow: 
-    0 10px 20px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 0 0 1px rgba(0,0,0,0.5); /* Dış kontur */
-
-  transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* Hover Efekti */
-.profile-shortcut-btn:hover {
-  border-color: rgba(255, 179, 0, 0.6);
-  background: linear-gradient(180deg, rgba(55, 35, 0, 0.95), rgba(30, 15, 0, 0.98));
-  transform: translateY(-1px);
-  box-shadow: 
-    0 14px 28px rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-/* Tıklama (Active) Efekti */
-.profile-shortcut-btn:active {
-  transform: translateY(1px) scale(0.99);
-  box-shadow: 
-    0 6px 12px rgba(0, 0, 0, 0.5),
-    inset 0 2px 4px rgba(0, 0, 0, 0.4);
-  filter: brightness(0.95);
-}
-
-/* ✅ KÜÇÜK AVATAR (Solda, yuvarlak, 34px sabit) */
-#profileShortcutIco {
-  width: 38px !important;  /* Biraz büyüttüm, daha net görünsün */
-  height: 38px !important;
-  flex: 0 0 38px !important; /* Esnemeyi engelle */
-  border-radius: 50% !important; /* Tam yuvarlak */
-
-  overflow: hidden !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-
-  /* Avatar Arkaplanı (Resim yoksa turuncu görünsün) */
-  background: #ffb300 !important;
-  border: 2px solid rgba(255, 179, 0, 0.8) !important;
-  
-  /* Avatarın kendisine gölge */
-  box-shadow: 
-    inset 0 2px 4px rgba(255, 255, 255, 0.3), 
-    0 4px 8px rgba(0, 0, 0, 0.4) !important;
-
-  color: #111 !important; /* İkon rengi */
-  font-size: 18px !important;
-  line-height: 1 !important;
-}
-
-/* İçindeki resim (Google fotosu) */
-#profileShortcutIco img {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-  display: block !important;
-  border-radius: 50% !important;
-}
-
-/* Metin Alanı */
-.profile-shortcut-text {
-  flex: 1;
-  min-width: 0; /* Uzun isimlerde taşmayı önler */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* Başlık: "Profil Düzenle" */
-.profile-shortcut-title {
-  font-weight: 900;
-  font-size: 13px;
-  line-height: 1.2;
-  color: #ffb300; /* Turuncu */
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 2px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-}
-
-/* Alt Başlık: İsim Soyisim (Google'dan gelen) */
-.profile-shortcut-sub {
-  font-size: 14px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.9); /* Beyaz */
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-
-/* Artı (+) Rozeti - İstersen açabilirsin, şu an kapalı */
-#profileShortcutIco::after { 
-  content: none !important; 
 }
