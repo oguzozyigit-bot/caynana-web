@@ -9,66 +9,190 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
-    /* üst profil ikonu yok */
-    #profileBtn{ display:none !important; }
+    /* =========================
+       TOPBAR: sıkışma çözümü
+       ========================= */
+    #profileBtn{ display:none !important; } /* üst profil ikonu yok */
+
+    .right-controls{
+      display:flex !important;
+      flex-direction:column !important;
+      align-items:flex-end !important;
+      gap:6px !important;
+      width:auto !important;
+    }
+
+    .notif-row{
+      display:flex !important;
+      flex-direction:column !important;
+      align-items:flex-end !important;
+      gap:6px !important;
+    }
+
+    .notif-topline{
+      display:flex !important;
+      align-items:center !important;
+      gap:10px !important;
+    }
+
+    #notifBtn{ display:flex !important; align-items:center !important; padding:6px !important; }
+
+    .plan-chip{
+      font-size:10px !important;
+      font-weight:900 !important;
+      letter-spacing:.7px !important;
+      padding:5px 10px !important;
+      border-radius:999px !important;
+      border:1px solid rgba(255,255,255,.10) !important;
+      background: rgba(255,255,255,.04) !important;
+      color: rgba(255,255,255,.75) !important;
+      line-height:1 !important;
+      user-select:none !important;
+      text-transform:uppercase !important;
+      white-space:nowrap !important;
+    }
+
+    /* SAMİMİYET -> S.P */
+    .yp-chip .yp-label{ font-size:0 !important; }
+    .yp-chip .yp-label::after{
+      content:"S.P" !important;
+      font-size:10px !important;
+      font-weight:900 !important;
+      letter-spacing:.6px !important;
+      color: rgba(255,255,255,.75) !important;
+    }
 
     /* Logo biraz büyüsün + yazıya yapışmasın */
     .logo-area{ gap:10px !important; }
     .seesaw-svg{ width:36px !important; height:18px !important; }
 
-    /* INPUT: focus kare çerçeve yok */
-    #msgInput:focus, textarea:focus{ outline:none !important; box-shadow:none !important; }
+    /* =========================
+       CHAT: alttan başla + boşken dock kaymasın
+       ========================= */
+    .chat-area{
+      display:flex !important;
+      flex-direction:column !important;
+      justify-content:flex-end !important;
+      padding-bottom:78px !important;
+      min-height:0 !important;
+    }
+    .chat-area:empty::before{ display:none !important; }
 
-    /* Menü block başlıkları: sadece isim + renk */
-    .block-head small{ display:none !important; }
-    .menu-block.asistan .block-head{ color:#ffb300 !important; }
-    .menu-block.astro .block-head{ color:#bef264 !important; }
-    .menu-block.kurumsal .block-head{ color:#ff5252 !important; }
+    /* =========================
+       INPUT: focus kare çerçeve yok
+       ========================= */
+    #msgInput:focus, textarea:focus{
+      outline:none !important;
+      box-shadow:none !important;
+    }
 
-    /* Kurumsal içindeki profile tekrarını gizle (tek yer: turuncu kart) */
-    #menuKurumsal .menu-action[data-action="profile"]{ display:none !important; }
+    /* =========================
+       MENU: Profil kartı (3D turuncu buton) + küçük avatar
+       ========================= */
+    .profile-shortcut-wrap{ margin:10px 0 12px !important; padding:0 2px !important; }
+
+    .profile-shortcut-btn{
+      display:flex !important;
+      align-items:center !important;
+      gap:12px !important;
+      padding:12px 12px !important;
+      border-radius:16px !important;
+      cursor:pointer !important;
+      user-select:none !important;
+
+      /* 3D turuncu */
+      background: linear-gradient(180deg, rgba(255,179,0,.28), rgba(0,0,0,0)) !important;
+      border: 1px solid rgba(255,179,0,.60) !important;
+      box-shadow:
+        0 16px 28px rgba(0,0,0,.38),
+        inset 0 1px 0 rgba(255,255,255,.14) !important;
+      transition: transform .12s ease, filter .12s ease !important;
+    }
+    .profile-shortcut-btn:active{ transform: translateY(1px); filter: brightness(.98); }
+
+    /* küçük ikon alanı */
+    #profileShortcutIco{
+      width:36px !important;
+      height:36px !important;
+      border-radius:14px !important;
+      flex:0 0 36px !important;
+      overflow:hidden !important;
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+
+      background:#ffb300 !important;
+      border:1px solid rgba(255,179,0,.75) !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.14) !important;
+      color:#111 !important;
+      font-size:18px !important;
+      position:relative !important;
+    }
+
+    /* ikon üstündeki + rozetini KALDIR (sen istedin) */
+    #profileShortcutIco::after{ content:none !important; display:none !important; }
+
+    /* Avatar gelirse ikon içine bas (büyük foto yok!) */
+    #profileShortcutIco img{
+      width:100% !important;
+      height:100% !important;
+      object-fit:cover !important;
+      display:block !important;
+    }
+
+    .profile-shortcut-text{ min-width:0 !important; }
+    .profile-shortcut-title{
+      font-weight:950 !important;
+      color:#ffb300 !important;
+      line-height:1.1 !important;
+      font-size:15px !important;
+    }
+    .profile-shortcut-sub{
+      font-size:12px !important;
+      color: rgba(255,255,255,.72) !important;
+      margin-top:2px !important;
+      white-space:nowrap !important;
+      overflow:hidden !important;
+      text-overflow:ellipsis !important;
+      max-width:220px !important;
+    }
+
+    /* =========================
+       HISTORY: kibar çöp (buton)
+       ========================= */
+    .history-del{
+      display:flex !important;
+      width:34px !important;
+      height:34px !important;
+      border-radius:12px !important;
+      align-items:center !important;
+      justify-content:center !important;
+      border:1px solid rgba(255,255,255,.10) !important;
+      background: rgba(255,255,255,.04) !important;
+    }
 
     /* Menüde ikinci satırlar yok */
     .menu-action small{ display:none !important; }
 
-    /* Profil Düzenle kartı: SOLID turuncu mini ikon + avatar */
-    #profileShortcutIco{
-      width:34px !important; height:34px !important; flex:0 0 34px !important;
-      border-radius:12px !important; overflow:hidden !important;
-      display:flex !important; align-items:center !important; justify-content:center !important;
-      background:#ffb300 !important;
-      border:2px solid rgba(255,179,0,.95) !important;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 10px 18px rgba(0,0,0,.28) !important;
-      color:#111 !important; font-size:18px !important;
-    }
-    /* + rozet kesin kapalı */
-    #profileShortcutIco::after{ content:none !important; display:none !important; }
-    #profileShortcutIco img{ width:100% !important; height:100% !important; object-fit:cover !important; display:block !important; }
+    /* Kurumsal içindeki profil tekrarını gizle (profil sadece üst turuncu buton) */
+    #menuKurumsal .menu-action[data-action="profile"]{ display:none !important; }
 
-    .profile-shortcut-btn{
-      background: linear-gradient(180deg, rgba(255,179,0,.22), rgba(0,0,0,0)) !important;
-      border: 1px solid rgba(255,179,0,.55) !important;
-      box-shadow: 0 16px 28px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.12) !important;
+    /* =========================
+       LOGIN: linkler sadece 4 adet, mor/mavi yok
+       ========================= */
+    .trust-links-clean a{
+      color: rgba(255,255,255,.72) !important;
+      border-color: rgba(255,255,255,.12) !important;
+      background: rgba(255,255,255,.04) !important;
     }
-    .profile-shortcut-title{ color:#ffb300 !important; font-weight:950 !important; }
-    .profile-shortcut-sub{
-      color:rgba(255,255,255,.70) !important;
-      white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important;
-      max-width:220px !important;
+    .trust-links-clean a:visited{ color: rgba(255,255,255,.72) !important; }
+    .trust-links-clean a:hover{
+      color: rgba(255,255,255,.92) !important;
+      border-color: rgba(255,179,0,.35) !important;
     }
 
-    /* History çöp: zeminsiz modern görünüm (tek satır, sağda) */
-    .history-del{
-      background: transparent !important;
-      border: 1px solid rgba(255,255,255,.12) !important;
-      width:34px !important; height:34px !important;
-      border-radius:12px !important;
-      box-shadow: none !important;
-      color: rgba(255,255,255,.65) !important;
-    }
-    .history-del:hover{ border-color: rgba(255,179,0,.35) !important; color: rgba(255,179,0,.95) !important; }
-    .history-del svg{ opacity:.9 !important; }
-
+    /* “Google hazır...” gibi alt metin istemiyorsun -> hint'i gizle */
+    #loginHint{ display:none !important; }
   </style>
 </head>
 
@@ -96,23 +220,33 @@
     </div>
 
     <div class="right-controls">
-      <div class="yp-chip">
-        <div class="yp-label">SAMİMİYET</div>
-        <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
-        <div class="yp-num" id="ypNum">19%</div>
-      </div>
-
       <div class="notif-row">
-        <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
-          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-          <div class="badge" id="notifBadge"></div>
-        </button>
+        <!-- 1. satır: zil + FREE -->
+        <div class="notif-topline">
+          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+            <svg viewBox="0 0 24 24">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <div class="badge" id="notifBadge"></div>
+          </button>
+
+          <div id="planChip" class="plan-chip">FREE</div>
+        </div>
 
         <div class="notification-dropdown" id="notifDropdown">
           <div class="notif-header">Bildirimler</div>
           <div class="notif-list" id="notifList"></div>
         </div>
 
+        <!-- 2. satır: S.P chip -->
+        <div class="yp-chip">
+          <div class="yp-label">SAMİMİYET</div>
+          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+          <div class="yp-num" id="ypNum">19%</div>
+        </div>
+
+        <!-- üst profil butonu (CSS ile kapalı) -->
         <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
           <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </button>
@@ -125,11 +259,11 @@
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
 
-      <!-- Profil Düzenle turuncu premium kart -->
+      <!-- ✅ 3D turuncu Profil Düzenle butonu -->
       <div class="profile-shortcut-wrap" id="profileShortcutMount">
         <div class="profile-shortcut-btn" id="profileShortcutBtn">
           <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
-          <div style="min-width:0;">
+          <div class="profile-shortcut-text">
             <div class="profile-shortcut-title">Profil Düzenle</div>
             <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
           </div>
@@ -193,7 +327,7 @@
   </div>
 </div>
 
-<!-- overlays (dokunmadım) -->
+<!-- PAGE OVERLAY (dokunmadım) -->
 <div class="full-overlay" id="pageOverlay">
   <div class="login-card" style="max-width:90%; max-height:90%; overflow-y:auto;">
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
@@ -204,6 +338,7 @@
   </div>
 </div>
 
+<!-- LOGIN -->
 <div class="full-overlay active" id="loginOverlay">
   <div class="login-card login-premium">
     <div class="login-seesaw-wrap" aria-hidden="true">
@@ -225,15 +360,15 @@
     <button class="auth-btn google" id="googleLoginBtn" type="button">Google ile Devam Et</button>
     <div id="googleBtnWrap" style="margin-top:10px;"></div>
 
-    <button class="auth-btn apple disabled" id="appleLoginBtn" type="button">Apple Girişi Hazırlanıyor...</button>
+    <!-- ✅ Apple metni değişti -->
+    <button class="auth-btn apple" id="appleLoginBtn" type="button">Apple ile Devam Et</button>
 
+    <!-- ✅ Linkler sadece 4 tane -->
     <div class="trust-links trust-links-clean">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
       <a href="/pages/sss.html">SSS</a>
       <a href="/pages/gizlilik.html">Gizlilik</a>
       <a href="/pages/iletisim.html">İletişim</a>
-      <a href="/pages/sozlesme.html">Sözleşme</a>
-      <a href="/pages/uyelik.html">Üyelik</a>
     </div>
 
     <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
@@ -241,6 +376,7 @@
   </div>
 </div>
 
+<!-- TERMS (dokunmadım) -->
 <div class="full-overlay" id="termsOverlay">
   <div class="login-card login-premium">
     <div class="terms-head">
@@ -284,7 +420,7 @@
       }
     }catch(e){}
 
-    // Profil kısayol: mini avatar + isim
+    // Profil kısayol: küçük avatar bas (asla büyütmez)
     function paintProfileShortcut(){
       try{
         const u = safeJson(localStorage.getItem(STORAGE_KEY), {});
@@ -301,10 +437,44 @@
       }catch(e){}
     }
 
+    // Menüde “Yeni sohbet / Sohbet” satırlarını gizle (boş chatler)
+    function hideEmptyHistoryRows(){
+      const list = document.getElementById("historyList");
+      const title = document.getElementById("historyTitle");
+      if(!list) return;
+
+      const rows = Array.from(list.querySelectorAll(".history-row"));
+      if(rows.length === 0){
+        if(title) title.style.display = "none";
+        return;
+      }else{
+        if(title) title.style.display = "";
+      }
+
+      rows.forEach(r=>{
+        const t = String(r.textContent||"").toLowerCase().trim();
+        if(t.includes("yeni sohbe") || t === "sohbet"){
+          r.style.display = "none";
+        }
+      });
+    }
+
     document.addEventListener("DOMContentLoaded", ()=>{
       paintProfileShortcut();
+      hideEmptyHistoryRows();
+      setTimeout(hideEmptyHistoryRows, 400);
+      setTimeout(hideEmptyHistoryRows, 1200);
+
       const pbtn = document.getElementById("profileShortcutBtn");
       if(pbtn) pbtn.addEventListener("click", ()=> location.href="/pages/profil.html");
+
+      // ✅ Apple butonu: bilgi mesajı
+      const abtn = document.getElementById("appleLoginBtn");
+      if(abtn){
+        abtn.addEventListener("click", ()=>{
+          alert("Apple girişi hazırlanıyor. Google ile giriş yapabilirsiniz.\nÜyelik ücretsizdir.");
+        });
+      }
     });
   })();
 </script>
