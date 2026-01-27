@@ -558,3 +558,28 @@ button:focus, a:focus, textarea:focus{
   outline:2px solid rgba(255,179,0,.25);
   outline-offset:2px;
 }
+/* ✅ LOGIN/TERMS/PAGE overlay her zaman tam ekran ve üstte */
+.full-overlay{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  left:0 !important;
+  top:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  z-index: 9000 !important;
+}
+
+/* Terms her zaman login üstünde olsun */
+#termsOverlay{ z-index: 9100 !important; }
+#pageOverlay{ z-index: 9200 !important; }
+
+/* ✅ Login linkleri mor/mavi olmasın */
+#loginOverlay .trust-links-clean a,
+#loginOverlay .trust-links-clean a:visited,
+#loginOverlay .trust-links-clean a:hover,
+#loginOverlay .trust-links-clean a:active{
+  color: rgba(255,255,255,.55) !important;
+  text-decoration:none !important;
+}
