@@ -170,7 +170,7 @@ function trashSvg(){
 function makeChatTitleFromFirstMsg(text=""){
   const s = String(text || "").trim().replace(/\s+/g, " ");
   if(!s) return "Sohbet";
-  return s.slice(0, 10);
+  return s.slice(0, 15);
 }
 
 function trySetChatTitle(title){
@@ -561,7 +561,7 @@ function renderHistoryList(){
     row.setAttribute("data-id", c.id);
 
     let title = (c.title || "Sohbet").toString();
-    title = title.trim().slice(0, 10) || "Sohbet";
+    title = title.trim().slice(0, 15) || "Sohbet";
 
     row.innerHTML = `
       <div class="history-title">${title}</div>
