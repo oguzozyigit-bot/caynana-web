@@ -734,3 +734,31 @@ button:focus, a:focus, textarea:focus{
 /* 7) Dock & footer hep altta sabit kalsın (flex taşma fix) */
 .input-dock{ flex:0 0 auto !important; }
 .footer-container{ flex:0 0 auto !important; }
+/* ===== FINAL TWEAK (son dokunuş) ===== */
+
+/* 1) Çöp kutusu geri gelsin (kibar çöp) */
+.history-del{ display:flex !important; }
+.del-chat{ display:none !important; } /* eski kırmızı çöp varsa gizle */
+
+/* 2) Profil kısayol ikonu TURUNCU geri (foto olsa bile turuncu halka görünsün) */
+.profile-shortcut-ico{
+  background:#ffb300 !important;
+  border:2px solid #ffb300 !important;
+  color:#111 !important;
+  box-shadow: 0 10px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14) !important;
+  overflow:hidden !important;
+}
+.profile-shortcut-ico img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  display:block !important;
+}
+
+/* 3) Sohbet ile yazma penceresi arası: fazla açıldı → azalt */
+.chat-area{
+  padding-bottom: 58px !important;   /* 85/120 gibi değerleri override eder */
+}
+
+/* 4) (Opsiyonel ama iyi) Sohbet boşken de dock yerinden oynamasın */
+.chat-area:empty{ padding-bottom: 58px !important; }
