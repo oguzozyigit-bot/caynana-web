@@ -858,3 +858,39 @@ button:focus, a:focus, textarea:focus{
   transform: translateY(1px);
   filter: brightness(.95);
 }
+/* ===== MENU ICON + ITEM FIX (FINAL) ===== */
+
+/* Menü butonlarını zorla görünür yap */
+.menu-action{
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+  min-height:52px !important;
+  opacity:1 !important;
+  visibility:visible !important;
+}
+
+/* Emoji ikonları geri getir */
+.menu-action .ico{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  font-size:20px !important;
+  line-height:1 !important;
+  width:30px !important;
+  height:30px !important;
+  background: rgba(255,255,255,.06) !important;
+  border-radius:10px !important;
+}
+
+/* Eski glyph sistemi tamamen kapalı kalsın */
+.menu-action .ico::before{
+  content:none !important;
+}
+
+/* Menü grid kesin görünsün */
+.menu-grid{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:10px !important;
+}
