@@ -3,217 +3,172 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caynana AI v5.2 FINAL</title>
+  <title>Caynana AI v5.6</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/css/style.css?v=1">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
     /* =========================================================
-       ✅ TOPBAR SIKIŞMA FIX
+       TEMEL AYARLAR & RESET
        ========================================================= */
-    #profileBtn{ display:none !important; } /* üst profil ikonu yok */
-
-    .right-controls{
-      display:flex !important;
-      flex-direction:column !important;
-      align-items:flex-end !important;
-      gap:6px !important;
-      width:auto !important;
+    :root {
+      --gold: #ffb300;
+      --pistachio: #bef264;
+      --red: #ff5252;
     }
-    .notif-row{
-      display:flex !important;
-      flex-direction:column !important;
-      align-items:flex-end !important;
-      gap:6px !important;
-      position:relative !important;
-    }
-    .notif-topline{
-      display:flex !important;
-      align-items:center !important;
-      gap:10px !important;
-    }
-    #notifBtn{ display:flex !important; align-items:center !important; padding:6px !important; }
-
-    .plan-chip{
-      font-size:10px !important;
-      font-weight:900 !important;
-      letter-spacing:.7px !important;
-      padding:5px 10px !important;
-      border-radius:999px !important;
-      border:1px solid rgba(255,255,255,.10) !important;
-      background: rgba(255,255,255,.04) !important;
-      color: rgba(255,255,255,.75) !important;
-      line-height:1 !important;
-      user-select:none !important;
-      text-transform:uppercase !important;
-      white-space:nowrap !important;
-    }
-
-    /* SAMİMİYET -> S.P */
-    .yp-chip .yp-label{ font-size:0 !important; }
-    .yp-chip .yp-label::after{
-      content:"S.P" !important;
-      font-size:10px !important;
-      font-weight:900 !important;
-      letter-spacing:.6px !important;
-      color: rgba(255,255,255,.75) !important;
-    }
-
-    /* Logo biraz büyüsün + yazıya yapışmasın */
-    .logo-area{ gap:10px !important; }
-    .seesaw-svg{ width:36px !important; height:18px !important; }
-
-    /* =========================================================
-       ✅ CHAT: boşken dock kaymasın
-       ========================================================= */
-    .chat-area{
-      display:flex !important;
-      flex-direction:column !important;
-      justify-content:flex-end !important;
-      padding-bottom:78px !important;
-      min-height:0 !important;
-    }
-    .chat-area:empty::before{ display:none !important; }
-
-    /* INPUT: focus kare çerçeve yok */
-    #msgInput:focus, textarea:focus{
-      outline:none !important;
-      box-shadow:none !important;
-    }
-
-    /* =========================================================
-       ✅ MENU: Profil kartı 3D turuncu buton (KÜÇÜK AVATAR)
-       ========================================================= */
-    .profile-shortcut-wrap{ margin:10px 0 14px; }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
     
-    .profile-shortcut-btn{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding:12px 14px;
-      border-radius:18px;
-      cursor:pointer;
-      user-select:none;
-
-      /* Koyu Turuncu 3D Zemin */
-      background: linear-gradient(135deg, rgba(40, 25, 5, 0.95), rgba(15, 10, 5, 0.98));
-      border: 1px solid rgba(255,179,0,.35);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
+    /* =========================================================
+       ✅ OVERLAY SİSTEMİ (Giriş Ekranı ve Sayfalar İçin)
+       ========================================================= */
+    .full-overlay {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: #000 !important;
+      z-index: 9000 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
       
+      /* Varsayılan: Gizli */
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: opacity 0.3s ease !important;
+    }
+
+    /* Aktif olunca görünür */
+    .full-overlay.active {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+
+    /* Z-Index Katmanları */
+    #loginOverlay { z-index: 9900 !important; background: rgba(0,0,0,0.92) !important; }
+    #termsOverlay { z-index: 9950 !important; }
+    #pageOverlay  { z-index: 9800 !important; }
+
+    /* =========================================================
+       ✅ MENU (YAN PANEL)
+       ========================================================= */
+    .menu-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      z-index: 5000; opacity: 0; pointer-events: none; transition: .3s;
+      display: flex;
+    }
+    .menu-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .menu-sidebar {
+      width: 280px; height: 100%; background: #111;
+      transform: translateX(-100%); transition: .3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      display: flex; flex-direction: column;
+      border-right: 1px solid #333;
+      padding: 20px; overflow-y: auto;
+    }
+    .menu-overlay.open .menu-sidebar { transform: translateX(0); }
+
+    /* =========================================================
+       TOPBAR & DÜZENLEMELER
+       ========================================================= */
+    #profileBtn { display: none !important; }
+
+    .right-controls {
+      display: flex !important; flex-direction: column !important;
+      align-items: flex-end !important; gap: 6px !important; width: auto !important;
+    }
+    .notif-row {
+      display: flex !important; flex-direction: column !important;
+      align-items: flex-end !important; gap: 6px !important; position: relative !important;
+    }
+    .notif-topline { display: flex !important; align-items: center !important; gap: 10px !important; }
+    #notifBtn { display: flex !important; align-items: center !important; padding: 6px !important; }
+
+    .plan-chip {
+      font-size: 10px !important; font-weight: 900 !important; letter-spacing: .7px !important;
+      padding: 5px 10px !important; border-radius: 999px !important;
+      border: 1px solid rgba(255,255,255,.10) !important; background: rgba(255,255,255,.04) !important;
+      color: rgba(255,255,255,.75) !important; line-height: 1 !important; user-select: none !important;
+      text-transform: uppercase !important; white-space: nowrap !important;
+    }
+
+    .yp-chip .yp-label { font-size: 0 !important; }
+    .yp-chip .yp-label::after {
+      content: "S.P" !important; font-size: 10px !important; font-weight: 900 !important;
+      letter-spacing: .6px !important; color: rgba(255,255,255,.75) !important;
+    }
+
+    .logo-area { gap: 10px !important; }
+    .seesaw-svg { width: 36px !important; height: 18px !important; }
+
+    /* =========================================================
+       CHAT & INPUT
+       ========================================================= */
+    .chat-area {
+      display: flex !important; flex-direction: column !important;
+      justify-content: flex-end !important; padding-bottom: 78px !important;
+      min-height: 0 !important;
+    }
+    .chat-area:empty::before { display: none !important; }
+
+    #msgInput:focus, textarea:focus { outline: none !important; box-shadow: none !important; }
+
+    /* =========================================================
+       ✅ PROFIL KISAYOLU (3D TURUNCU)
+       ========================================================= */
+    .profile-shortcut-wrap { margin: 10px 0 14px; }
+    
+    .profile-shortcut-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 18px; cursor: pointer; user-select: none;
+      background: linear-gradient(135deg, rgba(40, 25, 5, 0.95), rgba(15, 10, 5, 0.98));
+      border: 1px solid rgba(255, 179, 0, 0.35);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08);
       transition: all .15s ease;
     }
-    .profile-shortcut-btn:active{ transform: translateY(1px); filter: brightness(.95); }
+    .profile-shortcut-btn:active { transform: translateY(1px); filter: brightness(.95); }
 
-    /* İkon kutusu: 36px sabit */
-    #profileShortcutIco{
-      width:36px !important;
-      height:36px !important;
-      flex:0 0 36px !important;
-      border-radius:50% !important; /* Tam yuvarlak */
-      overflow:hidden !important;
-      
-      display:flex !important;
-      align-items:center !important;
-      justify-content:center !important;
-
-      background:#ffb300 !important;
-      border:2px solid rgba(255,179,0,.6) !important;
+    #profileShortcutIco {
+      width: 36px !important; height: 36px !important; flex: 0 0 36px !important;
+      border-radius: 50% !important; overflow: hidden !important;
+      display: flex !important; align-items: center !important; justify-content: center !important;
+      background: #ffb300 !important; border: 2px solid rgba(255, 179, 0, 0.6) !important;
       box-shadow: 0 4px 10px rgba(0,0,0,0.5) !important;
-      
-      color:#111 !important;
-      font-size:18px !important;
-      position:relative !important;
+      color: #111 !important; font-size: 18px !important; position: relative !important;
     }
+    #profileShortcutIco img { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
+    #profileShortcutIco::after { display: none !important; content: none !important; }
 
-    /* Avatar gelirse ikon içine bas */
-    #profileShortcutIco img{
-      width:100% !important;
-      height:100% !important;
-      object-fit:cover !important;
-      display:block !important;
+    .profile-shortcut-text { 
+      flex: 1; min-width: 0 !important; display: flex; flex-direction: column; justify-content: center; 
     }
-    
-    /* Rozet yok */
-    #profileShortcutIco::after{ display:none !important; content:none !important; }
-
-    .profile-shortcut-text{ 
-      flex:1;
-      min-width:0 !important;
-      display:flex; 
-      flex-direction:column; 
-      justify-content:center; 
+    .profile-shortcut-title {
+      font-weight: 800 !important; color: #ffb300 !important; font-size: 13px !important;
+      text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2;
     }
-    
-    .profile-shortcut-title{
-      font-weight:800 !important;
-      color:#ffb300 !important;
-      font-size:13px !important;
-      text-transform:uppercase;
-      letter-spacing:0.5px;
-      line-height:1.2;
-    }
-    
-    .profile-shortcut-sub{
-      font-size:13px !important;
-      font-weight:600;
-      color: rgba(255,255,255,.9) !important;
-      white-space:nowrap !important;
-      overflow:hidden !important;
-      text-overflow:ellipsis !important;
+    .profile-shortcut-sub {
+      font-size: 13px !important; font-weight: 600; color: rgba(255,255,255,.9) !important;
+      white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
     }
 
     /* =========================================================
-       ✅ HISTORY: kibar çöp (tek satır)
+       HISTORY & MENÜ STİLLERİ
        ========================================================= */
-    .history-del{
-      display:flex !important;
-      width:34px !important;
-      height:34px !important;
-      border-radius:12px !important;
-      align-items:center !important;
-      justify-content:center !important;
-      border:1px solid rgba(255,255,255,.10) !important;
-      background: rgba(255,255,255,.04) !important;
+    .history-del {
+      display: flex !important; width: 34px !important; height: 34px !important;
+      border-radius: 12px !important; align-items: center !important; justify-content: center !important;
+      border: 1px solid rgba(255,255,255,.10) !important; background: rgba(255,255,255,.04) !important;
     }
-    .del-chat{ display:none !important; } 
+    .del-chat { display: none !important; } 
 
-    /* =========================================================
-       ✅ MENÜ İKONLARI
-       ========================================================= */
-    .menu-action .ico{
-      font-size:18px !important;
-      line-height:1 !important;
-      color:inherit !important;
-    }
-    .menu-action .ico::before{ content:none !important; }
+    .menu-action .ico { font-size: 18px !important; line-height: 1 !important; color: inherit !important; }
+    .menu-action .ico::before { content: none !important; }
+    #menuKurumsal .menu-action[data-action="profile"] { display: none !important; }
 
-    #menuKurumsal .menu-action[data-action="profile"]{ display:none !important; }
-
-    /* =========================================================
-       ✅ LOGIN
-       ========================================================= */
-    #loginOverlay .trust-links-clean a,
-    #loginOverlay .trust-links-clean a:visited,
-    #loginOverlay .trust-links-clean a:hover,
-    #loginOverlay .trust-links-clean a:active{
-      color: rgba(255,255,255,.55) !important;
-      text-decoration:none !important;
-    }
-    #loginHint{ display:none !important; }
-
-    /* =========================================================
-       ✅ OVERLAY FIX
-       ========================================================= */
-    .full-overlay{
-      position:fixed !important;
-      inset:0 !important;
-      width:100vw !important;
-      height:100vh !important;
-      z-index:9000 !important;
-    }
-    #termsOverlay{ z-index:9100 !important; }
-    #pageOverlay{ z-index:9200 !important; }
+    /* LOGIN LINKLERI */
+    #loginOverlay .trust-links-clean a { color: rgba(255,255,255,.55) !important; text-decoration: none !important; }
+    #loginHint { display: none !important; }
   </style>
 </head>
 
@@ -244,10 +199,7 @@
       <div class="notif-row">
         <div class="notif-topline">
           <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
-            <svg viewBox="0 0 24 24">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             <div class="badge" id="notifBadge"></div>
           </button>
           <div id="planChip" class="plan-chip">FREE</div>
@@ -379,7 +331,6 @@
     </div>
 
     <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
-    <div id="loginHint" class="login-hint">Servisler yükleniyor...</div>
   </div>
 </div>
 
@@ -411,74 +362,36 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+    // 1. Apple Butonuna Tıklama (Basit Alert)
     const a = document.getElementById("appleLoginBtn");
-    if(a){
-      a.addEventListener("click", () => {
-        alert("Apple girişi hazırlanıyor. Google ile giriş yapabilirsiniz.\nÜyelik ücretsizdir.");
+    if(a) a.onclick = () => alert("Apple girişi yakında! Şimdilik Google'la gel.");
+
+    // 2. Menü Açma/Kapama (Main.js yüklenemezse diye yedek)
+    const hamb = document.getElementById("hambBtn");
+    const overlay = document.getElementById("menuOverlay");
+    
+    if(hamb && overlay){
+      hamb.addEventListener("click", () => {
+        overlay.classList.add("open"); // CSS'teki .open sınıfını tetikler
+      });
+      overlay.addEventListener("click", (e) => {
+        if(e.target === overlay) overlay.classList.remove("open");
       });
     }
+
+    // 3. Profil Resmi Boyama (Local Storage'dan)
+    try {
+      const u = JSON.parse(localStorage.getItem("caynana_user_v1") || "{}");
+      const pic = u.picture || u.avatar || u.avatar_url;
+      const name = u.fullname || u.name || "—";
+      
+      const ico = document.getElementById("profileShortcutIco");
+      if(ico && pic) ico.innerHTML = `<img src="${pic}" alt="avatar">`;
+      
+      const nm = document.getElementById("profileShortcutName");
+      if(nm) nm.textContent = name;
+    } catch(e) {}
   });
-</script>
-
-<script>
-  (function(){
-    const STORAGE_KEY = "caynana_user_v1";
-    function safeJson(s, fb){ try{return JSON.parse(s||"")}catch(e){return fb} }
-
-    function paintProfileShortcut(){
-      try{
-        const u = safeJson(localStorage.getItem(STORAGE_KEY), {});
-        const pic = (u.picture || u.avatar || u.avatar_url || u.photo_url || "").trim();
-        const full = (u.fullname || u.name || u.display_name || "").trim();
-
-        const ico = document.getElementById("profileShortcutIco");
-        if(ico){
-          // Eğer resim varsa img tag, yoksa emoji
-          ico.innerHTML = pic ? `<img src="${pic}" alt="avatar">` : "👤";
-        }
-        const nm = document.getElementById("profileShortcutName");
-        if(nm) nm.textContent = full || "—";
-      }catch(e){}
-    }
-
-    document.addEventListener("DOMContentLoaded", ()=>{
-      paintProfileShortcut();
-      const pbtn = document.getElementById("profileShortcutBtn");
-      if(pbtn) pbtn.addEventListener("click", ()=> location.href="/pages/profil.html");
-    });
-  })();
-</script>
-
-<script>
-  (function(){
-    function hideAllOverlays(){
-      ["termsOverlay","pageOverlay","menuOverlay"].forEach(id=>{
-        const el = document.getElementById(id);
-        if(!el) return;
-        el.classList.remove("active","open","show");
-        el.style.display = "none";
-      });
-      const dd = document.getElementById("notifDropdown");
-      if(dd) dd.classList.remove("show");
-    }
-
-    function normalizeLoginState(){
-      const lo = document.getElementById("loginOverlay");
-      if(!lo) return;
-      const isActive = lo.classList.contains("active") || (lo.style.display === "flex");
-      if(isActive) hideAllOverlays();
-    }
-
-    document.addEventListener("DOMContentLoaded", normalizeLoginState);
-    window.addEventListener("pageshow", normalizeLoginState);
-
-    document.addEventListener("click", (e)=>{
-      const t = e.target;
-      if(t && (t.id === "logoutBtn" || (t.closest && t.closest("#logoutBtn")))){
-        hideAllOverlays();
-      }
-    }, true);
-  })();
 </script>
 
 </body>
