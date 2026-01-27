@@ -337,7 +337,7 @@ export function typeWriter(text, elId = "chat") {
     if (i < s.length) {
       bubble.textContent += s.charAt(i++);
       div.scrollTop = div.scrollHeight;
-      setTimeout(type, 15);
+      setTimeout(type, 28);
     }
   })();
 }
