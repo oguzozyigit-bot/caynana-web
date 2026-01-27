@@ -9,159 +9,56 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
-    /* =========================
-       TOPBAR: sıkışma çözümü
-       ========================= */
-    #profileBtn{ display:none !important; } /* üst profil ikonu yok */
-
-    .right-controls{
-      display:flex !important;
-      flex-direction:column !important;
-      align-items:flex-end !important;
-      gap:6px !important;
-      width:auto !important;
-    }
-
-    .notif-row{
-      display:flex !important;
-      flex-direction:column !important;
-      align-items:flex-end !important;
-      gap:6px !important;
-    }
-
-    .notif-topline{
-      display:flex !important;
-      align-items:center !important;
-      gap:10px !important;
-    }
-
-    #notifBtn{ display:flex !important; align-items:center !important; padding:6px !important; }
-
-    .plan-chip{
-      font-size:10px !important;
-      font-weight:900 !important;
-      letter-spacing:.7px !important;
-      padding:5px 10px !important;
-      border-radius:999px !important;
-      border:1px solid rgba(255,255,255,.10) !important;
-      background: rgba(255,255,255,.04) !important;
-      color: rgba(255,255,255,.75) !important;
-      line-height:1 !important;
-      user-select:none !important;
-      text-transform:uppercase !important;
-      white-space:nowrap !important;
-    }
-
-    /* SAMİMİYET -> S.P */
-    .yp-chip .yp-label{ font-size:0 !important; }
-    .yp-chip .yp-label::after{
-      content:"S.P" !important;
-      font-size:10px !important;
-      font-weight:900 !important;
-      letter-spacing:.6px !important;
-      color: rgba(255,255,255,.75) !important;
-    }
+    /* üst profil ikonu yok */
+    #profileBtn{ display:none !important; }
 
     /* Logo biraz büyüsün + yazıya yapışmasın */
     .logo-area{ gap:10px !important; }
     .seesaw-svg{ width:36px !important; height:18px !important; }
 
-    /* =========================
-       CHAT: alttan başla + boşken dock kaymasın
-       ========================= */
-    .chat-area{
-      display:flex !important;
-      flex-direction:column !important;
-      justify-content:flex-end !important;
-      padding-bottom:78px !important; /* ideal boşluk */
-      min-height:0 !important;
-    }
-    .chat-area:empty::before{ display:none !important; }
+    /* Chat: scroll ve flex çakışmasın */
+    #chat.chat-area{ display:flex !important; }
 
-    /* =========================
-       INPUT: focus kare çerçeve yok
-       ========================= */
-    #msgInput:focus, textarea:focus{
-      outline:none !important;
-      box-shadow:none !important;
-    }
+    /* input focus kare çerçeve yok */
+    #msgInput:focus, textarea:focus{ outline:none !important; box-shadow:none !important; }
 
-    /* =========================
-       MENU: Profil kartı ESKİSİ gibi küçük (ASLA büyük resim yok)
-       ========================= */
+    /* Profil kartı: küçük turuncu ikon + mini avatar (büyük foto yok) */
     #profileShortcutIco{
-      width:34px !important;
-      height:34px !important;
-      border-radius:12px !important;
-      flex:0 0 34px !important;
-      overflow:hidden !important;
-      display:flex !important;
-      align-items:center !important;
-      justify-content:center !important;
-
+      width:34px !important; height:34px !important; flex:0 0 34px !important;
+      border-radius:12px !important; overflow:hidden !important;
+      display:flex !important; align-items:center !important; justify-content:center !important;
       background:#ffb300 !important;
       border:1px solid rgba(255,179,0,.55) !important;
       box-shadow: inset 0 1px 0 rgba(255,255,255,.14) !important;
-      color:#111 !important;
-      font-size:18px !important;
-      position:relative !important;
+      color:#111 !important; font-size:18px !important;
     }
+    /* ❌ + rozet kalktı */
+    #profileShortcutIco::after{ content:none !important; display:none !important; }
+    #profileShortcutIco img{ width:100% !important; height:100% !important; object-fit:cover !important; display:block !important; }
 
-    /* Mini + rozeti (yeni sohbet başlat hissi) */
-    #profileShortcutIco::after{
-      content:"+";
-      position:absolute;
-      right:-6px;
-      top:-6px;
-      width:18px;
-      height:18px;
-      border-radius:999px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:900;
-      font-size:12px;
-      background: var(--pistachio);
-      color:#111;
-      border:2px solid rgba(12,12,12,.98);
-      box-shadow: 0 6px 12px rgba(0,0,0,.35);
+    /* Profil Düzenle premium turuncu buton gibi dursun */
+    .profile-shortcut-btn{
+      background: linear-gradient(180deg, rgba(255,179,0,.20), rgba(0,0,0,0)) !important;
+      border:1px solid rgba(255,179,0,.45) !important;
+      box-shadow: 0 16px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14) !important;
     }
+    .profile-shortcut-title{ color:#ffb300 !important; font-weight:950 !important; }
+    .profile-shortcut-sub{ color:rgba(255,255,255,.65) !important; }
 
-    /* Avatar gelirse küçücük ikon içine bas (büyük foto yok!) */
-    #profileShortcutIco img{
-      width:100% !important;
-      height:100% !important;
-      object-fit:cover !important;
-      display:block !important;
-    }
+    /* Menu block başlıkları: sadece Asistan / Astro AI / Kurumsal */
+    .block-head small{ display:none !important; }
+    .menu-block.asistan .block-head{ color:#ffb300 !important; }
+    .menu-block.astro .block-head{ color:#bef264 !important; }
+    .menu-block.kurumsal .block-head{ color:#ff5252 !important; }
 
-    /* Profil kart metinleri */
-    .profile-shortcut-text{ min-width:0 !important; }
-    .profile-shortcut-sub{
-      white-space:nowrap !important;
-      overflow:hidden !important;
-      text-overflow:ellipsis !important;
-      max-width:220px !important;
-    }
+    /* Kurumsal içindeki profile tekrarını gizle (tek yer: turuncu buton) */
+    #menuKurumsal .menu-action[data-action="profile"]{ display:none !important; }
 
-    /* =========================
-       HISTORY: kibar çöp var ama "Yeni sohbet" satırı gizlenecek
-       ========================= */
-    .history-del{
-      display:flex !important;
-      width:34px !important;
-      height:34px !important;
-      border-radius:12px !important;
-      align-items:center !important;
-      justify-content:center !important;
-      border:1px solid rgba(255,255,255,.10) !important;
-      background: rgba(255,255,255,.04) !important;
-    }
+    /* Kibar çöp kovası görünsün */
+    .history-del{ display:flex !important; }
 
     /* Menüde ikinci satırlar yok */
     .menu-action small{ display:none !important; }
-    /* Kurumsal içindeki profil tekrarını gizle */
-    #menuKurumsal .menu-action[data-action="profile"]{ display:none !important; }
   </style>
 </head>
 
@@ -189,33 +86,23 @@
     </div>
 
     <div class="right-controls">
-      <div class="notif-row">
-        <!-- 1. satır: zil + FREE -->
-        <div class="notif-topline">
-          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
-            <svg viewBox="0 0 24 24">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-            <div class="badge" id="notifBadge"></div>
-          </button>
+      <div class="yp-chip">
+        <div class="yp-label">SAMİMİYET</div>
+        <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+        <div class="yp-num" id="ypNum">19%</div>
+      </div>
 
-          <div id="planChip" class="plan-chip">FREE</div>
-        </div>
+      <div class="notif-row">
+        <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          <div class="badge" id="notifBadge"></div>
+        </button>
 
         <div class="notification-dropdown" id="notifDropdown">
           <div class="notif-header">Bildirimler</div>
           <div class="notif-list" id="notifList"></div>
         </div>
 
-        <!-- 2. satır: S.P chip -->
-        <div class="yp-chip">
-          <div class="yp-label">SAMİMİYET</div>
-          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
-          <div class="yp-num" id="ypNum">19%</div>
-        </div>
-
-        <!-- üst profil butonu (CSS ile kapalı) -->
         <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
           <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </button>
@@ -228,11 +115,11 @@
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
 
-      <!-- ✅ Eski premium profil kartı (küçük ikon + isim) -->
+      <!-- Profil Düzenle turuncu premium buton -->
       <div class="profile-shortcut-wrap" id="profileShortcutMount">
         <div class="profile-shortcut-btn" id="profileShortcutBtn">
           <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
-          <div class="profile-shortcut-text">
+          <div style="min-width:0;">
             <div class="profile-shortcut-title">Profil Düzenle</div>
             <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
           </div>
@@ -296,7 +183,7 @@
   </div>
 </div>
 
-<!-- OVERLAYS (dokunmadım) -->
+<!-- PAGE OVERLAY -->
 <div class="full-overlay" id="pageOverlay">
   <div class="login-card" style="max-width:90%; max-height:90%; overflow-y:auto;">
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
@@ -307,6 +194,7 @@
   </div>
 </div>
 
+<!-- LOGIN -->
 <div class="full-overlay active" id="loginOverlay">
   <div class="login-card login-premium">
     <div class="login-seesaw-wrap" aria-hidden="true">
@@ -344,6 +232,7 @@
   </div>
 </div>
 
+<!-- TERMS -->
 <div class="full-overlay" id="termsOverlay">
   <div class="login-card login-premium">
     <div class="terms-head">
@@ -388,7 +277,6 @@
       }
     }catch(e){}
 
-    // Profil kısayol: küçük avatar bas (asla büyütmez)
     function paintProfileShortcut(){
       try{
         const u = safeJson(localStorage.getItem(STORAGE_KEY), {});
@@ -405,7 +293,6 @@
       }catch(e){}
     }
 
-    // Menüde “Yeni sohbet / Sohbet” satırlarını gizle (boş chatler)
     function hideEmptyHistoryRows(){
       const list = document.getElementById("historyList");
       const title = document.getElementById("historyTitle");
