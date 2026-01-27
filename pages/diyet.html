@@ -1,353 +1,12 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Diyet Planım</title>
-  <link rel="stylesheet" href="/css/style.css?v=2">
-  <style>
-    /* =========================================
-       SAYFAYA ÖZEL STİLLER (PREMIUM)
-       ========================================= */
-    :root {
-      --bg-dark: #050505;
-      --card-bg: rgba(25, 25, 25, 0.6);
-      --glass-border: rgba(255, 255, 255, 0.08);
-      --accent: #ffb300; /* Turuncu */
-      --success: #bef264; /* Fıstık */
-      --danger: #ff5252;
-    }
-
-    /* Hamburger Fix (Garanti) */
-    .topbar { position: relative; z-index: 3000; }
-    #hambBtn { position: relative; z-index: 3001; pointer-events: auto !important; }
-    .menu-overlay { z-index: 9999 !important; }
-
-    /* Ana Alan */
-    .diet-wrap { 
-      padding: 16px; padding-bottom: 100px; 
-      display: flex; flex-direction: column; gap: 20px; 
-      overflow-y: auto; height: 100%; 
-    }
-
-    /* 1. EKSİK PROFİL FORMU (Gömülü) */
-    .profile-setup-box {
-      display: none; /* JS ile açılır */
-      flex-direction: column; gap: 15px;
-      background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
-      border: 1px solid var(--glass-border);
-      padding: 24px; border-radius: 24px;
-      text-align: center; margin-top: 20px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-    }
-    .setup-icon { font-size: 40px; margin-bottom: 5px; }
-    .setup-title { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 5px; }
-    .setup-desc { font-size: 13px; color: #888; line-height: 1.4; margin-bottom: 15px; }
-    
-    .form-row { display: flex; gap: 10px; }
-    .form-group { flex: 1; display: flex; flex-direction: column; gap: 6px; text-align: left; }
-    .form-label { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; margin-left: 4px; }
-    
-    .diet-input, .diet-select {
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-      color: #fff; padding: 12px; border-radius: 12px; font-size: 14px;
-      outline: none; transition: border 0.2s; width: 100%;
-    }
-    .diet-input:focus { border-color: var(--accent); }
-
-    .btn-save {
-      background: var(--accent); color: #000; border: none;
-      padding: 14px; border-radius: 16px; font-weight: 800; font-size: 14px;
-      cursor: pointer; margin-top: 10px; width: 100%;
-      box-shadow: 0 10px 20px rgba(255,179,0,0.2);
-    }
-    .btn-save:active { transform: scale(0.98); }
-
-    /* 2. ONAY KUTUSU (Günlük Prompt) */
-    .ask-box {
-      display: none; /* JS ile açılır */
-      text-align: center; padding: 30px 20px;
-      background: rgba(20,20,20,0.8); border: 1px solid var(--accent);
-      border-radius: 20px; margin-top: 40px;
-    }
-    .ask-txt { font-size: 15px; color: #fff; font-weight: 600; margin-bottom: 15px; }
-    .btn-yes {
-      background: var(--success); color: #000; padding: 12px 30px;
-      border-radius: 99px; border: none; font-weight: 800; cursor: pointer;
-      box-shadow: 0 0 15px rgba(190,242,100,0.4);
-    }
-
-    /* 3. DASHBOARD (VKİ + MENÜ) */
-    .dashboard-area { display: none; flex-direction: column; gap: 20px; }
-
-    /* VKİ Hero */
-    .bmi-hero {
-      position: relative; overflow: hidden;
-      background: linear-gradient(145deg, rgba(30,30,30,0.9), rgba(10,10,10,0.95));
-      border: 1px solid var(--glass-border); border-radius: 24px; padding: 20px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .bmi-info h2 { font-size: 13px; color: #888; text-transform: uppercase; margin: 0 0 4px; font-weight: 700; }
-    .bmi-big { font-size: 36px; font-weight: 900; color: #fff; line-height: 1; }
-    .bmi-status { 
-      font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 8px;
-      display: inline-block; margin-top: 6px; text-transform: uppercase;
-    }
-    .bmi-status.ok { background: rgba(190,242,100,0.15); color: var(--success); }
-    .bmi-status.warn { background: rgba(255,179,0,0.15); color: var(--accent); }
-    .bmi-status.bad { background: rgba(255,82,82,0.15); color: var(--danger); }
-
-    .bmi-gauge { width: 70px; height: 70px; position: relative; }
-    .bg-circle { fill: none; stroke: #333; stroke-width: 6; }
-    .val-circle { 
-      fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round;
-      stroke-dasharray: 175; stroke-dashoffset: 175; transition: 1s ease;
-    }
-
-    /* Menü Kartları */
-    .meal-list { display: flex; flex-direction: column; gap: 12px; }
-    .meal-card {
-      background: var(--card-bg); border: 1px solid var(--glass-border);
-      border-radius: 18px; padding: 16px; display: flex; gap: 14px;
-      transition: transform 0.2s; position: relative; overflow: hidden;
-    }
-    .meal-icon {
-      width: 44px; height: 44px; background: rgba(255,255,255,0.03);
-      border-radius: 14px; display: flex; align-items: center; justify-content: center;
-      font-size: 22px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.05);
-    }
-    .meal-info { flex: 1; }
-    .meal-name { font-size: 12px; font-weight: 800; color: var(--accent); text-transform: uppercase; margin-bottom: 4px; }
-    .meal-desc { font-size: 13px; color: #eee; line-height: 1.4; font-weight: 500; }
-    .meal-cal { 
-      font-size: 10px; color: #888; font-weight: 700; margin-top: 6px; 
-      display: flex; align-items: center; gap: 4px; 
-    }
-    .meal-cal::before { content:'🔥'; font-size:9px; }
-
-    /* Bildirim Toast */
-    .diet-notif {
-      position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
-      background: rgba(190,242,100,0.95); color: #000;
-      padding: 10px 20px; border-radius: 99px; font-size: 12px; font-weight: 800;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 4000;
-      display: none; animation: slideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 80px; opacity: 1; } }
-
-  </style>
-</head>
-<body>
-
-<div class="mobile-frame">
-  
-  <div class="topbar">
-    <button class="hamb-btn" id="hambBtn">☰</button>
-    <div class="brand-wrapper">
-      <div class="logo-area">
-        <svg class="seesaw-svg" viewBox="0 0 40 20"><g class="seesaw-bar"><line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2"/><circle cx="3" cy="5" r="3" fill="#bef264"/><circle cx="37" cy="5" r="3" fill="#ffb300"/></g><polygon points="17,14 23,14 20,8" fill="#666"/></svg>
-        <div class="brand-name">Caynana</div>
-      </div>
-    </div>
-    <div class="right-controls"><div class="plan-chip">DIET</div></div>
-  </div>
-
-  <div class="menu-overlay" id="menuOverlay">
-    <div class="menu-sidebar">
-      <button class="new-chat-btn" onclick="location.href='/'">← SOHBETE DÖN</button>
-      <div class="menu-block asistan"><div class="block-head">Menü</div>
-        <div class="menu-action" onclick="location.href='/pages/profil.html'"><div class="ico">👤</div><div>Profil</div></div>
-        <div class="menu-action" onclick="location.href='/'"><div class="ico">💬</div><div>Sohbet</div></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="diet-wrap">
-
-    <div id="profileSetup" class="profile-setup-box">
-      <div class="setup-icon">📝</div>
-      <div class="setup-title">Diyet İçin Bilgiler Lazım</div>
-      <div class="setup-desc">
-        Sana özel bir liste hazırlamam için bu bilgileri doldur evladım. 
-        Merak etme, bir kere girince profile kaydedeceğim.
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Boy (cm)</label>
-          <input type="number" id="inpHeight" class="diet-input" placeholder="170">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Kilo (kg)</label>
-          <input type="number" id="inpWeight" class="diet-input" placeholder="70">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Doğum Tarihi</label>
-          <input type="date" id="inpDob" class="diet-input">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Cinsiyet</label>
-          <select id="inpGender" class="diet-select">
-            <option value="">Seç</option>
-            <option value="Kadin">Kadın</option>
-            <option value="Erkek">Erkek</option>
-          </select>
-        </div>
-      </div>
-
-      <button class="btn-save" id="btnSaveProfile">HESAPLA VE KAYDET</button>
-    </div>
-
-    <div id="askBox" class="ask-box">
-      <div class="ask-txt">Bugünkü diyet menünü hazırlayayım mı evladım?</div>
-      <button class="btn-yes" id="btnGenerate">Evet, Listeyi Oluştur</button>
-    </div>
-
-    <div id="dietDashboard" class="dashboard-area">
-      <div class="bmi-hero">
-        <div class="bmi-info">
-          <h2>Vücut Kitle İndeksi</h2>
-          <div class="bmi-big" id="bmiVal">--</div>
-          <div class="bmi-status" id="bmiStatus">HESAPLANIYOR</div>
-        </div>
-        <div class="bmi-gauge">
-          <svg width="70" height="70" style="transform:rotate(-90deg)">
-            <circle class="bg-circle" cx="35" cy="35" r="30"></circle>
-            <circle class="val-circle" cx="35" cy="35" r="30" id="bmiCircle"></circle>
-          </svg>
-        </div>
-      </div>
-
-      <div class="meal-list" id="mealList">
-        </div>
-    </div>
-
-  </div>
-
-  <div class="diet-notif" id="dietNotif">🔔 Bugün diyet menün geldi, incele evladım!</div>
-
-  <div class="footer-container">
-    <div class="footer-links">
-      <a href="/pages/hakkimizda.html">Hakkımızda</a>
-      <a href="/pages/iletisim.html">İletişim</a>
-    </div>
-    <div class="footer-brand">@CaynanaAI 2026</div>
-  </div>
-
-</div>
-
 <script type="module">
   import { BASE_DOMAIN, STORAGE_KEY } from "/js/config.js";
-  const DIET_API = "/api/diet/today";
 
-  // --- Helpers ---
+  const DIET_API = "/api/diet/today";
+  const PROFILE_API = "/api/profile/me"; // EKLENDİ
+
   function $(id) { return document.getElementById(id); }
   function safeJson(s) { try { return JSON.parse(s || "{}"); } catch { return {}; } }
-  
-  // --- STATE YÖNETİMİ ---
-  async function initPage() {
-    const user = safeJson(localStorage.getItem(STORAGE_KEY));
-    
-    // 1. Profil Kontrolü
-    const isProfileComplete = user.height_cm && user.weight_kg && user.birth_date && user.gender;
-
-    if (!isProfileComplete) {
-      showSection("profileSetup");
-      // Varsa eski verileri doldur
-      if(user.height_cm) $("inpHeight").value = user.height_cm;
-      if(user.weight_kg) $("inpWeight").value = user.weight_kg;
-      return;
-    }
-
-    // Profil tamsa VKİ Hesapla & Göster
-    calculateAndShowBMI(user);
-
-    // 2. Günlük Diyet Kontrolü
-    const today = new Date().toISOString().split('T')[0];
-    const lastDiet = safeJson(localStorage.getItem("caynana_last_diet"));
-    
-    if (lastDiet && lastDiet.date === today && lastDiet.ok) {
-      // Bugünün diyeti zaten var -> Göster
-      showSection("dietDashboard");
-      renderMeals(lastDiet.plan);
-    } else {
-      // Diyet yok -> Sor
-      showSection("askBox");
-    }
-
-    // 3. Sabah 6:00 Kontrolü (Sayfa açıkken)
-    scheduleDailyRefresh();
-  }
-
-  // --- AKSİYONLAR ---
-
-  // A. Profili Kaydet
-  $("btnSaveProfile").onclick = () => {
-    const h = $("inpHeight").value;
-    const w = $("inpWeight").value;
-    const d = $("inpDob").value;
-    const g = $("inpGender").value;
-
-    if(!h || !w || !d || !g) return alert("Hepsini doldur evladım.");
-
-    // LocalStorage Güncelle
-    const user = safeJson(localStorage.getItem(STORAGE_KEY));
-    user.height_cm = h;
-    user.weight_kg = w;
-    user.birth_date = d;
-    user.gender = g;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-
-    // Backend'e de atmak istersen buraya ekleyebilirsin ama şimdilik local yetiyor
-    // Sayfayı yenile ki akış baştan başlasın
-    location.reload();
-  };
-
-  // B. Diyet Oluştur (API Call)
-  $("btnGenerate").onclick = async () => {
-    const btn = $("btnGenerate");
-    btn.textContent = "Hazırlanıyor...";
-    btn.disabled = true;
-
-    const user = safeJson(localStorage.getItem(STORAGE_KEY));
-    const userId = user.id || user.user_id || "guest";
-
-    try {
-      // Backend'e istek (Mevcut yapıyı kullanıyoruz)
-      const res = await fetch(`${BASE_DOMAIN}${DIET_API}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: userId })
-      });
-      const data = await res.json();
-
-      if (data.ok) {
-        // Kaydet
-        data.date = new Date().toISOString().split('T')[0];
-        localStorage.setItem("caynana_last_diet", JSON.stringify(data));
-        
-        // Göster
-        showSection("dietDashboard");
-        renderMeals(data.plan);
-        
-        // Bildirim
-        showNotification();
-      } else {
-        alert("Bir hata oldu: " + (data.message || "Bilinmiyor"));
-        btn.textContent = "Tekrar Dene";
-        btn.disabled = false;
-      }
-    } catch(e) {
-      alert("Bağlantı hatası evladım.");
-      btn.textContent = "Tekrar Dene";
-      btn.disabled = false;
-    }
-  };
-
-  // --- RENDER FONKSİYONLARI ---
+  function todayStr() { return new Date().toISOString().split("T")[0]; }
 
   function showSection(id) {
     ["profileSetup", "askBox", "dietDashboard"].forEach(k => $(k).style.display = "none");
@@ -355,42 +14,114 @@
   }
 
   function calculateAndShowBMI(u) {
-    const h = u.height_cm / 100;
-    const bmi = (u.weight_kg / (h * h)).toFixed(1);
-    
+    const h = Number(u.height_cm) / 100;
+    const w = Number(u.weight_kg);
+    const bmi = (w / (h * h)).toFixed(1);
+
     $("bmiVal").textContent = bmi;
-    
+
     const statusEl = $("bmiStatus");
     const circle = $("bmiCircle");
-    
-    let statusText = "NORMAL";
-    let color = "#bef264"; // Yeşil
 
-    if(bmi < 18.5) { statusText = "ZAYIF"; color = "#ffb300"; statusEl.className="bmi-status warn"; }
-    else if(bmi > 25 && bmi < 30) { statusText = "KİLOLU"; color = "#ffb300"; statusEl.className="bmi-status warn"; }
-    else if(bmi >= 30) { statusText = "OBEZ"; color = "#ff5252"; statusEl.className="bmi-status bad"; }
-    else { statusEl.className="bmi-status ok"; }
+    let statusText = "NORMAL";
+    let color = "#bef264";
+
+    if (bmi < 18.5) { statusText = "ZAYIF"; color = "#ffb300"; statusEl.className = "bmi-status warn"; }
+    else if (bmi > 25 && bmi < 30) { statusText = "KİLOLU"; color = "#ffb300"; statusEl.className = "bmi-status warn"; }
+    else if (bmi >= 30) { statusText = "OBEZ"; color = "#ff5252"; statusEl.className = "bmi-status bad"; }
+    else { statusEl.className = "bmi-status ok"; }
 
     statusEl.textContent = statusText;
 
-    // Gauge Animasyonu
-    const maxVal = 40; 
-    const dash = 175; // SVG circle length approx
-    const offset = dash - ((Math.min(bmi, maxVal) / maxVal) * dash);
+    const maxVal = 40;
+    const dash = 175;
+    const offset = dash - ((Math.min(Number(bmi), maxVal) / maxVal) * dash);
     setTimeout(() => {
       circle.style.strokeDashoffset = offset;
       circle.style.stroke = color;
     }, 100);
   }
 
+  // YENİ: Backend’den profil çek
+  async function fetchProfile(userId) {
+    try {
+      const res = await fetch(`${BASE_DOMAIN}${PROFILE_API}?user_id=${encodeURIComponent(userId)}`, {
+        method: "GET",
+        headers: { "Accept": "application/json" }
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data?.ok ? data.profile : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // YENİ: Backend’e profil kaydet
+  async function saveProfileToBackend(userId, profile) {
+    try {
+      const res = await fetch(`${BASE_DOMAIN}${PROFILE_API}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, ...profile })
+      });
+      const data = await res.json().catch(() => ({}));
+      return !!data?.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  function fillFormFromProfile(p) {
+    if (p?.height_cm) $("inpHeight").value = p.height_cm;
+    if (p?.weight_kg) $("inpWeight").value = p.weight_kg;
+    if (p?.birth_date) $("inpDob").value = p.birth_date;
+    if (p?.gender) $("inpGender").value = p.gender;
+  }
+
   function renderMeals(plan) {
     const list = $("mealList");
     list.innerHTML = "";
 
-    // Saat Kontrolü (13:00'ten sonra kahvaltı gösterme)
     const currentHour = new Date().getHours();
     const skipBreakfast = currentHour >= 13;
 
+    // Backend’in döndüğü yapıyı destekle:
+    // plan = {
+    //   meals: [
+    //     { key:"kahvalti", title:"Kahvaltı", icon:"🍳", time:"08:30", items:"...", calories: 380 },
+    //     ...
+    //   ],
+    //   water: { time:"Gün boyu", items:"2-2.5L", calories:0 }
+    // }
+    const meals = Array.isArray(plan?.meals) ? plan.meals : null;
+
+    if (meals) {
+      meals.forEach(m => {
+        if (m.key === "kahvalti" && skipBreakfast) return;
+
+        const calText = (m.calories !== undefined && m.calories !== null)
+          ? `${m.calories} kcal`
+          : (m.cal_range ? m.cal_range : "");
+
+        const timeText = m.time ? `🕒 ${m.time}` : "";
+
+        const html = `
+          <div class="meal-card">
+            <div class="meal-icon">${m.icon || "🍽️"}</div>
+            <div class="meal-info">
+              <div class="meal-name">${m.title || "-"}</div>
+              <div class="meal-desc">${m.items || "—"}</div>
+              <div class="meal-cal">${[timeText, calText].filter(Boolean).join(" • ")}</div>
+            </div>
+          </div>
+        `;
+        list.insertAdjacentHTML("beforeend", html);
+      });
+      return;
+    }
+
+    // ESKİ fallback (mevcut API yapın bozulmasın diye)
     const items = [
       { k: "kahvalti", t: "Kahvaltı", i: "🍳", cal: "350-400 kcal" },
       { k: "ara", t: "Ara Öğün", i: "🍏", cal: "100-150 kcal" },
@@ -400,11 +131,9 @@
     ];
 
     items.forEach(item => {
-      // Eğer kahvaltıysa ve saat geçse atla
       if(item.k === "kahvalti" && skipBreakfast) return;
 
       let val = plan[item.k] || plan[item.k + "_ogun"] || "—";
-      // API uyumsuzluğu için fallback
       if(val === "—" && item.k === "ara") val = plan["ara_ogun"] || "—";
 
       const html = `
@@ -425,36 +154,152 @@
     const n = $("dietNotif");
     n.style.display = "block";
     setTimeout(() => { n.style.display = "none"; }, 5000);
+
+    // (Opsiyonel) Tarayıcı bildirimi (sayfa açıkken)
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("Caynana", { body: "Bugün diyet menün geldi, incele evladım!" });
+    }
   }
 
   function scheduleDailyRefresh() {
-    // 06:00'a kadar bekle, sonra sayfayı yenile
     const now = new Date();
     const target = new Date();
     target.setHours(6, 0, 0, 0);
     if (now > target) target.setDate(target.getDate() + 1);
-    
+
     const ms = target - now;
     setTimeout(() => {
-      localStorage.removeItem("caynana_last_diet"); // Eski diyeti sil
-      location.reload(); // Sayfayı yenile (otomatik yeni istek atacak)
+      localStorage.removeItem("caynana_last_diet");
+      location.reload();
     }, ms);
   }
 
-  // Başlat
+  async function initPage() {
+    const userLocal = safeJson(localStorage.getItem(STORAGE_KEY));
+    const userId = userLocal.id || userLocal.user_id || "guest";
+
+    // 0) Bildirim iznini nazikçe hazırla (zorlamıyoruz)
+    if ("Notification" in window && Notification.permission === "default") {
+      // kullanıcıyla ilk etkileşim sonrası istemek daha iyi, burada dokunmuyoruz
+    }
+
+    // 1) PROFİLİ BACKEND'DEN ÇEK (profil sayfası kaynağı)
+    const profileFromDb = await fetchProfile(userId);
+    const merged = { ...userLocal, ...(profileFromDb || {}) };
+
+    // local’ı güncel tut
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+
+    const isProfileComplete = merged.height_cm && merged.weight_kg && merged.birth_date && merged.gender;
+
+    if (!isProfileComplete) {
+      showSection("profileSetup");
+      fillFormFromProfile(merged);
+      scheduleDailyRefresh();
+      return;
+    }
+
+    calculateAndShowBMI(merged);
+
+    // 2) BUGÜNÜN DİYETİ VAR MI?
+    const today = todayStr();
+    const lastDiet = safeJson(localStorage.getItem("caynana_last_diet"));
+
+    if (lastDiet && lastDiet.date === today && lastDiet.ok) {
+      showSection("dietDashboard");
+      renderMeals(lastDiet.plan);
+    } else {
+      showSection("askBox");
+    }
+
+    scheduleDailyRefresh();
+  }
+
+  // A) Profili Kaydet + Backend’e yaz
+  $("btnSaveProfile").onclick = async () => {
+    const h = $("inpHeight").value;
+    const w = $("inpWeight").value;
+    const d = $("inpDob").value;
+    const g = $("inpGender").value;
+
+    if(!h || !w || !d || !g) return alert("Hepsini doldur evladım.");
+
+    const user = safeJson(localStorage.getItem(STORAGE_KEY));
+    const userId = user.id || user.user_id || "guest";
+
+    const newProfile = { height_cm: Number(h), weight_kg: Number(w), birth_date: d, gender: g };
+
+    // local
+    const updated = { ...user, ...newProfile };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+    // backend (profil sayfasıyla aynı kaynak olsun)
+    await saveProfileToBackend(userId, newProfile);
+
+    // akışa devam
+    location.reload();
+  };
+
+  // B) Diyet Oluştur (API Call) — tekrar etmeme için “son menü id’leri” gönder
+  $("btnGenerate").onclick = async () => {
+    const btn = $("btnGenerate");
+    btn.textContent = "Hazırlanıyor...";
+    btn.disabled = true;
+
+    const user = safeJson(localStorage.getItem(STORAGE_KEY));
+    const userId = user.id || user.user_id || "guest";
+
+    const today = todayStr();
+    const prev = safeJson(localStorage.getItem("caynana_last_diet"));
+    const recentMenuIds = safeJson(localStorage.getItem("caynana_recent_menu_ids"));
+    const recentIdsArr = Array.isArray(recentMenuIds?.ids) ? recentMenuIds.ids : [];
+
+    const currentHour = new Date().getHours();
+    const skipBreakfast = currentHour >= 13;
+
+    try {
+      const res = await fetch(`${BASE_DOMAIN}${DIET_API}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          date: today,
+          skip_breakfast: skipBreakfast,
+          avoid_menu_ids: recentIdsArr.slice(-10) // son 10 menü tekrar etmesin
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        data.date = today;
+        localStorage.setItem("caynana_last_diet", JSON.stringify(data));
+
+        // menü id listesi güncelle (backend data.menu_id döndürmeli)
+        if (data.menu_id) {
+          const next = [...recentIdsArr, data.menu_id].slice(-20);
+          localStorage.setItem("caynana_recent_menu_ids", JSON.stringify({ ids: next }));
+        }
+
+        showSection("dietDashboard");
+        renderMeals(data.plan);
+        showNotification();
+
+        // Bildirim izni istersen burada sor (kullanıcı tıkladıktan sonra ideal)
+        if ("Notification" in window && Notification.permission === "default") {
+          try { await Notification.requestPermission(); } catch {}
+        }
+      } else {
+        alert("Bir hata oldu: " + (data.message || "Bilinmiyor"));
+        btn.textContent = "Tekrar Dene";
+        btn.disabled = false;
+      }
+    } catch(e) {
+      alert("Bağlantı hatası evladım.");
+      btn.textContent = "Tekrar Dene";
+      btn.disabled = false;
+    }
+  };
+
   initPage();
 </script>
-
-<script>
-(function(){
-  const h = document.getElementById("hambBtn");
-  const o = document.getElementById("menuOverlay");
-  if(h && o) {
-    h.addEventListener("click", ()=> o.classList.add("open"));
-    o.addEventListener("click", (e)=> { if(e.target===o) o.classList.remove("open"); });
-  }
-})();
-</script>
-
-</body>
-</html>
