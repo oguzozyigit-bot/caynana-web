@@ -894,3 +894,130 @@ button:focus, a:focus, textarea:focus{
   flex-direction:column !important;
   gap:10px !important;
 }
+/* =========================
+   PROFIL KISAYOLU (Premium 3D Turuncu + Küçük Avatar)
+   ========================= */
+
+/* Kapsayıcı: Menüde konumlandırma */
+.profile-shortcut-wrap {
+  margin: 12px 0 16px; /* Üst-alt boşluk */
+  padding: 0 4px;
+}
+
+/* Butonun kendisi (3D Turuncu/Siyah) */
+.profile-shortcut-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 14px;
+  border-radius: 18px;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+
+  /* Zemin: Koyu turuncu gradyan (Premium hissi) */
+  background: linear-gradient(180deg, rgba(45, 25, 0, 0.95), rgba(20, 10, 0, 0.98));
+  
+  /* Kenarlık: Turuncu parıltılı */
+  border: 1px solid rgba(255, 179, 0, 0.4);
+  border-bottom-color: rgba(255, 179, 0, 0.2);
+
+  /* 3D Gölge ve İç Işık */
+  box-shadow: 
+    0 10px 20px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(0,0,0,0.5); /* Dış kontur */
+
+  transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Hover Efekti */
+.profile-shortcut-btn:hover {
+  border-color: rgba(255, 179, 0, 0.6);
+  background: linear-gradient(180deg, rgba(55, 35, 0, 0.95), rgba(30, 15, 0, 0.98));
+  transform: translateY(-1px);
+  box-shadow: 
+    0 14px 28px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* Tıklama (Active) Efekti */
+.profile-shortcut-btn:active {
+  transform: translateY(1px) scale(0.99);
+  box-shadow: 
+    0 6px 12px rgba(0, 0, 0, 0.5),
+    inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  filter: brightness(0.95);
+}
+
+/* ✅ KÜÇÜK AVATAR (Solda, yuvarlak, 34px sabit) */
+#profileShortcutIco {
+  width: 38px !important;  /* Biraz büyüttüm, daha net görünsün */
+  height: 38px !important;
+  flex: 0 0 38px !important; /* Esnemeyi engelle */
+  border-radius: 50% !important; /* Tam yuvarlak */
+
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  /* Avatar Arkaplanı (Resim yoksa turuncu görünsün) */
+  background: #ffb300 !important;
+  border: 2px solid rgba(255, 179, 0, 0.8) !important;
+  
+  /* Avatarın kendisine gölge */
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 0.3), 
+    0 4px 8px rgba(0, 0, 0, 0.4) !important;
+
+  color: #111 !important; /* İkon rengi */
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+
+/* İçindeki resim (Google fotosu) */
+#profileShortcutIco img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+  border-radius: 50% !important;
+}
+
+/* Metin Alanı */
+.profile-shortcut-text {
+  flex: 1;
+  min-width: 0; /* Uzun isimlerde taşmayı önler */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Başlık: "Profil Düzenle" */
+.profile-shortcut-title {
+  font-weight: 900;
+  font-size: 13px;
+  line-height: 1.2;
+  color: #ffb300; /* Turuncu */
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+
+/* Alt Başlık: İsim Soyisim (Google'dan gelen) */
+.profile-shortcut-sub {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9); /* Beyaz */
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Artı (+) Rozeti - İstersen açabilirsin, şu an kapalı */
+#profileShortcutIco::after { 
+  content: none !important; 
+}
