@@ -98,7 +98,7 @@ body, html {
 @keyframes breath{ from{transform:scale(1)} to{transform:scale(1.5)} }
 
 /* =========================
-   S.P + ICONS
+
    ========================= */
 .yp-chip{
   display:flex;
@@ -376,7 +376,7 @@ textarea{
   object-fit:cover;
   display:block;
 }
-/* küçük + rozeti */
+/* küçük  rozeti */
 .profile-shortcut-ico::after{
   content:"+";
   position:absolute;
