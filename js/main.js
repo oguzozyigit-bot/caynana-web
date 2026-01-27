@@ -3,6 +3,7 @@
 // ✅ max 15 karakter başlık
 // ✅ diyet menüsü ayrı sayfa: /pages/diyet.html
 // ✅ yarım kalan "loginOverlay active" satırı FIX
+// ✅ logout sonrası sağda sözleşme/overlay kalma FIX
 
 import { BASE_DOMAIN, STORAGE_KEY } from "./config.js";
 import { initAuth, handleLogin, logout, acceptTerms, waitForGsi } from "./auth.js";
@@ -71,6 +72,17 @@ async function ensureBackendSessionToken(){
   if(!token) throw new Error("auth/google token not found in response");
   setApiToken(token);
   return token;
+}
+
+/* ✅ Çıkış / logged değilken: sağda sözleşme kalmasın, menü/overlay açık kalmasın */
+function forceCloseAllOverlays(){
+  const ids = ["termsOverlay","pageOverlay","menuOverlay","notifDropdown"];
+  ids.forEach(id=>{
+    const el = $(id);
+    if(!el) return;
+    el.classList.remove("active","open","show");
+    if(id !== "notifDropdown") el.style.display = "none";
+  });
 }
 
 // --------------------
@@ -225,7 +237,6 @@ const MENU_ITEMS = [
 ];
 
 function menuItemHtml(m){
-  // small satırları index.html CSS ile zaten kapatıyorsun, burada basmıyoruz
   return `
     <div class="menu-action ${m.tone ? `tone-${m.tone}` : ""}" data-action="${m.key}">
       <div class="ico">${m.ico}</div>
@@ -273,7 +284,6 @@ async function handleMenuAction(action) {
   if (action === "horoscope") return (location.href = "/pages/burc.html");
   if (action === "dream") return (location.href = "/pages/ruya.html");
 
-  // sohbet modları
   currentMode = action || "chat";
 }
 
@@ -540,7 +550,12 @@ function bindMenuUI(){
     goProfile();
   });
 
-  $("logoutBtn") && ($("logoutBtn").onclick = () => logout());
+  // ✅ ÇIKIŞ: önce overlayleri kapat sonra logout
+  $("logoutBtn") && ($("logoutBtn").onclick = () => {
+    forceCloseAllOverlays();
+    logout();
+  });
+
   $("deleteAccountBtn") && ($("deleteAccountBtn").onclick = async () => {
     const u2 = getUser();
     const okLogged = !!(u2?.isSessionActive && u2?.id && u2?.provider && u2?.provider !== "guest");
@@ -597,11 +612,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (logged) {
     $("loginOverlay")?.classList.remove("active");
-    $("loginOverlay") && ($("loginOverlay").style.display = "none");
+    if ($("loginOverlay")) $("loginOverlay").style.display = "none";
     if (!u.terms_accepted_at) window.showTermsOverlay?.();
   } else {
-    $("loginOverlay")?.classList.add("active");
-    $("loginOverlay") && ($("loginOverlay").style.display = "flex");
+    // ✅ logged değilken: terms/page/menu/notif açık kalmasın
+    forceCloseAllOverlays();
+    const lo = $("loginOverlay");
+    lo?.classList.add("active");
+    if (lo) lo.style.display = "flex";
   }
 
   refreshPremiumBars();
