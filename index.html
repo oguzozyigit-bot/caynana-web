@@ -1,420 +1,442 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Caynana AI Premium v5.5</title>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Caynana AI v5.2 FINAL</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/style.css?v=1">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-<style>
-  :root {
-    --bg-dark: #050505;
-    --bg-panel: #121212;
-    --text-main: #f0f0f0;
-    --text-sub: #888;
-    --gold: #ffb300;
-    --pistachio: #bef264;
-    --red: #ff5252;
-    --border: rgba(255,255,255,.08);
-    --glass: rgba(18,18,18,0.85);
-  }
+  <style>
+    /* =========================
+       TOPBAR: sıkışma çözümü
+       ========================= */
+    #profileBtn{ display:none !important; } /* üst profil ikonu yok */
 
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-  
-  body, html { 
-    margin: 0; padding: 0; width: 100%; height: 100dvh; 
-    background: #000; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-    color: var(--text-main); 
-    overflow: hidden; 
-    display: flex; justify-content: center; 
-  }
+    .right-controls{
+      display:flex !important;
+      flex-direction:column !important;
+      align-items:flex-end !important;
+      gap:6px !important;
+      width:auto !important;
+    }
 
-  /* --- ANA ÇERÇEVE --- */
-  .frame {
-    width: 100%; height: 100%; max-width: 480px;
-    background: var(--bg-dark);
-    display: flex; flex-direction: column;
-    position: relative; overflow: hidden;
-    box-shadow: 0 0 50px rgba(255,255,255,0.02);
-  }
-  @media(min-width: 500px){ .frame{ height: 95dvh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5dvh; } }
+    .notif-row{
+      display:flex !important;
+      flex-direction:column !important;
+      align-items:flex-end !important;
+      gap:6px !important;
+    }
 
-  /* --- ÜST BAR (TOPBAR) --- */
-  .topbar {
-    height: 60px; background: var(--glass);
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 16px; z-index: 100;
-    backdrop-filter: blur(12px);
-    position: absolute; top: 0; left: 0; right: 0;
-  }
-  
-  .hamb-btn { background: none; border: none; font-size: 24px; color: #ccc; cursor: pointer; padding: 4px; }
-  
-  .brand { display: flex; flex-direction: column; align-items: center; }
-  .brand-row { display: flex; align-items: center; gap: 8px; }
-  .brand-name { font-weight: 800; font-size: 16px; letter-spacing: -0.5px; color: #fff; }
-  .slogan { font-size: 10px; color: var(--text-sub); font-weight: 600; margin-top: 2px; }
+    .notif-topline{
+      display:flex !important;
+      align-items:center !important;
+      gap:10px !important;
+    }
 
-  /* Tahterevalli Logo */
-  .seesaw-svg { width: 32px; height: 16px; overflow: visible; }
-  .seesaw-bar { transform-origin: 20px 8px; animation: rock 4s ease-in-out infinite; }
-  @keyframes rock { 0%,100%{transform:rotate(-6deg)} 50%{transform:rotate(6deg)} }
+    #notifBtn{ display:flex !important; align-items:center !important; padding:6px !important; }
 
-  /* Sağ Kontroller */
-  .controls { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-  
-  .status-chip {
-    font-size: 9px; font-weight: 900; color: rgba(255,255,255,.4);
-    background: rgba(255,255,255,.05); border: 1px solid var(--border);
-    padding: 2px 8px; border-radius: 99px; letter-spacing: 1px;
-  }
-  
-  .sp-chip {
-    display: flex; align-items: center; gap: 6px;
-    background: #000; border: 1px solid #333;
-    padding: 3px 8px; border-radius: 99px;
-  }
-  .sp-label { font-size: 9px; font-weight: 800; color: #555; }
-  .sp-bar { width: 32px; height: 4px; background: #222; border-radius: 2px; overflow: hidden; }
-  .sp-fill { height: 100%; width: 19%; background: linear-gradient(90deg, var(--red), var(--gold), var(--pistachio)); }
-  .sp-val { font-size: 10px; font-weight: 700; color: #bbb; min-width: 20px; text-align: right; }
+    .plan-chip{
+      font-size:10px !important;
+      font-weight:900 !important;
+      letter-spacing:.7px !important;
+      padding:5px 10px !important;
+      border-radius:999px !important;
+      border:1px solid rgba(255,255,255,.10) !important;
+      background: rgba(255,255,255,.04) !important;
+      color: rgba(255,255,255,.75) !important;
+      line-height:1 !important;
+      user-select:none !important;
+      text-transform:uppercase !important;
+      white-space:nowrap !important;
+    }
 
-  /* --- SOHBET ALANI --- */
-  .chat-scroll {
-    flex: 1; overflow-y: auto; 
-    padding: 70px 12px 100px;
-    display: flex; flex-direction: column; gap: 16px;
-    scroll-behavior: smooth;
-  }
-  
-  .empty-msg {
-    text-align: center; color: #444; font-size: 13px; margin-top: 40%;
-    font-weight: 500;
-  }
+    /* SAMİMİYET -> S.P */
+    .yp-chip .yp-label{ font-size:0 !important; }
+    .yp-chip .yp-label::after{
+      content:"S.P" !important;
+      font-size:10px !important;
+      font-weight:900 !important;
+      letter-spacing:.6px !important;
+      color: rgba(255,255,255,.75) !important;
+    }
 
-  .bubble {
-    max-width: 88%; padding: 10px 14px;
-    border-radius: 18px; font-size: 14px; line-height: 1.5;
-    position: relative;
-    background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 12px rgba(0,0,0,.2);
-  }
-  
-  .bubble.bot {
-    align-self: flex-start;
-    border-left: 3px solid var(--gold);
-    border-top-left-radius: 4px;
-    color: #ddd;
-  }
-  
-  .bubble.user {
-    align-self: flex-end;
-    border-right: 3px solid var(--pistachio);
-    border-top-right-radius: 4px;
-    color: #fff; text-align: right;
-    background: linear-gradient(180deg, rgba(190,242,100,.05), rgba(190,242,100,.01));
-    border-color: rgba(190,242,100,.15);
-  }
+    /* Logo biraz büyüsün + yazıya yapışmasın */
+    .logo-area{ gap:10px !important; }
+    .seesaw-svg{ width:36px !important; height:18px !important; }
 
-  /* --- YAZI ALANI --- */
-  .dock {
-    position: absolute; bottom: 0; left: 0; right: 0;
-    padding: 12px 12px 20px;
-    background: linear-gradient(to top, #050505 85%, transparent);
-    z-index: 50;
-  }
-  
-  .dock-box {
-    display: flex; align-items: center; gap: 8px;
-    background: #161616; border: 1px solid #333;
-    border-radius: 26px; padding: 6px 6px 6px 14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.5);
-  }
-  
-  #msgInput {
-    flex: 1; background: transparent; border: none;
-    color: #fff; font-size: 14px; padding: 12px 0;
-    height: 46px; resize: none; font-family: inherit;
-  }
-  #msgInput::placeholder { color: #555; }
-  
-  .dock-btn {
-    width: 38px; height: 38px; border-radius: 50%; border: none;
-    background: transparent; color: #777; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: .2s;
-  }
-  .dock-btn:hover { color: var(--gold); background: rgba(255,255,255,.05); }
-  
-  .send-btn {
-    width: 40px; height: 40px; border-radius: 50%;
-    background: var(--pistachio); color: #000; border: none;
-    display: flex; align-items: center; justify-content: center; 
-    cursor: pointer; box-shadow: 0 4px 10px rgba(190,242,100,.2);
-  }
-  .send-btn svg { width: 20px; height: 20px; }
+    /* =========================
+       CHAT: alttan başla + boşken dock kaymasın
+       ========================= */
+    .chat-area{
+      display:flex !important;
+      flex-direction:column !important;
+      justify-content:flex-end !important;
+      padding-bottom:78px !important; /* ideal boşluk */
+      min-height:0 !important;
+    }
+    .chat-area:empty::before{ display:none !important; }
 
-  /* --- YAN MENÜ --- */
-  .overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,.85);
-    z-index: 2000; opacity: 0; pointer-events: none; transition: .3s;
-    backdrop-filter: blur(4px);
-  }
-  .overlay.active { opacity: 1; pointer-events: auto; }
-  
-  .sidebar {
-    width: 280px; height: 100%; background: #0f0f0f;
-    border-right: 1px solid #333;
-    transform: translateX(-100%); transition: .3s cubic-bezier(0.2, 0.8, 0.2, 1);
-    display: flex; flex-direction: column; padding: 20px;
-    overflow-y: auto;
-  }
-  .overlay.active .sidebar { transform: translateX(0); }
+    /* =========================
+       INPUT: focus kare çerçeve yok
+       ========================= */
+    #msgInput:focus, textarea:focus{
+      outline:none !important;
+      box-shadow:none !important;
+    }
 
-  .new-chat {
-    width: 100%; padding: 14px; border-radius: 14px;
-    background: linear-gradient(135deg, #bef264, #a3cf53);
-    color: #000; border: none;
-    font-weight: 800; font-size: 13px; letter-spacing: 0.5px;
-    cursor: pointer; margin-bottom: 24px;
-    box-shadow: 0 8px 20px rgba(190,242,100,.15);
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
+    /* =========================
+       MENU: Profil kartı ESKİSİ gibi küçük (ASLA büyük resim yok)
+       ========================= */
+    #profileShortcutIco{
+      width:34px !important;
+      height:34px !important;
+      border-radius:12px !important;
+      flex:0 0 34px !important;
+      overflow:hidden !important;
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
 
-  .profile-card {
-    display: flex; align-items: center; gap: 12px;
-    background: linear-gradient(145deg, rgba(255,255,255,.04), transparent);
-    border: 1px solid rgba(255,255,255,.08);
-    padding: 12px; border-radius: 16px;
-    margin-bottom: 24px; cursor: pointer;
-    transition: .2s;
-  }
-  .profile-card:hover { border-color: rgba(255,179,0,.3); background: rgba(255,255,255,.06); }
-  
-  .p-avatar {
-    width: 40px; height: 40px; border-radius: 12px;
-    background: var(--gold); border: 2px solid #222;
-    overflow: hidden; display: flex; align-items: center; justify-content: center;
-    font-size: 20px; color: #000;
-  }
-  .p-info h4 { margin: 0; font-size: 13px; color: var(--gold); font-weight: 700; }
-  .p-info p { margin: 2px 0 0; font-size: 11px; color: #888; }
+      background:#ffb300 !important;
+      border:1px solid rgba(255,179,0,.55) !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.14) !important;
+      color:#111 !important;
+      font-size:18px !important;
+      position:relative !important;
+    }
 
-  .menu-group { margin-bottom: 24px; }
-  .group-title {
-    font-size: 10px; font-weight: 900; color: #444;
-    letter-spacing: 1.5px; margin-bottom: 10px; padding-left: 8px;
-    text-transform: uppercase;
-  }
-  
-  .menu-item {
-    display: flex; align-items: center; gap: 14px;
-    padding: 12px 14px; border-radius: 12px;
-    background: transparent; border: 1px solid transparent;
-    cursor: pointer; transition: .2s; margin-bottom: 4px;
-  }
-  .menu-item:hover { background: rgba(255,255,255,.04); }
-  
-  .m-ico {
-    width: 24px; height: 24px; border-radius: 8px;
-    background: rgba(255,255,255,.05);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 14px; color: #777;
-    border: 1px solid rgba(255,255,255,.05);
-  }
-  
-  .asistan .group-title { color: var(--gold); }
-  .asistan .m-ico { color: var(--gold); background: rgba(255,179,0,.08); border-color: rgba(255,179,0,.15); }
-  
-  .astro .group-title { color: var(--pistachio); }
-  .astro .m-ico { color: var(--pistachio); background: rgba(190,242,100,.08); border-color: rgba(190,242,100,.15); }
-  
-  .corp .group-title { color: var(--red); }
-  .corp .m-ico { color: var(--red); background: rgba(255,82,82,.08); border-color: rgba(255,82,82,.15); }
+    /* Mini + rozeti (yeni sohbet başlat hissi) */
+    #profileShortcutIco::after{
+      content:"+";
+      position:absolute;
+      right:-6px;
+      top:-6px;
+      width:18px;
+      height:18px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      font-size:12px;
+      background: var(--pistachio);
+      color:#111;
+      border:2px solid rgba(12,12,12,.98);
+      box-shadow: 0 6px 12px rgba(0,0,0,.35);
+    }
 
-  .m-text { font-size: 13px; font-weight: 600; color: #ccc; }
+    /* Avatar gelirse küçücük ikon içine bas (büyük foto yok!) */
+    #profileShortcutIco img{
+      width:100% !important;
+      height:100% !important;
+      object-fit:cover !important;
+      display:block !important;
+    }
 
-  .menu-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid #222; }
-  .sub-link {
-    display: block; width: 100%; padding: 12px;
-    text-align: center; font-size: 12px; color: #666;
-    background: rgba(255,255,255,.02); border-radius: 8px; margin-bottom: 8px;
-    text-decoration: none; cursor: pointer; transition: .2s;
-  }
-  .sub-link:hover { color: #fff; background: rgba(255,255,255,.05); }
-  .sub-link.del { color: #b71c1c; border: 1px solid #333; background: transparent; }
+    /* Profil kart metinleri */
+    .profile-shortcut-text{ min-width:0 !important; }
+    .profile-shortcut-sub{
+      white-space:nowrap !important;
+      overflow:hidden !important;
+      text-overflow:ellipsis !important;
+      max-width:220px !important;
+    }
 
-  /* --- LOGIN EKRANI (DÜZELTİLDİ) --- */
-  .login-overlay {
-    position: fixed; inset: 0; background: #000; z-index: 5000;
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: .4s;
-  }
-  .login-overlay.active { opacity: 1; pointer-events: auto; }
-  
-  .login-box {
-    width: 90%; max-width: 360px;
-    background: rgba(20,20,20,.95); border: 1px solid #333;
-    padding: 30px 20px; border-radius: 24px; text-align: center;
-    box-shadow: 0 30px 80px rgba(0,0,0,.8);
-    backdrop-filter: blur(10px);
-  }
-  .login-logo-area { display: flex; justify-content: center; margin-bottom: 12px; }
-  
-  /* ✅ ÖZEL GOOGLE BUTONU (main.js ile uyumlu olması için) */
-  .auth-btn {
-    width: 100%; padding: 14px; border-radius: 12px;
-    border: 1px solid #ddd; background: #fff; color: #000;
-    font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 15px;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    transition: transform 0.1s;
-  }
-  .auth-btn:active { transform: scale(0.98); }
-  .auth-btn.apple { background: #000; color: #fff; border-color: #333; margin-top: 8px; }
-  
-  .terms-links {
-    margin-top: 24px; display: flex; justify-content: center; gap: 12px;
-  }
-  .term-link {
-    color: #555; font-size: 11px; text-decoration: none;
-    border: 1px solid #333; padding: 6px 12px; border-radius: 99px;
-  }
+    /* =========================
+       HISTORY: kibar çöp var ama "Yeni sohbet" satırı gizlenecek
+       ========================= */
+    .history-del{
+      display:flex !important;
+      width:34px !important;
+      height:34px !important;
+      border-radius:12px !important;
+      align-items:center !important;
+      justify-content:center !important;
+      border:1px solid rgba(255,255,255,.10) !important;
+      background: rgba(255,255,255,.04) !important;
+    }
 
-</style>
+    /* Menüde ikinci satırlar yok */
+    .menu-action small{ display:none !important; }
+    /* Kurumsal içindeki profil tekrarını gizle */
+    #menuKurumsal .menu-action[data-action="profile"]{ display:none !important; }
+  </style>
 </head>
+
 <body>
 
-<div class="frame">
-  
+<div class="mobile-frame" id="mobileFrame">
   <div class="topbar">
-    <button class="hamb-btn" id="hambBtn">☰</button>
-    <div class="brand">
-      <div class="brand-row">
-        <svg class="seesaw-svg" viewBox="0 0 40 20">
-          <g class="seesaw-bar">
-            <line x1="0" y1="8" x2="40" y2="8" stroke="#555" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="3" cy="5" r="3" fill="#bef264"/>
-            <circle cx="37" cy="5" r="3" fill="#ffb300"/>
-          </g>
-          <polygon points="17,14 23,14 20,8" fill="#444"/>
-        </svg>
-        <span class="brand-name">Caynana</span>
-      </div>
-      <span class="slogan">Yapay Zekânın Geleneksel Aklı</span>
+    <div class="left-controls">
+      <button class="hamb-btn" id="hambBtn">☰</button>
     </div>
-    <div class="controls">
-      <div class="status-chip">FREE</div>
-      <div class="sp-chip">
-        <span class="sp-label">S.P</span>
-        <div class="sp-bar"><div class="sp-fill" id="spFill"></div></div>
-        <span class="sp-val" id="spVal">19%</span>
+
+    <div class="brand-wrapper" id="brandWrapper">
+      <div class="logo-area">
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
+          <g class="seesaw-bar" id="seesawBar">
+            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+            <circle cx="3" cy="5" r="3" fill="#bef264" />
+            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+          </g>
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+        </svg>
+        <div class="brand-name">Caynana AI</div>
+      </div>
+      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+    </div>
+
+    <div class="right-controls">
+      <div class="notif-row">
+        <!-- 1. satır: zil + FREE -->
+        <div class="notif-topline">
+          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+            <svg viewBox="0 0 24 24">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <div class="badge" id="notifBadge"></div>
+          </button>
+
+          <div id="planChip" class="plan-chip">FREE</div>
+        </div>
+
+        <div class="notification-dropdown" id="notifDropdown">
+          <div class="notif-header">Bildirimler</div>
+          <div class="notif-list" id="notifList"></div>
+        </div>
+
+        <!-- 2. satır: S.P chip -->
+        <div class="yp-chip">
+          <div class="yp-label">SAMİMİYET</div>
+          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+          <div class="yp-num" id="ypNum">19%</div>
+        </div>
+
+        <!-- üst profil butonu (CSS ile kapalı) -->
+        <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </button>
       </div>
     </div>
   </div>
 
-  <div class="overlay" id="menuOverlay">
-    <div class="sidebar">
-      <button class="new-chat" id="newChatBtn"><span>＋</span> YENİ SOHBET</button>
+  <!-- MENU -->
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-sidebar">
+      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
 
-      <div class="profile-card" id="profileBtn">
-        <div class="p-avatar" id="pAvatar">👤</div>
-        <div class="p-info">
-          <h4>Profil Düzenle</h4>
-          <p id="pName">Misafir</p>
+      <!-- ✅ Eski premium profil kartı (küçük ikon + isim) -->
+      <div class="profile-shortcut-wrap" id="profileShortcutMount">
+        <div class="profile-shortcut-btn" id="profileShortcutBtn">
+          <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
+          <div class="profile-shortcut-text">
+            <div class="profile-shortcut-title">Profil Düzenle</div>
+            <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
+          </div>
         </div>
       </div>
 
-      <div class="menu-group asistan">
-        <div class="group-title">ASİSTAN</div>
-        <div class="menu-item"><div class="m-ico">◦</div><div class="m-text">Sohbet</div></div>
-        <div class="menu-item"><div class="m-ico">≋</div><div class="m-text">Gıybet Modu</div></div>
-        <div class="menu-item"><div class="m-ico">⏱</div><div class="m-text">Hatırlatıcı</div></div>
+      <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
+      <div class="history-list" id="historyList"></div>
+
+      <div class="menu-block asistan">
+        <div class="block-head">Asistan <small>Günlük işler</small></div>
+        <div class="menu-grid" id="menuAsistan"></div>
       </div>
 
-      <div class="menu-group astro">
-        <div class="group-title">ASTRO AI</div>
-        <div class="menu-item"><div class="m-ico">◌</div><div class="m-text">Kahve Falı</div></div>
-        <div class="menu-item"><div class="m-ico">▤</div><div class="m-text">Tarot</div></div>
-        <div class="menu-item"><div class="m-ico">◐</div><div class="m-text">Burç Yorumu</div></div>
+      <div class="menu-block astro">
+        <div class="block-head">Astro AI <small>Yorum & fal</small></div>
+        <div class="menu-grid" id="menuAstro"></div>
       </div>
 
-      <div class="menu-group corp">
-        <div class="group-title">KURUMSAL</div>
-        <div class="menu-item"><div class="m-ico">i</div><div class="m-text">Hakkımızda</div></div>
-        <div class="menu-item"><div class="m-ico">✉</div><div class="m-text">İletişim</div></div>
+      <div class="menu-block kurumsal">
+        <div class="block-head">Kurumsal <small>Bilgi & sözleşme</small></div>
+        <div class="menu-grid" id="menuKurumsal"></div>
       </div>
 
-      <div class="menu-footer">
-        <div class="sub-link">Güvenli Çıkış</div>
-        <div class="sub-link del">Hesabımı Sil</div>
+      <div class="menu-footer-actions">
+        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
+        <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
+        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
       </div>
     </div>
   </div>
 
-  <div class="chat-scroll" id="chatArea">
-    <div class="empty-msg">
-      Kaynana burada evladım...<br>Hadi bir şeyler yaz da laflayalım.
+  <!-- CHAT -->
+  <div class="chat-area" id="chat"></div>
+
+  <!-- DOCK -->
+  <div class="input-dock">
+    <div class="dock-inner">
+      <button class="icon-btn" id="camBtn" aria-label="Kamera">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+      </button>
+      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
+      <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+      </button>
+      <button class="send-btn" id="sendBtn" aria-label="Gönder">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+      </button>
     </div>
   </div>
 
-  <div class="dock">
-    <div class="dock-box">
-      <button class="dock-btn" id="camBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
-      </button>
-      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?"></textarea>
-      <button class="dock-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-      </button>
-      <button class="send-btn" id="sendBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-      </button>
+  <!-- FOOTER -->
+  <div class="footer-container">
+    <div class="footer-links">
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
     </div>
+    <div class="footer-brand">@CaynanaAI By Ozyigits 2026</div>
   </div>
-
 </div>
 
-<div class="login-overlay active" id="loginOverlay">
-  <div class="login-box">
-    <div class="login-logo-area">
-       <svg class="seesaw-svg" viewBox="0 0 40 20" style="width:60px; height:30px;">
-          <g class="seesaw-bar">
-            <line x1="0" y1="8" x2="40" y2="8" stroke="#777" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="3" cy="5" r="3" fill="#bef264"/>
-            <circle cx="37" cy="5" r="3" fill="#ffb300"/>
-          </g>
-          <polygon points="17,14 23,14 20,8" fill="#555"/>
-        </svg>
+<!-- OVERLAYS (dokunmadım) -->
+<div class="full-overlay" id="pageOverlay">
+  <div class="login-card" style="max-width:90%; max-height:90%; overflow-y:auto;">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
+      <div id="pageTitle" style="font-weight:800; color:#fff;">Başlık</div>
+      <button id="closePageBtn" style="background:none; border:none; color:#ff5252; font-size:20px;">&times;</button>
     </div>
-    <h2 style="margin:0; color:#fff; font-size:20px;">Caynana.AI</h2>
-    <p style="color:#888; font-size:12px; margin:5px 0 24px;">Yapay Zekânın Geleneksel Aklı</p>
-    
-    <button class="auth-btn google" id="googleLoginBtn">
-      Google ile Devam Et
-    </button>
-    
-    <button class="auth-btn apple" id="appleLoginBtn">
-      Apple ile Devam Et
-    </button>
-    
-    <div class="terms-links">
-       <a href="/pages/gizlilik.html" class="term-link">Gizlilik</a>
-       <a href="/pages/sozlesme.html" class="term-link">Sözleşme</a>
-    </div>
-    <div id="loginHint" style="margin-top:15px; font-size:10px; color:#555;">Servisler yükleniyor...</div>
+    <div id="pageContent" style="text-align:left; font-size:13px; color:#ddd;"></div>
   </div>
 </div>
+
+<div class="full-overlay active" id="loginOverlay">
+  <div class="login-card login-premium">
+    <div class="login-seesaw-wrap" aria-hidden="true">
+      <svg class="login-seesaw" viewBox="0 0 220 70">
+        <g class="login-seesaw-bar">
+          <line x1="20" y1="30" x2="200" y2="30" stroke="rgba(255,255,255,.65)" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="30" cy="20" r="10" fill="#bef264"/>
+          <circle cx="190" cy="20" r="10" fill="#ffb300"/>
+        </g>
+        <polygon points="105,55 115,55 110,30" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3"/>
+      </svg>
+    </div>
+
+    <div class="brand-name" style="font-size:24px; margin:6px 0 4px;">Caynana.AI</div>
+    <div class="login-slogan">Yapay Zekânın Geleneksel Aklı</div>
+
+    <div class="login-sub"><b>Ücretsiz üyelik</b> için lütfen giriş yapın.</div>
+
+    <button class="auth-btn google" id="googleLoginBtn" type="button">Google ile Devam Et</button>
+    <div id="googleBtnWrap" style="margin-top:10px;"></div>
+
+    <button class="auth-btn apple disabled" id="appleLoginBtn" type="button">Apple Girişi Hazırlanıyor...</button>
+
+    <div class="trust-links trust-links-clean">
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
+      <a href="/pages/sozlesme.html">Sözleşme</a>
+      <a href="/pages/uyelik.html">Üyelik</a>
+    </div>
+
+    <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
+    <div id="loginHint" class="login-hint">Servisler yükleniyor...</div>
+  </div>
+</div>
+
+<div class="full-overlay" id="termsOverlay">
+  <div class="login-card login-premium">
+    <div class="terms-head">
+      <div class="brand-name">Sözleşme</div>
+      <button id="closeTermsBtn" class="x-btn" aria-label="Kapat">×</button>
+    </div>
+
+    <div class="terms-frame-wrap">
+      <iframe id="termsFrame" src="/pages/sozlesme.html" title="Kullanıcı Sözleşmesi"></iframe>
+    </div>
+
+    <div class="agreement-box">
+      <input type="checkbox" id="termsCheck">
+      <label for="termsCheck">Onaylıyorum.</label>
+    </div>
+
+    <button class="auth-btn" id="termsAcceptBtn" type="button">Onayla ve Gir</button>
+    <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  window.CAYNANA_TYPE_SPEED = 28;
+</script>
 
 <script type="module" src="js/main.js"></script>
 
 <script>
-  // UI Yükseklik Fix (Mobil klavye için)
-  const setHeight = () => document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
-  window.addEventListener('resize', setHeight);
-  setHeight();
+  (function(){
+    const STORAGE_KEY = "caynana_user_v1";
+    function safeJson(s, fb){ try{return JSON.parse(s||"")}catch(e){return fb} }
+    function norm(s){ return String(s||"").toLowerCase().trim(); }
+
+    // Samimiyet başlangıç 19 (boşsa)
+    try{
+      const u = safeJson(localStorage.getItem(STORAGE_KEY), {});
+      if(u && (u.yp_percent === undefined || u.yp_percent === null || u.yp_percent === "")){
+        u.yp_percent = 19;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+      }
+    }catch(e){}
+
+    // Profil kısayol: küçük avatar bas (asla büyütmez)
+    function paintProfileShortcut(){
+      try{
+        const u = safeJson(localStorage.getItem(STORAGE_KEY), {});
+        const pic = (u.picture || u.avatar || u.avatar_url || u.photo_url || "").trim();
+        const full = (u.fullname || u.name || u.display_name || "").trim();
+
+        const ico = document.getElementById("profileShortcutIco");
+        if(ico){
+          if(pic) ico.innerHTML = `<img src="${pic}" alt="avatar">`;
+          else ico.textContent = "👤";
+        }
+        const nm = document.getElementById("profileShortcutName");
+        if(nm) nm.textContent = full || "—";
+      }catch(e){}
+    }
+
+    // Menüde “Yeni sohbet / Sohbet” satırlarını gizle (boş chatler)
+    function hideEmptyHistoryRows(){
+      const list = document.getElementById("historyList");
+      const title = document.getElementById("historyTitle");
+      if(!list) return;
+
+      const rows = Array.from(list.querySelectorAll(".history-row"));
+      if(rows.length === 0){
+        if(title) title.style.display = "none";
+        return;
+      }else{
+        if(title) title.style.display = "";
+      }
+
+      rows.forEach(r=>{
+        const t = norm(r.textContent);
+        if(t.includes("yeni sohbe") || t === "sohbet"){
+          r.style.display = "none";
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", ()=>{
+      paintProfileShortcut();
+      hideEmptyHistoryRows();
+      setTimeout(hideEmptyHistoryRows, 400);
+      setTimeout(hideEmptyHistoryRows, 1200);
+
+      const pbtn = document.getElementById("profileShortcutBtn");
+      if(pbtn) pbtn.addEventListener("click", ()=> location.href="/pages/profil.html");
+    });
+  })();
 </script>
 
 </body>
