@@ -10,23 +10,114 @@
 
   <!-- ✅ PREMIUM OVERRIDES (style.css bozulmadan üstüne ek) -->
   <style>
-    /* --- MENU PREMIUM SKIN --- */
+    /* -------------------- GENEL: pastel, çakışma, mobil uyum -------------------- */
+    .topbar{
+      gap:10px;
+      align-items:flex-start;
+      padding-top:10px;
+      padding-bottom:10px;
+    }
+    .brand-wrapper{ min-width:0; }
+    .brand-name{ white-space:nowrap; }
+    .slogan{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      text-align:center;
+      margin:0 auto;
+    }
+
+    /* sağ tarafı kolon yap: ikonlar çakışmasın */
+    .right-controls{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:8px;
+      min-width:150px;
+    }
+
+    /* ÜYELİK tipi */
+    .plan-chip{
+      align-self:flex-end;
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.75);
+      text-transform:uppercase;
+      user-select:none;
+    }
+
+    /* bildirim bloğu altına samimiyet */
+    .notif-row{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:8px;
+    }
+    .yp-chip{ margin:0 !important; }
+
+    /* Profil ikonunu kaldır */
+    #profileBtn{ display:none !important; }
+
+    /* -------------------- CHAT: zemin kaldır + sağ/sol dışa yakın -------------------- */
+    .chat-area{ padding:14px 10px !important; }
+
+    .bubble{
+      background: transparent !important;           /* zemin kalktı */
+      box-shadow: none !important;
+      border: 1px solid rgba(255,255,255,.10) !important;
+      border-radius: 18px !important;
+      padding: 12px 12px !important;
+      max-width: 92% !important;
+    }
+    /* Kaynana (sol) */
+    .bubble.bot{
+      margin-left: 0 !important;
+      margin-right: auto !important;
+      border-left: 4px solid rgba(255,179,0,.60) !important;
+    }
+    /* Kullanıcı (sağ) */
+    .bubble.user{
+      margin-left: auto !important;
+      margin-right: 0 !important;
+      border-right: 4px solid rgba(190,242,100,.60) !important;
+      text-align:right !important;
+    }
+    .chat-area .bubble{ margin-top:10px !important; }
+
+    /* -------------------- INPUT: yazarken kare çerçeve kalksın -------------------- */
+    #msgInput{
+      outline:none !important;
+      box-shadow:none !important;
+      border-color: rgba(255,255,255,.10) !important;
+    }
+    #msgInput:focus{
+      outline:none !important;
+      box-shadow:none !important;
+      border-color: rgba(255,255,255,.18) !important;
+    }
+
+    /* -------------------- MENU PREMIUM SKIN -------------------- */
     .menu-sidebar{
       background:
-        radial-gradient(1200px 400px at 20% -10%, rgba(190,242,100,.12), transparent 55%),
-        radial-gradient(900px 420px at 85% 0%, rgba(255,179,0,.10), transparent 50%),
+        radial-gradient(1200px 400px at 20% -10%, rgba(190,242,100,.10), transparent 55%),
+        radial-gradient(900px 420px at 85% 0%, rgba(255,179,0,.08), transparent 50%),
         rgba(12,12,12,.98);
       border:1px solid rgba(255,255,255,.10);
       box-shadow: 0 30px 90px rgba(0,0,0,.55);
       backdrop-filter: blur(10px);
     }
 
+    /* Yeni sohbet çok parlamasın */
     .new-chat-btn{
       position:relative;
       border-radius:16px;
-      box-shadow:
-        0 14px 30px rgba(0,0,0,.45),
-        inset 0 1px 0 rgba(255,255,255,.14);
+      box-shadow: 0 10px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.12) !important;
+      filter: saturate(.92);
       transform: translateZ(0);
     }
     .new-chat-btn:active{ transform: translateY(1px); }
@@ -42,22 +133,41 @@
       border-radius:16px;
       cursor:pointer;
       user-select:none;
-      background: linear-gradient(180deg, rgba(255,179,0,.22), rgba(0,0,0,0));
-      border: 1px solid rgba(255,179,0,.45);
+      background: linear-gradient(180deg, rgba(255,179,0,.18), rgba(0,0,0,0));
+      border: 1px solid rgba(255,179,0,.42);
       box-shadow: 0 16px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);
       transition: transform .12s ease, filter .12s ease;
     }
     .profile-shortcut-btn:active{ transform: translateY(1px); filter: brightness(.98); }
+
+    /* Profil ikon: TAM turuncu, şeffaf değil */
     .profile-shortcut-ico{
       width:34px; height:34px; border-radius:12px;
       display:flex; align-items:center; justify-content:center;
-      background: rgba(255,179,0,.18);
-      border:1px solid rgba(255,179,0,.35);
+      background:#ffb300 !important;
+      border:1px solid #ffb300 !important;
       box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
       font-size:18px;
+      color:#111 !important;
+      overflow:hidden;
     }
+    .profile-shortcut-ico img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
     .profile-shortcut-title{ font-weight:950; color:#ffb300; line-height:1.1; }
-    .profile-shortcut-sub{ font-size:12px; color:#ffb300; opacity:.88; margin-top:2px; }
+    .profile-shortcut-sub{
+      font-size:12px;
+      color: rgba(255,255,255,.70);
+      margin-top:2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 240px;
+    }
 
     /* Bloklar */
     .menu-block{
@@ -81,11 +191,6 @@
     }
     .block-head small{ text-transform:none; letter-spacing:0; font-weight:700; opacity:.65; }
 
-    /* Blok başlık renkleri */
-    .menu-block.asistan .block-head{ color:#bef264; }
-    .menu-block.astro .block-head{ color:#a78bfa; }
-    .menu-block.kurumsal .block-head{ color:#60a5fa; }
-
     /* Grid */
     .menu-grid{
       display:grid;
@@ -95,21 +200,21 @@
 
     /* Menü butonları (3D) */
     .menu-action{
-      display:flex; align-items:center; gap:12px;
+      display:flex; align-items:center; gap:10px;
       border-radius:16px;
-      padding:12px 12px;
+      padding:10px 10px;
       cursor:pointer;
       user-select:none;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,0));
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,0));
       border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 14px 26px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.12);
+      box-shadow: 0 14px 26px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.12);
       transition: transform .12s ease, filter .12s ease;
     }
     .menu-action:active{ transform: translateY(1px); filter: brightness(.98); }
 
-    /* İkon kapsülü modern */
+    /* İkon kapsülü */
     .menu-action .ico{
-      width:38px; height:38px;
+      width:36px; height:36px;
       border-radius:14px;
       display:flex; align-items:center; justify-content:center;
       font-size:18px;
@@ -117,36 +222,13 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
     }
 
-    /* Grup renkleri */
-    .menu-action.grp-asistan .ico{
-      background: rgba(190,242,100,.16);
-      border-color: rgba(190,242,100,.22);
-      color:#bef264;
-    }
-    .menu-action.grp-astro .ico{
-      background: rgba(167,139,250,.16);
-      border-color: rgba(167,139,250,.22);
-      color:#a78bfa;
-    }
-    .menu-action.grp-kurumsal .ico{
-      background: rgba(96,165,250,.16);
-      border-color: rgba(96,165,250,.22);
-      color:#60a5fa;
-    }
+    /* Menüde ikinci satırları KALDIR */
+    .menu-action small{ display:none !important; }
 
-    /* Profil Düzenle (menü içinde turuncu vurgu) */
-    .menu-action.tone-orange{
-      border-color: rgba(255,179,0,.35);
-      background: linear-gradient(180deg, rgba(255,179,0,.16), rgba(0,0,0,0));
-    }
-    .menu-action.tone-orange .ico{
-      background: rgba(255,179,0,.18);
-      border-color: rgba(255,179,0,.28);
-      color:#ffb300;
-    }
-    .menu-action.tone-orange small{ color:#ffb300; opacity:.85; }
+    /* Kurumsal altındaki profil düzenlemeyi KALDIR (tek yer: turuncu kısayol) */
+    #menuKurumsal .menu-action[data-action="profile"]{ display:none !important; }
 
-    /* History satırı: aynı satır title + ikon (kibar) */
+    /* History satırı */
     .history-row{
       display:flex;
       align-items:center;
@@ -166,7 +248,7 @@
     .history-del:active{ transform: translateY(1px); }
     .history-del .ico-trash{ opacity:.9; }
 
-    /* Chat boşken görünmesin: main.js zaten display none yapıyor; burada sadece olur da görünürse */
+    /* Chat boşken görünmesin */
     .chat-empty::before{
       content:"Yeni sohbet başlat ya da bir mesaj yaz evladım 🙂";
       display:block;
@@ -176,7 +258,7 @@
       text-align:center;
     }
 
-    /* ✅ (EK) Google renderButton alanı - tasarımı bozmadan aynı yerde dursun */
+    /* Google renderButton alanı */
     #googleBtnWrap{
       width:100%;
       display:flex;
@@ -186,6 +268,18 @@
       width:100% !important;
       display:flex !important;
       justify-content:center !important;
+    }
+
+    /* Login slogan tek satır + ortalı */
+    .login-slogan{
+      white-space:nowrap;
+      text-align:center;
+      width:100%;
+    }
+
+    /* Login card telefon ekranı boyutunda (daraltma yok) */
+    .login-card{
+      width: min(92vw, 420px);
     }
   </style>
 </head>
@@ -212,11 +306,8 @@
     </div>
 
     <div class="right-controls">
-      <div class="yp-chip">
-        <div class="yp-label">SAMİMİYET</div>
-        <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
-        <div class="yp-num" id="ypNum">10%</div>
-      </div>
+      <!-- ✅ Üyelik tipi -->
+      <div class="plan-chip" id="planChip">FREE</div>
 
       <div class="notif-row">
         <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
@@ -229,7 +320,15 @@
           <div class="notif-list" id="notifList"></div>
         </div>
 
-        <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
+        <!-- ✅ Samimiyet bildirimin altına alındı -->
+        <div class="yp-chip">
+          <div class="yp-label">SAMİMİYET</div>
+          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+          <div class="yp-num" id="ypNum">19%</div>
+        </div>
+
+        <!-- Profil ikonunu kaldırdık -->
+        <button class="icon-btn-top" id="profileBtn" aria-label="Profil" style="display:none">
           <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         </button>
       </div>
@@ -241,13 +340,13 @@
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
 
-      <!-- ✅ Yeni sohbet altında turuncu profil kısayolu (main.js de basabilir, burada hazır dursun) -->
+      <!-- ✅ Profil kısayolu: avatar + isim -->
       <div class="profile-shortcut-wrap" id="profileShortcutMount">
         <div class="profile-shortcut-btn" id="profileShortcutBtn">
-          <div class="profile-shortcut-ico">👤</div>
+          <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
           <div style="min-width:0;">
             <div class="profile-shortcut-title">Profil Düzenle</div>
-            <div class="profile-shortcut-sub">Bilgilerini güncelle</div>
+            <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
           </div>
         </div>
       </div>
@@ -298,7 +397,7 @@
     </div>
   </div>
 
-  <!-- FOOTER (her sayfada sabit) -->
+  <!-- FOOTER -->
   <div class="footer-container">
     <div class="footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
@@ -310,7 +409,7 @@
   </div>
 </div>
 
-<!-- PAGE OVERLAY (Hakkımızda/SSS/Gizlilik/İletişim/Sözleşme burada açılıyor) -->
+<!-- PAGE OVERLAY -->
 <div class="full-overlay" id="pageOverlay">
   <div class="login-card" style="max-width:90%; max-height:90%; overflow-y:auto;">
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">
@@ -325,16 +424,13 @@
 <div class="full-overlay active" id="loginOverlay">
   <div class="login-card login-premium">
 
-    <!-- Tahtaravalli (animasyon) -->
     <div class="login-seesaw-wrap" aria-hidden="true">
       <svg class="login-seesaw" viewBox="0 0 220 70">
-        <!-- bar -->
         <g class="login-seesaw-bar">
           <line x1="20" y1="30" x2="200" y2="30" stroke="rgba(255,255,255,.65)" stroke-width="6" stroke-linecap="round"/>
           <circle cx="30" cy="20" r="10" fill="#bef264"/>
           <circle cx="190" cy="20" r="10" fill="#ffb300"/>
         </g>
-        <!-- pivot -->
         <polygon points="105,55 115,55 110,30" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3"/>
       </svg>
     </div>
@@ -346,16 +442,12 @@
       <b>Ücretsiz üyelik</b> için lütfen giriş yapın.
     </div>
 
-    <!-- ✅ VAR OLAN BUTON (EKSİLTMEDİM) -->
     <button class="auth-btn google" id="googleLoginBtn" type="button">Google ile Devam Et</button>
-
-    <!-- ✅ EK: Eğer main.js renderButton kullanıyorsa buraya basabilir (tasarımı bozmadan aynı bölgede) -->
     <div id="googleBtnWrap" style="margin-top:10px;"></div>
 
     <button class="auth-btn apple disabled" id="appleLoginBtn" type="button">Apple Girişi Hazırlanıyor...</button>
     <div class="coming-soon"></div>
 
-    <!-- /pages linkleri -->
     <div class="trust-links trust-links-clean">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
       <a href="/pages/sss.html">SSS</a>
@@ -366,12 +458,11 @@
     </div>
 
     <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
-
     <div id="loginHint" class="login-hint">Servisler yükleniyor...</div>
   </div>
 </div>
 
-<!-- TERMS (ilk girişte zorunlu) -->
+<!-- TERMS -->
 <div class="full-overlay" id="termsOverlay">
   <div class="login-card login-premium">
     <div class="terms-head">
@@ -393,13 +484,16 @@
   </div>
 </div>
 
-<!-- küçük toast -->
 <div class="toast" id="toast"></div>
 
-<!-- ✅ GSI / FedCM AbortError KALKANı (main.js kaç kez dokunsa da kırılmasın) -->
+<!-- ✅ DAKTİLO HIZI (chat.js desteklerse) -->
+<script>
+  window.CAYNANA_TYPE_SPEED = 28; // daha yavaş (varsayılan 16-18 gibi ise)
+</script>
+
+<!-- ✅ GSI / FedCM AbortError KALKANı (dokunmadım) -->
 <script>
   (function(){
-    // Tekil durum
     if(!window.__CAYNANA_GSI__) window.__CAYNANA_GSI__ = {
       patched:false,
       initCalled:false,
@@ -413,18 +507,15 @@
 
         const id = google.accounts.id;
 
-        // initialize guard (2. kez çağrılırsa yut)
         const _init = id.initialize.bind(id);
         id.initialize = function(opts){
           if(window.__CAYNANA_GSI__.initCalled){
-            // ikinci initialize -> AbortError tetiklememek için yut
             return;
           }
           window.__CAYNANA_GSI__.initCalled = true;
           return _init(opts);
         };
 
-        // prompt guard (spam olursa AbortError)
         const _prompt = id.prompt ? id.prompt.bind(id) : null;
         if(_prompt){
           id.prompt = function(cb){
@@ -437,12 +528,9 @@
         }
 
         window.__CAYNANA_GSI__.patched = true;
-      }catch(e){
-        // sessiz
-      }
+      }catch(e){}
     }
 
-    // GSI async geldiği için birkaç kez dene
     let tries = 0;
     const t = setInterval(()=>{
       patchGSI();
@@ -450,22 +538,13 @@
       if(window.__CAYNANA_GSI__.patched || tries > 60) clearInterval(t);
     }, 100);
 
-    // Profil sayfasından dönünce bfcache olayı tetikleyebilir -> prompt tekrar spam olmasın diye sıfırlama yapma
-    window.addEventListener("pageshow", (e) => {
-      // burada reset yok; amaç spam'i engellemek
-    });
-
-    // Butona basınca: main.js zaten handle ediyor olabilir.
-    // Yine de “fallback” olarak GSI renderButton kullanıyorsan diye sadece güvenli yardımcı koyuyoruz:
     window.__tryRenderGoogleButton = function(){
       try{
         if(!window.google?.accounts?.id) return false;
         const wrap = document.getElementById("googleBtnWrap");
         if(!wrap) return false;
-        // main.js render ediyorsa dokunma
         if(wrap.dataset.rendered === "1") return true;
 
-        // Eğer global bir client id varsa (main.js koyuyor olabilir) render edebilir:
         const cid = window.GOOGLE_CLIENT_ID || window.googleClientId || "";
         if(!cid) return false;
 
@@ -488,9 +567,33 @@
 
 <script type="module" src="js/main.js"></script>
 
-<!-- ✅ Profil kısayoluna direkt yön -->
+<!-- ✅ Profil kısayol: avatar + isim + samimiyet 19 başlangıç -->
 <script>
-  // main.js de bunu bağlayacak; burada da “yedeği” var.
+  document.addEventListener("DOMContentLoaded", () => {
+    try{
+      const STORAGE_KEY = "caynana_user_v1";
+      const u = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+      // samimiyet başlangıcı 19 (sadece boşsa)
+      if(u && (u.yp_percent === undefined || u.yp_percent === null || u.yp_percent === "")){
+        u.yp_percent = 19;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(u));
+      }
+
+      // shortcut avatar + isim
+      const pic = (u.picture || u.avatar || u.avatar_url || u.photo_url || "").trim();
+      const full = (u.fullname || u.name || u.display_name || "").trim();
+
+      const ico = document.getElementById("profileShortcutIco");
+      if(ico && pic){
+        ico.innerHTML = `<img src="${pic}" alt="avatar">`;
+      }
+      const nm = document.getElementById("profileShortcutName");
+      if(nm) nm.textContent = full || "—";
+
+    }catch(e){}
+  });
+
   document.addEventListener("DOMContentLoaded", () => {
     const btn = document.getElementById("profileShortcutBtn");
     if(btn){
