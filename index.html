@@ -1,76 +1,378 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caynana AI</title>
-
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/css/style.css?v=1">
-
-  <!-- Google GSI -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Caynana AI v6.2</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="/css/style.css?v=2" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-  <!-- config.js -> window.GOOGLE_CLIENT_ID -->
-  <script type="module">
-    import { GOOGLE_CLIENT_ID } from "/js/config.js";
-    window.GOOGLE_CLIENT_ID = GOOGLE_CLIENT_ID;
-  </script>
 
   <style>
     :root{
       --gold:#ffb300;
       --pistachio:#bef264;
-      --red:#ff5252;
+      --bg-dark:#000;
+      --panel-bg:#111;
+      --border: rgba(255,255,255,.10);
+      --muted: rgba(255,255,255,.72);
 
-      /* alt yığın */
-      --assistantbar-h: 74px;
-      --footer-h: 64px;
-      --input-h: 86px;
+      --topbar-h: 64px;
+      --inputdock-h: 86px;
+      --assistantbar-h: 78px;
+      --footerlinks-h: 36px;
+      --footerbrand-h: 26px;
+      --bottom-stack: calc(var(--assistantbar-h) + var(--footerlinks-h) + var(--footerbrand-h));
     }
 
-    /* Chat taşmasın: input + altbar + footer için alan */
-    .chat-area{
-      padding-bottom: calc(var(--input-h) + var(--assistantbar-h) + var(--footer-h)) !important;
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background:var(--bg-dark);
+      color:#eee;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+      overflow:hidden;
     }
 
-    /* Menü overlay sayfaları yemesin, ama açılınca çalışsın */
+    .mobile-frame{
+      position:relative;
+      height:100vh;
+      width:100%;
+      overflow:hidden;
+      background:#000;
+    }
+
+    /* TOPBAR */
+    .topbar{
+      position:fixed;
+      left:0; right:0; top:0;
+      height:var(--topbar-h);
+      z-index:4000;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 10px 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+    }
+
+    .left-controls{ display:flex; align-items:center; gap:10px; }
+    .hamb-btn{
+      width:42px; height:42px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color:#fff;
+      font-size:18px;
+      cursor:pointer;
+    }
+    .hamb-btn:active{ transform: translateY(1px); filter: brightness(.95); }
+
+    .brand-wrapper{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap:2px;
+      min-width: 0;
+      flex: 1;
+    }
+    .logo-area{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      min-width:0;
+    }
+    .brand-name{
+      font-weight:900;
+      letter-spacing:.2px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 160px;
+    }
+    .slogan{
+      font-size:11px;
+      color: rgba(255,255,255,.65);
+      font-weight:700;
+      text-align:center;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width: 240px;
+    }
+
+    .seesaw-svg{ width:42px; height:20px; }
+    .seesaw-bar{ transform-origin: 20px 8px; animation: seesaw 2.1s ease-in-out infinite; }
+    @keyframes seesaw{
+      0%{ transform: rotate(-5deg); }
+      50%{ transform: rotate(5deg); }
+      100%{ transform: rotate(-5deg); }
+    }
+
+    .right-controls{
+      display:flex;
+      align-items:flex-end;
+      gap:8px;
+      min-width: 120px;
+      justify-content:flex-end;
+    }
+    .notif-row{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap:6px;
+      position:relative;
+    }
+    .notif-topline{ display:flex; align-items:center; gap:10px; }
+    .icon-btn-top{
+      width:42px; height:42px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+    }
+    .icon-btn-top svg{ width:22px; height:22px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.9; }
+    .badge{
+      position:absolute;
+      right: 62px;
+      top: 10px;
+      width: 8px; height: 8px;
+      border-radius: 99px;
+      background: var(--gold);
+      display:none;
+    }
+    .plan-chip{
+      font-size:10px;
+      font-weight:900;
+      padding:6px 10px;
+      border-radius:99px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.78);
+      letter-spacing:.3px;
+    }
+    .yp-chip{
+      width: 120px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      align-items:flex-end;
+    }
+    .yp-label{
+      font-size:10px;
+      font-weight:900;
+      color: rgba(255,255,255,.75);
+      letter-spacing:.2px;
+    }
+    .yp-meter{
+      width: 120px;
+      height: 8px;
+      border-radius: 99px;
+      background: rgba(255,255,255,.08);
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .yp-fill{
+      height:100%;
+      width: 19%;
+      background: linear-gradient(90deg, var(--pistachio), var(--gold));
+    }
+    .yp-num{
+      font-size:10px;
+      font-weight:900;
+      color: rgba(255,255,255,.78);
+      letter-spacing:.2px;
+    }
+
+    /* MENU OVERLAY */
     .menu-overlay{
-      display:flex !important; /* ASLA none yapma */
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.80);
+      z-index:5000;
       opacity:0;
       pointer-events:none;
       transition:.25s;
+      display:flex; /* ✅ ASLA none yapma */
     }
-    .menu-overlay.open{
-      opacity:1;
-      pointer-events:auto;
+    .menu-overlay.open{ opacity:1; pointer-events:auto; }
+    .menu-sidebar{
+      width:280px;
+      height:100%;
+      background:#111;
+      transform: translateX(-100%);
+      transition:.28s cubic-bezier(.2,.8,.2,1);
+      display:flex;
+      flex-direction:column;
+      border-right:1px solid #333;
+      padding:20px;
+      overflow-y:auto;
+    }
+    .menu-overlay.open .menu-sidebar{ transform: translateX(0); }
+
+    .profile-shortcut-wrap{ margin:10px 0 14px; }
+    .profile-shortcut-btn{
+      display:flex; align-items:center; gap:12px;
+      padding:12px 14px;
+      border-radius:18px;
+      cursor:pointer; user-select:none;
+      background: linear-gradient(135deg, rgba(40,25,5,.95), rgba(15,10,5,.98));
+      border:1px solid rgba(255,179,0,.35);
+      box-shadow: 0 8px 20px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
+      transition: all .15s ease;
+    }
+    .profile-shortcut-btn:active{ transform: translateY(1px); filter: brightness(.95); }
+    #profileShortcutIco{
+      width:36px; height:36px; flex:0 0 36px;
+      border-radius:50%;
+      overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      background: var(--gold);
+      border: 2px solid rgba(255,179,0,.6);
+      color:#111;
+      font-size:18px;
+    }
+    #profileShortcutIco img{ width:100%; height:100%; object-fit:cover; }
+    .profile-shortcut-title{ font-weight:800; color: var(--gold); font-size:13px; text-transform:uppercase; }
+    .profile-shortcut-sub{ font-size:13px; font-weight:600; color: rgba(255,255,255,.9); }
+
+    /* CHAT AREA (FIX: taşma yok) */
+    .chat-area{
+      position:absolute;
+      left:0; right:0;
+      top: var(--topbar-h);
+      bottom: calc(var(--bottom-stack) + var(--inputdock-h));
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+      padding: 14px 12px;
+      min-height:0;
+    }
+    .chat-area:empty::before{ display:none; }
+
+    /* INPUT DOCK */
+    .input-dock{
+      position:fixed;
+      left:0; right:0;
+      bottom: var(--bottom-stack);
+      z-index: 3200;
+      padding: 10px 10px calc(10px + env(safe-area-inset-bottom));
+      background: linear-gradient(to top, rgba(0,0,0,.92), rgba(0,0,0,.45));
+      border-top: 1px solid rgba(255,255,255,.06);
+      backdrop-filter: blur(10px);
+    }
+    .dock-inner{
+      display:flex;
+      align-items:flex-end;
+      gap:10px;
+      max-width: 920px;
+      margin: 0 auto;
+    }
+    .icon-btn, .send-btn{
+      width:44px; height:44px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color:#fff;
+      cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .icon-btn:active, .send-btn:active{ transform: translateY(1px); filter: brightness(.95); }
+    .icon-btn svg, .send-btn svg{
+      width:22px; height:22px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.95;
+    }
+    #msgInput{
+      flex:1;
+      min-height:44px;
+      max-height:120px;
+      resize:none;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      color:#fff;
+      padding: 12px 12px;
+      font-size:14px;
+      line-height:18px;
+      outline:none;
+    }
+    #msgInput::placeholder{ color: rgba(255,255,255,.45); }
+
+    /* FOOTER (FIXED) */
+    .footer-brand-fixed{
+      position:fixed;
+      left:0; right:0;
+      bottom:0;
+      height: var(--footerbrand-h);
+      z-index: 2800;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 11px;
+      font-weight: 800;
+      color: rgba(255,255,255,.55);
+      border-top: 1px solid rgba(255,255,255,.06);
+      background: rgba(0,0,0,.92);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .footer-links-fixed{
+      position:fixed;
+      left:0; right:0;
+      bottom: var(--footerbrand-h);
+      height: var(--footerlinks-h);
+      z-index: 2850;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 18px;
+      font-size: 12px;
+      font-weight: 800;
+      background: rgba(0,0,0,.92);
+      border-top: 1px solid rgba(255,255,255,.06);
+      padding: 0 12px;
+      overflow-x:auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width:none;
+    }
+    .footer-links-fixed::-webkit-scrollbar{ display:none; }
+    .footer-links-fixed a{
+      color: rgba(255,255,255,.70);
+      text-decoration:none;
+      white-space:nowrap;
     }
 
-    /* Alt kolay menü: input üstünde sabit */
+    /* QUICK ACCESS (FIX: sayfa içinde + ikonlu + tam liste) */
     .assistant-bar{
-      position: fixed;
-      left: 0; right: 0;
-      bottom: var(--footer-h);
+      position:fixed;
+      left:0; right:0;
+      bottom: calc(var(--footerbrand-h) + var(--footerlinks-h));
       height: var(--assistantbar-h);
       z-index: 2900;
-
       display:flex;
       align-items:center;
       gap: 12px;
       padding: 10px 14px;
-
       overflow-x:auto;
       -webkit-overflow-scrolling:touch;
       scrollbar-width:none;
-
       background: rgba(0,0,0,.92);
       border-top: 1px solid rgba(255,255,255,.06);
     }
     .assistant-bar::-webkit-scrollbar{ display:none; }
 
-    .assistant-item{
+    .nav-item{
       flex: 0 0 auto;
-      min-width: 78px;
+      min-width: 76px;
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -78,164 +380,127 @@
       gap: 6px;
       padding: 10px 12px;
       border-radius: 16px;
-      color: rgba(255,255,255,.72);
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.70);
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
       cursor:pointer;
       user-select:none;
     }
-    .assistant-item:active{ transform: translateY(-1px); filter: brightness(.98); }
-    .assistant-item .ico{ font-size:20px; line-height:1; }
-    .assistant-item .lbl{ font-size:10px; font-weight:900; text-transform:uppercase; white-space:nowrap; opacity:.95; }
-
-    /* Footer sabit */
-    .footer-fixed{
-      position:fixed;
-      left:0; right:0;
-      bottom:0;
-      height: var(--footer-h);
-      z-index: 2800;
-      background: rgba(0,0,0,.92);
-      border-top: 1px solid rgba(255,255,255,.06);
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      gap:6px;
-      padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+    .nav-item:active{ transform: translateY(-2px); filter: brightness(.98); }
+    .nav-icon{
+      width: 22px; height: 22px;
+      fill:none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: .95;
     }
-    .footer-links{
-      display:flex;
-      justify-content:center;
-      gap: 16px;
-      font-size:12px;
-      font-weight:900;
-      overflow-x:auto;
-      -webkit-overflow-scrolling:touch;
-      scrollbar-width:none;
+    .nav-label{
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      text-transform: uppercase;
+      opacity: .92;
+      white-space:nowrap;
     }
-    .footer-links::-webkit-scrollbar{ display:none; }
-    .footer-links a{ color: rgba(255,255,255,.70); text-decoration:none; white-space:nowrap; }
-    .footer-brand{
-      text-align:center;
-      font-size:11px;
-      font-weight:900;
-      color: rgba(255,255,255,.55);
+    .nav-item.active{
+      color: var(--gold);
+      border-color: rgba(255,179,0,.35);
+      background: rgba(255,179,0,.07);
     }
 
-    /* Login overlay */
+    /* OVERLAYS */
     .full-overlay{
-      position: fixed !important;
-      inset: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      background: rgba(0,0,0,0.92) !important;
-      z-index: 9900 !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
-      transition: opacity .25s ease !important;
+      position:fixed;
+      inset:0;
+      width:100vw; height:100vh;
+      background:#000;
+      z-index:9000;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .28s ease;
     }
-    .full-overlay.active{
-      opacity: 1 !important;
-      pointer-events: auto !important;
+    .full-overlay.active{ opacity:1; pointer-events:auto; }
+
+    #loginOverlay{ z-index:9900; background: rgba(0,0,0,.95); }
+    #termsOverlay{ z-index:9950; background: rgba(0,0,0,.97); }
+
+    .login-card{
+      width:min(420px, 92vw);
+      background: rgba(17,17,17,.85);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 22px;
+      padding: 22px 18px 16px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
+      position:relative;
+      backdrop-filter: blur(12px);
     }
 
-    #loginOverlay .login-card{
-      max-width:420px !important;
-      width: min(420px, 92vw) !important;
-      padding:28px 26px 22px !important;
-      border-radius:26px !important;
-      background:
-        radial-gradient(1200px 400px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
-        radial-gradient(1200px 400px at 100% 0%, rgba(190,242,100,.08), transparent 60%),
-        #0e0e0e !important;
-      border:1px solid rgba(255,255,255,.12) !important;
-      box-shadow:0 40px 120px rgba(0,0,0,.75) !important;
-      text-align:center !important;
-      position: relative !important;
-    }
-
-    /* Google tıklanır garanti */
-    .google-area{ position:relative; margin-top:16px; }
-    #googleLoginBtn{
-      display:flex !important;
-      align-items:center !important;
-      justify-content:center !important;
-      gap:10px !important;
-      width:100% !important;
-      height:52px !important;
-      background:linear-gradient(180deg,#ffffff,#f1f1f1) !important;
-      color:#111 !important;
-      border-radius:16px !important;
-      font-weight:900 !important;
-      font-size:15px !important;
-      border:none !important;
-      box-shadow: 0 12px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.8) !important;
-      position: relative !important;
-      z-index: 1 !important;
-    }
-    #googleLoginBtn::before{
-      content:"";
-      width:20px;
-      height:20px;
-      background:url("https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg") no-repeat center/contain;
-      display:inline-block;
-    }
+    /* GOOGLE OVERLAY CLICK FIX */
+    .google-login-wrap{ position: relative; width: 100%; }
     #googleBtnWrap{
-      position:absolute !important;
-      inset:0 !important;
-      width:100% !important;
-      height:52px !important;
-      z-index: 9999 !important;
-      opacity:0.01 !important;
-      cursor:pointer !important;
+      position:absolute; inset:0;
+      width:100%; height:52px;
+      z-index: 9999;
+      opacity:0.01;
+      cursor:pointer;
     }
-    #googleBtnWrap iframe{
-      width:100% !important;
-      height:100% !important;
-      cursor:pointer !important;
-      pointer-events:auto !important;
+    #googleLoginBtn{
+      width:100%; height:52px;
+      border-radius:16px;
+      border:none;
+      font-weight:950;
+      cursor:pointer;
+      background: linear-gradient(135deg, #4285F4, #2b6fe8) !important;
+      color:#fff !important;
+      position:relative;
+      z-index: 1;
+      box-shadow: 0 12px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.10);
     }
 
-    #appleLoginBtn{
-      width:100% !important;
-      height:50px !important;
-      margin-top:10px !important;
-      border-radius:16px !important;
-      background:rgba(255,255,255,.06) !important;
-      color:rgba(255,255,255,.55) !important;
-      border:1px solid rgba(255,255,255,.12) !important;
-      font-weight:800 !important;
+    /* Logged-in gating */
+    body:not(.is-logged) .topbar,
+    body:not(.is-logged) .menu-overlay,
+    body:not(.is-logged) .chat-area,
+    body:not(.is-logged) .input-dock,
+    body:not(.is-logged) .assistant-bar,
+    body:not(.is-logged) .footer-links-fixed,
+    body:not(.is-logged) .footer-brand-fixed{
+      display:none !important;
     }
-    #appleLoginBtn::before{ content:" "; }
 
-    .trust-links-clean{
-      margin-top:16px !important;
-      display:flex !important;
-      gap:14px !important;
-      justify-content:center !important;
-      font-size:12px !important;
-      opacity:.65 !important;
-      flex-wrap:wrap !important;
-    }
-    .trust-links-clean a{ color:rgba(255,255,255,.65) !important; text-decoration:none !important; }
+    .notification-dropdown{ display:none; }
 
-    .login-footer{
-      margin-top:12px !important;
-      font-size:11px !important;
-      font-weight:900 !important;
-      opacity:.6 !important;
+    .toast{
+      position:fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(var(--bottom-stack) + var(--inputdock-h) + 10px);
+      z-index: 9999;
+      background: rgba(0,0,0,.85);
+      border:1px solid rgba(255,255,255,.12);
+      padding: 10px 12px;
+      border-radius: 14px;
+      font-weight: 900;
+      font-size: 12px;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .2s ease;
+      max-width: 92vw;
+      text-align:center;
+      white-space: pre-line;
     }
+    .toast.show{ opacity:1; }
   </style>
 </head>
 
 <body>
-
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -243,7 +508,7 @@
 
     <div class="brand-wrapper" id="brandWrapper">
       <div class="logo-area">
-        <svg class="seesaw-svg" viewBox="0 0 40 20">
+        <svg class="seesaw-svg" viewBox="0 0 40 20" aria-hidden="true">
           <g class="seesaw-bar" id="seesawBar">
             <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
             <circle cx="3" cy="5" r="3" fill="#bef264" />
@@ -251,7 +516,7 @@
           </g>
           <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
         </svg>
-        <div class="brand-name">Caynana AI</div>
+        <div class="brand-name">CaynanaAI</div>
       </div>
       <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
     </div>
@@ -260,14 +525,17 @@
       <div class="notif-row">
         <div class="notif-topline">
           <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
-            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
             <div class="badge" id="notifBadge"></div>
           </button>
           <div id="planChip" class="plan-chip">FREE</div>
         </div>
 
         <div class="yp-chip">
-          <div class="yp-label">SAMİMİYET</div>
+          <div class="yp-label">S.P</div>
           <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
           <div class="yp-num" id="ypNum">19%</div>
         </div>
@@ -275,13 +543,12 @@
     </div>
   </div>
 
-  <!-- HAMBURGER MENU -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
 
       <div class="profile-shortcut-wrap" id="profileShortcutMount">
-        <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='/pages/profil.html'">
+        <div class="profile-shortcut-btn" id="profileShortcutBtn">
           <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
           <div class="profile-shortcut-text">
             <div class="profile-shortcut-title">Profil Düzenle</div>
@@ -316,102 +583,147 @@
     </div>
   </div>
 
-  <!-- CHAT -->
   <div class="chat-area" id="chat"></div>
 
-  <!-- INPUT -->
   <div class="input-dock">
     <div class="dock-inner">
       <button class="icon-btn" id="camBtn" aria-label="Kamera">
-        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+          <circle cx="12" cy="13" r="4"></circle>
+        </svg>
       </button>
 
       <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
 
       <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
-        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="23"></line>
+          <line x1="8" y1="23" x2="16" y2="23"></line>
+        </svg>
       </button>
 
       <button class="send-btn" id="sendBtn" aria-label="Gönder">
-        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M22 2L11 13"></path>
+          <path d="M22 2L15 22L11 13L2 9L22 2Z"></path>
+        </svg>
       </button>
     </div>
   </div>
 
-  <!-- ✅ KOLAY MENÜ (Hamburgerdeki sayfalar burada da olacak) -->
+  <!-- QUICK ACCESS: ikonlar var -->
   <div class="assistant-bar" id="assistantBar">
-    <div class="assistant-item" data-go="/"><div class="ico">💬</div><div class="lbl">Sohbet</div></div>
-    <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico">🥗</div><div class="lbl">Diyet</div></div>
-    <div class="assistant-item" data-go="/pages/saglik.html"><div class="ico">❤️</div><div class="lbl">Sağlık</div></div>
-    <div class="assistant-item" data-go="/pages/astro.html"><div class="ico">♈</div><div class="lbl">Astro</div></div>
-    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico">☕</div><div class="lbl">Fal</div></div>
-    <div class="assistant-item" data-go="/pages/alisveris.html"><div class="ico">🛍️</div><div class="lbl">Alışveriş</div></div>
-    <div class="assistant-item" data-go="/pages/tercuman.html"><div class="ico">🌍</div><div class="lbl">Tercüman</div></div>
-    <div class="assistant-item" data-go="/pages/dedikodu.html"><div class="ico">🗣️</div><div class="lbl">Dedikodu</div></div>
-    <div class="assistant-item" data-go="/pages/tarot.html"><div class="ico">🃏</div><div class="lbl">Tarot</div></div>
-    <div class="assistant-item" data-go="/pages/ruya.html"><div class="ico">👁️</div><div class="lbl">Rüya</div></div>
-  </div>
-
-  <!-- ✅ FOOTER -->
-  <div class="footer-fixed">
-    <div class="footer-links">
-      <a href="/pages/hakkimizda.html">Hakkımızda</a>
-      <a href="/pages/sss.html">SSS</a>
-      <a href="/pages/gizlilik.html">Gizlilik</a>
-      <a href="/pages/iletisim.html">İletişim</a>
+    <div class="nav-item" data-href="/" role="button" tabindex="0">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path><path d="M8 9h8"></path><path d="M8 13h6"></path></svg>
+      <div class="nav-label">Sohbet</div>
     </div>
-    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
+    <div class="nav-item" data-href="/pages/diyet.html" role="button" tabindex="0"><div class="nav-label">Diyet</div></div>
+    <div class="nav-item" data-href="/pages/saglik.html" role="button" tabindex="0"><div class="nav-label">Sağlık</div></div>
+    <div class="nav-item" data-href="/pages/astro.html" role="button" tabindex="0"><div class="nav-label">Burç</div></div>
+    <div class="nav-item" data-href="/pages/fal.html" role="button" tabindex="0"><div class="nav-label">Fal</div></div>
+    <div class="nav-item" data-href="/pages/alisveris.html" role="button" tabindex="0"><div class="nav-label">Alışveriş</div></div>
+    <div class="nav-item" data-href="/pages/tercuman.html" role="button" tabindex="0"><div class="nav-label">Tercüman</div></div>
+    <div class="nav-item" data-href="/pages/dedikodu.html" role="button" tabindex="0"><div class="nav-label">Dedikodu</div></div>
+    <div class="nav-item" data-href="/pages/tarot.html" role="button" tabindex="0"><div class="nav-label">Tarot</div></div>
+    <div class="nav-item" data-href="/pages/ruya.html" role="button" tabindex="0"><div class="nav-label">Rüya</div></div>
   </div>
 
+  <div class="footer-links-fixed" id="footerLinksFixed">
+    <a href="/pages/hakkimizda.html">Hakkımızda</a>
+    <a href="/pages/sss.html">SSS</a>
+    <a href="/pages/gizlilik.html">Gizlilik</a>
+    <a href="/pages/iletisim.html">İletişim</a>
+  </div>
+
+  <div class="footer-brand-fixed">@CaynanaAI By Ozyigit's 2026</div>
 </div>
 
-<!-- ✅ LOGIN -->
+<!-- LOGIN OVERLAY -->
 <div class="full-overlay active" id="loginOverlay">
   <div class="login-card">
-    <svg viewBox="0 0 220 70" style="width:70px;height:34px;">
-      <line x1="20" y1="30" x2="200" y2="30" stroke="#ccc" stroke-width="6"/>
-      <circle cx="30" cy="20" r="10" fill="#bef264"/>
-      <circle cx="190" cy="20" r="10" fill="#ffb300"/>
-    </svg>
+    <div class="login-header" style="text-align:center;">
+      <svg class="login-seesaw" viewBox="0 0 40 20" aria-hidden="true" style="width:70px;height:34px;">
+        <g class="seesaw-bar">
+          <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+          <circle cx="3" cy="5" r="3" fill="#bef264" />
+          <circle cx="37" cy="5" r="3" fill="#ffb300" />
+        </g>
+        <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+      </svg>
 
-    <div style="font-size:24px;font-weight:1000;">Caynana.AI</div>
-    <div style="opacity:.75;font-weight:800;font-size:12px;">Yapay Zekânın Geleneksel Aklı</div>
-    <div style="margin-top:6px;font-weight:900;">Ücretsiz üyelik için giriş yap</div>
-
-    <div class="google-area">
-      <button id="googleLoginBtn" type="button">Google ile Devam Et</button>
-      <div id="googleBtnWrap"></div>
+      <div class="login-title" style="font-size:24px;font-weight:950;">CaynanaAI</div>
+      <div class="login-subtitle" style="font-size:12px;font-weight:800;color:rgba(255,255,255,.72);">Yapay Zekânın Geleneksel Aklı</div>
+      <div class="login-free" style="margin-top:10px;font-size:13px;font-weight:900;color:rgba(255,255,255,.78);">Üyelik Ücretsizdir.</div>
     </div>
 
-    <button id="appleLoginBtn" type="button">Apple ile Devam Et</button>
-
-    <div class="trust-links-clean">
-      <a href="/pages/hakkimizda.html">Hakkımızda</a>
-      <a href="/pages/sss.html">SSS</a>
-      <a href="/pages/gizlilik.html">Gizlilik</a>
-      <a href="/pages/iletisim.html">İletişim</a>
+    <div class="google-login-wrap" id="googleLoginWrap">
+      <button id="googleLoginBtn" type="button">Google Hesabın İle Giriş Yap</button>
+      <div id="googleBtnWrap" aria-hidden="true"></div>
     </div>
 
-    <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
+    <button id="appleLoginBtn" type="button" style="width:100%; margin-top:10px;">Apple Hesabın İle Giriş Yap</button>
+
+    <div class="login-footer-links" style="margin-top:14px;display:flex;justify-content:center;gap:18px;font-size:12px;font-weight:900;flex-wrap:wrap;">
+      <a href="/pages/hakkimizda.html" style="color:rgba(255,255,255,.65);text-decoration:none;">Hakkımızda</a>
+      <a href="/pages/sss.html" style="color:rgba(255,255,255,.65);text-decoration:none;">SSS</a>
+      <a href="/pages/gizlilik.html" style="color:rgba(255,255,255,.65);text-decoration:none;">Gizlilik</a>
+      <a href="/pages/iletisim.html" style="color:rgba(255,255,255,.65);text-decoration:none;">İletişim</a>
+    </div>
+    <div class="login-footer-brand" style="margin-top:10px;text-align:center;font-size:11px;font-weight:900;color:rgba(255,255,255,.45);">@CaynanaAI By Ozyigit's 2026</div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- ✅ main.js senin sistemi çalıştırıyor -->
+<script>window.CAYNANA_TYPE_SPEED = 28;</script>
+
+<!-- main.js (chat + menüler) -->
 <script type="module" src="/js/main.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // Alt bar navigasyon
-  document.querySelectorAll(".assistant-item").forEach(el=>{
-    el.addEventListener("click", ()=>{
-      const go = el.getAttribute("data-go");
-      if(go) location.href = go;
-    });
-  });
+  const loginOverlay = document.getElementById("loginOverlay");
+  const termsAcceptedKey = "caynana_terms_accepted_v1";
 
-  // Hamburger aç/kapa (yedek)
+  function showToast(msg){
+    const t = document.getElementById("toast");
+    if(!t) return;
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(()=>t.classList.remove("show"), 2600);
+  }
+
+  function measureInputDock(){
+    const inputDock = document.querySelector(".input-dock");
+    if(!inputDock) return;
+    const h = Math.ceil(inputDock.getBoundingClientRect().height);
+    if(h > 0) document.documentElement.style.setProperty("--inputdock-h", h + "px");
+  }
+
+  function paintProfileShortcut(){
+    try {
+      const u = JSON.parse(localStorage.getItem("caynana_user_v1") || "{}");
+      const pic = u.picture || u.avatar || u.avatar_url;
+      const name = u.fullname || u.name || "—";
+      const ico = document.getElementById("profileShortcutIco");
+      if(ico && pic) ico.innerHTML = `<img src="${pic}" alt="avatar">`;
+      const nm = document.getElementById("profileShortcutName");
+      if(nm) nm.textContent = name;
+    } catch(e) {}
+  }
+
+  function enterApp(){
+    document.body.classList.add("is-logged");
+    if(loginOverlay) loginOverlay.classList.remove("active");
+    paintProfileShortcut();
+    measureInputDock();
+  }
+
+  // Hamburger
   const hamb = document.getElementById("hambBtn");
   const overlay = document.getElementById("menuOverlay");
   if(hamb && overlay){
@@ -419,78 +731,170 @@ document.addEventListener("DOMContentLoaded", () => {
     overlay.addEventListener("click", (e) => { if(e.target === overlay) overlay.classList.remove("open"); });
   }
 
-  // Login overlay: user varsa kapat
+  // Quick access click
+  const assistantBar = document.getElementById("assistantBar");
+  if(assistantBar){
+    assistantBar.addEventListener("click", (e)=>{
+      const item = e.target.closest(".nav-item");
+      if(item && item.getAttribute("data-href")) location.href = item.getAttribute("data-href");
+    });
+  }
+
+  // Logout FIX
+  const logoutBtn = document.getElementById("logoutBtn");
+  if(logoutBtn){
+    logoutBtn.addEventListener("click", ()=>{
+      localStorage.removeItem("caynana_user_v1");
+      localStorage.removeItem(termsAcceptedKey);
+      document.body.classList.remove("is-logged");
+      if(loginOverlay) loginOverlay.classList.add("active");
+      if(overlay) overlay.classList.remove("open");
+      setTimeout(()=>location.reload(), 200);
+    });
+  }
+
+  // Apple (şimdilik devre dışı – kullanıcıya mesaj göster)
+const apple = document.getElementById("appleLoginBtn");
+if (apple) {
+  apple.addEventListener("click", () => {
+    showToast("Apple girişi yakında. Şimdilik Google ile devam et evladım.");
+  });
+}
+
+/* =========================
+   GOOGLE LOGIN
+   ========================= */
+
+const GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID;
+if (!GOOGLE_CLIENT_ID) {
+  console.error("GOOGLE_CLIENT_ID bulunamadı!");
+}
+
+/* JWT UTF-8 decode (Türkçe karakter bozulmasın) */
+function parseJwtUtf8(token) {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return {};
+  }
+}
+
+/* Google callback */
+function handleGoogleLogin(response) {
+  if (!response.credential) return;
+
+  const payload = parseJwtUtf8(response.credential);
+
+  const user = {
+    fullname: payload.name || "",
+    email: payload.email || "",
+    picture: payload.picture || ""
+  };
+
+  localStorage.setItem("caynana_user_v1", JSON.stringify(user));
+
+  // Login overlay kapat
   const loginOverlay = document.getElementById("loginOverlay");
-  if(localStorage.getItem("caynana_user_v1")){
-    loginOverlay.classList.remove("active");
-  }
+  if (loginOverlay) loginOverlay.classList.remove("active");
 
-  // Apple
-  const apple = document.getElementById("appleLoginBtn");
-  if(apple) apple.addEventListener("click", ()=> alert("Apple girişi yakında! Şimdilik Google'la gel."));
-
-  // Türkçe karakter bozmasın: JWT utf8 decode
-  function parseJwtUtf8(token){
-    try{
-      const base64Url = token.split(".")[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const jsonPayload = decodeURIComponent(
-        atob(base64).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join("")
-      );
-      return JSON.parse(jsonPayload);
-    }catch{ return {}; }
-  }
-
-  // Google init
-  const GOOGLE_CLIENT_ID = window.GOOGLE_CLIENT_ID;
-  if(!GOOGLE_CLIENT_ID){
-    console.error("GOOGLE_CLIENT_ID yok (config.js okunmadı).");
-    return;
-  }
-
-  function onGoogle(response){
-    if(!response.credential) return;
-    const p = parseJwtUtf8(response.credential);
-    localStorage.setItem("caynana_user_v1", JSON.stringify({
-      fullname: p.name || "",
-      email: p.email || "",
-      picture: p.picture || ""
-    }));
-    if(loginOverlay) loginOverlay.classList.remove("active");
-
-    // menüde profil adı düzelsin
-    try{
-      const nm = document.getElementById("profileShortcutName");
-      if(nm) nm.textContent = p.name || "—";
-      const ico = document.getElementById("profileShortcutIco");
-      if(ico && p.picture) ico.innerHTML = `<img src="${p.picture}" alt="avatar">`;
-    }catch{}
-  }
-
-  const poll = setInterval(()=>{
-    if(window.google && google.accounts && google.accounts.id){
-      clearInterval(poll);
-      google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: onGoogle,
-        auto_select:false,
-        cancel_on_tap_outside:false
-      });
-      const wrap = document.getElementById("googleBtnWrap");
-      if(wrap){
-        window.google.accounts.id.renderButton(wrap, {
-          type:"standard",
-          theme:"outline",
-          size:"large",
-          width: 420,
-          text:"signin_with",
-          logo_alignment:"left"
-        });
-      }
+  // Profil shortcut güncelle
+  try {
+    const ico = document.getElementById("profileShortcutIco");
+    if (ico && user.picture) {
+      ico.innerHTML = `<img src="${user.picture}" alt="avatar">`;
     }
-  }, 100);
-});
-</script>
+    const nm = document.getElementById("profileShortcutName");
+    if (nm) nm.textContent = user.fullname || "—";
+  } catch (e) {}
+}
 
-</body>
-</html>
+/* Google GSI init */
+const waitGoogle = setInterval(() => {
+  if (window.google && google.accounts && google.accounts.id) {
+    clearInterval(waitGoogle);
+
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleLogin,
+      auto_select: false,
+      cancel_on_tap_outside: false
+    });
+
+    const wrap = document.getElementById("googleBtnWrap");
+    if (wrap) {
+      google.accounts.id.renderButton(wrap, {
+        type: "standard",
+        theme: "outline",
+        size: "large",
+        width: 420,
+        text: "signin_with",
+        logo_alignment: "left"
+      });
+    }
+  }
+}, 100);
+
+/* =========================
+   HAMBURGER MENU
+   ========================= */
+
+const hambBtn = document.getElementById("hambBtn");
+const menuOverlay = document.getElementById("menuOverlay");
+
+if (hambBtn && menuOverlay) {
+  hambBtn.addEventListener("click", () => {
+    menuOverlay.classList.add("open");
+  });
+
+  menuOverlay.addEventListener("click", e => {
+    if (e.target === menuOverlay) {
+      menuOverlay.classList.remove("open");
+    }
+  });
+}
+
+/* =========================
+   ALT KOLAY MENÜ (NAV)
+   ========================= */
+
+document.querySelectorAll(".assistant-item").forEach(item => {
+  item.addEventListener("click", () => {
+    const go = item.getAttribute("data-go");
+    if (go) location.href = go;
+  });
+});
+
+/* =========================
+   GÜVENLİ ÇIKIŞ
+   ========================= */
+
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem("caynana_user_v1");
+    location.reload();
+  });
+}
+
+/* =========================
+   TOAST
+   ========================= */
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => {
+    t.classList.remove("show");
+  }, 2600);
+}
