@@ -1,426 +1,299 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Caynana AI</title>
-  <link rel="icon" href="data:," />
+
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/style.css?v=1">
+  <link rel="stylesheet" href="/css/layout-common.css?v=1">
+
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
-    /* =========================================================
-       1. GLOBAL RESET & VARS
-       ========================================================= */
-    :root{
-      --gold:#ffb300;
-      --pistachio:#bef264;
-      --bg-dark:#000000;
-      --panel-bg:#111111;
-      --border: rgba(255,255,255,.12);
-      
-      /* Yükseklik Tanımları */
-      --topbar-h: 60px;
-      --footer-h: 50px; /* Alttaki linkler */
-      --assist-h: 70px; /* İkon barı */
-      --input-h: 80px;  /* Yazı yazma alanı */
-      
-      --bottom-total: calc(var(--footer-h) + var(--assist-h) + var(--input-h));
+    :root{ --gold:#ffb300; --pistachio:#bef264; }
+
+    /* chat input + alt bar çakışmasın */
+    .chat-area{ padding-bottom: 160px !important; }
+    .assistant-bar{ bottom: 78px !important; } /* input üstü */
+
+    /* premium login */
+    .full-overlay{
+      position: fixed !important; inset: 0 !important;
+      width: 100vw !important; height: 100vh !important;
+      background: rgba(0,0,0,.92) !important;
+      z-index: 9900 !important;
+      display: flex !important; align-items: center !important; justify-content: center !important;
+      opacity: 0 !important; pointer-events: none !important;
+      transition: opacity .25s ease !important;
+    }
+    .full-overlay.active{ opacity:1 !important; pointer-events:auto !important; }
+
+    #loginOverlay .login-card{
+      width:min(420px, 92vw);
+      padding:28px 26px 22px;
+      border-radius:26px;
+      background:
+        radial-gradient(1200px 400px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
+        radial-gradient(1200px 400px at 100% 0%, rgba(190,242,100,.08), transparent 60%),
+        #0e0e0e;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 40px 120px rgba(0,0,0,.75);
     }
 
-    * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; }
-    html, body { margin:0; padding:0; height:100%; width:100%; overflow:hidden; background:var(--bg-dark); color:#eee; font-family: sans-serif; }
-
-    /* =========================================================
-       2. GATING (Login olmadan gizlenecekler)
-       ========================================================= */
-    body:not(.is-logged) .app-view { display:none !important; }
-    body.is-logged .login-view { display:none !important; }
-
-    /* =========================================================
-       3. TOPBAR
-       ========================================================= */
-    .topbar {
-      position: absolute; top:0; left:0; right:0; height:var(--topbar-h);
-      background: rgba(0,0,0,0.8); backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      display:flex; align-items:center; justify-content:space-between;
-      padding: 0 15px; z-index: 1000;
-    }
-    .hamb-btn { font-size:24px; background:none; border:none; color:#fff; cursor:pointer; }
-    
-    .brand { font-weight:900; font-size:18px; letter-spacing:1px; color:#fff; }
-    .brand span { color:var(--gold); }
-
-    .user-pill {
-      display:flex; align-items:center; gap:8px;
-      background: rgba(255,255,255,0.1); padding:4px 10px 4px 4px;
-      border-radius: 30px; border:1px solid rgba(255,255,255,0.1);
-    }
-    .user-avatar-small {
-      width:28px; height:28px; border-radius:50%; background:var(--pistachio);
-      object-fit:cover;
-    }
-    .user-name-small { font-size:11px; font-weight:700; max-width:80px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
-
-    /* =========================================================
-       4. CHAT AREA
-       ========================================================= */
-    .chat-area {
-      position: absolute;
-      top: var(--topbar-h);
-      left: 0; right: 0;
-      bottom: var(--bottom-total); /* Alt paneller kadar boşluk */
-      overflow-y: auto;
-      padding: 20px;
-      display:flex; flex-direction:column; gap:15px;
-    }
-    .msg { max-width: 80%; padding:10px 14px; border-radius:14px; font-size:14px; line-height:1.4; }
-    .msg.bot { align-self: flex-start; background: #222; border:1px solid var(--border); color:#ddd; border-top-left-radius:2px; }
-    .msg.user { align-self: flex-end; background: var(--gold); color:#000; font-weight:600; border-top-right-radius:2px; }
-
-    /* =========================================================
-       5. BOTTOM DOCK (Asistan + Input + Linkler)
-       ========================================================= */
-    .bottom-dock {
-      position: fixed; bottom:0; left:0; right:0;
-      background: #000; z-index: 1100;
-      border-top: 1px solid var(--border);
-    }
-
-    /* Asistan İkonları */
-    .assistant-bar {
-      height: var(--assist-h);
-      display:flex; align-items:center; gap:15px;
-      overflow-x: auto; padding: 0 15px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .nav-item {
-      flex:0 0 auto; display:flex; flex-direction:column; align-items:center; gap:4px;
-      opacity:0.6; transition:0.2s; cursor:pointer;
-    }
-    .nav-item.active { opacity:1; color:var(--gold); }
-    .nav-icon { width:24px; height:24px; fill:currentColor; }
-    .nav-label { font-size:10px; font-weight:bold; }
-
-    /* Input Alanı */
-    .input-row {
-      height: var(--input-h);
-      display:flex; align-items:center; gap:10px; padding: 0 15px;
-    }
-    #msgInput {
-      flex:1; height:44px; background:#111; border:1px solid #333; color:#fff;
-      border-radius:22px; padding:12px 15px; resize:none;
-    }
-    .send-btn {
-      width:44px; height:44px; border-radius:50%; background:var(--gold); border:none;
-      display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:900;
-    }
-
-    /* Footer Linkler */
-    .footer-links {
-      height: var(--footer-h);
-      display:flex; align-items:center; justify-content:center; gap:15px;
-      font-size:11px; color:#666; background:#050505;
-    }
-    .footer-links a { color:#888; text-decoration:none; }
-
-    /* =========================================================
-       6. SIDEBAR (HAMBURGER MENU)
-       ========================================================= */
-    .menu-overlay {
-      position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index: 5000;
-      opacity:0; pointer-events:none; transition:0.3s;
-    }
-    .menu-overlay.open { opacity:1; pointer-events:auto; }
-    
-    .sidebar {
-      width:280px; height:100%; background:#111;
-      transform:translateX(-100%); transition:0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      display:flex; flex-direction:column; border-right:1px solid #333;
-      padding:20px;
-    }
-    .menu-overlay.open .sidebar { transform:translateX(0); }
-
-    .sidebar-profile {
-      display:flex; align-items:center; gap:12px;
-      padding:15px; background:#1a1a1a; border-radius:12px;
-      border:1px solid #333; margin-bottom:20px;
-    }
-    .sidebar-avatar { width:48px; height:48px; border-radius:50%; background:var(--gold); object-fit:cover; }
-    .sidebar-info h3 { margin:0; font-size:14px; color:#fff; }
-    .sidebar-info p { margin:2px 0 0; font-size:11px; color:#888; }
-    .edit-btn { margin-top:5px; font-size:10px; color:var(--pistachio); cursor:pointer; }
-
-    .menu-list a {
-      display:block; padding:12px; color:#bbb; text-decoration:none; font-weight:600;
-      border-bottom:1px solid #222;
-    }
-    .menu-list a:hover { color:#fff; padding-left:16px; transition:0.2s; }
-
-    .logout-btn { margin-top:auto; color:#f55; cursor:pointer; padding:10px; font-weight:bold; }
-
-    /* =========================================================
-       7. LOGIN SCREEN (OVERLAY)
-       ========================================================= */
-    .login-view {
-      position:fixed; inset:0; z-index:9000; background:#000;
-      display:flex; flex-direction:column; align-items:center; justify-content:center;
-      padding:20px;
-    }
-    .login-card {
-      width:100%; max-width:360px;
-      background: #111; padding:30px 20px; border-radius:20px;
-      border:1px solid #333; text-align:center;
-    }
-    .login-logo { width:60px; height:60px; background:var(--gold); border-radius:50%; margin:0 auto 15px; line-height:60px; font-size:30px; font-weight:bold; color:#000; }
-    
-    .google-btn-container {
-      position: relative; width:100%; height:50px; margin-top:20px;
-    }
-    /* Görünen Custom Buton */
-    .custom-g-btn {
-      width:100%; height:100%; border-radius:25px; border:none;
-      background: #4285F4; color:#fff; font-weight:bold; font-size:14px;
+    #googleLoginBtn{
       display:flex; align-items:center; justify-content:center; gap:10px;
+      width:100%; height:52px;
+      background:linear-gradient(180deg,#ffffff,#f1f1f1);
+      color:#111;
+      border-radius:16px;
+      font-weight:900; font-size:15px;
+      border:none;
+      box-shadow: 0 12px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.8);
+      transition: transform .12s ease, filter .12s ease;
+      position: relative;
     }
-    /* Görünmez Gerçek Google Butonu */
-    #googleBtnWrapper {
-      position: absolute; top:0; left:0; width:100%; height:100%;
-      opacity: 0.01; z-index:10; cursor:pointer; overflow:hidden;
+    #googleLoginBtn::before{
+      content:"";
+      width:20px; height:20px;
+      background:url("https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg") no-repeat center/contain;
+      display:inline-block;
     }
+    #googleLoginBtn:active{ transform:translateY(1px); filter:brightness(.96); }
 
-    .toast {
-      position:fixed; bottom:100px; left:50%; transform:translateX(-50%);
-      background:rgba(50,50,50,0.95); color:#fff; padding:10px 20px;
-      border-radius:30px; font-size:12px; z-index:9999; opacity:0; pointer-events:none; transition:0.3s;
+    #appleLoginBtn{
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      width:100%; height:50px;
+      background:rgba(255,255,255,.06);
+      color:rgba(255,255,255,.55);
+      border-radius:16px;
+      font-weight:800; font-size:14px;
+      border:1px solid rgba(255,255,255,.12);
+      margin-top: 10px;
     }
-    .toast.show { opacity:1; bottom:120px; }
+    #appleLoginBtn::before{ content:""; font-size:18px; line-height:1; }
+
+    .trust-links-clean{
+      margin-top:16px;
+      font-size:12px;
+      opacity:.65;
+      display:flex;
+      gap:14px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+    .trust-links-clean a{ color:rgba(255,255,255,.55); text-decoration:none; }
+
+    .login-footer{ margin-top:12px; text-align:center; font-size:11px; opacity:.6; font-weight:900; }
+
+    /* Google renderButton overlay click */
+    #googleBtnWrap{
+      position:absolute; inset:0; width:100%; height:52px;
+      opacity:0.01; z-index:5;
+    }
   </style>
 </head>
+
 <body>
 
-  <div class="toast" id="toast">Bildirim</div>
+<div class="mobile-frame" id="mobileFrame">
 
-  <div class="login-view" id="loginView">
-    <div class="login-card">
-      <div class="login-logo">C</div>
-      <h2>Caynana AI</h2>
-      <p style="color:#777; font-size:13px;">Yapay Zekânın Geleneksel Aklı</p>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="left-controls">
+      <button class="hamb-btn" id="hambBtn">☰</button>
+    </div>
 
-      <div class="google-btn-container">
-        <button class="custom-g-btn">
-          <span>G</span> Google ile Devam Et
-        </button>
-        <div id="googleBtnWrapper"></div>
+    <div class="brand-wrapper" id="brandWrapper">
+      <div class="logo-area">
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
+          <g class="seesaw-bar" id="seesawBar">
+            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+            <circle cx="3" cy="5" r="3" fill="#bef264" />
+            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+          </g>
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+        </svg>
+        <div class="brand-name">Caynana AI</div>
       </div>
-      
-      <p style="margin-top:20px; font-size:11px; color:#555;">Giriş yaparak kullanım koşullarını kabul edersiniz.</p>
+      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+    </div>
+
+    <div class="right-controls">
+      <div class="notif-row">
+        <div class="notif-topline">
+          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <div class="badge" id="notifBadge"></div>
+          </button>
+          <div id="planChip" class="plan-chip">FREE</div>
+        </div>
+
+        <div class="notification-dropdown" id="notifDropdown">
+          <div class="notif-header">Bildirimler</div>
+          <div class="notif-list" id="notifList"></div>
+        </div>
+
+        <div class="yp-chip">
+          <div class="yp-label">SAMİMİYET</div>
+          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+          <div class="yp-num" id="ypNum">19%</div>
+        </div>
+
+        <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
+          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+        </button>
+      </div>
     </div>
   </div>
 
-  <div class="app-view">
-    
-    <div class="topbar">
-      <button class="hamb-btn" id="hambBtn">☰</button>
-      <div class="brand">Caynana<span>AI</span></div>
-      <div class="user-pill">
-        <span class="user-name-small" id="topName">Misafir</span>
-        <img src="" class="user-avatar-small" id="topAvatar" style="display:none">
-      </div>
-    </div>
+  <!-- MENU OVERLAY -->
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-sidebar">
+      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
 
-    <div class="chat-area" id="chatArea">
-      </div>
-
-    <div class="menu-overlay" id="menuOverlay">
-      <div class="sidebar">
-        <div class="sidebar-profile">
-          <img src="" class="sidebar-avatar" id="sidebarAvatar">
-          <div class="sidebar-info">
-            <h3 id="sidebarName">Kullanıcı</h3>
-            <p id="sidebarEmail">Giriş Yapılmadı</p>
-            <div class="edit-btn" id="editProfileBtn">✏️ Profili Düzenle</div>
+      <div class="profile-shortcut-wrap" id="profileShortcutMount">
+        <div class="profile-shortcut-btn" id="profileShortcutBtn">
+          <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
+          <div class="profile-shortcut-text">
+            <div class="profile-shortcut-title">Profil Düzenle</div>
+            <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
           </div>
         </div>
-        
-        <div class="menu-list">
-          <a href="#">💬 Yeni Sohbet</a>
-          <a href="#">📜 Geçmiş</a>
-          <a href="#">⚙️ Ayarlar</a>
-          <a href="#">💳 Üyelik (Free)</a>
-        </div>
+      </div>
 
-        <div class="logout-btn" id="logoutBtn">Çıkış Yap</div>
+      <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
+      <div class="history-list" id="historyList"></div>
+
+      <div class="menu-block asistan">
+        <div class="block-head">Asistan</div>
+        <div class="menu-grid" id="menuAsistan"></div>
+      </div>
+
+      <div class="menu-block astro">
+        <div class="block-head">Astro AI</div>
+        <div class="menu-grid" id="menuAstro"></div>
+      </div>
+
+      <div class="menu-block kurumsal">
+        <div class="block-head">Kurumsal</div>
+        <div class="menu-grid" id="menuKurumsal"></div>
+      </div>
+
+      <div class="menu-footer-actions">
+        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
+        <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
+        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
       </div>
     </div>
-
-    <div class="bottom-dock">
-      <div class="assistant-bar">
-        <div class="nav-item active"><div class="nav-icon">💬</div><div class="nav-label">Sohbet</div></div>
-        <div class="nav-item"><div class="nav-icon">☕</div><div class="nav-label">Fal</div></div>
-        <div class="nav-item"><div class="nav-icon">🔮</div><div class="nav-label">Tarot</div></div>
-        <div class="nav-item"><div class="nav-icon">🌙</div><div class="nav-label">Rüya</div></div>
-        <div class="nav-item"><div class="nav-icon">🥗</div><div class="nav-label">Diyet</div></div>
-      </div>
-
-      <div class="input-row">
-        <textarea id="msgInput" placeholder="Bir şeyler yaz evladım..."></textarea>
-        <button class="send-btn">➤</button>
-      </div>
-
-      <div class="footer-links">
-        <a href="#">Hakkımızda</a> • <a href="#">Gizlilik</a> • <a href="#">İletişim</a>
-      </div>
-    </div>
-
   </div>
 
+  <!-- CHAT -->
+  <div class="chat-area" id="chat"></div>
+
+  <!-- INPUT -->
+  <div class="input-dock">
+    <div class="dock-inner">
+      <button class="icon-btn" id="camBtn" aria-label="Kamera">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+      </button>
+      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
+      <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+      </button>
+      <button class="send-btn" id="sendBtn" aria-label="Gönder">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ALT BAR -->
+  <div class="assistant-bar" id="assistantBar">
+    <div class="assistant-item" data-go="/"><div class="ico">💬</div><div class="lbl">Sohbet</div></div>
+    <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico">🥗</div><div class="lbl">Diyet</div></div>
+    <div class="assistant-item" data-go="/pages/saglik.html"><div class="ico">❤️</div><div class="lbl">Sağlık</div></div>
+    <div class="assistant-item" data-go="/pages/astro.html"><div class="ico">♈</div><div class="lbl">Astro</div></div>
+    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico">☕</div><div class="lbl">Fal</div></div>
+    <div class="assistant-item" data-go="/pages/alisveris.html"><div class="ico">🛍️</div><div class="lbl">Alışveriş</div></div>
+    <div class="assistant-item" data-go="/pages/tercuman.html"><div class="ico">🌍</div><div class="lbl">Tercüman</div></div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer-container">
+    <div class="footer-links">
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
+    </div>
+    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
+  </div>
+
+</div>
+
+<!-- LOGIN -->
+<div class="full-overlay active" id="loginOverlay">
+  <div class="login-card">
+    <div style="display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;">
+      <svg class="login-seesaw" viewBox="0 0 220 70" style="width:70px; height:34px;">
+        <g class="login-seesaw-bar">
+          <line x1="20" y1="30" x2="200" y2="30" stroke="rgba(255,255,255,.65)" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="30" cy="20" r="10" fill="#bef264"/>
+          <circle cx="190" cy="20" r="10" fill="#ffb300"/>
+        </g>
+        <polygon points="105,55 115,55 110,30" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="3"/>
+      </svg>
+
+      <div class="brand-name" style="font-size:24px; font-weight:1000;">Caynana.AI</div>
+      <div style="opacity:.75; font-weight:800; font-size:12px;">Yapay Zekânın Geleneksel Aklı</div>
+      <div style="opacity:.85; font-weight:900; font-size:13px; margin-top:6px;">Ücretsiz üyelik için lütfen giriş yapın.</div>
+    </div>
+
+    <div style="position:relative; margin-top:16px;">
+      <button class="auth-btn google" id="googleLoginBtn" type="button">Google ile Devam Et</button>
+      <div id="googleBtnWrap"></div>
+    </div>
+
+    <button class="auth-btn apple" id="appleLoginBtn" type="button">Apple ile Devam Et</button>
+
+    <div class="trust-links-clean">
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
+    </div>
+
+    <div class="login-footer">@CaynanaAI By Ozyigit's 2026</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
-  /* =========================================================
-     JAVASCRIPT LOGIC
-     ========================================================= */
-
-  // DOM Elements
-  const loginView = document.getElementById('loginView');
-  const googleBtnWrapper = document.getElementById('googleBtnWrapper');
-  const menuOverlay = document.getElementById('menuOverlay');
-  const chatArea = document.getElementById('chatArea');
-  
-  // User Data Elements
-  const topName = document.getElementById('topName');
-  const topAvatar = document.getElementById('topAvatar');
-  const sidebarName = document.getElementById('sidebarName');
-  const sidebarEmail = document.getElementById('sidebarEmail');
-  const sidebarAvatar = document.getElementById('sidebarAvatar');
-
-  // --- 1. TOAST MESAJI ---
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.innerText = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-  }
-
-  // --- 2. VERİ YÖNETİMİ & RENDER (Eksik olan kısım buydu) ---
-  function renderUserData() {
-    const userRaw = localStorage.getItem("caynana_user_v1");
-    if (!userRaw) return;
-
-    const user = JSON.parse(userRaw);
-    
-    // Topbar güncelle
-    topName.textContent = user.fullname || "Misafir";
-    if (user.picture) {
-      topAvatar.src = user.picture;
-      topAvatar.style.display = "block";
-    }
-
-    // Sidebar güncelle
-    sidebarName.textContent = user.fullname || "İsimsiz";
-    sidebarEmail.textContent = user.email || "";
-    if (user.picture) {
-      sidebarAvatar.src = user.picture;
-    } else {
-      sidebarAvatar.style.backgroundColor = "#ffb300"; // Resim yoksa sarı top
-    }
-  }
-
-  function enterApp() {
-    document.body.classList.add('is-logged');
-    renderUserData(); // Veriyi ekrana bas!
-    
-    // Chat boşsa hoşgeldin mesajı ekle
-    if(chatArea.innerHTML.trim() === "") {
-      chatArea.innerHTML = `
-        <div class="msg bot">Merhaba evladım, hoşgeldin! Ben Caynana. <br>Sana nasıl yardım edeyim?</div>
-      `;
-    }
-  }
-
-  // --- 3. GOOGLE GİRİŞ (OVERLAY FIXED) ---
-  function handleCredentialResponse(response) {
-    try {
-      const base64Url = response.credential.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-
-      const payload = JSON.parse(jsonPayload);
-      
-      // Veriyi kaydet
-      const user = {
-        fullname: payload.name,
-        email: payload.email,
-        picture: payload.picture
-      };
-      localStorage.setItem("caynana_user_v1", JSON.stringify(user));
-
-      // Uygulamaya gir
-      enterApp();
-      showToast("Giriş Başarılı!");
-
-    } catch (e) {
-      console.error(e);
-      showToast("Giriş hatası oluştu.");
-    }
-  }
-
-  // Google Butonunu Render Et
-  window.onload = function() {
-    // Oturum kontrolü
-    if(localStorage.getItem("caynana_user_v1")) {
-      enterApp();
-    }
-
-    // GSI Başlat
-    const clientID = "BURAYA_CLIENT_ID_YAZMAYI_UNUTMA"; // <--- BURAYI DOLDUR
-
-    if(window.google) {
-      google.accounts.id.initialize({
-        client_id: clientID,
-        callback: handleCredentialResponse,
-        auto_select: false
-      });
-
-      // Overlay Buton Render (Büyük boyutta)
-      google.accounts.id.renderButton(
-        document.getElementById("googleBtnWrapper"),
-        { 
-          theme: "outline", 
-          size: "large", 
-          width: 350, // Wrapper genişliği kadar
-          height: 50,
-          text: "signin_with" 
-        }
-      );
-    }
-  };
-
-  // --- 4. UI OLAYLARI ---
-  
-  // Hamburger Menü Aç/Kapa
-  document.getElementById('hambBtn').addEventListener('click', () => {
-    menuOverlay.classList.add('open');
-  });
-  
-  menuOverlay.addEventListener('click', (e) => {
-    if(e.target === menuOverlay) menuOverlay.classList.remove('open');
-  });
-
-  // Çıkış Yap
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    if(confirm("Gidiyor musun evladım?")) {
-      localStorage.removeItem("caynana_user_v1");
-      location.reload();
-    }
-  });
-
-  // Profil Düzenle (Şimdilik boş ama tepki veriyor)
-  document.getElementById('editProfileBtn').addEventListener('click', () => {
-    showToast("Profil düzenleme yakında açılacak evladım.");
-  });
-
+  window.CAYNANA_TYPE_SPEED = 28;
 </script>
+
+<script type="module" src="/js/main.js"></script>
+<script src="/js/layout-common.js?v=1"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const a = document.getElementById("appleLoginBtn");
+    if(a) a.onclick = () => alert("Apple girişi yakında! Şimdilik Google'la gel.");
+
+    // Menü profil kısa yol görseli
+    try {
+      const u = JSON.parse(localStorage.getItem("caynana_user_v1") || "{}");
+      const pic = u.picture || u.avatar || u.avatar_url;
+      const name = u.fullname || u.name || "—";
+      const ico = document.getElementById("profileShortcutIco");
+      if(ico && pic) ico.innerHTML = `<img src="${pic}" alt="avatar">`;
+      const nm = document.getElementById("profileShortcutName");
+      if(nm) nm.textContent = name;
+    } catch(e) {}
+  });
+</script>
+
 </body>
 </html>
