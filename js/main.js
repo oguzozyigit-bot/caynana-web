@@ -308,3 +308,44 @@ document.addEventListener("DOMContentLoaded", async () => {
     bindNewChatButton();
   }
 });
+/* =========================
+   UI DAVRANIŞ EKLERİ
+   ========================= */
+
+window.setBadgeCount = function(n){
+  const b = document.getElementById("notifBadge");
+  if(!b) return;
+  const v = Number(n||0);
+  if(v<=0){
+    b.style.display="none";
+    b.textContent="";
+    return;
+  }
+  b.style.display="flex";
+  b.textContent=String(v);
+};
+
+function startNotifWiggleLoop(){
+  const btn = document.getElementById("notifBtn");
+  if(!btn) return;
+
+  setInterval(()=>{
+    const b = document.getElementById("notifBadge");
+    if(!b || b.style.display==="none") return;
+
+    btn.classList.add("wiggle");
+    setTimeout(()=>btn.classList.remove("wiggle"), 5000);
+  }, 30000);
+}
+
+window.setSeesawState = function(state){
+  const bw = document.getElementById("brandWrapper");
+  if(!bw) return;
+  bw.classList.remove("usering","botting","thinking");
+  if(state==="user") bw.classList.add("usering");
+  if(state==="bot") bw.classList.add("botting","thinking");
+};
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  startNotifWiggleLoop();
+});
