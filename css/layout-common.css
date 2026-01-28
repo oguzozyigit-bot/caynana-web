@@ -1,10 +1,15 @@
+/* FILE: /css/layout-common.css
+   PURPOSE: Alt kayan menü (assistant-bar) her sayfada aynı dursun, frame dışına taşmasın.
+   NOT: Bu dosya sadece alt barı yönetir. style.css ana iskelet.
+*/
+
 /* ALT KAYAN ASİSTAN BAR (mobile-frame'e hizalı, yanda taşmaz) */
 .assistant-bar{
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
   width: min(480px, calc(100vw - 18px)); /* mobile-frame max genişlik */
-  bottom: 70px; /* footer üstü */
+  bottom: 70px; /* footer üstü (chat sayfasında input + footer için uygun) */
   padding: 10px 12px;
 
   display: flex;
@@ -47,6 +52,7 @@
 
   scroll-snap-align: start;
   user-select:none;
+  cursor: pointer;
 }
 
 .assistant-item .ico-wrap{
@@ -66,6 +72,10 @@
   box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
 }
 
+/* Eğer emoji kullanıyorsan */
+.assistant-item .ico-wrap{ font-size: 18px; line-height: 1; }
+
+/* Eğer SVG kullanıyorsan */
 .assistant-item svg{
   width: 22px;
   height: 22px;
@@ -85,4 +95,11 @@
     rgba(255,179,0,.12) 60%,
     rgba(0,0,0,.20)
   );
+}
+
+/* Desktop’ta frame ortalanınca alt bar da aynı hizada kalsın */
+@media (min-width: 500px){
+  .assistant-bar{
+    width: min(480px, calc(100vw - 18px));
+  }
 }
