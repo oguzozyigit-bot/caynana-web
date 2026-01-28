@@ -14,7 +14,6 @@
       --red:#ff5252;
     }
 
-    /* Menü overlay kapalıyken tıklamayı yemesin (select fix) */
     .menu-overlay { display:none; pointer-events:none; }
     .menu-overlay.open { display:flex; pointer-events:auto; }
 
@@ -59,6 +58,7 @@
       letter-spacing: .6px;
       margin-left: 4px;
     }
+
     .diet-input, .diet-select{
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.12);
@@ -202,13 +202,16 @@
       animation: slideDown .45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     @keyframes slideDown { from{ top:-50px; opacity:0 } to{ top:80px; opacity:1 } }
+
+    /* Doğum tarihi 3'lü seçim düzeni */
+    .dob-row{ display:flex; gap:10px; }
   </style>
 </head>
 
 <body>
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- TOPBAR (sohbet ile aynı) -->
+  <!-- TOPBAR -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -257,7 +260,7 @@
     </div>
   </div>
 
-  <!-- HAMBURGER (sohbet ile aynı) -->
+  <!-- MENU -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
@@ -298,7 +301,7 @@
     </div>
   </div>
 
-  <!-- İÇERİK -->
+  <!-- CONTENT -->
   <div class="diet-wrap">
 
     <div id="profileSetup" class="card">
@@ -327,12 +330,24 @@
         </div>
       </div>
 
-      <div class="form-row">
+      <!-- DOB: Yıl / Ay / Gün -->
+      <div class="dob-row">
         <div class="form-group">
-          <label class="form-label">Doğum Tarihi</label>
-          <input type="date" id="inpDob" class="diet-input" />
+          <label class="form-label">Yıl</label>
+          <select id="dobYear" class="diet-select"></select>
         </div>
         <div class="form-group">
+          <label class="form-label">Ay</label>
+          <select id="dobMonth" class="diet-select"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gün</label>
+          <select id="dobDay" class="diet-select"></select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group" style="flex:1;">
           <label class="form-label">Cinsiyet</label>
           <select id="inpGender" class="diet-select">
             <option value="">Seç</option>
@@ -410,30 +425,44 @@
     $(elId).style.display = "block";
   }
 
-  function fillForm(p){
-    if(p?.height_cm) $("inpHeight").value = p.height_cm;
-    if(p?.weight_kg) $("inpWeight").value = p.weight_kg;
-    if(p?.birth_date) $("inpDob").value = p.birth_date;
-    if(p?.gender) $("inpGender").value = p.gender;
+  function showNotif(){
+    const n = $("dietNotif");
+    n.style.display = "block";
+    setTimeout(()=> n.style.display="none", 5000);
   }
 
-  function lockFieldsIfExists(p){
-    $("inpHeight").disabled = false;
-    $("inpWeight").disabled = false;
+  async function postDiet(payload){
+    const res = await fetch(`${baseUrl()}${DIET_API}`, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  }
 
-    const hasDob = !!p?.birth_date;
-    const hasGender = !!p?.gender;
-
-    $("inpDob").disabled = hasDob;
-    $("inpGender").disabled = hasGender;
+  function extractCalories(text) {
+    const m = String(text || "").match(/\((\s*\d+\s*(?:-\s*\d+)?\s*kcal)\s*\)/i);
+    return m ? m[1].replace(/\s+/g, " ").trim() : "";
+  }
+  function cleanText(text) {
+    return String(text || "").replace(/\(\s*\d+\s*(?:-\s*\d+)?\s*kcal\s*\)/ig, "").trim();
+  }
+  function currentMealStartIndex(){
+    const h = new Date().getHours();
+    if (h >= 6 && h < 10) return 0;
+    if (h >= 10 && h < 12) return 1;
+    if (h >= 12 && h < 16) return 2;
+    if (h >= 16 && h < 18) return 3;
+    if (h >= 18 && h < 22) return 4;
+    return 5;
   }
 
   function bmiLabelAndTalk(bmi){
     const v = Number(bmi);
-    if(v >= 30) return { cls:"bad", label:"OBEZ", talk:"<b>Obezsin evladım.</b> Bak ben sana bir diyet tavsiyesinde bulunayım; her gün buna uy. Her gün sana günlük ne yemen lazım onu vereceğim." };
-    if(v >= 25) return { cls:"warn", label:"KİLOLU", talk:"<b>Kilolusun evladım.</b> Düzenli gidersen toparlarız. Her gün sana günlük ne yemen lazım onu vereceğim." };
-    if(v < 18.5) return { cls:"warn", label:"ZAYIF", talk:"<b>Zayıfsın evladım.</b> Sağlıklı toparlayalım. Her gün sana günlük ne yemen lazım onu vereceğim." };
-    return { cls:"ok", label:"NORMAL", talk:"<b>Normalsin evladım.</b> Formu koruyalım. Her gün sana günlük ne yemen lazım onu vereceğim." };
+    if(v >= 30) return { cls:"bad", label:"OBEZ", talk:"<b>Obezsin evladım.</b> Her gün sana günlük ne yemen lazım onu vereceğim." };
+    if(v >= 25) return { cls:"warn", label:"KİLOLU", talk:"<b>Kilolusun evladım.</b> Düzenli gidersen toparlarız. Her gün menü vereceğim." };
+    if(v < 18.5) return { cls:"warn", label:"ZAYIF", talk:"<b>Zayıfsın evladım.</b> Sağlıklı toparlayalım. Her gün menü vereceğim." };
+    return { cls:"ok", label:"NORMAL", talk:"<b>Normalsin evladım.</b> Formu koruyalım. Her gün menü vereceğim." };
   }
 
   function calculateAndShowBMI(u){
@@ -462,29 +491,11 @@
     return bmi;
   }
 
-  function extractCalories(text) {
-    const m = String(text || "").match(/\((\s*\d+\s*(?:-\s*\d+)?\s*kcal)\s*\)/i);
-    return m ? m[1].replace(/\s+/g, " ").trim() : "";
-  }
-  function cleanText(text) {
-    return String(text || "").replace(/\(\s*\d+\s*(?:-\s*\d+)?\s*kcal\s*\)/ig, "").trim();
-  }
-  function currentMealStartIndex(){
-    const h = new Date().getHours();
-    if (h >= 6 && h < 10) return 0;
-    if (h >= 10 && h < 12) return 1;
-    if (h >= 12 && h < 16) return 2;
-    if (h >= 16 && h < 18) return 3;
-    if (h >= 18 && h < 22) return 4;
-    return 5;
-  }
-
   function renderMeals(plan){
     const list = $("mealList");
     list.innerHTML = "";
 
     const start = currentMealStartIndex();
-
     const items = [
       { k:"kahvalti", t:"Kahvaltı", i:"🍳", cal:"350-400 kcal", time:"08:30" },
       { k:"ara",      t:"Ara Öğün", i:"🍏", cal:"100-150 kcal", time:"11:00" },
@@ -496,7 +507,6 @@
 
     items.slice(start).forEach(item=>{
       let val = "—";
-
       if (item.k === "ara" || item.k === "ara2") {
         val = plan?.ara_ogun || plan?.ara || "—";
       } else {
@@ -523,19 +533,67 @@
     });
   }
 
-  function showNotif(){
-    const n = $("dietNotif");
-    n.style.display = "block";
-    setTimeout(()=> n.style.display="none", 5000);
+  // DOB dropdownlar
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function getDobFromSelects(){
+    const y = $("dobYear").value;
+    const m = $("dobMonth").value;
+    const d = $("dobDay").value;
+    if(!y || !m || !d) return "";
+    return `${y}-${pad2(m)}-${pad2(d)}`; // YYYY-MM-DD
   }
 
-  async function postDiet(payload){
-    const res = await fetch(`${baseUrl()}${DIET_API}`, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(payload)
-    });
-    return await res.json();
+  function daysInMonth(year, month){
+    return new Date(Number(year), Number(month), 0).getDate(); // month: 1-12
+  }
+
+  function buildDobOptions(){
+    const yearSel = $("dobYear");
+    const monthSel = $("dobMonth");
+    const daySel = $("dobDay");
+
+    const nowY = new Date().getFullYear();
+    const minY = nowY - 90;
+    const maxY = nowY - 10;
+
+    yearSel.innerHTML = `<option value="">Yıl</option>`;
+    for(let y=maxY; y>=minY; y--){
+      yearSel.insertAdjacentHTML("beforeend", `<option value="${y}">${y}</option>`);
+    }
+
+    monthSel.innerHTML = `<option value="">Ay</option>`;
+    for(let m=1; m<=12; m++){
+      monthSel.insertAdjacentHTML("beforeend", `<option value="${m}">${pad2(m)}</option>`);
+    }
+
+    function refreshDays(){
+      const y = yearSel.value || maxY;
+      const m = monthSel.value || 1;
+      const maxD = daysInMonth(y, m);
+      const prev = daySel.value;
+
+      daySel.innerHTML = `<option value="">Gün</option>`;
+      for(let d=1; d<=maxD; d++){
+        daySel.insertAdjacentHTML("beforeend", `<option value="${d}">${pad2(d)}</option>`);
+      }
+      if(prev && Number(prev) <= maxD) daySel.value = prev;
+    }
+
+    yearSel.addEventListener("change", refreshDays);
+    monthSel.addEventListener("change", refreshDays);
+    refreshDays();
+  }
+
+  function setDobSelectsFromISO(iso){
+    // iso: YYYY-MM-DD
+    try{
+      const [y,m,d] = String(iso||"").split("-");
+      if(y) $("dobYear").value = y;
+      if(m) $("dobMonth").value = String(Number(m));
+      // gün listesi ay/yıl değişince yeniden kurulduğu için önce tetikle:
+      $("dobMonth").dispatchEvent(new Event("change"));
+      if(d) $("dobDay").value = String(Number(d));
+    }catch{}
   }
 
   async function runAutoDietFetch(){
@@ -545,7 +603,6 @@
       const today = todayStr();
 
       const data = await postDiet({ user_id: userId, date: today });
-
       if(data?.ok){
         data.date = today;
         localStorage.setItem("caynana_last_diet", JSON.stringify(data));
@@ -570,9 +627,27 @@
   }
 
   async function init(){
+    buildDobOptions();
+
     const userLocal = getUserLocal();
-    fillForm(userLocal);
-    lockFieldsIfExists(userLocal);
+
+    // doldur
+    if(userLocal?.height_cm) $("inpHeight").value = userLocal.height_cm;
+    if(userLocal?.weight_kg) $("inpWeight").value = userLocal.weight_kg;
+    if(userLocal?.gender) $("inpGender").value = userLocal.gender;
+    if(userLocal?.birth_date) setDobSelectsFromISO(userLocal.birth_date);
+
+    // kilitle (dob+gender varsa)
+    $("inpHeight").disabled = false;
+    $("inpWeight").disabled = false;
+
+    const hasDob = !!userLocal?.birth_date;
+    const hasGender = !!userLocal?.gender;
+
+    $("dobYear").disabled = hasDob;
+    $("dobMonth").disabled = hasDob;
+    $("dobDay").disabled = hasDob;
+    $("inpGender").disabled = hasGender;
 
     const isComplete = userLocal.height_cm && userLocal.weight_kg && userLocal.birth_date && userLocal.gender;
 
@@ -594,7 +669,6 @@
     scheduleDailyRefresh();
   }
 
-  // Vücut endeksimi hesapla: profili kaydet + menüyü çek
   $("btnCalc").onclick = async () => {
     const h = $("inpHeight").value;
     const w = $("inpWeight").value;
@@ -603,14 +677,16 @@
     const userLocal = getUserLocal();
     const userId = userLocal.id || userLocal.user_id || "guest";
 
-    const payload = { user_id: userId, height_cm: Number(h), weight_kg: Number(w) };
+    const payload = { user_id: userId, height_cm: Number(h), weight_kg: Number(w), date: todayStr() };
 
-    // dob/gender sadece yoksa al
+    // DOB sadece yoksa al (dropdown’dan)
     if(!userLocal.birth_date){
-      const d = $("inpDob").value;
-      if(!d) return alert("Doğum tarihini seç evladım.");
-      payload.birth_date = d;
+      const dob = getDobFromSelects();
+      if(!dob) return alert("Doğum tarihini seç evladım.");
+      payload.birth_date = dob;
     }
+
+    // Gender sadece yoksa al
     if(!userLocal.gender){
       const g = $("inpGender").value;
       if(!g) return alert("Cinsiyet seç evladım.");
@@ -619,11 +695,11 @@
 
     // local güncelle
     const updated = { ...userLocal, ...payload };
+    delete updated.date;
     setUserLocal(updated);
 
-    // backend: diet endpoint (hem kaydeder hem menü döner)
     try{
-      const data = await postDiet({ ...payload, date: todayStr() });
+      const data = await postDiet(payload);
       if(data?.ok){
         data.date = todayStr();
         localStorage.setItem("caynana_last_diet", JSON.stringify(data));
@@ -631,15 +707,14 @@
         calculateAndShowBMI(updated);
         renderMeals(data.plan);
         showNotif();
-      }else{
+      } else {
         alert(data?.message || "Hata oluştu.");
       }
-    }catch{
+    } catch {
       alert("Bağlantı hatası evladım.");
     }
   };
 
-  // Günlük menü getir
   $("btnGenerate").onclick = async () => {
     const btn = $("btnGenerate");
     const old = btn.textContent;
@@ -656,12 +731,12 @@
         localStorage.setItem("caynana_last_diet", JSON.stringify(data));
         renderMeals(data.plan);
         showNotif();
-      }else{
+      } else {
         alert("Menü çıkmadı evladım: " + (data?.message || "Bilinmiyor"));
       }
-    }catch{
+    } catch {
       alert("Bağlantı hatası evladım.");
-    }finally{
+    } finally {
       btn.disabled = false;
       btn.textContent = old;
     }
