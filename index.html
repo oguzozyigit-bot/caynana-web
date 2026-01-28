@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Caynana AI v6.0</title>
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/css/style.css?v=2">
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="/css/style.css?v=2" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
@@ -19,66 +19,152 @@
       --bg-dark: #000;
       --panel-bg: #111;
       --border-color: rgba(255,255,255,0.12);
+
+      /* Sabit bar ölçüleri */
+      --topbar-h: 64px;
+      --assistantbar-h: 74px;
+      --inputdock-h: 86px; /* yaklaşık; mobilde değişebilir */
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-    
-    body { background: var(--bg-dark); color: #eee; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+    body { background: var(--bg-dark); color: #eee; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overflow: hidden; margin:0; }
+
+    /* =========================================================
+       MOBILE FRAME LAYOUT
+       - Chat alanı scroll eder
+       - Üst bar sabit, alt input sabit, onun altında quick bar sabit
+       ========================================================= */
+    .mobile-frame{
+      position: relative;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+
+    /* =========================================================
+       TOPBAR AYARLARI
+       ========================================================= */
+    .topbar{
+      height: var(--topbar-h);
+      position: absolute;
+      left: 0; right: 0; top: 0;
+      z-index: 4000;
+    }
+
+    #profileBtn { display: none !important; }
+    .right-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .notif-row { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; position: relative; }
+    .notif-topline { display: flex; align-items: center; gap: 10px; }
+    #notifBtn { display: flex; align-items: center; padding: 6px; }
+    .plan-chip {
+      font-size: 10px; font-weight: 900; padding: 5px 10px; border-radius: 99px;
+      border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.75);
+    }
+    .yp-chip .yp-label { font-size: 0; }
+    .yp-chip .yp-label::after { content: "S.P"; font-size: 10px; font-weight: 900; color: rgba(255,255,255,.75); }
+    .logo-area { gap: 10px; }
+    .seesaw-svg { width: 36px; height: 18px; }
+
+    /* =========================================================
+       CHAT AREA
+       - Aşağıdan yukarı akış (en yeni en altta)
+       - Scroll chat-area içinde
+       ========================================================= */
+    .chat-area{
+      position: absolute;
+      left: 0; right: 0;
+      top: var(--topbar-h);
+      bottom: calc(var(--assistantbar-h) + var(--inputdock-h));
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+
+      padding: 14px 12px;
+      min-height: 0;
+    }
+    .chat-area:empty::before { display: none; }
+    #msgInput:focus { outline: none; box-shadow: none; }
+
+    /* =========================================================
+       INPUT DOCK
+       - Assistant bar'ın üstünde sabit
+       ========================================================= */
+    .input-dock{
+      position: fixed;
+      left: 0; right: 0;
+      bottom: var(--assistantbar-h);
+      z-index: 3200;
+    }
+    .dock-inner{
+      padding-bottom: env(safe-area-inset-bottom);
+    }
 
     /* =========================================================
        ✅ PREMIUM ALT BAR (ASSISTANT BAR)
+       - Input'un ALTINDA sabit
        ========================================================= */
-    .assistant-bar {
-      position: absolute;
-      bottom: 80px; /* Input dock'un hemen üstü */
+    .assistant-bar{
+      position: fixed;
       left: 0; right: 0;
-      height: 64px;
-      background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0));
+      bottom: 0;
+      height: var(--assistantbar-h);
+      padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 0 16px;
       overflow-x: auto;
-      z-index: 2900;
       -webkit-overflow-scrolling: touch;
-      /* Scrollbar gizle */
-      scrollbar-width: none; 
+
+      background: rgba(0,0,0,0.92);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      z-index: 3000;
+
+      scrollbar-width: none;
     }
     .assistant-bar::-webkit-scrollbar { display: none; }
 
-    .nav-item {
+    .nav-item{
       flex: 0 0 auto;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 4px;
-      padding: 8px 12px;
-      border-radius: 12px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      color: rgba(255,255,255,0.5);
-      border: 1px solid transparent;
-    }
-    
-    /* Aktif veya Hover Durumu */
-    .nav-item:active, .nav-item:hover {
-      background: rgba(255,255,255,0.08);
-      color: #fff;
-      border-color: rgba(255,255,255,0.1);
-      transform: translateY(-2px);
-    }
+      min-width: 64px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 6px;
 
-    /* İkonlar (SVG) */
-    .nav-icon { width: 22px; height: 22px; fill: currentColor; }
-    
-    /* Etiket */
-    .nav-label {
+      padding: 10px 12px;
+      border-radius: 14px;
+      color: rgba(255,255,255,0.72);
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .nav-item:hover,
+    .nav-item:active{
+      transform: translateY(-2px);
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.14);
+      color:#fff;
+    }
+    .nav-icon { width: 22px; height: 22px; fill: currentColor; opacity: 0.95; }
+    .nav-label{
       font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
       text-transform: uppercase;
+      opacity: 0.9;
     }
 
     /* Giriş yapılmamışsa gizle (body class ile kontrol edilir) */
     body:not(.is-logged) .assistant-bar { display: none !important; }
-
+    body:not(.is-logged) .input-dock { bottom: 0; } /* login ekranında input varsa altta dursun */
 
     /* =========================================================
        OVERLAY SİSTEMİ
@@ -112,35 +198,6 @@
       padding: 20px; overflow-y: auto;
     }
     .menu-overlay.open .menu-sidebar { transform: translateX(0); }
-
-    /* =========================================================
-       TOPBAR AYARLARI
-       ========================================================= */
-    #profileBtn { display: none !important; }
-    .right-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-    .notif-row { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; position: relative; }
-    .notif-topline { display: flex; align-items: center; gap: 10px; }
-    #notifBtn { display: flex; align-items: center; padding: 6px; }
-    .plan-chip {
-      font-size: 10px; font-weight: 900; padding: 5px 10px; border-radius: 99px;
-      border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.75);
-    }
-    .yp-chip .yp-label { font-size: 0; }
-    .yp-chip .yp-label::after { content: "S.P"; font-size: 10px; font-weight: 900; color: rgba(255,255,255,.75); }
-    .logo-area { gap: 10px; }
-    .seesaw-svg { width: 36px; height: 18px; }
-
-    /* =========================================================
-       CHAT & INPUT
-       ========================================================= */
-    .chat-area {
-      display: flex; flex-direction: column; justify-content: flex-end;
-      padding-bottom: 150px; /* Dock + Nav bar payı */
-      min-height: 0;
-    }
-    .chat-area:empty::before { display: none; }
-    #msgInput:focus { outline: none; box-shadow: none; }
 
     /* =========================================================
        PROFIL KISAYOLU (3D TURUNCU)
@@ -180,13 +237,16 @@
     #menuKurumsal .menu-action[data-action="profile"] { display: none; }
     #loginOverlay .trust-links-clean a { color: rgba(255,255,255,.55); text-decoration: none; }
     #loginHint { display: none; }
+
+    /* Footer sabitse ve altta kalabalık yapıyorsa gizlemek daha iyi */
+    .footer-container{ display:none; }
   </style>
 </head>
 
 <body>
 
 <div class="mobile-frame" id="mobileFrame">
-  
+
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -268,10 +328,28 @@
     </div>
   </div>
 
+  <!-- CHAT -->
   <div class="chat-area" id="chat"></div>
 
+  <!-- INPUT (assistant bar'ın ÜSTÜNDE) -->
+  <div class="input-dock">
+    <div class="dock-inner">
+      <button class="icon-btn" id="camBtn">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+      </button>
+      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
+      <button class="icon-btn" id="micBtn">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+      </button>
+      <button class="send-btn" id="sendBtn">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ✅ QUICK ACCESS (input'un ALTINDA) -->
   <div class="assistant-bar" id="assistantBar">
-    
+
     <div class="nav-item" onclick="location.href='/pages/diyet.html'">
       <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
       <div class="nav-label">Diyet</div>
@@ -304,21 +382,7 @@
 
   </div>
 
-  <div class="input-dock">
-    <div class="dock-inner">
-      <button class="icon-btn" id="camBtn">
-        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-      </button>
-      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
-      <button class="icon-btn" id="micBtn">
-        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-      </button>
-      <button class="send-btn" id="sendBtn">
-        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
-      </button>
-    </div>
-  </div>
-
+  <!-- Eski footer sabit ise kalabalık yapıyordu, CSS ile gizlendi -->
   <div class="footer-container">
     <div class="footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
@@ -386,13 +450,30 @@
       const u = JSON.parse(localStorage.getItem("caynana_user_v1") || "{}");
       const pic = u.picture || u.avatar;
       const name = u.fullname || "—";
-      
+
       const ico = document.getElementById("profileShortcutIco");
       if(ico && pic) ico.innerHTML = `<img src="${pic}">`;
-      
+
       const nm = document.getElementById("profileShortcutName");
       if(nm) nm.textContent = name;
     } catch(e) {}
+
+    /* İstersen input yüksekliğini dinamik ölçüp chat alanını mükemmelleştirelim:
+       - Şimdilik CSS değişkenleriyle çalışıyor.
+       - main.js içinde bir resize handler ile --inputdock-h güncellenebilir.
+    */
+    const inputDock = document.querySelector(".input-dock");
+    if(inputDock){
+      const h = Math.ceil(inputDock.getBoundingClientRect().height);
+      if(h > 0) document.documentElement.style.setProperty("--inputdock-h", h + "px");
+    }
+    window.addEventListener("resize", () => {
+      const inputDock2 = document.querySelector(".input-dock");
+      if(inputDock2){
+        const h2 = Math.ceil(inputDock2.getBoundingClientRect().height);
+        if(h2 > 0) document.documentElement.style.setProperty("--inputdock-h", h2 + "px");
+      }
+    });
   });
 </script>
 
