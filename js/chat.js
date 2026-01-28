@@ -1,7 +1,10 @@
+// FILE: /js/chat.js
 // js/chat.js (FINAL - Profile-first memory + name capture + history limit + login required + CHAT_ID FIX + USER-SCOPED CHAT_ID)
 // ✅ FIX: payload.history ChatStore'dan gidiyor
 // ✅ FIX: user/assistant mesajları ChatStore'a ekleniyor
 // ✅ FIX: Kalıcı hafıza (memory_profile) sohbet silinse bile unutmaz: önce profil formu, sonra memory_profile, sonra chat geçmişi
+//
+// ✅ EK FIX (SENİN İSTEĞİN): Sohbet HER ZAMAN en altta kalsın (mesajlar alttan yukarı çıksın)
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -222,6 +225,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     try {
       if (typeof ChatStore.getLastForApi === "function") return ChatStore.getLastForApi(30);
     } catch {}
+
     // fallback: eski çağrılar
     try {
       const raw = Array.isArray(modeOrHistory) ? modeOrHistory : (Array.isArray(maybeHistory) ? maybeHistory : []);
@@ -318,16 +322,11 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
   }
 }
 
-// --------------------
-// UI HELPERS (SCROLL FIX)
-// --------------------
-function isNearBottom(el, slack = 80){
-  try{
-    return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack;
-  }catch(e){
-    return true;
-  }
-}
+/* =========================================================
+   UI HELPERS
+   - SENİN KURAL: sohbet her zaman alttan yukarı çıksın
+   - Yani scroll her mesajda en alta kilitlenir
+   ========================================================= */
 
 export function typeWriter(text, elId = "chat") {
   const div = document.getElementById(elId);
@@ -340,41 +339,11 @@ export function typeWriter(text, elId = "chat") {
   const s = String(text || "");
   let i = 0;
 
-  (function type(){
-    if(i < s.length){
-      bubble.textContent += s.charAt(i++);
-      div.scrollTop = div.scrollHeight; // ⬅️ HER ZAMAN ALTA
-      setTimeout(type, 28);
-    }
-  })();
-}
-
-export function addUserBubble(text){
-  const div = document.getElementById("chat");
-  if(!div) return;
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble user";
-  bubble.textContent = String(text||"");
-  div.appendChild(bubble);
-
-  div.scrollTop = div.scrollHeight; // ⬅️ HER ZAMAN ALTA
-}
-
-  // ✅ kullanıcı alttaysa takip et
-  let follow = isNearBottom(div);
-
-  // kullanıcı scroll ederse follow güncelle
-  const onScroll = () => { follow = isNearBottom(div); };
-  div.addEventListener("scroll", onScroll, { passive:true });
-
   (function type() {
     if (i < s.length) {
       bubble.textContent += s.charAt(i++);
-      if (follow) div.scrollTop = div.scrollHeight; // ✅ artık zorlamıyor
+      div.scrollTop = div.scrollHeight; // ✅ HER ZAMAN ALTA
       setTimeout(type, 28);
-    } else {
-      div.removeEventListener("scroll", onScroll);
     }
   })();
 }
@@ -383,12 +352,10 @@ export function addUserBubble(text) {
   const div = document.getElementById("chat");
   if (!div) return;
 
-  const follow = isNearBottom(div);
-
   const bubble = document.createElement("div");
   bubble.className = "bubble user";
   bubble.textContent = String(text || "");
   div.appendChild(bubble);
 
-  if (follow) div.scrollTop = div.scrollHeight; // ✅ alttaysa kaydır
+  div.scrollTop = div.scrollHeight; // ✅ HER ZAMAN ALTA
 }
