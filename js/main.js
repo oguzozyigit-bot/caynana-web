@@ -189,6 +189,15 @@ function bindChatUI(){
   }catch{}
 
   async function sendMessage(){
+window.setSeesawState?.("user"); // kullanıcı yazdı
+
+addUserBubble(text);
+
+window.setSeesawState?.("bot");  // bot cevap yazıyor
+
+const res = await fetchTextResponse(text, "chat");
+
+window.setSeesawState?.("idle"); // bitti
     const text = String(input.value || "").trim();
     if(!text) return;
 
