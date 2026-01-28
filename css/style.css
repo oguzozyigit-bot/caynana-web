@@ -714,3 +714,9 @@ button:focus, a:focus{
   overflow: hidden !important;
   max-height: 120px !important;
 }
+/* FILE: /css/style.css  (EN ALTINA EKLE) */
+
+/* Chat içeriği altta başlasın */
+.page-chat #chat{
+  justify-content: flex-end !important;
+}
