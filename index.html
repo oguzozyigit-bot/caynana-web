@@ -6,22 +6,18 @@
   <title>Caynana AI v5.6</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/css/style.css?v=1">
+  <link rel="stylesheet" href="/css/layout-common.css?v=1">
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
-    /* =========================================================
-       TEMEL AYARLAR & RESET
-       ========================================================= */
     :root {
       --gold: #ffb300;
       --pistachio: #bef264;
       --red: #ff5252;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-    
-    /* =========================================================
-       ✅ OVERLAY SİSTEMİ (Giriş Ekranı ve Sayfalar İçin)
-       ========================================================= */
+
+    /* ✅ OVERLAY SİSTEMİ */
     .full-overlay {
       position: fixed !important;
       inset: 0 !important;
@@ -32,27 +28,19 @@
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
-      
-      /* Varsayılan: Gizli */
       opacity: 0 !important;
       pointer-events: none !important;
       transition: opacity 0.3s ease !important;
     }
-
-    /* Aktif olunca görünür */
     .full-overlay.active {
       opacity: 1 !important;
       pointer-events: auto !important;
     }
-
-    /* Z-Index Katmanları */
     #loginOverlay { z-index: 9900 !important; background: rgba(0,0,0,0.92) !important; }
     #termsOverlay { z-index: 9950 !important; }
     #pageOverlay  { z-index: 9800 !important; }
 
-    /* =========================================================
-       ✅ MENU (YAN PANEL)
-       ========================================================= */
+    /* ✅ MENU (YAN PANEL) */
     .menu-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.8);
       z-index: 5000; opacity: 0; pointer-events: none; transition: .3s;
@@ -69,9 +57,7 @@
     }
     .menu-overlay.open .menu-sidebar { transform: translateX(0); }
 
-    /* =========================================================
-       TOPBAR & DÜZENLEMELER
-       ========================================================= */
+    /* TOPBAR */
     #profileBtn { display: none !important; }
 
     .right-controls {
@@ -102,23 +88,19 @@
     .logo-area { gap: 10px !important; }
     .seesaw-svg { width: 36px !important; height: 18px !important; }
 
-    /* =========================================================
-       CHAT & INPUT
-       ========================================================= */
+    /* CHAT & INPUT */
     .chat-area {
       display: flex !important; flex-direction: column !important;
-      justify-content: flex-end !important; padding-bottom: 78px !important;
+      justify-content: flex-end !important;
+      padding-bottom: 160px !important; /* ✅ input + alt bar çakışmasın */
       min-height: 0 !important;
     }
     .chat-area:empty::before { display: none !important; }
-
     #msgInput:focus, textarea:focus { outline: none !important; box-shadow: none !important; }
 
-    /* =========================================================
-       ✅ PROFIL KISAYOLU (3D TURUNCU)
-       ========================================================= */
+    /* ✅ PROFIL KISAYOLU (3D TURUNCU) */
     .profile-shortcut-wrap { margin: 10px 0 14px; }
-    
+
     .profile-shortcut-btn {
       display: flex; align-items: center; gap: 12px;
       padding: 12px 14px; border-radius: 18px; cursor: pointer; user-select: none;
@@ -140,8 +122,8 @@
     #profileShortcutIco img { width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important; }
     #profileShortcutIco::after { display: none !important; content: none !important; }
 
-    .profile-shortcut-text { 
-      flex: 1; min-width: 0 !important; display: flex; flex-direction: column; justify-content: center; 
+    .profile-shortcut-text {
+      flex: 1; min-width: 0 !important; display: flex; flex-direction: column; justify-content: center;
     }
     .profile-shortcut-title {
       font-weight: 800 !important; color: #ffb300 !important; font-size: 13px !important;
@@ -152,124 +134,74 @@
       white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important;
     }
 
-    /* =========================================================
-       HISTORY & MENÜ STİLLERİ
-       ========================================================= */
-    .history-del {
-      display: flex !important; width: 34px !important; height: 34px !important;
-      border-radius: 12px !important; align-items: center !important; justify-content: center !important;
-      border: 1px solid rgba(255,255,255,.10) !important; background: rgba(255,255,255,.04) !important;
+    /* PREMIUM LOGIN UI FIX */
+    #loginOverlay .login-card{
+      max-width:420px !important;
+      padding:28px 26px 26px !important;
+      border-radius:26px !important;
+      background:
+        radial-gradient(1200px 400px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
+        radial-gradient(1200px 400px at 100% 0%, rgba(190,242,100,.08), transparent 60%),
+        #0e0e0e !important;
+      border:1px solid rgba(255,255,255,.12) !important;
+      box-shadow:0 40px 120px rgba(0,0,0,.75) !important;
     }
-    .del-chat { display: none !important; } 
+    #loginOverlay .brand-name{ font-weight:900 !important; letter-spacing:.4px !important; }
+    #loginOverlay .login-slogan{ opacity:.75 !important; margin-bottom:18px !important; }
 
-    .menu-action .ico { font-size: 18px !important; line-height: 1 !important; color: inherit !important; }
-    .menu-action .ico::before { content: none !important; }
-    #menuKurumsal .menu-action[data-action="profile"] { display: none !important; }
+    /* GOOGLE BUTTON (PRO) */
+    #googleLoginBtn{
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      gap:10px !important;
+      width:100% !important;
+      height:52px !important;
+      background:linear-gradient(180deg,#ffffff,#f1f1f1) !important;
+      color:#111 !important;
+      border-radius:16px !important;
+      font-weight:800 !important;
+      font-size:15px !important;
+      border:none !important;
+      box-shadow:
+        0 12px 30px rgba(0,0,0,.45),
+        inset 0 1px 0 rgba(255,255,255,.8) !important;
+      transition:transform .12s ease, filter .12s ease !important;
+    }
+    #googleLoginBtn::before{
+      content:"";
+      width:20px;
+      height:20px;
+      background:url("https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg") no-repeat center/contain;
+      display:inline-block;
+    }
+    #googleLoginBtn:active{ transform:translateY(1px); filter:brightness(.96); }
 
-    /* LOGIN LINKLERI */
-    #loginOverlay .trust-links-clean a { color: rgba(255,255,255,.55) !important; text-decoration: none !important; }
-    #loginHint { display: none !important; }
-    /* =========================
-   PREMIUM LOGIN UI FIX
-   ========================= */
-#loginOverlay .login-card{
-  max-width:420px !important;
-  padding:28px 26px 26px !important;
-  border-radius:26px !important;
-  background:
-    radial-gradient(1200px 400px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
-    radial-gradient(1200px 400px at 100% 0%, rgba(190,242,100,.08), transparent 60%),
-    #0e0e0e !important;
-  border:1px solid rgba(255,255,255,.12) !important;
-  box-shadow:0 40px 120px rgba(0,0,0,.75) !important;
-}
+    /* APPLE BUTTON (DISABLED) */
+    #appleLoginBtn{
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      gap:10px !important;
+      width:100% !important;
+      height:50px !important;
+      background:rgba(255,255,255,.06) !important;
+      color:rgba(255,255,255,.55) !important;
+      border-radius:16px !important;
+      font-weight:700 !important;
+      font-size:14px !important;
+      border:1px solid rgba(255,255,255,.12) !important;
+    }
+    #appleLoginBtn::before{ content:""; font-size:18px; line-height:1; }
 
-/* Başlık */
-#loginOverlay .brand-name{
-  font-weight:900 !important;
-  letter-spacing:.4px !important;
-}
+    #loginOverlay .trust-links-clean{
+      margin-top:18px !important;
+      font-size:12px !important;
+      opacity:.65 !important;
+    }
 
-/* Alt slogan */
-#loginOverlay .login-slogan{
-  opacity:.75 !important;
-  margin-bottom:18px !important;
-}
-
-/* =========================
-   GOOGLE BUTTON (PRO)
-   ========================= */
-#googleLoginBtn{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  gap:10px !important;
-
-  width:100% !important;
-  height:52px !important;
-
-  background:linear-gradient(180deg,#ffffff,#f1f1f1) !important;
-  color:#111 !important;
-
-  border-radius:16px !important;
-  font-weight:800 !important;
-  font-size:15px !important;
-
-  border:none !important;
-  box-shadow:
-    0 12px 30px rgba(0,0,0,.45),
-    inset 0 1px 0 rgba(255,255,255,.8) !important;
-
-  transition:transform .12s ease, filter .12s ease !important;
-}
-
-#googleLoginBtn::before{
-  content:"";
-  width:20px;
-  height:20px;
-  background:url("https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg") no-repeat center/contain;
-  display:inline-block;
-}
-
-#googleLoginBtn:active{
-  transform:translateY(1px);
-  filter:brightness(.96);
-}
-
-/* =========================
-   APPLE BUTTON (DISABLED)
-   ========================= */
-#appleLoginBtn{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  gap:10px !important;
-
-  width:100% !important;
-  height:50px !important;
-
-  background:rgba(255,255,255,.06) !important;
-  color:rgba(255,255,255,.55) !important;
-
-  border-radius:16px !important;
-  font-weight:700 !important;
-  font-size:14px !important;
-
-  border:1px solid rgba(255,255,255,.12) !important;
-}
-
-#appleLoginBtn::before{
-  content:"";
-  font-size:18px;
-  line-height:1;
-}
-
-/* Alt linkler */
-#loginOverlay .trust-links-clean{
-  margin-top:18px !important;
-  font-size:12px !important;
-  opacity:.65 !important;
-}
+    /* ✅ Sohbet sayfasında alt bar input üstünde dursun */
+    .assistant-bar{ bottom: 78px !important; }
   </style>
 </head>
 
@@ -381,6 +313,17 @@
     </div>
   </div>
 
+  <!-- ✅ ALT KAYAN ASİSTAN BAR (HAMBURGER DURUR) -->
+  <div class="assistant-bar" id="assistantBar">
+    <div class="assistant-item" data-go="/"><div class="ico">💬</div><div class="lbl">Sohbet</div></div>
+    <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico">🥗</div><div class="lbl">Diyet</div></div>
+    <div class="assistant-item" data-go="/pages/saglik.html"><div class="ico">❤️</div><div class="lbl">Sağlık</div></div>
+    <div class="assistant-item" data-go="/pages/astro.html"><div class="ico">♈</div><div class="lbl">Astro</div></div>
+    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico">☕</div><div class="lbl">Fal</div></div>
+    <div class="assistant-item" data-go="/pages/alisveris.html"><div class="ico">🛍️</div><div class="lbl">Alışveriş</div></div>
+    <div class="assistant-item" data-go="/pages/tercuman.html"><div class="ico">🌍</div><div class="lbl">Tercüman</div></div>
+  </div>
+
   <div class="footer-container">
     <div class="footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
@@ -388,7 +331,7 @@
       <a href="/pages/gizlilik.html">Gizlilik</a>
       <a href="/pages/iletisim.html">İletişim</a>
     </div>
-    <div class="footer-brand">@CaynanaAI By Ozyigits 2026</div>
+    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
   </div>
 </div>
 
@@ -402,6 +345,7 @@
   </div>
 </div>
 
+<!-- ✅ PREMIUM LOGIN (Google ile başlar) -->
 <div class="full-overlay active" id="loginOverlay">
   <div class="login-card login-premium">
     <div class="login-seesaw-wrap" aria-hidden="true">
@@ -463,37 +407,32 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    // 1. Apple Butonuna Tıklama (Basit Alert)
     const a = document.getElementById("appleLoginBtn");
     if(a) a.onclick = () => alert("Apple girişi yakında! Şimdilik Google'la gel.");
 
-    // 2. Menü Açma/Kapama (Main.js yüklenemezse diye yedek)
+    // Menü aç/kapa (yedek)
     const hamb = document.getElementById("hambBtn");
     const overlay = document.getElementById("menuOverlay");
-    
     if(hamb && overlay){
-      hamb.addEventListener("click", () => {
-        overlay.classList.add("open"); // CSS'teki .open sınıfını tetikler
-      });
-      overlay.addEventListener("click", (e) => {
-        if(e.target === overlay) overlay.classList.remove("open");
-      });
+      hamb.addEventListener("click", () => overlay.classList.add("open"));
+      overlay.addEventListener("click", (e) => { if(e.target === overlay) overlay.classList.remove("open"); });
     }
 
-    // 3. Profil Resmi Boyama (Local Storage'dan)
+    // Profil resmi
     try {
       const u = JSON.parse(localStorage.getItem("caynana_user_v1") || "{}");
       const pic = u.picture || u.avatar || u.avatar_url;
       const name = u.fullname || u.name || "—";
-      
+
       const ico = document.getElementById("profileShortcutIco");
       if(ico && pic) ico.innerHTML = `<img src="${pic}" alt="avatar">`;
-      
+
       const nm = document.getElementById("profileShortcutName");
       if(nm) nm.textContent = name;
     } catch(e) {}
   });
 </script>
 
+<script src="/js/layout-common.js?v=1"></script>
 </body>
 </html>
