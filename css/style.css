@@ -241,3 +241,67 @@ html,body{
 
 /* FOCUS (textarea kare yok) */
 #msgInput:focus{ outline:none !important; box-shadow:none !important; }
+/* =========================
+   MOBILE TOPBAR FIX (APPEND AT END)
+   ========================= */
+
+/* sağ blok iki satıra insin, logo/slogan sıkışmasın */
+.right-controls{
+  width: 130px !important;
+  display:flex !important;
+  align-items:flex-end !important;
+  justify-content:flex-end !important;
+}
+.notif-row{
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:flex-end !important;
+  gap:6px !important;
+}
+.notif-topline{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+}
+
+/* SAMİMİYET yerine S.P */
+.yp-label{ font-size:0 !important; }
+.yp-label::after{
+  content:"S.P" !important;
+  font-size:9px !important;
+  font-weight:900 !important;
+  color:rgba(255,255,255,.75) !important;
+  letter-spacing:.4px !important;
+}
+
+/* Badge: sayı göster */
+.badge{
+  position:absolute !important;
+  top:2px !important;
+  right:2px !important;
+  min-width:16px !important;
+  height:16px !important;
+  padding:0 4px !important;
+  border-radius:999px !important;
+  background: var(--red) !important;
+  color:#fff !important;
+  font-size:10px !important;
+  font-weight:900 !important;
+  display:none !important;
+  align-items:center !important;
+  justify-content:center !important;
+  line-height:16px !important;
+}
+
+/* Bildirim sallanma */
+@keyframes bellWiggle{
+  0%{transform:rotate(0)}
+  20%{transform:rotate(-12deg)}
+  40%{transform:rotate(10deg)}
+  60%{transform:rotate(-8deg)}
+  80%{transform:rotate(6deg)}
+  100%{transform:rotate(0)}
+}
+.icon-btn-top.wiggle svg{
+  animation: bellWiggle .9s ease-in-out infinite;
+}
