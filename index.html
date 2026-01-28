@@ -53,6 +53,8 @@
       box-shadow: 0 12px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.8);
       transition: transform .12s ease, filter .12s ease;
       position: relative;
+      z-index: 2; /* Butonu öne aldık */
+      cursor: pointer;
     }
     #googleLoginBtn::before{
       content:"";
@@ -71,6 +73,7 @@
       font-weight:800; font-size:14px;
       border:1px solid rgba(255,255,255,.12);
       margin-top: 10px;
+      cursor: pointer;
     }
     #appleLoginBtn::before{ content:""; font-size:18px; line-height:1; }
 
@@ -87,10 +90,12 @@
 
     .login-footer{ margin-top:12px; text-align:center; font-size:11px; opacity:.6; font-weight:900; }
 
-    /* Google renderButton overlay click */
+    /* Google renderButton overlay click - DÜZELTİLDİ */
     #googleBtnWrap{
       position:absolute; inset:0; width:100%; height:52px;
-      opacity:0.01; z-index:5;
+      opacity:0.01; 
+      z-index: -1; /* Arkaya atıldı */
+      pointer-events: none; /* Tıklamayı engellememesi sağlandı */
     }
   </style>
 </head>
@@ -99,7 +104,6 @@
 
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -148,7 +152,6 @@
     </div>
   </div>
 
-  <!-- MENU OVERLAY -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
@@ -189,10 +192,8 @@
     </div>
   </div>
 
-  <!-- CHAT -->
   <div class="chat-area" id="chat"></div>
 
-  <!-- INPUT -->
   <div class="input-dock">
     <div class="dock-inner">
       <button class="icon-btn" id="camBtn" aria-label="Kamera">
@@ -208,7 +209,6 @@
     </div>
   </div>
 
-  <!-- ALT BAR -->
   <div class="assistant-bar" id="assistantBar">
     <div class="assistant-item" data-go="/"><div class="ico">💬</div><div class="lbl">Sohbet</div></div>
     <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico">🥗</div><div class="lbl">Diyet</div></div>
@@ -219,7 +219,6 @@
     <div class="assistant-item" data-go="/pages/tercuman.html"><div class="ico">🌍</div><div class="lbl">Tercüman</div></div>
   </div>
 
-  <!-- FOOTER -->
   <div class="footer-container">
     <div class="footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
@@ -232,7 +231,6 @@
 
 </div>
 
-<!-- LOGIN -->
 <div class="full-overlay active" id="loginOverlay">
   <div class="login-card">
     <div style="display:flex; flex-direction:column; align-items:center; gap:8px; text-align:center;">
