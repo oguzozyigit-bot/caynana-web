@@ -623,6 +623,40 @@
       white-space: pre-line;
     }
     .toast.show{ opacity:1; }
+    /* =========================================================
+   FILE: /index.html
+   VERSION: v6.0.6 (Google Overlay Button CSS)
+   ========================================================= */
+
+.google-login-wrap{
+  position: relative;
+  width: 100%;
+}
+
+/* Google iframe butonu – görünmez ama tıklanabilir */
+#googleBtnWrap{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+
+  opacity: 0.01;      /* 0 YAPMA */
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+/* 3D buton altta kalır */
+#googleLoginBtn{
+  position: relative;
+  z-index: 1;
+}
+
+/* Google kurumsal mavi */
+.btn-google{
+  background: linear-gradient(135deg, #4285F4, #2b6fe8) !important;
+  color: #ffffff !important;
+}
   </style>
 </head>
 
@@ -892,12 +926,19 @@
     </div>
 
     <!-- ✅ Google kurumsal mavi -->
-    <button class="btn-3d btn-google" id="googleLoginBtn" type="button">
-      Google Hesabın İle Giriş Yap
-    </button>
+    <!-- =========================================================
+     FILE: /index.html
+     VERSION: v6.0.6 (Google Overlay Button Area)
+     ========================================================= -->
 
-    <!-- GSI hidden mount -->
-    <div id="googleBtnWrap" style="position:absolute; left:-9999px; top:0; width:1px; height:1px; overflow:hidden; opacity:0;"></div>
+<div class="google-login-wrap" id="googleLoginWrap">
+  <button class="btn-3d btn-google" id="googleLoginBtn" type="button">
+    Google Hesabın İle Giriş Yap
+  </button>
+
+  <!-- ✅ Google gerçek butonu buraya render edilecek ve üstte duracak -->
+  <div id="googleBtnWrap" aria-hidden="true"></div>
+</div>
 
     <button class="btn-3d btn-apple" id="appleLoginBtn" type="button">
       Apple Hesabın İle Giriş Yap
