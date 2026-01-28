@@ -546,19 +546,17 @@ document.addEventListener("DOMContentLoaded", () => {
         ux_mode: "popup"
       });
 
-      const wrap = document.getElementById("googleBtnWrap");
-      if(wrap){
-        wrap.innerHTML = "";
-        google.accounts.id.renderButton(wrap, {
-          type:"standard",
-          theme:"outline",
-          size:"large",
-          width: 420,
-          text:"signin_with",
-          logo_alignment:"left"
-        });
-      }
-
+      window.google.accounts.id.renderButton(
+  document.getElementById("googleBtnWrap"),
+  {
+    type: "standard",
+    theme: "outline",
+    size: "large",
+    width: 420,
+    text: "signin_with",
+    logo_alignment: "left"
+  }
+);
       // fallback: büyük butona basınca prompt
       const bigBtn = document.getElementById("googleLoginBtn");
       if(bigBtn){
