@@ -1,11 +1,9 @@
 // =========================================================
 // FILE: /js/auth.js
-// VERSION: vFINAL+2 (Stable Google Login + Hidden Button Click + No Syntax Errors)
-// NOTES:
-// - Custom 3D buton -> hidden GSI renderButton click (en stabil yol)
-// - Fallback: prompt()
-// - logout() içindeki try/catch düzeltildi (syntax hatası yok)
-// - use_fedcm_for_prompt: false (daha stabil; istersen sonra true yaparız)
+// VERSION: vFINAL+3 (Overlay Google Button + Fix "ID yok")
+// WHY:
+// - Programatik click yerine overlay kullanıyoruz (iframe güvenliği)
+// - initAuth() sadece 1 kere initialize eder + #googleBtnWrap içine renderButton basar
 // =========================================================
 
 import { GOOGLE_CLIENT_ID, STORAGE_KEY, BASE_DOMAIN } from "./config.js";
@@ -17,8 +15,6 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function getAuthState(){
   if(!window.__CAYNANA_AUTH__) window.__CAYNANA_AUTH__ = {
     inited: false,
-    promptInFlight: false,
-    lastPromptAt: 0,
     btnRendered: false
   };
   return window.__CAYNANA_AUTH__;
@@ -33,7 +29,7 @@ export async function waitForGsi(timeoutMs = 8000){
   return false;
 }
 
-// ✅ JWT payload UTF-8 decode (Türkçe karakter bozulmasın)
+// ✅ JWT payload UTF-8 decode
 function base64UrlToBytes(base64Url){
   let b64 = String(base64Url || "").replace(/-/g, "+").replace(/_/g, "/");
   const pad = b64.length % 4;
@@ -49,7 +45,6 @@ function parseJwt(idToken = ""){
   try{
     const parts = String(idToken).split(".");
     if(parts.length < 2) return null;
-
     const bytes = base64UrlToBytes(parts[1]);
     const json = new TextDecoder("utf-8", { fatal:false }).decode(bytes);
     return JSON.parse(json);
@@ -66,7 +61,7 @@ function termsKey(email=""){
 function setApiToken(t){ if(t) localStorage.setItem(API_TOKEN_KEY, t); }
 function clearApiToken(){ localStorage.removeItem(API_TOKEN_KEY); }
 
-// ✅ ID üret: 2 harf + 8 rakam (ardışık yok)
+// ✅ Stable ID
 function randInt(min, max){
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -107,7 +102,6 @@ function getOrCreateStableId(){
   return id;
 }
 
-// Backend session token al (Google id_token -> backend token)
 async function fetchBackendToken(googleIdToken){
   const r = await fetch(`${BASE_DOMAIN}/api/auth/google`, {
     method: "POST",
@@ -162,14 +156,11 @@ async function handleGoogleResponse(res){
       id: stableId,
       user_id: stableId,
       email,
-
       fullname: payload.name || "",
       name: payload.name || "",
       display_name: payload.name || "",
-
       picture: payload.picture || "",
       avatar: payload.picture || "",
-
       provider: "google",
       isSessionActive: true,
       lastLoginAt: new Date().toISOString(),
@@ -193,27 +184,17 @@ async function handleGoogleResponse(res){
   }
 }
 
-/**
- * ✅ Hidden GSI button render
- * - index.html içinde #googleBtnWrap varsa içine Google butonunu render ediyoruz (gizli).
- * - Custom 3D butona basınca bu hidden butonu click'leyerek popup sign-in açıyoruz.
- */
-function renderHiddenGoogleButtonOnce(){
+function renderGoogleOverlayButton(){
   const st = getAuthState();
   if(st.btnRendered) return;
 
   const wrap = document.getElementById("googleBtnWrap");
-  if(!wrap) return;
+  if(!wrap){
+    console.warn("#googleBtnWrap not found in DOM");
+    return;
+  }
 
-  wrap.style.position = "absolute";
-  wrap.style.left = "-9999px";
-  wrap.style.top = "0";
-  wrap.style.width = "1px";
-  wrap.style.height = "1px";
-  wrap.style.overflow = "hidden";
-  wrap.style.opacity = "0";
-  wrap.style.pointerEvents = "none";
-
+  // Wrap already overlay via CSS. Just render the real button inside it:
   try{
     window.google.accounts.id.renderButton(wrap, {
       type: "standard",
@@ -221,24 +202,12 @@ function renderHiddenGoogleButtonOnce(){
       size: "large",
       text: "continue_with",
       shape: "pill",
-      width: 1
+      width: wrap.clientWidth || 320
     });
     st.btnRendered = true;
   }catch(e){
     console.warn("renderButton failed:", e);
   }
-}
-
-function clickHiddenGoogleButton(){
-  const wrap = document.getElementById("googleBtnWrap");
-  if(!wrap) return false;
-
-  const btn = wrap.querySelector('div[role="button"]');
-  if(btn && typeof btn.click === "function"){
-    btn.click();
-    return true;
-  }
-  return false;
 }
 
 export function initAuth() {
@@ -258,16 +227,15 @@ export function initAuth() {
     client_id: GOOGLE_CLIENT_ID,
     callback: handleGoogleResponse,
     auto_select: false,
-
-    // ✅ Daha stabil (FedCM bazen token'ı boğabiliyor)
-    use_fedcm_for_prompt: false,
-
+    use_fedcm_for_prompt: false, // ✅ daha stabil
     cancel_on_tap_outside: false
   });
 
-  renderHiddenGoogleButtonOnce();
+  renderGoogleOverlayButton();
 }
 
+// Bu fonksiyon artık popup açmaz; sadece GSI hazır mı diye kontrol eder.
+// Popup’ı overlaydeki gerçek Google butonu açacak.
 export function handleLogin(provider) {
   if(provider !== "google"){
     alert("Apple girişi yakında evladım.");
@@ -281,36 +249,8 @@ export function handleLogin(provider) {
 
   initAuth();
 
-  const st = getAuthState();
-  const now = Date.now();
-  if(st.promptInFlight) return;
-  if(now - (st.lastPromptAt || 0) < 900) return;
-
-  st.promptInFlight = true;
-  st.lastPromptAt = now;
-
-  try{
-    renderHiddenGoogleButtonOnce();
-    const clicked = clickHiddenGoogleButton();
-
-    if(!clicked){
-      // Fallback: One Tap prompt
-      try{ window.google.accounts.id.cancel?.(); }catch(e){}
-      window.google.accounts.id.prompt((n)=>{
-        try{
-          if(n?.isNotDisplayed?.() || n?.isSkippedMoment?.() || n?.isDismissedMoment?.()){
-            window.showGoogleButtonFallback?.("prompt not displayed");
-          }
-        }catch(e){}
-      });
-    }
-
-    setTimeout(()=>{ st.promptInFlight = false; }, 650);
-  }catch(e){
-    console.error("google login error:", e);
-    window.showGoogleButtonFallback?.("prompt error");
-    st.promptInFlight = false;
-  }
+  // Kullanıcı tıklamayı zaten overlay'deki gerçek butona yapıyor.
+  // Burada ekstra prompt/click yok.
 }
 
 export async function acceptTerms() {
@@ -341,4 +281,3 @@ export function logout() {
     window.location.reload();
   }
 }
-```0
