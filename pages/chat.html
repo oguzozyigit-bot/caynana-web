@@ -10,21 +10,69 @@
   <link rel="stylesheet" href="/css/layout-common.css?v=1">
 
   <style>
-    /* chat taşmasın: alt bar + footer + input */
-    .chat-area{ padding-bottom: 190px !important; }
+    /* =========================================================
+       FIX: Alt yığın çakışmalarını bitir (PC + Mobil)
+       - Footer: fixed + mobile-frame’e hizalı
+       - Assistant-bar: footer üstünde
+       - Input-dock: assistant-bar üstünde
+       - Chat: bu üçü kadar alttan pay bırakır
+       ========================================================= */
 
-    /* + butonu camBtn yerine görünür olsun (tasarım) */
+    :root{
+      --frameW: min(480px, 100vw);
+      --footerH: 64px;        /* link + brand yaklaşık */
+      --assistH: 78px;        /* assistant bar yüksekliği */
+      --dockH: 86px;          /* input dock yaklaşık */
+    }
+
+    /* Footer’ı frame’e sabitle */
+    .footer-container{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+      bottom: 0 !important;
+      z-index: 2400 !important;
+    }
+
+    /* Assistant bar footer üstünde (layout-common.css'i override) */
+    .assistant-bar{
+      bottom: var(--footerH) !important;
+      z-index: 2500 !important;
+    }
+
+    /* Input dock: assistant bar üstünde fixed */
+    .input-dock{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+
+      bottom: calc(var(--footerH) + var(--assistH)) !important;
+      z-index: 2600 !important;
+
+      background: transparent !important; /* style.css zaten dock-inner çiziyor */
+      padding: 0 10px 8px !important;
+      pointer-events: auto !important;
+    }
+
+    /* Chat alanı: alttan yeterli pay */
+    .chat-area{
+      padding-bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + 20px) !important;
+    }
+
+    /* + butonu (senin istediğin) */
     #camBtn{
       background: rgba(255,179,0,.12) !important;
       border: 1px solid rgba(255,179,0,.25) !important;
     }
 
-    /* Dosya önizleme */
+    /* Dosya önizleme: input dock üstünde */
     .file-preview{
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      bottom: 165px; /* input üstü */
+      bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + 14px);
       z-index: 4000;
       display: none;
       background: rgba(20,20,20,.95);
@@ -59,7 +107,7 @@
 
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ✅ TOPBAR (standard) -->
+  <!-- TOPBAR -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -114,7 +162,7 @@
     </div>
   </div>
 
-  <!-- ✅ HAMBURGER MENU (standard ids) -->
+  <!-- HAMBURGER MENU -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
@@ -155,14 +203,13 @@
     </div>
   </div>
 
-  <!-- ✅ CHAT -->
+  <!-- CHAT -->
   <div class="chat-area" id="chat"></div>
 
-  <!-- ✅ INPUT (same ids main.js expects) -->
+  <!-- INPUT (FIXED) -->
   <div class="input-dock">
     <div class="dock-inner">
 
-      <!-- + : dosya / kamera -->
       <button class="icon-btn" id="camBtn" aria-label="Dosya / Fotoğraf">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path d="M12 5v14"></path>
@@ -193,7 +240,7 @@
     </div>
   </div>
 
-  <!-- ✅ ALT KOLAY MENÜ (standard) -->
+  <!-- ALT KOLAY MENÜ -->
   <div class="assistant-bar" id="assistantBar">
     <div class="assistant-item" data-go="/pages/chat.html"><div class="ico-wrap">💬</div><div class="lbl">Sohbet</div></div>
     <div class="assistant-item" data-go="/pages/translate.html"><div class="ico-wrap">🛍️</div><div class="lbl">Alışveriş</div></div>
@@ -207,7 +254,7 @@
     <div class="assistant-item" data-go="/pages/astro.html"><div class="ico-wrap">♈</div><div class="lbl">Burç</div></div>
   </div>
 
-  <!-- ✅ FOOTER -->
+  <!-- FOOTER (FIXED) -->
   <div class="footer-container">
     <div class="footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
@@ -220,47 +267,15 @@
 
 </div>
 
-<!-- ✅ FILE PREVIEW -->
+<!-- FILE PREVIEW -->
 <div class="file-preview" id="filePreview">
   <span>📎</span>
   <span id="fileName">Dosya</span>
   <div class="x" id="fileClearBtn">×</div>
 </div>
 
-<!-- ✅ main.js (chat + menu + auth) -->
 <script type="module" src="/js/main.js"></script>
 <script src="/js/layout-common.js?v=1"></script>
-
-<script>
-  // sadece chat.html’ye özel: + butonu dosya seçsin
-  document.addEventListener("DOMContentLoaded", () => {
-    const fileInput = document.getElementById("fileInput");
-    const camBtn = document.getElementById("camBtn");
-    const preview = document.getElementById("filePreview");
-    const fileName = document.getElementById("fileName");
-    const clearBtn = document.getElementById("fileClearBtn");
-
-    if(camBtn && fileInput){
-      camBtn.addEventListener("click", () => fileInput.click());
-    }
-
-    if(fileInput){
-      fileInput.addEventListener("change", () => {
-        const f = fileInput.files && fileInput.files[0];
-        if(!f){ preview.classList.remove("show"); return; }
-        fileName.textContent = f.name;
-        preview.classList.add("show");
-      });
-    }
-
-    if(clearBtn){
-      clearBtn.addEventListener("click", () => {
-        if(fileInput) fileInput.value = "";
-        preview.classList.remove("show");
-      });
-    }
-  });
-</script>
 
 </body>
 </html>
