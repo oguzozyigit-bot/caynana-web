@@ -1,3 +1,4 @@
+<!-- FILE: /pages/chat.html -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -6,161 +7,62 @@
   <title>Caynana Sohbet</title>
 
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="../css/style.css?v=2">
-  <link rel="stylesheet" href="../css/layout-common.css?v=1">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <link rel="stylesheet" href="/css/layout-common.css?v=1">
 
   <style>
-    /* =========================================
-       CHAT ÖZEL LAYOUT (KESİN ÇÖZÜM)
-       ========================================= */
-    :root {
-      --bg-dark: #000000;
-      --panel-bg: #121212;
-      --accent: #FFB300; /* Altın Sarısı */
-      --bubble-user: #222;
-      --bubble-bot: #181818;
-      
-      /* Yükseklik Tanımları */
-      --footerH: 60px;  /* En alt linkler */
-      --assistH: 85px;  /* İkon barı */
-      --dockH: 80px;    /* Yazı alanı */
+    /* ✅ STACK FIX (tek yerde, chat’e özel) */
+    :root{
+      --frameW:min(480px, calc(100vw - 18px));
+      --footerH:64px;     /* footer toplam yüksekliği */
+      --assistH:78px;     /* alt bar yüksekliği */
+      --dockH:86px;       /* input yaklaşık */
     }
 
-    body, html { 
-      background: var(--bg-dark); 
-      height: 100%; 
-      overflow: hidden; 
-      margin: 0; padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /* Footer frame içinde ve en altta */
+    .footer-container{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+      bottom: 0 !important;
+      z-index: 2400 !important;
+      background: rgba(0,0,0,.92);
+      border-top: 1px solid rgba(255,255,255,.06);
     }
 
-    .mobile-frame {
-      width: 100%; height: 100%; max-width: 480px; margin: 0 auto;
-      background: var(--bg-dark); position: relative; display: flex; flex-direction: column;
+    /* Alt bar footer üstünde */
+    .assistant-bar{
+      bottom: var(--footerH) !important;
+      z-index: 2500 !important;
     }
 
-    /* 1. FOOTER (EN ALTTA SABİT) */
-    .footer-container {
-      position: absolute; bottom: 0; left: 0; width: 100%; height: var(--footerH);
-      background: rgba(0,0,0,0.98); border-top: 1px solid rgba(255,255,255,0.08);
-      z-index: 40; display: flex; flex-direction: column; justify-content: center;
-      padding-bottom: env(safe-area-inset-bottom);
+    /* Input dock: alt barın üstünde */
+    .input-dock{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+      bottom: calc(var(--footerH) + var(--assistH)) !important;
+      z-index: 2600 !important;
+      padding: 0 10px 8px !important;
+      background: transparent !important;
     }
 
-    /* 2. ASSISTANT BAR (FOOTER ÜSTÜNDE) */
-    .assistant-bar {
-      position: absolute; bottom: calc(var(--footerH) + env(safe-area-inset-bottom)); 
-      left: 0; width: 100%; height: var(--assistH);
-      z-index: 50;
-      background: linear-gradient(to top, #000 20%, rgba(0,0,0,0));
-      display: flex; align-items: center; gap: 8px;
-      padding: 0 12px; overflow-x: auto;
-      scrollbar-width: none; /* Scroll gizle */
-    }
-    .assistant-bar::-webkit-scrollbar { display: none; }
-
-    /* 3. INPUT DOCK (ASSISTANT BAR ÜSTÜNDE) */
-    .input-dock {
-      position: absolute; 
-      bottom: calc(var(--footerH) + var(--assistH) + env(safe-area-inset-bottom) + 5px);
-      left: 0; width: 100%; 
-      z-index: 60;
-      padding: 0 10px;
-      pointer-events: none; /* Arkadaki mesajlara tıklanabilsin */
-      display: flex; justify-content: center;
-    }
-    
-    .dock-inner {
-      pointer-events: auto;
-      width: 100%; background: #1a1a1a;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 24px; padding: 8px 10px;
-      display: flex; align-items: flex-end; gap: 8px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    /* Chat: hepsinin üstünde kalacak kadar padding */
+    .chat-area{
+      padding-bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + 20px) !important;
+      justify-content: flex-end !important;
     }
 
-    #msgInput {
-      flex: 1; max-height: 100px; padding: 10px 5px;
-      font-size: 15px; color: #fff; background: transparent;
-      border: none; outline: none; resize: none;
+    /* input büyürken ikonların üstüne binmesin */
+    .dock-inner{ align-items:flex-end !important; }
+    #msgInput{
+      min-width:0 !important;
+      white-space:normal !important;
+      overflow:hidden !important;
+      max-height:120px !important;
     }
-
-    /* 4. CHAT ALANI (EN ÜSTTE, DİĞERLERİNİN ALTINDA KALIYOR) */
-    .chat-area {
-      position: absolute; top: 60px; left: 0; right: 0;
-      bottom: 0; /* Sayfanın altına kadar uzanır */
-      /* Alt barların kapladığı yer kadar padding veriyoruz */
-      padding: 20px 16px calc(var(--footerH) + var(--assistH) + var(--dockH) + 20px) 16px;
-      display: flex; flex-direction: column;
-      justify-content: flex-end; /* Mesajlar aşağıdan başlar */
-      gap: 12px; overflow-y: auto; scroll-behavior: smooth;
-    }
-    /* Mesaj azken de scroll çalışsın diye */
-    .chat-area::before { content: ''; flex: 1 1 auto; }
-
-    /* Mesaj Balonları */
-    .msg-row { display: flex; width: 100%; flex-shrink: 0; }
-    .msg-row.user { justify-content: flex-end; }
-    .msg-row.bot { justify-content: flex-start; }
-
-    .bubble {
-      max-width: 85%; padding: 12px 16px; border-radius: 18px;
-      font-size: 15px; line-height: 1.4; position: relative;
-      word-wrap: break-word; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-    .bubble.user {
-      background: #252525; color: #fff;
-      border-bottom-right-radius: 4px; border-right: 3px solid #bef264;
-    }
-    .bubble.bot {
-      background: #151515; color: #ddd;
-      border-bottom-left-radius: 4px; border-left: 3px solid var(--accent);
-    }
-
-    /* PREMIUM İKONLAR (Assistant Bar) */
-    .assistant-item {
-      flex: 0 0 auto; display: flex; flex-direction: column; align-items: center;
-      gap: 5px; cursor: pointer; width: 68px; transition: transform 0.2s;
-    }
-    .assistant-item:active { transform: scale(0.95); }
-
-    .ico-wrap {
-      width: 46px; height: 46px; border-radius: 16px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s; position: relative; overflow: hidden;
-    }
-    
-    /* Aktif İkon Stili */
-    .assistant-item[data-active="true"] .ico-wrap {
-      background: rgba(255, 179, 0, 0.15); border-color: var(--accent);
-      box-shadow: 0 0 15px rgba(255,179,0,0.15);
-    }
-    .assistant-item svg { width: 24px; height: 24px; fill: #aaa; transition: fill 0.2s; }
-    .assistant-item[data-active="true"] svg { fill: var(--accent); }
-
-    .lbl { font-size: 10px; font-weight: 700; color: #777; text-transform: uppercase; letter-spacing: 0.5px; }
-    .assistant-item[data-active="true"] .lbl { color: #fff; }
-
-    /* Butonlar */
-    .icon-btn svg { width: 24px; height: 24px; stroke: #888; fill: none; transition: .2s; }
-    .send-btn { 
-      background: #bef264; width: 40px; height: 40px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .send-btn svg { stroke: #000; fill: none; width: 20px; height: 20px; margin-left: -2px; margin-top: 2px; }
-
-    /* Topbar & Menu */
-    .topbar { position: absolute; top:0; left:0; right:0; height: 60px; background: rgba(0,0,0,0.95); z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 0 15px; display: flex; justify-content: space-between; align-items: center; }
-    .brand-area { text-align: center; }
-    .brand-logo { font-size: 16px; font-weight: 900; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; }
-    .slogan { font-size: 9px; color: #888; font-weight: 600; display: block; }
-    
-    /* Tahtaravalli Animasyon */
-    .rocking { animation: rock 0.5s infinite alternate ease-in-out; transform-box: fill-box; transform-origin: center; }
-    @keyframes rock { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
-
   </style>
 </head>
 
@@ -169,177 +71,133 @@
 <div class="mobile-frame" id="mobileFrame">
 
   <div class="topbar">
-    <button id="hambBtn" style="background:none;border:none;color:#fff;font-size:24px;">☰</button>
-    <div class="brand-area">
-      <div class="brand-logo">
-        <svg id="seesawAnim" width="30" height="15" viewBox="0 0 40 20" style="overflow:visible">
-          <g class="seesaw-bar">
-            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="3" cy="5" r="3" fill="#bef264"/>
-            <circle cx="37" cy="5" r="3" fill="#ffb300"/>
-          </g>
-          <polygon points="17,14 23,14 20,8" fill="#555"/>
-        </svg>
-        Caynana AI
-      </div>
-      <span class="slogan">Yapay Zekânın Geleneksel Aklı</span>
+    <div class="left-controls">
+      <button class="hamb-btn" id="hambBtn">☰</button>
     </div>
-    <div style="display:flex;gap:10px;align-items:center;">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-      <span style="font-size:10px;background:#333;padding:3px 6px;border-radius:4px;font-weight:bold;color:#ccc;">FREE</span>
+
+    <div class="brand-wrapper" id="brandWrapper">
+      <div class="logo-area">
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
+          <g class="seesaw-bar" id="seesawBar">
+            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+            <circle cx="3" cy="5" r="3" fill="#bef264" />
+            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+          </g>
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+        </svg>
+        <div class="brand-name">Caynana AI</div>
+      </div>
+      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+    </div>
+
+    <div class="right-controls">
+      <div class="notif-row">
+        <div class="notif-topline">
+          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <div class="badge" id="notifBadge"></div>
+          </button>
+          <div id="planChip" class="plan-chip">FREE</div>
+        </div>
+
+        <div class="yp-chip">
+          <div class="yp-label">SAMİMİYET</div>
+          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+          <div class="yp-num" id="ypNum">19%</div>
+        </div>
+
+        <div class="notification-dropdown" id="notifDropdown">
+          <div class="notif-header">Bildirimler</div>
+          <div class="notif-list" id="notifList"></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="chat-area" id="chatArea">
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-sidebar">
+      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
+
+      <div class="profile-shortcut-wrap" id="profileShortcutMount">
+        <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='/pages/profil.html'">
+          <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
+          <div class="profile-shortcut-text">
+            <div class="profile-shortcut-title">Profil Düzenle</div>
+            <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
+      <div class="history-list" id="historyList"></div>
+
+      <div class="menu-block asistan">
+        <div class="block-head">Asistan AI</div>
+        <div class="menu-grid" id="menuAsistan"></div>
+      </div>
+
+      <div class="menu-block astro">
+        <div class="block-head">Astro AI</div>
+        <div class="menu-grid" id="menuAstro"></div>
+      </div>
+
+      <div class="menu-block kurumsal">
+        <div class="block-head">Kurumsal</div>
+        <div class="menu-grid" id="menuKurumsal"></div>
+      </div>
+
+      <div class="menu-footer-actions">
+        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
+        <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
+        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
+      </div>
     </div>
+  </div>
+
+  <div class="chat-area" id="chat"></div>
 
   <div class="input-dock">
     <div class="dock-inner">
-      <button class="icon-btn" id="plusBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg></button>
-      <input type="file" id="fileInput" hidden>
+      <button class="icon-btn" id="camBtn" aria-label="Dosya / Fotoğraf">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+      </button>
+
+      <input type="file" id="fileInput" accept="image/*" hidden>
+
       <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
-      <button class="icon-btn" id="micBtn"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></button>
-      <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg></button>
+
+      <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+      </button>
+
+      <button class="send-btn" id="sendBtn" aria-label="Gönder">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+      </button>
     </div>
   </div>
 
   <div class="assistant-bar" id="assistantBar">
-    <div class="assistant-item" data-go="chat.html" data-active="true">
-      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
-      <div class="lbl">Sohbet</div>
-    </div>
-    <div class="assistant-item" data-go="translate.html">
-      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/></svg></div>
-      <div class="lbl">Alışveriş</div>
-    </div>
-    <div class="assistant-item" data-go="profil.html">
-      <div class="ico-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
-      <div class="lbl">Tercüman</div>
-    </div>
-    <div class="assistant-item" data-go="gossip.html">
-      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M17 2.1l4 4-4 4"/><path d="M3 12.2a7.7 7.7 0 0 0 13.27 4.13"/><path d="M11 2.1l-4 4 4 4"/></svg></div>
-      <div class="lbl">Dedikodu</div>
-    </div>
-    <div class="assistant-item" data-go="diyet.html">
-      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.357.393-1.58 3.827-1.58 3.827.816 1.332 2.37 2.173 2.37 2.173h5.42s1.555-.84 2.37-2.172C15.08 6.827 15.857 3.393 13.5 3c-1.923-.321-3.5 .782-3.5 2.172v7.256h-1V5.172z"/></svg></div>
-      <div class="lbl">Diyet</div>
-    </div>
-    <div class="assistant-item" data-go="health.html">
-      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
-      <div class="lbl">Sağlık</div>
-    </div>
-    <div class="assistant-item" data-go="fal.html">
-      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg></div>
-      <div class="lbl">Fal</div>
-    </div>
-    <div class="assistant-item" data-go="tarot.html">
-      <div class="ico-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
-      <div class="lbl">Tarot</div>
-    </div>
-    <div class="assistant-item" data-go="dream.html">
-      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
-      <div class="lbl">Rüya</div>
-    </div>
-    <div class="assistant-item" data-go="astro.html">
-      <div class="ico-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div>
-      <div class="lbl">Burç</div>
-    </div>
+    <div class="assistant-item" data-go="/pages/chat.html"><div class="ico-wrap">💬</div><div class="lbl">Sohbet</div></div>
+    <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico-wrap">🥗</div><div class="lbl">Diyet</div></div>
+    <div class="assistant-item" data-go="/pages/health.html"><div class="ico-wrap">❤️</div><div class="lbl">Sağlık</div></div>
+    <div class="assistant-item" data-go="/pages/astro.html"><div class="ico-wrap">♈</div><div class="lbl">Astro</div></div>
+    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico-wrap">☕</div><div class="lbl">Fal</div></div>
   </div>
 
   <div class="footer-container">
-    <div style="display:flex;justify-content:center;gap:15px;margin-bottom:5px;">
-      <a href="hakkimizda.html" style="color:#666;text-decoration:none;font-size:11px;font-weight:700;">Hakkımızda</a>
-      <a href="iletisim.html" style="color:#666;text-decoration:none;font-size:11px;font-weight:700;">İletişim</a>
+    <div class="footer-links">
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
     </div>
-    <div style="text-align:center;font-size:10px;color:#444;">@CaynanaAI By Ozyigit's 2026</div>
+    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
   </div>
 
 </div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    
-    const input = document.getElementById('msgInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const chatArea = document.getElementById('chatArea');
-    const seesawBar = document.querySelector('.seesaw-bar');
-
-    // Hafıza
-    let userName = localStorage.getItem("caynana_user_name") || "";
-
-    // 1. UI Mesaj Ekleme
-    function appendMessage(text, sender) {
-      const row = document.createElement('div');
-      row.className = `msg-row ${sender}`; // user veya bot
-      row.innerHTML = `<div class="bubble ${sender}">${text}</div>`;
-      chatArea.appendChild(row);
-      // En alta kaydır
-      setTimeout(() => row.scrollIntoView({ behavior: 'smooth' }), 50);
-    }
-
-    // 2. Mesaj Gönderme Mantığı
-    function handleSend() {
-      const text = input.value.trim();
-      if (!text) return;
-
-      // Kullanıcı mesajını bas
-      appendMessage(text, 'user');
-      input.value = '';
-      input.style.height = 'auto'; // Reset height
-      seesawBar.parentElement.classList.remove('rocking');
-
-      // Bot Cevabı (Simülasyon)
-      setTimeout(() => {
-        let reply = "Ne dediğini tam anlamadım evladım.";
-        const low = text.toLowerCase();
-
-        // Hafıza Kontrolü
-        if(low.includes("adım ne")) {
-          reply = userName ? `Adın ${userName} evladım, unutur muyum hiç?` : "Daha adını söylemedin ki evladım.";
-        } 
-        else if(low.includes("adım")) {
-          const parts = text.split(" ");
-          userName = parts[parts.length - 1]; // Son kelimeyi isim al
-          localStorage.setItem("caynana_user_name", userName);
-          reply = `Memnun oldum ${userName} evladım. Aklımda tutarım artık.`;
-        }
-        else if(low.includes("nasılsın")) reply = "İyiyim çok şükür, sen nasılsın?";
-        else if(low.includes("selam") || low.includes("merhaba")) reply = "Aleyküm selam evladım, hoş geldin.";
-
-        appendMessage(reply, 'bot');
-      }, 800);
-    }
-
-    // Eventler
-    sendBtn.addEventListener('click', (e) => { e.preventDefault(); handleSend(); });
-    
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
-    });
-
-    // Tahtaravalli Animasyonu
-    input.addEventListener('input', function() {
-      if(this.value.length > 0) seesawBar.parentElement.classList.add('rocking');
-      else seesawBar.parentElement.classList.remove('rocking');
-      
-      this.style.height = 'auto';
-      this.style.height = (this.scrollHeight) + 'px';
-    });
-
-    // Link Yönlendirme
-    document.querySelectorAll('.assistant-item').forEach(item => {
-      item.addEventListener('click', function() {
-        window.location.href = this.getAttribute('data-go');
-      });
-    });
-
-  });
-</script>
-
-<style>
-  .rocking { animation: rock 0.6s infinite alternate ease-in-out; transform-box: fill-box; transform-origin: center; }
-  @keyframes rock { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
-</style>
+<script type="module" src="/js/main.js"></script>
+<script src="/js/layout-common.js?v=1"></script>
 
 </body>
 </html>
