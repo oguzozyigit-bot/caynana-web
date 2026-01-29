@@ -1,6 +1,11 @@
 <!-- FILE: /index.html
-     PURPOSE: Güven veren premium giriş + sözleşme gate + başarılı girişte /pages/chat.html yönlendirme
-     NOTE: Logo düzenini BOZMADIM. Tahtaravalli + CaynanaAI + slogan aynen.
+     LOGIN “GEL GEL” SÜRÜMÜ:
+     - Tahtaravalli: her zaman hafif hareket + Google tıklanınca daha canlı
+     - Apple: aktif değil -> uyarı
+     - Arka plan: canlı (gradient shimmer)
+     - “Kaynana gözleri”: sağa sola bakar + ara ara göz kırpar
+     - Sözleşme: ilk girişte zorunlu, onaysız devam yok
+     - Login: auth.js (GSI overlay) ile
 -->
 <!DOCTYPE html>
 <html lang="tr">
@@ -16,7 +21,11 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
-    /* ===== Login sayfası: güven veren premium detaylar ===== */
+    :root{
+      --gold:#ffb300;
+      --pistachio:#bef264;
+      --red:#ff5252;
+    }
 
     /* Üst bar sabit */
     .topbar{
@@ -25,21 +34,131 @@
       z-index: 3000;
     }
 
-    /* Orta alan */
-    .login-page{
+    /* ===== “Gel gel” arka plan (hareketli) ===== */
+    .login-stage{
+      position: relative;
       flex: 1 1 auto;
       min-height: 0;
-      overflow-y: auto;
+      overflow: hidden;
       padding: 18px 16px 140px;
       display:flex;
       flex-direction:column;
+      align-items:center;
+      justify-content:center;
       gap: 12px;
-      align-items: center;
-      justify-content: center;
-      text-align:center;
     }
 
-    /* Premium kart (güven hissi) */
+    /* Arka plan katmanları */
+    .bg-anim{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      overflow:hidden;
+    }
+    .bg-anim::before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:
+        radial-gradient(900px 280px at 15% 5%, rgba(255,179,0,.14), transparent 55%),
+        radial-gradient(900px 280px at 85% 0%, rgba(190,242,100,.10), transparent 55%),
+        radial-gradient(700px 220px at 50% 90%, rgba(255,255,255,.06), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,0));
+      transform: rotate(8deg);
+      animation: bgFloat 10s ease-in-out infinite;
+      filter: blur(0.2px);
+      opacity: .9;
+    }
+    .bg-anim::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(120deg, transparent 30%, rgba(255,179,0,.06) 50%, transparent 70%);
+      animation: shimmer 6.5s ease-in-out infinite;
+      opacity: .7;
+    }
+    @keyframes bgFloat{
+      0%{ transform: translateY(0) rotate(8deg); }
+      50%{ transform: translateY(-14px) rotate(8deg); }
+      100%{ transform: translateY(0) rotate(8deg); }
+    }
+    @keyframes shimmer{
+      0%{ transform: translateX(-40%); }
+      50%{ transform: translateX(40%); }
+      100%{ transform: translateX(-40%); }
+    }
+
+    /* ===== Kaynana gözleri (animated) ===== */
+    .kaynana-eyes{
+      position:absolute;
+      top: 86px;
+      right: 14px;
+      width: 86px;
+      height: 46px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.25);
+      box-shadow: 0 18px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 10px;
+      padding: 10px;
+      pointer-events:none;
+      backdrop-filter: blur(6px);
+      opacity: .95;
+    }
+    .eye{
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.92);
+      position: relative;
+      overflow:hidden;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,.12);
+    }
+    .pupil{
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.80);
+      position:absolute;
+      top: 7px;
+      left: 7px;
+      animation: look 4.2s ease-in-out infinite;
+    }
+    .shine{
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.8);
+      position:absolute;
+      top: 4px; left: 6px;
+      opacity:.8;
+    }
+    /* göz kırpma */
+    .lid{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.18);
+      transform: translateY(-110%);
+      animation: blink 6.8s ease-in-out infinite;
+      border-radius: 50%;
+    }
+    @keyframes look{
+      0%{ transform: translateX(0); }
+      20%{ transform: translateX(4px); }
+      50%{ transform: translateX(-4px); }
+      80%{ transform: translateX(3px); }
+      100%{ transform: translateX(0); }
+    }
+    @keyframes blink{
+      0%, 92%, 100%{ transform: translateY(-110%); }
+      94%{ transform: translateY(0%); }
+      96%{ transform: translateY(-110%); }
+    }
+
+    /* ===== Premium kart ===== */
     .login-card{
       width: min(460px, 92vw);
       border-radius: 24px;
@@ -54,6 +173,8 @@
       flex-direction:column;
       align-items:center;
       gap: 12px;
+      position: relative;
+      z-index: 2;
     }
 
     .login-lead{
@@ -70,7 +191,7 @@
       justify-content:center;
       gap:10px;
       flex-wrap:wrap;
-      margin-top: 4px;
+      margin-top: 2px;
     }
     .trust-pill{
       display:flex;
@@ -96,11 +217,12 @@
     .trust-bullets{
       width:100%;
       text-align:left;
-      margin-top: 6px;
+      margin-top: 4px;
       color: rgba(255,255,255,.72);
       font-weight: 800;
       font-size: 12px;
       line-height: 1.45;
+      padding-left: 4px;
     }
     .trust-bullets li{
       list-style:none;
@@ -162,7 +284,7 @@
     }
     .btn-apple .amark{ font-size: 18px; line-height:1; }
 
-    /* ✅ GSI overlay: gerçek tıklanan iframe katmanı */
+    /* GSI overlay: gerçek tıklanan iframe katmanı */
     .google-wrap{
       position: relative;
       width: min(420px, 92vw);
@@ -174,7 +296,7 @@
       width:100%;
       height:100%;
       z-index: 50;
-      opacity: 0.01; /* görünmez ama tıklanır */
+      opacity: 0.01;
       cursor:pointer;
     }
     #googleBtnWrap iframe{
@@ -291,12 +413,14 @@
     }
     #termsAcceptBtn.enabled{ opacity:1; }
 
-    /* Mini güven notu */
-    .mini-note{
-      margin-top: 4px;
-      font-size: 11px;
-      font-weight: 800;
-      color: rgba(255,255,255,.55);
+    /* Tahtaravalli “idle” hareket (index özel) */
+    .brand-wrapper.idle .seesaw-bar{
+      animation: idleRock 2.6s ease-in-out infinite;
+    }
+    @keyframes idleRock{
+      0%{ transform: rotate(-3deg); }
+      50%{ transform: rotate(3deg); }
+      100%{ transform: rotate(-3deg); }
     }
   </style>
 </head>
@@ -305,11 +429,11 @@
 
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ✅ ÜST BAR (logo dizaynına dokunma) -->
+  <!-- ÜST BAR (logo dizaynı bozulmaz) -->
   <div class="topbar">
     <div class="left-controls"></div>
 
-    <div class="brand-wrapper" id="brandWrapper">
+    <div class="brand-wrapper idle" id="brandWrapper">
       <div class="logo-area">
         <svg class="seesaw-svg" viewBox="0 0 40 20" aria-hidden="true">
           <g class="seesaw-bar" id="seesawBar">
@@ -327,24 +451,35 @@
     <div class="right-controls"></div>
   </div>
 
-  <!-- ✅ ORTA ALAN -->
-  <div class="login-page">
+  <!-- GEL GEL ARKA PLAN + GÖZLER -->
+  <div class="login-stage">
+    <div class="bg-anim"></div>
+
+    <div class="kaynana-eyes" aria-hidden="true">
+      <div class="eye">
+        <div class="pupil"></div><div class="shine"></div><div class="lid"></div>
+      </div>
+      <div class="eye">
+        <div class="pupil"></div><div class="shine"></div><div class="lid"></div>
+      </div>
+    </div>
+
     <div class="login-card">
       <div class="login-lead">Üyelik Ücretsizdir.</div>
 
       <div class="trust-row">
         <div class="trust-pill"><span class="dot"></span> Güvenli giriş</div>
-        <div class="trust-pill"><span class="dot"></span> Kamera/Mikrofon izinle</div>
+        <div class="trust-pill"><span class="dot"></span> İzinle çalışır</div>
         <div class="trust-pill"><span class="dot"></span> Şeffaf gizlilik</div>
       </div>
 
       <ul class="trust-bullets">
         <li>Giriş sadece Google / Apple ile yapılır.</li>
-        <li>Hiçbir görüntü kaydedilmez; analiz anlıktır.</li>
-        <li>Dilediğin an Güvenli Çıkış yapabilirsin.</li>
+        <li>Görüntü/ses kaydedilmez; analiz anlıktır.</li>
+        <li>İstediğin an çıkış yapabilirsin.</li>
       </ul>
 
-      <!-- ✅ GOOGLE -->
+      <!-- GOOGLE -->
       <div class="google-wrap">
         <button class="btn-3d btn-google" id="googleLoginBtn" type="button">
           <span class="gmark">G</span> Google Hesabın İle Giriş Yap
@@ -352,16 +487,18 @@
         <div id="googleBtnWrap"></div>
       </div>
 
-      <!-- ✅ APPLE -->
+      <!-- APPLE -->
       <button class="btn-3d btn-apple" id="appleLoginBtn" type="button">
         <span class="amark"></span> Apple Hesabın İle Giriş Yap
       </button>
 
-      <div class="mini-note">Devam ederek Kullanıcı Sözleşmesi’ni onaylayacaksın.</div>
+      <div style="margin-top:4px;font-size:11px;font-weight:800;color:rgba(255,255,255,.55);">
+        Devam ederek Kullanıcı Sözleşmesi’ni onaylayacaksın.
+      </div>
     </div>
   </div>
 
-  <!-- ✅ ALT BAR -->
+  <!-- ALT BAR -->
   <div class="login-footerbar">
     <div class="login-links">
       <a href="/pages/about.html">Hakkımızda</a>
@@ -373,7 +510,7 @@
   </div>
 </div>
 
-<!-- ✅ SÖZLEŞME OVERLAY -->
+<!-- SÖZLEŞME OVERLAY -->
 <div class="full-overlay" id="termsOverlay">
   <div class="terms-card">
     <div class="terms-head">
@@ -385,7 +522,7 @@
 
     <div class="agreement">
       <div class="agree-row">
-        <input type="checkbox" id="termsCheck">
+        <input type="checkbox" id="termsCheck" />
         <label for="termsCheck">Onaylıyorum.</label>
       </div>
       <button id="termsAcceptBtn" type="button" disabled>Onayla ve Devam Et</button>
@@ -394,7 +531,7 @@
   </div>
 </div>
 
-<!-- ✅ Tek motor: auth.js -->
+<!-- Tek motor: auth.js -->
 <script type="module">
   import { STORAGE_KEY } from "/js/config.js";
   import { initAuth, acceptTerms, logout } from "/js/auth.js";
@@ -415,10 +552,12 @@
   }
   function goChat(){ window.location.replace("/pages/chat.html"); }
 
+  // Apple: aktif değil uyarı
   $("appleLoginBtn")?.addEventListener("click", () => {
     alert("Apple biraz nazlı çıktı evladım. Şimdilik Google hesabın ile giriş yap.");
   });
 
+  // Terms UI
   const termsOverlay = $("termsOverlay");
   const termsCheck = $("termsCheck");
   const termsAcceptBtn = $("termsAcceptBtn");
@@ -457,12 +596,23 @@
     if(ok) goChat();
   });
 
+  // User varsa: sözleşme kontrol
   if(hasUser()){
     if(hasAcceptedTerms()) goChat();
     else openTerms();
   }
 
+  // Google butonu render
   initAuth();
+
+  // Google butonuna basınca tahtaravalli daha canlı
+  const bw = $("brandWrapper");
+  const gBtn = $("googleLoginBtn");
+  if(gBtn && bw){
+    gBtn.addEventListener("pointerdown", ()=> bw.classList.add("thinking"));
+    gBtn.addEventListener("pointerup", ()=> bw.classList.remove("thinking"));
+    gBtn.addEventListener("pointercancel", ()=> bw.classList.remove("thinking"));
+  }
 </script>
 
 </body>
