@@ -4,323 +4,435 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Caynana Sohbet</title>
-
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/css/style.css?v=2">
-  <link rel="stylesheet" href="/css/layout-common.css?v=1">
-
   <style>
     /* =========================================
-       CHAT LAYOUT (Sıfırdan Düzenlendi)
+       GLOBAL & RESET
        ========================================= */
     :root {
-      --footerH: 60px;
-      --assistH: 85px;
-      --dockH: 80px;
-      --bg-dark: #000;
+      --bg-dark: #000000;
+      --panel-bg: #121212;
+      --accent: #FFB300; /* Caynana Sarısı */
+      --text-main: #ECECEC;
+      --text-sub: #999999;
+      --bubble-user: #222222;
+      --bubble-bot: #1A1A1A;
     }
-
-    body, html { background: var(--bg-dark); }
-
-    /* 1. Footer (En Altta) */
-    .footer-container {
-      position: fixed; bottom: 0; left: 0; width: 100%;
-      background: rgba(0,0,0,0.95); z-index: 2400;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    /* 2. Assistant Bar (Footer Üstü) */
-    .assistant-bar {
-      position: fixed; bottom: calc(var(--footerH) + env(safe-area-inset-bottom));
-      left: 0; width: 100%; height: var(--assistH);
-      z-index: 2500;
-      background: linear-gradient(to top, rgba(0,0,0,1) 10%, rgba(0,0,0,0));
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 0 10px; overflow-x: auto;
-    }
-
-    /* 3. Input Dock (En Üstte) */
-    .input-dock {
-      position: fixed; bottom: calc(var(--footerH) + var(--assistH) + env(safe-area-inset-bottom) + 10px);
-      left: 0; width: 100%; z-index: 2600;
-      display: flex; justify-content: center;
-      padding: 0 10px; pointer-events: none; /* Arkaya tıklanabilsin */
-    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     
-    .dock-inner {
-      pointer-events: auto;
-      width: 100%; max-width: 480px;
-      background: #121212;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 24px;
-      padding: 8px 12px;
-      display: flex; align-items: flex-end; gap: 8px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    body { background: var(--bg-dark); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; justify-content: center; }
+
+    .mobile-frame {
+      width: 100%; max-width: 480px; height: 100%; background: var(--bg-dark);
+      display: flex; flex-direction: column; position: relative;
+      box-shadow: 0 0 40px rgba(0,0,0,0.5);
     }
 
-    #msgInput {
-      flex: 1; max-height: 120px; padding: 10px 5px;
-      font-size: 15px; color: #fff; background: transparent;
-      border: none; outline: none; resize: none;
+    /* =========================================
+       TOPBAR
+       ========================================= */
+    .topbar {
+      flex: 0 0 60px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px; border-bottom: 1px solid rgba(255,255,255,0.08); z-index: 100;
+      background: rgba(0,0,0,0.95);
     }
+    .hamb-btn { background: none; border: none; font-size: 24px; color: #fff; cursor: pointer; }
+    
+    .brand-area { display: flex; flex-direction: column; align-items: center; }
+    .brand-logo { font-size: 16px; font-weight: 900; letter-spacing: 0.5px; color: #fff; display: flex; align-items: center; gap: 8px; }
+    .brand-slogan { font-size: 10px; color: var(--text-sub); font-weight: 500; }
+    
+    /* Tahtaravalli Animasyonu (SVG) */
+    .seesaw-svg { width: 30px; height: 16px; overflow: visible; }
+    .seesaw-bar { transform-origin: 15px 8px; transition: transform 0.3s cubic-bezier(0.4, 2.5, 0.6, 0.5); }
+    .seesaw-active .seesaw-bar { animation: rock 0.6s infinite alternate ease-in-out; }
+    @keyframes rock { from { transform: rotate(-10deg); } to { transform: rotate(10deg); } }
 
-    /* 4. Chat Alanı */
+    .right-icons { display: flex; gap: 12px; align-items: center; }
+    .icon-btn-top { background: none; border: none; color: #fff; cursor: pointer; position: relative; }
+    .badge { position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: #FF5252; border-radius: 50%; }
+    .plan-chip { font-size: 9px; font-weight: 900; background: rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; color: #ccc; }
+
+    /* =========================================
+       CHAT ALANI
+       ========================================= */
     .chat-area {
-      padding: 80px 16px 260px 16px !important; /* Alt boşluk çok önemli */
+      flex: 1; overflow-y: auto; padding: 20px 16px 20px; /* Alt boşluk JS ile dinamik de olabilir ama flex yapısı kurtarıyor */
       display: flex; flex-direction: column; gap: 16px;
-      overflow-y: auto; height: 100%;
+      scroll-behavior: smooth;
     }
+    .chat-area::-webkit-scrollbar { width: 4px; }
+    .chat-area::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 
-    /* Mesaj Balonları (Zeminsiz, Köşeli) */
-    .msg-row { display: flex; width: 100%; }
+    .msg-row { display: flex; width: 100%; animation: fadeIn 0.3s ease; }
     .msg-row.user { justify-content: flex-end; }
     .msg-row.bot { justify-content: flex-start; }
 
     .bubble {
-      max-width: 85%;
-      padding: 12px 16px;
-      border-radius: 20px;
-      font-size: 15px;
-      line-height: 1.5;
-      position: relative;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      max-width: 85%; padding: 12px 16px; border-radius: 20px;
+      font-size: 15px; line-height: 1.5; position: relative;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
-
     .bubble.user {
-      background: #222; color: #fff;
-      border-bottom-right-radius: 4px;
-      border-right: 3px solid #bef264;
+      background: var(--bubble-user); color: #fff;
+      border-bottom-right-radius: 4px; border-right: 3px solid #bef264;
     }
-
     .bubble.bot {
-      background: #181818; color: #ddd;
-      border-bottom-left-radius: 4px;
-      border-left: 3px solid #ffb300;
+      background: var(--bubble-bot); color: #ddd;
+      border-bottom-left-radius: 4px; border-left: 3px solid var(--accent);
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* =========================================
+       ALT BLOK (STACK)
+       ========================================= */
+    .bottom-stack {
+      flex: 0 0 auto; width: 100%; z-index: 200;
+      background: linear-gradient(to top, #000 90%, rgba(0,0,0,0));
+      padding-bottom: env(safe-area-inset-bottom);
+      display: flex; flex-direction: column; gap: 15px;
     }
 
-    /* PREMIUM İKONLAR (Assistant Bar) */
-    .assistant-item {
-      flex: 0 0 auto; display: flex; flex-direction: column; align-items: center;
-      gap: 4px; cursor: pointer; transition: transform 0.2s;
-      width: 60px;
+    /* 1. INPUT DOCK */
+    .input-wrapper {
+      padding: 0 12px; display: flex; justify-content: center;
     }
-    .assistant-item:active { transform: scale(0.95); }
+    .input-inner {
+      width: 100%; background: #1a1a1a; border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 28px; padding: 6px 8px; display: flex; align-items: flex-end; gap: 8px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5); transition: border-color 0.2s;
+    }
+    .input-inner:focus-within { border-color: var(--accent); }
 
-    .ico-wrap {
-      width: 42px; height: 42px; border-radius: 14px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      display: flex; align-items: center; justify-content: center;
-      transition: all 0.2s;
+    .dock-btn {
+      width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent;
+      color: #888; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: 0.2s; flex-shrink: 0;
     }
-    
-    .ico-wrap svg { width: 20px; height: 20px; stroke: #aaa; fill: none; stroke-width: 1.5; }
-    
-    /* Aktif İkon Parlasın */
-    .assistant-item[data-active="true"] .ico-wrap {
-      background: rgba(255,179,0,0.15); border-color: #ffb300;
-      box-shadow: 0 0 15px rgba(255,179,0,0.2);
-    }
-    .assistant-item[data-active="true"] svg { stroke: #ffb300; }
+    .dock-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
+    .dock-btn svg { width: 22px; height: 22px; stroke-width: 2; }
 
-    .lbl { font-size: 9px; font-weight: 700; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
-
-    /* Butonlar */
-    .icon-btn svg { width: 24px; height: 24px; stroke: #888; transition: .2s; }
-    .send-btn { 
-      background: #bef264; width: 42px; height: 42px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    #msgInput {
+      flex: 1; background: transparent; border: none; color: #fff; font-size: 15px;
+      padding: 10px 4px; max-height: 100px; resize: none; overflow-y: auto;
     }
-    .send-btn svg { stroke: #000; width: 20px; height: 20px; margin-left: -2px; margin-top: 2px; }
+    #msgInput::placeholder { color: #555; }
+
+    .send-btn {
+      background: var(--accent); color: #000; width: 40px; height: 40px; border-radius: 50%;
+      border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: transform 0.1s;
+    }
+    .send-btn:active { transform: scale(0.9); }
+    .send-btn svg { width: 20px; height: 20px; fill: none; stroke: #000; stroke-width: 2.5; margin-left: -2px; margin-top: 2px; }
+
+    /* 2. PREMIUM KOLAY MENÜ (YENİ İKONLAR) */
+    .assistant-bar {
+      display: flex; gap: 12px; overflow-x: auto; padding: 0 16px 10px;
+      scrollbar-width: none;
+    }
+    .assistant-bar::-webkit-scrollbar { display: none; }
+
+    .nav-item {
+      flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px;
+      cursor: pointer; opacity: 0.6; transition: 0.2s; width: 64px;
+    }
+    .nav-item.active, .nav-item:hover { opacity: 1; transform: translateY(-2px); }
+
+    .nav-icon {
+      width: 48px; height: 48px; border-radius: 16px;
+      background: #252525; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3); position: relative; overflow: hidden;
+    }
+    /* İkonlara hafif renk */
+    .nav-item:nth-child(1) .nav-icon { background: #FFB300; color: #000; } /* Sohbet - Sarı */
+    .nav-item:nth-child(2) .nav-icon { background: #E0E0E0; color: #333; } /* Alışveriş - Beyaz */
+    .nav-item:nth-child(3) .nav-icon { background: #424242; color: #ddd; } /* Fal - Gri */
+    .nav-item:nth-child(4) .nav-icon { background: #E0E0E0; color: #333; } /* Sağlık - Beyaz */
+    .nav-item:nth-child(5) .nav-icon { background: #424242; color: #ddd; } /* Diyet - Gri */
+
+    .nav-icon svg { width: 24px; height: 24px; fill: currentColor; }
+    .nav-label { font-size: 10px; font-weight: 700; color: #ccc; letter-spacing: 0.3px; }
+    .nav-item.active .nav-label { color: #fff; }
+
+    /* 3. FOOTER */
+    .footer {
+      border-top: 1px solid rgba(255,255,255,0.08); padding: 12px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px; background: #080808;
+    }
+    .footer-links { display: flex; gap: 15px; }
+    .footer-links a { font-size: 11px; color: #666; text-decoration: none; font-weight: 600; }
+    .footer-copy { font-size: 10px; color: #444; }
+
+    /* =========================================
+       MENU OVERLAY (SIDEBAR)
+       ========================================= */
+    .menu-overlay {
+      position: absolute; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000;
+      opacity: 0; pointer-events: none; transition: 0.3s;
+    }
+    .menu-overlay.open { opacity: 1; pointer-events: auto; }
+    .sidebar {
+      width: 280px; height: 100%; background: #111; position: absolute; left: 0; top: 0;
+      transform: translateX(-100%); transition: 0.3s; padding: 20px; overflow-y: auto;
+      border-right: 1px solid #333; display: flex; flex-direction: column; gap: 20px;
+    }
+    .menu-overlay.open .sidebar { transform: translateX(0); }
+
+    .menu-btn {
+      width: 100%; padding: 12px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px;
+    }
+    .btn-new-chat { background: #bef264; color: #000; }
+    .btn-profile { background: #ddd; color: #000; margin-top: 10px; }
+
+    .menu-section { border-top: 1px solid #222; padding-top: 15px; }
+    .menu-title { font-size: 11px; font-weight: 900; color: #666; margin-bottom: 10px; letter-spacing: 1px; }
+    .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .menu-item {
+      background: #1a1a1a; padding: 10px; border-radius: 10px; text-align: center;
+      cursor: pointer; border: 1px solid #222; transition: 0.2s;
+    }
+    .menu-item:active { background: #333; border-color: #444; }
+    .menu-item .ico { font-size: 18px; margin-bottom: 4px; }
+    .menu-item .txt { font-size: 11px; font-weight: 700; color: #ccc; }
+
   </style>
 </head>
-
 <body>
 
-<div class="mobile-frame" id="mobileFrame">
+<div class="mobile-frame">
 
   <div class="topbar">
-    <div class="left-controls">
-      <button class="hamb-btn" id="hambBtn">☰</button>
-    </div>
-    <div class="brand-wrapper" id="brandWrapper">
-      <div class="logo-area">
-        <svg class="seesaw-svg" viewBox="0 0 40 20"><g class="seesaw-bar"><line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2"/><circle cx="3" cy="5" r="3" fill="#bef264"/><circle cx="37" cy="5" r="3" fill="#ffb300"/></g><polygon points="17,14 23,14 20,8" fill="#666"/></svg>
-        <div class="brand-name">Caynana AI</div>
+    <button class="hamb-btn" id="hambBtn">☰</button>
+    <div class="brand-area">
+      <div class="brand-logo">
+        <svg class="seesaw-svg" viewBox="0 0 30 16">
+          <g class="seesaw-bar">
+            <line x1="0" y1="8" x2="30" y2="8" stroke="#888" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="2" cy="5" r="2.5" fill="#bef264"/>
+            <circle cx="28" cy="5" r="2.5" fill="#ffb300"/>
+          </g>
+          <polygon points="12,14 18,14 15,8" fill="#555"/>
+        </svg>
+        Caynana AI
       </div>
-      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+      <span class="brand-slogan">Yapay Zekânın Geleneksel Aklı</span>
     </div>
-    <div class="right-controls">
-      <div class="notif-row">
-        <div class="notif-topline">
-          <button class="icon-btn-top" id="notifBtn"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg><div class="badge" id="notifBadge"></div></button>
-          <div id="planChip" class="plan-chip">FREE</div>
-        </div>
-        <div class="yp-chip"><div class="yp-label"></div><div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div><div class="yp-num" id="ypNum">19%</div></div>
-      </div>
+    <div class="right-icons">
+      <div id="planChip" class="plan-chip">FREE</div>
+      <button class="icon-btn-top">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+        <div class="badge"></div>
+      </button>
     </div>
   </div>
 
   <div class="menu-overlay" id="menuOverlay">
-    <div class="menu-sidebar">
-      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
-      <div class="profile-shortcut-wrap">
-        <div class="profile-shortcut-btn" onclick="location.href='profil.html'">
-          <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
-          <div class="profile-shortcut-text"><div class="profile-shortcut-title">Profil Düzenle</div><div class="profile-shortcut-sub" id="profileShortcutName">—</div></div>
+    <div class="sidebar">
+      <button class="menu-btn btn-new-chat" onclick="location.reload()"><span>+</span> YENİ SOHBET</button>
+      <button class="menu-btn btn-profile" onclick="location.href='profil.html'"><span>👤</span> PROFİL DÜZENLE</button>
+      
+      <div class="menu-section">
+        <div class="menu-title">ASİSTAN</div>
+        <div class="menu-grid">
+          <div class="menu-item" onclick="location.href='chat.html'"><div class="ico">💬</div><div class="txt">Sohbet</div></div>
+          <div class="menu-item" onclick="location.href='translate.html'"><div class="ico">🛍️</div><div class="txt">Alışveriş</div></div>
+          <div class="menu-item" onclick="location.href='profil.html'"><div class="ico">🌍</div><div class="txt">Tercüman</div></div>
+          <div class="menu-item" onclick="location.href='gossip.html'"><div class="ico">☕</div><div class="txt">Dedikodu</div></div>
         </div>
       </div>
-      <div class="section-title">GEÇMİŞ SOHBETLER</div>
-      <div class="history-list" id="historyList"></div>
-      
-      <div class="menu-block asistan"><div class="block-head">ASİSTAN</div><div class="menu-grid">
-        <div class="menu-action" onclick="location.href='chat.html'"><div class="ico">💬</div><div>Sohbet</div></div>
-        <div class="menu-action" onclick="location.href='diyet.html'"><div class="ico">🥗</div><div>Diyet</div></div>
-        <div class="menu-action" onclick="location.href='health.html'"><div class="ico">❤️</div><div>Sağlık</div></div>
-      </div></div>
-      <div class="menu-block astro"><div class="block-head">ASTRO</div><div class="menu-grid">
-        <div class="menu-action" onclick="location.href='fal.html'"><div class="ico">☕</div><div>Fal</div></div>
-        <div class="menu-action" onclick="location.href='astro.html'"><div class="ico">♈</div><div>Burç</div></div>
-      </div></div>
-      <div class="menu-block kurumsal"><div class="block-head">KURUMSAL</div><div class="menu-grid">
-        <div class="menu-action" onclick="location.href='hakkimizda.html'"><div class="ico">ℹ️</div><div>Hakkımızda</div></div>
-        <div class="menu-action" onclick="location.href='iletisim.html'"><div class="ico">✉️</div><div>İletişim</div></div>
-      </div></div>
-      <div class="menu-footer-actions">
-        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
-        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
+      <div class="menu-section">
+        <div class="menu-title">ASTRO & FAL</div>
+        <div class="menu-grid">
+          <div class="menu-item" onclick="location.href='fal.html'"><div class="ico">☕</div><div class="txt">Fal</div></div>
+          <div class="menu-item" onclick="location.href='tarot.html'"><div class="ico">🃏</div><div class="txt">Tarot</div></div>
+          <div class="menu-item" onclick="location.href='astro.html'"><div class="ico">♈</div><div class="txt">Burç</div></div>
+        </div>
       </div>
+      <div class="menu-section">
+        <div class="menu-title">KURUMSAL</div>
+        <div class="menu-grid">
+          <div class="menu-item" onclick="location.href='hakkimizda.html'"><div class="ico">ℹ️</div><div class="txt">Hakkımızda</div></div>
+          <div class="menu-item" onclick="location.href='iletisim.html'"><div class="ico">✉️</div><div class="txt">İletişim</div></div>
+        </div>
+      </div>
+      <div style="margin-top:auto; text-align:center; font-size:10px; color:#444;">@CaynanaAI 2026</div>
     </div>
   </div>
 
   <div class="chat-area" id="chatArea">
     </div>
 
-  <div class="input-dock">
-    <div class="dock-inner">
-      <button class="icon-btn" id="plusBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/></svg></button>
-      <input type="file" id="fileInput" hidden>
-      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
-      <button class="icon-btn" id="micBtn"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
-      <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg></button>
+  <div class="bottom-stack">
+    
+    <div class="input-wrapper">
+      <div class="input-inner">
+        <button class="dock-btn" id="plusBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+        </button>
+        
+        <input type="file" id="fileInput" hidden>
+        
+        <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
+        
+        <button class="dock-btn" id="micBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        
+        <button class="send-btn" id="sendBtn">
+          <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
     </div>
-  </div>
 
-  <div class="assistant-bar">
-    <div class="assistant-item" data-go="chat.html" data-active="true"><div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg></div><div class="lbl">Sohbet</div></div>
-    <div class="assistant-item" data-go="translate.html"><div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div><div class="lbl">Alışveriş</div></div>
-    <div class="assistant-item" data-go="profil.html"><div class="ico-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div><div class="lbl">Tercüman</div></div>
-    <div class="assistant-item" data-go="gossip.html"><div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></div><div class="lbl">Dedikodu</div></div>
-    <div class="assistant-item" data-go="diyet.html"><div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 0 0 9-9c0-4.97-4.03-9-9-9-4.97 0-9 4.03-9 9 0 4.97 4.03 9 9 9z"/><path d="M12 3v9"/></svg></div><div class="lbl">Diyet</div></div>
-    <div class="assistant-item" data-go="health.html"><div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="lbl">Sağlık</div></div>
-    <div class="assistant-item" data-go="fal.html"><div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg></div><div class="lbl">Fal</div></div>
-    <div class="assistant-item" data-go="tarot.html"><div class="ico-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div><div class="lbl">Tarot</div></div>
-    <div class="assistant-item" data-go="astro.html"><div class="ico-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg></div><div class="lbl">Burç</div></div>
-  </div>
+    <div class="assistant-bar">
+      
+      <div class="nav-item active" onclick="location.href='chat.html'">
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div class="nav-label">Sohbet</div>
+      </div>
 
-  <div class="footer-container">
-    <div class="footer-links">
-      <a href="hakkimizda.html">Hakkımızda</a>
-      <a href="iletisim.html">İletişim</a>
+      <div class="nav-item" onclick="location.href='translate.html'">
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        </div>
+        <div class="nav-label">Alışveriş</div>
+      </div>
+
+      <div class="nav-item" onclick="location.href='fal.html'">
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
+        </div>
+        <div class="nav-label">Fal</div>
+      </div>
+
+      <div class="nav-item" onclick="location.href='health.html'">
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div class="nav-label">Sağlık</div>
+      </div>
+
+      <div class="nav-item" onclick="location.href='diyet.html'">
+        <div class="nav-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 0 0 9-9c0-4.97-4.03-9-9-9-4.97 0-9 4.03-9 9 0 4.97 4.03 9 9 9z"/><path d="M12 3v9"/></svg>
+        </div>
+        <div class="nav-label">Diyet</div>
+      </div>
+
     </div>
-    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
+
+    <div class="footer">
+      <div class="footer-links">
+        <a href="hakkimizda.html">Hakkımızda</a>
+        <a href="sss.html">SSS</a>
+        <a href="gizlilik.html">Gizlilik</a>
+        <a href="iletisim.html">İletişim</a>
+      </div>
+      <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
+    </div>
   </div>
 
 </div>
 
-<script type="module" src="/js/main.js"></script> 
-<script src="/js/layout-common.js?v=1"></script>
-
-<script type="module">
-  // ✅ ENTEGRE JS: Bu script "main.js" ile konuşacak
-  import { doSend } from '/js/main.js'; // main.js içinde doSend export edilmeli!
-
+<script>
   document.addEventListener("DOMContentLoaded", () => {
     
+    // Değişkenler
     const input = document.getElementById('msgInput');
     const sendBtn = document.getElementById('sendBtn');
     const chatArea = document.getElementById('chatArea');
-    const seesawBar = document.querySelector('.seesaw-bar');
+    const seesaw = document.querySelector('.seesaw-svg'); // Animasyon için
+    
+    // Hafıza (LocalStorage)
+    let memory = JSON.parse(localStorage.getItem('caynana_chat_memory') || '[]');
 
-    // UI'ya Mesaj Ekleme Fonksiyonu
-    window.appendMsgUI = function(text, type) {
-      const row = document.createElement('div');
-      row.className = `msg-row ${type}`;
-      
-      const bubble = document.createElement('div');
-      bubble.className = `bubble ${type}`;
-      bubble.textContent = text;
-      
-      row.appendChild(bubble);
-      chatArea.appendChild(row);
-      
-      // En alta kaydır
-      chatArea.scrollTop = chatArea.scrollHeight;
-    };
-
-    // Mesaj Gönderme
-    async function handleSend() {
-      const text = input.value.trim();
-      if (!text) return;
-
-      // 1. Kendi mesajını bas
-      appendMsgUI(text, 'user');
-      input.value = '';
-      input.style.height = 'auto'; // Input boyunu sıfırla
-
-      // 2. BACKEND'e Gönder (main.js'deki doSend fonksiyonu)
-      try {
-        if (typeof doSend === "function") {
-          // main.js mesajı sunucuya atar ve cevabı döndürür
-          await doSend(text); 
-        } else {
-          // Yedek (Eğer main.js bağlanamazsa)
-          console.warn("doSend fonksiyonu bulunamadı, simülasyon çalışıyor.");
-          setTimeout(() => appendMsgUI("Bağlantı hatası evladım.", 'bot'), 1000);
-        }
-      } catch (e) {
-        console.error("Mesaj hatası:", e);
-      }
+    // Eski mesajları yükle (Son 5)
+    if(memory.length > 0) {
+      memory.slice(-5).forEach(msg => appendMessageUI(msg.text, msg.sender));
     }
 
-    // Event Listeners
-    sendBtn.addEventListener('click', (e) => { e.preventDefault(); handleSend(); });
-    input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
-    });
-
-    // Tahtaravalli Hareketi
+    // --- Tahtaravalli Animasyonu ---
     input.addEventListener('input', () => {
-      if(input.value.length > 0) seesawBar.parentElement.classList.add("rocking");
-      else seesawBar.parentElement.classList.remove("rocking");
+      if(input.value.length > 0) seesaw.classList.add('seesaw-active');
+      else seesaw.classList.remove('seesaw-active');
       
+      // Auto-resize
       input.style.height = 'auto';
       input.style.height = (input.scrollHeight) + 'px';
     });
 
-    // Alt Menü Linkleri
-    document.querySelectorAll('.assistant-item').forEach(item => {
-      item.addEventListener('click', function() {
-        window.location.href = this.getAttribute('data-go');
-      });
-    });
+    // --- Mesaj Gönderme ---
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
 
-    // Hamburger
-    const h = document.getElementById("hambBtn");
-    const o = document.getElementById("menuOverlay");
-    if(h && o) {
-      h.onclick = () => o.classList.add("open");
-      o.onclick = (e) => { if(e.target === o) o.classList.remove("open"); }
+      // 1. User Mesajı
+      appendMessageUI(text, 'user');
+      saveToMemory(text, 'user');
+      
+      input.value = '';
+      input.style.height = 'auto';
+      seesaw.classList.remove('seesaw-active');
+
+      // 2. Bot Cevabı (Simüle edilmiş zeka + hafıza)
+      setTimeout(() => {
+        const reply = generateReply(text);
+        appendMessageUI(reply, 'bot');
+        saveToMemory(reply, 'bot');
+      }, 1000);
+    }
+
+    // Basit Cevap Üreteci (Backend olmadığında çalışır)
+    function generateReply(txt) {
+      const lower = txt.toLowerCase();
+      
+      // İsim Hafızası
+      if (lower.includes("adım") || lower.includes("ismim")) {
+        const name = txt.split(" ").pop(); // Son kelimeyi isim varsay
+        localStorage.setItem("userName", name);
+        return `Memnun oldum ${name} evladım. İsmini not ettim.`;
+      }
+      if (lower.includes("adım ne") || lower.includes("kimim ben")) {
+        const name = localStorage.getItem("userName");
+        return name ? `Senin adın ${name}, unutur muyum hiç?` : "Daha adını söylemedin ki evladım.";
+      }
+      
+      if (lower.includes("selam") || lower.includes("merhaba")) return "Aleyküm selam evladım, hoş geldin.";
+      if (lower.includes("nasılsın")) return "İyiyim çok şükür, sen nasılsın?";
+      if (lower.includes("diyet")) return "Diyet sayfasına bakıver, orda güzel listeler var.";
+      
+      return "Anladım evladım, haklısın. Başka ne var ne yok?";
+    }
+
+    function appendMessageUI(text, type) {
+      const row = document.createElement('div');
+      row.className = `msg-row ${type}`;
+      row.innerHTML = `<div class="bubble ${type}">${text}</div>`;
+      chatArea.appendChild(row);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function saveToMemory(text, sender) {
+      memory.push({ text, sender });
+      localStorage.setItem('caynana_chat_memory', JSON.stringify(memory));
+    }
+
+    // Event Listeners
+    sendBtn.onclick = (e) => { e.preventDefault(); sendMessage(); };
+    input.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }};
+
+    // Hamburger Menu
+    const hamb = document.getElementById("hambBtn");
+    const menu = document.getElementById("menuOverlay");
+    if(hamb && menu) {
+      hamb.onclick = () => menu.classList.add("open");
+      menu.onclick = (e) => { if(e.target === menu) menu.classList.remove("open"); }
     }
   });
 </script>
-
-<style>
-/* CSS içine ekle: Tahtaravalli animasyonu */
-.rocking { animation: rock-fast 0.5s infinite alternate ease-in-out !important; }
-@keyframes rock-fast { 0% { transform: rotate(-8deg); } 100% { transform: rotate(8deg); } }
-</style>
 
 </body>
 </html>
