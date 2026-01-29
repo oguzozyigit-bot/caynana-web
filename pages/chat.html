@@ -1,8 +1,10 @@
 <!-- FILE: /pages/chat.html
-     NOTLAR (sadece ilave/düzeltme yaptım, yapıyı bozmadım):
-     ✅ Üstte görünen “Bildirimler” yazısını kaldırdım (notifDropdown bloğunu chat.html’den çıkardım)
-     ✅ Chat alanı scroll çalışır (dokunma/teker kaydırma) + scrollbar gizli
-     ✅ Logo alanı tıklanınca /pages/chat.html’e döner
+     FULL (BOZMADAN + İLAVEYLE DÜZELTİLDİ)
+     1) ✅ Mesaj alanı scroll çalışır (dokunma/teker) + scrollbar gizli
+     2) ✅ Yazı penceresi daha geniş + alt bara yaklaşır (üst üste binmez)
+     3) ✅ + butonu: Camera / Fotoğraflar / Dosyalar seçeneği (çalışır)
+     4) ✅ Mikrofon: “dinliyor” hissi (renk/halo + placeholder) — main.js bozulmaz
+     5) ✅ Üstte “Bildirimler” yazısı: notifDropdown tamamen kaldırıldı
 -->
 <!DOCTYPE html>
 <html lang="tr">
@@ -18,10 +20,12 @@
   <style>
     /* ✅ STACK FIX (tek yerde, chat’e özel) */
     :root{
-      --frameW:min(480px, calc(100vw - 18px));
-      --footerH:64px;     /* footer toplam yüksekliği */
-      --assistH:78px;     /* alt bar yüksekliği */
-      --dockH:86px;       /* input yaklaşık */
+      --frameW: min(480px, calc(100vw - 18px));
+      --topH: 65px;
+      --footerH: 64px;
+      --assistH: 72px;  /* biraz incelttik */
+      --dockH: 74px;    /* input yaklaşık */
+      --gapH: 10px;     /* katmanlar arası min boşluk */
     }
 
     /* Footer frame içinde ve en altta */
@@ -40,33 +44,56 @@
     .assistant-bar{
       bottom: var(--footerH) !important;
       z-index: 2500 !important;
+      height: var(--assistH);
+      padding-top: 6px;
+      padding-bottom: 6px;
     }
 
-    /* Input dock: alt barın üstünde */
+    /* Input dock: alt barın üstünde (yaklaştırdık) */
     .input-dock{
       position: fixed !important;
       left: 50% !important;
       transform: translateX(-50%) !important;
       width: var(--frameW) !important;
-      bottom: calc(var(--footerH) + var(--assistH)) !important;
+      bottom: calc(var(--footerH) + var(--assistH) + var(--gapH)) !important;
       z-index: 2600 !important;
-      padding: 0 10px 8px !important;
+
+      padding: 0 10px 6px !important;
       background: transparent !important;
     }
 
-    /* Chat: hepsinin üstünde kalacak kadar padding */
-    .chat-area{
-      padding-bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + 20px) !important;
-      justify-content: flex-end !important;
+    /* Yazı penceresi: köşelere doğru genişlet */
+    .input-dock .dock-inner{
+      width: 100% !important;
+      max-width: none !important;
+    }
 
-      /* ✅ SCROLL ÇALIŞSIN */
+    /* ✅ Chat: gerçek yükseklik hesapla -> scroll %100 çalışır */
+    .chat-area{
+      /* üst bar ile input arasına kalan alan */
+      height: calc(
+        100dvh
+        - var(--topH)
+        - var(--footerH)
+        - var(--assistH)
+        - var(--dockH)
+        - (var(--gapH) * 2)
+      ) !important;
+
       overflow-y: auto !important;
       -webkit-overflow-scrolling: touch !important;
       touch-action: pan-y !important;
       overscroll-behavior: contain !important;
 
-      /* ✅ SCROLLBAR GİZLİ */
+      /* scrollbar gizli */
       scrollbar-width: none !important;
+
+      /* mesajlar altta biriksin */
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-end !important;
+
+      padding-bottom: 16px !important;
     }
     .chat-area::-webkit-scrollbar{ display:none !important; }
 
@@ -77,6 +104,76 @@
       white-space:normal !important;
       overflow:hidden !important;
       max-height:120px !important;
+    }
+
+    /* ✅ + menü sheet */
+    .plus-sheet{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--frameW);
+      bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + 18px);
+      z-index: 9999;
+
+      display: none;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 18px;
+
+      background: rgba(15,15,15,.96);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 18px 50px rgba(0,0,0,.60);
+      backdrop-filter: blur(10px);
+    }
+    .plus-sheet.show{ display:flex; }
+    .plus-action{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+      align-items:center;
+      justify-content:center;
+
+      padding: 10px 8px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      cursor:pointer;
+      user-select:none;
+      color: rgba(255,255,255,.86);
+      font-weight: 900;
+      font-size: 11px;
+      text-align:center;
+    }
+    .plus-action:active{ transform: translateY(-1px); }
+    .plus-ico{
+      width: 40px; height: 40px;
+      border-radius: 16px;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      font-size: 18px;
+    }
+
+    /* ✅ Mikrofon dinliyor efekti */
+    #micBtn.listening{
+      background: rgba(190,242,100,.16) !important;
+      border: 1px solid rgba(190,242,100,.35) !important;
+      box-shadow: 0 0 18px rgba(190,242,100,.18);
+      position: relative;
+    }
+    #micBtn.listening::after{
+      content:"";
+      position:absolute;
+      inset:-6px;
+      border-radius: 18px;
+      border: 1px solid rgba(190,242,100,.22);
+      animation: micPulse 1s ease-in-out infinite;
+    }
+    @keyframes micPulse{
+      0%{ transform: scale(1); opacity:.55; }
+      50%{ transform: scale(1.08); opacity:.25; }
+      100%{ transform: scale(1); opacity:.55; }
     }
   </style>
 </head>
@@ -90,7 +187,6 @@
       <button class="hamb-btn" id="hambBtn">☰</button>
     </div>
 
-    <!-- ✅ Logo tıklanınca ana sayfa (chat) -->
     <div class="brand-wrapper" id="brandWrapper" style="cursor:pointer" onclick="location.href='/pages/chat.html'">
       <div class="logo-area">
         <svg class="seesaw-svg" viewBox="0 0 40 20">
@@ -110,10 +206,7 @@
       <div class="notif-row">
         <div class="notif-topline">
           <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
-            <svg viewBox="0 0 24 24">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             <div class="badge" id="notifBadge"></div>
           </button>
           <div id="planChip" class="plan-chip">FREE</div>
@@ -125,7 +218,7 @@
           <div class="yp-num" id="ypNum">19%</div>
         </div>
 
-        <!-- ✅ “Bildirimler” yazısı burada çıkıyordu -> bu dropdown'u chat.html'den kaldırdım -->
+        <!-- ✅ notifDropdown kaldırıldı: “Bildirimler” yazısı çıkmasın -->
       </div>
     </div>
   </div>
@@ -178,22 +271,36 @@
         <svg viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
       </button>
 
-      <input type="file" id="fileInput" accept="image/*" hidden>
+      <!-- 3 farklı input: kamera / foto / dosya -->
+      <input type="file" id="fileCamera" accept="image/*" capture="environment" hidden>
+      <input type="file" id="filePhotos" accept="image/*" hidden>
+      <input type="file" id="fileFiles"  hidden>
 
       <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
 
       <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-          <line x1="12" y1="19" x2="12" y2="23"></line>
-          <line x1="8" y1="23" x2="16" y2="23"></line>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
       </button>
 
       <button class="send-btn" id="sendBtn" aria-label="Gönder">
         <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
       </button>
+    </div>
+  </div>
+
+  <!-- ✅ + menü seçenekleri -->
+  <div class="plus-sheet" id="plusSheet">
+    <div class="plus-action" id="pickCamera">
+      <div class="plus-ico">📷</div>
+      Kamera
+    </div>
+    <div class="plus-action" id="pickPhotos">
+      <div class="plus-ico">🖼️</div>
+      Fotoğraflar
+    </div>
+    <div class="plus-action" id="pickFiles">
+      <div class="plus-ico">📄</div>
+      Dosyalar
     </div>
   </div>
 
@@ -219,6 +326,121 @@
 
 <script type="module" src="/js/main.js"></script>
 <script src="/js/layout-common.js?v=1"></script>
+
+<script>
+  // ✅ Bu sayfaya özel: + menüsü ve mikrofon “dinliyor” hissi
+  document.addEventListener("DOMContentLoaded", () => {
+    const camBtn = document.getElementById("camBtn");
+    const plusSheet = document.getElementById("plusSheet");
+
+    const fileCamera = document.getElementById("fileCamera");
+    const filePhotos = document.getElementById("filePhotos");
+    const fileFiles  = document.getElementById("fileFiles");
+
+    const pickCamera = document.getElementById("pickCamera");
+    const pickPhotos = document.getElementById("pickPhotos");
+    const pickFiles  = document.getElementById("pickFiles");
+
+    const msgInput = document.getElementById("msgInput");
+    const micBtn = document.getElementById("micBtn");
+    const sendBtn = document.getElementById("sendBtn");
+
+    // + menüyü aç/kapat
+    function togglePlus(open){
+      if(!plusSheet) return;
+      plusSheet.classList.toggle("show", !!open);
+    }
+
+    if(camBtn){
+      camBtn.addEventListener("click", (e)=>{
+        e.preventDefault();
+        const isOpen = plusSheet && plusSheet.classList.contains("show");
+        togglePlus(!isOpen);
+      });
+    }
+
+    // dışarı tıklayınca kapat
+    document.addEventListener("click", (e)=>{
+      if(!plusSheet || !plusSheet.classList.contains("show")) return;
+      const insideSheet = plusSheet.contains(e.target);
+      const insideBtn = camBtn && camBtn.contains(e.target);
+      if(!insideSheet && !insideBtn) togglePlus(false);
+    }, true);
+
+    // seçimler
+    if(pickCamera && fileCamera){
+      pickCamera.addEventListener("click", ()=>{
+        togglePlus(false);
+        fileCamera.click();
+      });
+    }
+    if(pickPhotos && filePhotos){
+      pickPhotos.addEventListener("click", ()=>{
+        togglePlus(false);
+        filePhotos.click();
+      });
+    }
+    if(pickFiles && fileFiles){
+      pickFiles.addEventListener("click", ()=>{
+        togglePlus(false);
+        fileFiles.click();
+      });
+    }
+
+    // dosya seçilince: mevcut sistemin (main.js / fal.js) yakalaması için sadece event bırakıyoruz
+    // Ekstra bir şey yapmıyoruz, bozmuyoruz.
+    function onPick(){
+      // seçildiğinde + menüyü kapat
+      togglePlus(false);
+    }
+    if(fileCamera) fileCamera.addEventListener("change", onPick);
+    if(filePhotos) filePhotos.addEventListener("change", onPick);
+    if(fileFiles)  fileFiles.addEventListener("change", onPick);
+
+    // Mikrofon dinliyor hissi (main.js konuşmayı zaten yazıp gönderiyor)
+    let listenTimer = null;
+    function setListening(on){
+      if(!micBtn || !msgInput) return;
+      micBtn.classList.toggle("listening", !!on);
+      if(on){
+        msgInput.dataset.__oldph = msgInput.getAttribute("placeholder") || "";
+        msgInput.setAttribute("placeholder", "Dinliyorum evladım…");
+      }else{
+        const old = msgInput.dataset.__oldph || "Ne lazım evladım?";
+        msgInput.setAttribute("placeholder", old);
+      }
+    }
+
+    if(micBtn){
+      micBtn.addEventListener("click", ()=>{
+        // görsel hissiyat başlasın
+        setListening(true);
+
+        // 10 sn sonra otomatik kapat (main.js result gelince zaten mesaj gider)
+        clearTimeout(listenTimer);
+        listenTimer = setTimeout(()=> setListening(false), 10000);
+      });
+    }
+
+    // input dolarsa (speech yazdıysa) dinliyor efektini kapat
+    if(msgInput){
+      msgInput.addEventListener("input", ()=>{
+        if(String(msgInput.value||"").trim().length > 0){
+          setListening(false);
+          clearTimeout(listenTimer);
+        }
+      });
+    }
+
+    // gönderince de kapat
+    if(sendBtn){
+      sendBtn.addEventListener("click", ()=>{
+        setListening(false);
+        clearTimeout(listenTimer);
+      });
+    }
+  });
+</script>
 
 </body>
 </html>
