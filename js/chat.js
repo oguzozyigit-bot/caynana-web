@@ -1,8 +1,8 @@
 // FILE: /js/chat.js
-// FINAL+ (LOCAL NAME MEMORY + KAYNANA AUTO TOPIC OPENER + SCROLL-FRIENDLY AUTOFOLLOW)
-// ✅ Hiçbir şeyi eksiltmedim.
-// ✅ Sadece otomatik alta kaydırmayı "kullanıcı alttaysa" yapıyorum.
-// ✅ Kullanıcı yukarı kaydırınca artık zorlamıyor → scroll PC’de de çalışır.
+// FINAL++ (LOCAL NAME MEMORY + KAYNANA AUTO TOPIC OPENER + SCROLL-FRIENDLY AUTOFOLLOW + NO DOUBLE-REPLY)
+// ✅ Hiçbir özelliği eksiltmedim.
+// ✅ FIX: Çift cevap kökü → assistant cevabı ChatStore’a hemen yazılmıyor; typewriter bitmeye yakın gecikmeli yazılıyor.
+// ✅ Scroll: kullanıcı alttaysa auto-follow, yukarı çıktıysa zorlamaz.
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -102,8 +102,6 @@ async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 /* =========================================================
    ✅ SCROLL-FRIENDLY AUTOFOLLOW
-   - Kullanıcı alttaysa otomatik alta kaydır
-   - Kullanıcı yukarı çıktıysa ASLA zorlamaz (PC’de scroll kilidi biter)
    ========================================================= */
 function _isNearBottom(el, slack = 140) {
   try { return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack; }
@@ -151,6 +149,7 @@ export function typeWriter(text, elId = "chat") {
       setTimeout(type, 28);
     } else {
       div.removeEventListener("scroll", onScroll);
+      if (follow) _scrollToBottom(div);
     }
   })();
 }
@@ -249,6 +248,21 @@ function setKaynanaState(userId, st) {
   localStorage.setItem(k, JSON.stringify(st || {}));
 }
 
+/* =========================================================
+   ✅ DUPLICATE-REPLY FIX: assistant store yazımını geciktir
+   - typewriter bitmeye yakın yaz: out.length * 12ms (min 600ms, max 4500ms)
+   - böylece ChatStore event'i UI'yı double-render yapmaz
+   ========================================================= */
+function scheduleAssistantStoreWrite(outText){
+  try{
+    const s = String(outText || "");
+    const delay = Math.max(600, Math.min(4500, s.length * 12));
+    setTimeout(()=>{
+      try { ChatStore.add?.("assistant", s); } catch {}
+    }, delay);
+  }catch{}
+}
+
 export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistory = []) {
   const message = String(msg || "").trim();
   if (!message) return { text: "", error: true };
@@ -332,6 +346,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
   const mergedProfile = mergeProfiles(formProfile, memP);
   const ctx = buildProfileContextForKaynana(profile, memP);
 
+  // ✅ user message store hemen (başlık anında çıksın)
   try { ChatStore.add?.("user", message); } catch {}
 
   const historyForApi = (() => {
@@ -401,14 +416,20 @@ Kurallar: Memleket muhabbeti aç, kilo/boyla nazlı takıl, eş/çocuk isimleriy
     }
 
     const out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
-    try { ChatStore.add?.("assistant", out); } catch {}
+
+    // ✅ ÇİFT CEVAP FIX: assistant store yazımı gecikmeli
+    scheduleAssistantStoreWrite(out);
 
     const st2 = getKaynanaState(userId);
     if (Number(st2.stuckCount || 0) >= 2) {
       const opener = kaynanaOpener(ctx, hitapForKaynana);
       st2.stuckCount = 0;
       setKaynanaState(userId, st2);
-      return { text: `${out}\n\n${opener}` };
+
+      const mergedOut = `${out}\n\n${opener}`;
+      // opener ile birlikte de gecikmeli store yaz (tek kayıt olsun)
+      scheduleAssistantStoreWrite(mergedOut);
+      return { text: mergedOut };
     }
 
     return { text: out };
