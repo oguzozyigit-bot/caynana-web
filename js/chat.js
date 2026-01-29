@@ -1,9 +1,8 @@
 // FILE: /js/chat.js
-// FINAL++ (LOCAL NAME MEMORY + KAYNANA AUTO TOPIC OPENER + SCROLL-FRIENDLY AUTOFOLLOW + NO DOUBLE-REPLY)
+// FINAL++ (SCROLL TIMING FIX + LOCAL NAME MEMORY + KAYNANA AUTO TOPIC OPENER + NO DOUBLE-REPLY)
 // ✅ Hiçbir özelliği eksiltmedim.
-// ✅ FIX: Çift cevap kökü → assistant cevabı ChatStore’a hemen yazılmıyor; typewriter bitmeye yakın gecikmeli yazılıyor.
-// ✅ Scroll: kullanıcı alttaysa auto-follow, yukarı çıktıysa zorlamaz.
-// ✅ FIX: "Mesaj yazınca" (User bubble) artık her zaman en alta kaydırıyor (zorunlu scroll).
+// ✅ FIX: "Yazınca" (User Bubble) ve "Cevap Gelince" (Bot Bubble) scroll sorunu kesin çözüldü.
+// ✅ Scroll mekanizması artık DOM render edildikten hemen sonra tetikleniyor (Timeout/Frame garantisi).
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -102,22 +101,25 @@ function pickAssistantText(data) {
 async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 /* =========================================================
-   ✅ SCROLL-FRIENDLY AUTOFOLLOW
+   ✅ SCROLL-FRIENDLY AUTOFOLLOW (TIMING FIX)
    ========================================================= */
 function _isNearBottom(el, slack = 140) {
   try { return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack; }
   catch { return true; }
 }
+
 function _scrollToBottom(el) {
-  try { el.scrollTop = el.scrollHeight; } catch {}
+  // DOM güncellemesi sonrası çalışması için küçük bir gecikme (Next Tick)
+  setTimeout(() => {
+    try { el.scrollTop = el.scrollHeight; } catch {}
+  }, 10);
 }
 
-/* ✅ UI: bot bubble (history basarken - Akıllı Scroll) */
+/* ✅ UI: bot bubble (History basarken) */
 export function addBotBubble(text, elId="chat"){
   const div = document.getElementById(elId);
   if(!div) return;
 
-  // History basarken kullanıcı yukarıdaysa aşağı çekme
   const follow = _isNearBottom(div);
 
   const bubble = document.createElement("div");
@@ -128,12 +130,14 @@ export function addBotBubble(text, elId="chat"){
   if(follow) _scrollToBottom(div);
 }
 
-/* ✅ UI: typewriter (canlı cevap - Akıllı Scroll) */
+/* ✅ UI: typewriter (Canlı cevap) */
 export function typeWriter(text, elId = "chat") {
   const div = document.getElementById(elId);
   if (!div) return;
 
   let follow = _isNearBottom(div);
+  
+  // Kullanıcı manuel scroll yaparsa takibi bırak
   const onScroll = () => { follow = _isNearBottom(div); };
   div.addEventListener("scroll", onScroll, { passive:true });
 
@@ -141,13 +145,19 @@ export function typeWriter(text, elId = "chat") {
   bubble.className = "bubble bot";
   div.appendChild(bubble);
 
+  // Başlangıçta scroll'u aşağı it
+  if(follow) _scrollToBottom(div);
+
   const s = String(text || "");
   let i = 0;
 
   (function type() {
     if (i < s.length) {
       bubble.textContent += s.charAt(i++);
-      if (follow) _scrollToBottom(div);
+      if (follow) {
+          // Typewriter sırasında anlık scroll (RequestAnimationFrame ile daha akıcı)
+          requestAnimationFrame(() => { try { div.scrollTop = div.scrollHeight; } catch {} });
+      }
       setTimeout(type, 28);
     } else {
       div.removeEventListener("scroll", onScroll);
@@ -156,19 +166,17 @@ export function typeWriter(text, elId = "chat") {
   })();
 }
 
-/* ✅ UI: user bubble (Kullanıcı yazınca - Zorunlu Scroll) */
+/* ✅ UI: user bubble (Kullanıcı yazınca) */
 export function addUserBubble(text) {
   const div = document.getElementById("chat");
   if (!div) return;
 
-  // FIX: Kullanıcı mesaj yazdığında her zaman en alta in (Auto-scroll force)
-  // Kullanıcı eski mesajları okuyor olsa bile, kendi mesajını görmek ister.
-  
   const bubble = document.createElement("div");
   bubble.className = "bubble user";
   bubble.textContent = String(text || "");
   div.appendChild(bubble);
 
+  // ✅ KESİN ÇÖZÜM: Eleman eklendikten sonra rendering'in bitmesini bekle ve en alta vur.
   _scrollToBottom(div);
 }
 
@@ -253,8 +261,6 @@ function setKaynanaState(userId, st) {
 
 /* =========================================================
    ✅ DUPLICATE-REPLY FIX: assistant store yazımını geciktir
-   - typewriter bitmeye yakın yaz: out.length * 12ms (min 600ms, max 4500ms)
-   - böylece ChatStore event'i UI'yı double-render yapmaz
    ========================================================= */
 function scheduleAssistantStoreWrite(outText){
   try{
