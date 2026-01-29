@@ -10,141 +10,100 @@
   <link rel="stylesheet" href="../css/layout-common.css?v=1">
 
   <style>
-    /* ✅ STACK & LAYOUT FIX */
+    /* ✅ LAYOUT AYARLARI */
     :root{
       --frameW: min(480px, 100vw);
-      --footerH: 64px;      /* Footer yüksekliği */
-      --assistH: 78px;      /* Alt bar yüksekliği */
-      --dockH: 70px;        /* Input alanı yaklaşık yüksekliği */
+      --footerH: 64px;
+      --assistH: 80px; 
+      --dockH: 70px;
     }
 
     /* 1. Footer (En Altta) */
     .footer-container{
       position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
+      left: 50% !important; transform: translateX(-50%) !important;
       width: var(--frameW) !important;
-      bottom: 0 !important;
-      z-index: 2400 !important;
-      background: rgba(0,0,0,.95);
-      border-top: 1px solid rgba(255,255,255,.06);
+      bottom: 0 !important; z-index: 2400 !important;
+      background: #000; border-top: 1px solid rgba(255,255,255,.08);
       padding-bottom: env(safe-area-inset-bottom);
     }
 
-    /* 2. Assistant Bar (Footer'ın üstünde) */
+    /* 2. Assistant Bar (Footer Üstü) */
     .assistant-bar{
       position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
+      left: 50% !important; transform: translateX(-50%) !important;
       width: var(--frameW) !important;
       bottom: calc(var(--footerH) + env(safe-area-inset-bottom)) !important;
       z-index: 2500 !important;
-      background: linear-gradient(to top, #000 10%, transparent);
-      padding: 0 5px;
+      background: linear-gradient(to top, #000 30%, rgba(0,0,0,0));
+      padding: 10px 5px 5px 5px;
+      height: var(--assistH);
+      display: flex; align-items: center; gap: 8px; overflow-x: auto;
+      /* Scrollbar gizle */
+      scrollbar-width: none; -ms-overflow-style: none;
     }
+    .assistant-bar::-webkit-scrollbar { display: none; }
 
-    /* 3. Input Dock (Daha yukarıda ve geniş) */
+    /* 3. Input Dock (En Üstte - Geniş) */
     .input-dock{
       position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: 100% !important;
-      max-width: var(--frameW) !important;
-      /* ✅ İkonlara değmemesi için +15px boşluk eklendi */
-      bottom: calc(var(--footerH) + var(--assistH) + env(safe-area-inset-bottom) + 15px) !important;
+      left: 50% !important; transform: translateX(-50%) !important;
+      width: 100% !important; max-width: var(--frameW) !important;
+      /* İkonlara değmemesi için mesafe */
+      bottom: calc(var(--footerH) + var(--assistH) + env(safe-area-inset-bottom) + 5px) !important;
       z-index: 2600 !important;
-      padding: 0 6px !important; /* Kenar boşlukları azaltıldı, daha geniş */
+      padding: 0 4px !important; /* Kenarlara yanaştı */
       background: transparent !important;
-      display: flex;
-      justify-content: center;
+      display: flex; justify-content: center;
     }
 
     .dock-inner{
-      width: 98%; /* ✅ Neredeyse tam genişlik */
+      width: 100%; /* Tam genişlik */
       background: #1a1a1a;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 28px; /* Köşeler */
-      padding: 6px 10px;
-      display: flex;
-      align-items: flex-end;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 20px; /* Daha modern köşe */
+      padding: 8px 8px;
+      display: flex; align-items: flex-end; gap: 6px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
 
     #msgInput{
-      width: 100%;
-      max-height: 120px;
-      padding: 12px 10px;
-      font-size: 15px;
-      color: #fff;
-      background: transparent;
-      border: none;
-      outline: none;
-      resize: none;
+      width: 100%; max-height: 120px; padding: 10px 8px;
+      font-size: 15px; color: #fff; background: transparent;
+      border: none; outline: none; resize: none;
     }
 
-    /* 4. Chat Alanı */
+    /* 4. Chat Alanı (Boşluk Ayarı) */
     .chat-area{
-      padding: 80px 15px calc(var(--footerH) + var(--assistH) + var(--dockH) + 40px) 15px !important;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      overflow-y: auto;
-      min-height: 100%;
+      /* Alt boşluğu artırdık ki mesajlar input altında kalmasın */
+      padding: 80px 16px 240px 16px !important;
+      display: flex; flex-direction: column; gap: 14px;
+      overflow-y: auto; min-height: 100%;
+      scroll-behavior: smooth;
     }
 
-    /* Mesaj Balonları CSS (Chat içinde görünmesi için) */
-    .msg-row { display: flex; width: 100%; margin-bottom: 4px; }
-    .msg-row.user { justify-content: flex-end; }
-    .msg-row.bot { justify-content: flex-start; }
-
-    .bubble {
-      max-width: 80%;
-      padding: 10px 14px;
-      border-radius: 18px;
-      font-size: 14px;
-      line-height: 1.4;
-      position: relative;
-      word-wrap: break-word;
-    }
-    .bubble.user {
-      background: #222;
-      color: #fff;
-      border-bottom-right-radius: 4px;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-right: 3px solid #bef264; /* Yeşil vurgu */
-    }
-    .bubble.bot {
-      background: #151515;
-      color: #ddd;
-      border-bottom-left-radius: 4px;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-left: 3px solid #ffb300; /* Turuncu vurgu */
-    }
-
-    /* Butonlar */
-    .icon-btn svg { width: 24px; height: 24px; stroke: #888; transition: .2s; }
-    .icon-btn:hover svg { stroke: #fff; }
-    
-    .send-btn { 
-      background: var(--pistachio, #bef264); 
-      width: 40px; height: 40px; 
-      border-radius: 50%; 
+    /* Modern İkonlar */
+    .ico-wrap {
+      width: 44px; height: 44px; border-radius: 14px;
+      background: rgba(255,255,255,0.06);
       display: flex; align-items: center; justify-content: center;
-      margin-left: 6px;
-      flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.2s;
     }
-    .send-btn svg { stroke: #000; fill: none; width: 20px; height: 20px; margin-left: -2px; margin-top: 2px; } /* Optik dengeleme */
-
-    /* Menü İçi */
-    .menu-sidebar { padding-bottom: 80px; }
-    .history-del { cursor: pointer; }
+    .ico-wrap svg { width: 22px; height: 22px; fill: #aaa; transition: all 0.2s; }
     
-    /* Aktif sayfa ikonu */
+    .assistant-item:active .ico-wrap, 
     .assistant-item[data-active="true"] .ico-wrap {
-      background: rgba(255, 179, 0, 0.15);
-      border-color: rgba(255, 179, 0, 0.4);
-      color: #ffb300;
-      box-shadow: 0 0 10px rgba(255,179,0,0.1);
+      background: rgba(255,179,0,0.15); border-color: #ffb300;
+    }
+    .assistant-item[data-active="true"] svg { fill: #ffb300; }
+    .lbl { font-size: 10px; margin-top: 4px; color: #888; font-weight: 600; text-align: center; }
+
+    /* Sallanma Animasyonu (Yazarken) */
+    .rocking { animation: rock-fast 0.5s infinite alternate ease-in-out !important; }
+    @keyframes rock-fast { 
+      0% { transform: rotate(-8deg); } 
+      100% { transform: rotate(8deg); } 
     }
   </style>
 </head>
@@ -158,7 +117,7 @@
       <button class="hamb-btn" id="hambBtn">☰</button>
     </div>
 
-    <div class="brand-wrapper" id="brandWrapper">
+    <div class="brand-wrapper">
       <div class="logo-area">
         <svg class="seesaw-svg" viewBox="0 0 40 20">
           <g class="seesaw-bar" id="seesawBar">
@@ -176,22 +135,16 @@
     <div class="right-controls">
       <div class="notif-row">
         <div class="notif-topline">
-          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+          <button class="icon-btn-top" id="notifBtn">
             <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
             <div class="badge" id="notifBadge"></div>
           </button>
           <div id="planChip" class="plan-chip">FREE</div>
         </div>
-
         <div class="yp-chip">
-          <div class="yp-label">SAMİMİYET</div>
+          <div class="yp-label"></div>
           <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
           <div class="yp-num" id="ypNum">19%</div>
-        </div>
-
-        <div class="notification-dropdown" id="notifDropdown">
-          <div class="notif-header">Bildirimler</div>
-          <div class="notif-list" id="notifList"></div>
         </div>
       </div>
     </div>
@@ -200,9 +153,8 @@
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
-
-      <div class="profile-shortcut-wrap" id="profileShortcutMount">
-        <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='profil.html'">
+      <div class="profile-shortcut-wrap">
+        <div class="profile-shortcut-btn" onclick="location.href='profil.html'">
           <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
           <div class="profile-shortcut-text">
             <div class="profile-shortcut-title">Profil Düzenle</div>
@@ -210,49 +162,32 @@
           </div>
         </div>
       </div>
-
       <div class="section-title">GEÇMİŞ SOHBETLER</div>
       <div class="history-list" id="historyList"></div>
+      
+      <div class="menu-block asistan"><div class="block-head">ASİSTAN AI</div><div class="menu-grid">
+        <div class="menu-action" onclick="location.href='chat.html'"><div class="ico">💬</div><div>Sohbet</div></div>
+        <div class="menu-action" onclick="location.href='translate.html'"><div class="ico">🛍️</div><div>Alışveriş</div></div>
+        <div class="menu-action" onclick="location.href='profil.html'"><div class="ico">🌍</div><div>Tercüman</div></div>
+        <div class="menu-action" onclick="location.href='gossip.html'"><div class="ico">☕</div><div>Dedikodu</div></div>
+        <div class="menu-action" onclick="location.href='diyet.html'"><div class="ico">🥗</div><div>Diyet</div></div>
+        <div class="menu-action" onclick="location.href='health.html'"><div class="ico">❤️</div><div>Sağlık</div></div>
+      </div></div>
 
-      <div class="menu-block asistan">
-        <div class="block-head">ASİSTAN AI</div>
-        <div class="menu-grid">
-          <div class="menu-action" onclick="location.href='chat.html'"><div class="ico">💬</div><div><div>Sohbet</div></div></div>
-          <div class="menu-action" onclick="location.href='translate.html'"><div class="ico">🛍️</div><div><div>Alışveriş</div></div></div>
-          <div class="menu-action" onclick="location.href='profil.html'"><div class="ico">🌍</div><div><div>Tercüman</div></div></div>
-          <div class="menu-action" onclick="location.href='gossip.html'"><div class="ico">☕</div><div><div>Dedikodu</div></div></div>
-          <div class="menu-action" onclick="location.href='diyet.html'"><div class="ico">🥗</div><div><div>Diyet</div></div></div>
-          <div class="menu-action" onclick="location.href='health.html'"><div class="ico">❤️</div><div><div>Sağlık</div></div></div>
-          <div class="menu-action hidden" id="menuRegl" onclick="location.href='regl.html'"><div class="ico">🩸</div><div><div>Regl Takip</div></div></div>
-          <div class="menu-action" onclick="location.href='specialdays.html'"><div class="ico">🎉</div><div><div>Özel Günler</div></div></div>
-          <div class="menu-action" onclick="location.href='clup.html'"><div class="ico">⚽</div><div><div>Takımım</div></div></div>
-        </div>
-      </div>
+      <div class="menu-block astro"><div class="block-head">ASTRO AI</div><div class="menu-grid">
+        <div class="menu-action" onclick="location.href='fal.html'"><div class="ico">☕</div><div>Kahve Falı</div></div>
+        <div class="menu-action" onclick="location.href='tarot.html'"><div class="ico">🃏</div><div>Tarot</div></div>
+        <div class="menu-action" onclick="location.href='dream.html'"><div class="ico">🌙</div><div>Rüya</div></div>
+        <div class="menu-action" onclick="location.href='astro.html'"><div class="ico">♈</div><div>Burç</div></div>
+      </div></div>
 
-      <div class="menu-block astro">
-        <div class="block-head">ASTRO AI</div>
-        <div class="menu-grid">
-          <div class="menu-action" onclick="location.href='fal.html'"><div class="ico">☕</div><div><div>Kahve Falı</div></div></div>
-          <div class="menu-action" onclick="location.href='tarot.html'"><div class="ico">🃏</div><div><div>Tarot</div></div></div>
-          <div class="menu-action" onclick="location.href='dream.html'"><div class="ico">🌙</div><div><div>Rüya Tabiri</div></div></div>
-          <div class="menu-action" onclick="location.href='astro.html'"><div class="ico">♈</div><div><div>Günlük Burç</div></div></div>
-        </div>
-      </div>
-
-      <div class="menu-block kurumsal">
-        <div class="block-head">KURUMSAL AI</div>
-        <div class="menu-grid">
-          <div class="menu-action" onclick="location.href='membership.html'"><div class="ico">🪪</div><div><div>Üyelik</div></div></div>
-          <div class="menu-action" onclick="location.href='hakkimizda.html'"><div class="ico">ℹ️</div><div><div>Hakkımızda</div></div></div>
-          <div class="menu-action" onclick="location.href='sss.html'"><div class="ico">❓</div><div><div>SSS</div></div></div>
-          <div class="menu-action" onclick="location.href='gizlilik.html'"><div class="ico">🔒</div><div><div>Gizlilik</div></div></div>
-          <div class="menu-action" onclick="location.href='iletisim.html'"><div class="ico">✉️</div><div><div>İletişim</div></div></div>
-        </div>
-      </div>
+      <div class="menu-block kurumsal"><div class="block-head">KURUMSAL</div><div class="menu-grid">
+        <div class="menu-action" onclick="location.href='hakkimizda.html'"><div class="ico">ℹ️</div><div>Hakkımızda</div></div>
+        <div class="menu-action" onclick="location.href='iletisim.html'"><div class="ico">✉️</div><div>İletişim</div></div>
+      </div></div>
 
       <div class="menu-footer-actions">
-        <div class="action-link" id="logoutBtn" style="background:#2a2a2a; color:#ccc;">🛡️ Güvenli Çıkış</div>
-        <div class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</div>
+        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
         <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
       </div>
     </div>
@@ -263,42 +198,60 @@
 
   <div class="input-dock">
     <div class="dock-inner">
-      <button class="icon-btn" id="plusBtn" aria-label="Dosya Ekle">
-        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-      
+      <button class="icon-btn" id="plusBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/></svg></button>
       <input type="file" id="fileInput" accept="image/*" hidden>
-
       <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
-
-      <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
-        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-      </button>
-
-      <button class="send-btn" id="sendBtn" aria-label="Gönder">
-        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
-      </button>
+      <button class="icon-btn" id="micBtn"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg></button>
+      <button class="send-btn" id="sendBtn"><svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg></button>
     </div>
   </div>
 
   <div class="assistant-bar" id="assistantBar">
-    <div class="assistant-item" data-go="chat.html" data-active="true"><div class="ico-wrap">💬</div><div class="lbl">Sohbet</div></div>
-    <div class="assistant-item" data-go="translate.html"><div class="ico-wrap">🛍️</div><div class="lbl">Alışveriş</div></div>
-    <div class="assistant-item" data-go="profil.html"><div class="ico-wrap">🌍</div><div class="lbl">Tercüman</div></div>
-    <div class="assistant-item" data-go="gossip.html"><div class="ico-wrap">☕</div><div class="lbl">Dedikodu</div></div>
-    <div class="assistant-item" data-go="diyet.html"><div class="ico-wrap">🥗</div><div class="lbl">Diyet</div></div>
-    <div class="assistant-item" data-go="health.html"><div class="ico-wrap">❤️</div><div class="lbl">Sağlık</div></div>
-    <div class="assistant-item" data-go="fal.html"><div class="ico-wrap">☕</div><div class="lbl">Fal</div></div>
-    <div class="assistant-item" data-go="tarot.html"><div class="ico-wrap">🃏</div><div class="lbl">Tarot</div></div>
-    <div class="assistant-item" data-go="dream.html"><div class="ico-wrap">🌙</div><div class="lbl">Rüya</div></div>
-    <div class="assistant-item" data-go="astro.html"><div class="ico-wrap">♈</div><div class="lbl">Burç</div></div>
+    <div class="assistant-item" data-go="chat.html" data-active="true">
+      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg></div>
+      <div class="lbl">Sohbet</div>
+    </div>
+    <div class="assistant-item" data-go="translate.html">
+      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z"/></svg></div>
+      <div class="lbl">Alışveriş</div>
+    </div>
+    <div class="assistant-item" data-go="profil.html">
+      <div class="ico-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+      <div class="lbl">Tercüman</div>
+    </div>
+    <div class="assistant-item" data-go="gossip.html">
+      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+      <div class="lbl">Dedikodu</div>
+    </div>
+    <div class="assistant-item" data-go="diyet.html">
+      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 0 0 9-9c0-4.97-4.03-9-9-9-4.97 0-9 4.03-9 9 0 4.97 4.03 9 9 9z"/><path d="M12 3v9"/></svg></div>
+      <div class="lbl">Diyet</div>
+    </div>
+    <div class="assistant-item" data-go="health.html">
+      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+      <div class="lbl">Sağlık</div>
+    </div>
+    <div class="assistant-item" data-go="fal.html">
+      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg></div>
+      <div class="lbl">Fal</div>
+    </div>
+    <div class="assistant-item" data-go="tarot.html">
+      <div class="ico-wrap"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/></svg></div>
+      <div class="lbl">Tarot</div>
+    </div>
+    <div class="assistant-item" data-go="dream.html">
+      <div class="ico-wrap"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
+      <div class="lbl">Rüya</div>
+    </div>
+    <div class="assistant-item" data-go="astro.html">
+      <div class="ico-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2v20M2 12h20"/></svg></div>
+      <div class="lbl">Burç</div>
+    </div>
   </div>
 
   <div class="footer-container">
     <div class="footer-links">
       <a href="hakkimizda.html">Hakkımızda</a>
-      <a href="sss.html">SSS</a>
-      <a href="gizlilik.html">Gizlilik</a>
       <a href="iletisim.html">İletişim</a>
     </div>
     <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
@@ -307,109 +260,102 @@
 </div>
 
 <script type="module" src="../js/main.js"></script>
-<script src="../js/layout-common.js?v=1"></script>
-
 <script>
-  // ✅ MESAJ GÖNDERME MANTIĞI
+  // ✅ ENTEGRE JS (Memory & Logic)
   document.addEventListener("DOMContentLoaded", () => {
     
-    // Değişkenler
+    // --- Değişkenler ---
     const input = document.getElementById('msgInput');
     const sendBtn = document.getElementById('sendBtn');
     const chatArea = document.getElementById('chatArea');
-    const plusBtn = document.getElementById('plusBtn');
-    const fileInput = document.getElementById('fileInput');
-    const micBtn = document.getElementById('micBtn');
+    const seesawBar = document.querySelector('.seesaw-bar');
+    
+    // Basit Hafıza (Sayfa yenilenene kadar tutar, kalıcı olması için backend lazım)
+    let chatHistory = []; 
 
-    // 1. Mesajı Ekrana Basan Fonksiyon
-    function addMessageUI(text, type = 'user') {
-      const row = document.createElement('div');
-      row.className = `msg-row ${type}`;
-      
-      const bubble = document.createElement('div');
-      bubble.className = `bubble ${type}`;
-      bubble.textContent = text;
-      
-      row.appendChild(bubble);
-      chatArea.appendChild(row);
-      
-      // En alta kaydır
-      chatArea.scrollTop = chatArea.scrollHeight;
-    }
+    // --- Tahtaravalli Hareketi ---
+    input.addEventListener('input', () => {
+      if(input.value.length > 0) {
+        seesawBar.style.animation = "none"; // Mevcut animasyonu durdur
+        seesawBar.parentElement.classList.add("rocking"); // Sallanma class ekle
+      } else {
+        seesawBar.parentElement.classList.remove("rocking");
+      }
+      input.style.height = 'auto';
+      input.style.height = (input.scrollHeight) + 'px';
+    });
 
-    // 2. Gönderme İşlemi
-    async function handleSend() {
+    // --- Mesaj Gönderme ---
+    async function sendMessage() {
       const text = input.value.trim();
       if (!text) return;
 
-      // a) User mesajını bas
-      addMessageUI(text, 'user');
+      // User Mesajı
+      appendMessage(text, 'user');
+      chatHistory.push({ role: "user", content: text }); // Hafızaya ekle
       input.value = '';
-      input.style.height = 'auto'; // Input boyunu sıfırla
+      input.style.height = 'auto';
+      seesawBar.parentElement.classList.remove("rocking");
 
-      // b) Bot cevabı (Simülasyon veya main.js bağlantısı)
-      // Burada main.js içindeki gerçek fonksiyona bağlayabiliriz.
-      // Şimdilik görsel olarak "Caynana yazıyor..." efekti verelim:
+      // Bot Yanıtı (Simüle edilmiş zeka)
       setTimeout(() => {
-        addMessageUI("Tamam evladım, anladım seni. Bakalım ne yapabiliriz...", 'bot');
-      }, 800);
+        let reply = "Ne dediğini tam anlamadım evladım.";
+        
+        // Basit Anahtar Kelime Kontrolü
+        const lowText = text.toLowerCase();
+        if(lowText.includes("adım")) {
+          const name = text.split("adım").pop().trim();
+          localStorage.setItem("userName", name); // Tarayıcıya kaydet
+          reply = `Memnun oldum ${name} evladım. İsmini bir kenara yazdım.`;
+        } 
+        else if(lowText.includes("adımı biliyor musun") || lowText.includes("adım ne")) {
+          const savedName = localStorage.getItem("userName");
+          if(savedName) reply = `Tabii biliyorum, senin adın ${savedName} değil mi?`;
+          else reply = "Daha adını söylemedin ki evladım, bir tanışalım önce.";
+        }
+        else if(lowText.includes("nasılsın")) {
+          reply = "İyiyim evladım, sen nasılsın? Keyifler yerinde mi?";
+        }
+
+        appendMessage(reply, 'bot');
+        chatHistory.push({ role: "assistant", content: reply });
+      }, 1000);
     }
 
-    // 3. Olay Dinleyicileri (Event Listeners)
-    
-    // Tıkla Gönder
-    sendBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      handleSend();
-    });
+    function appendMessage(text, sender) {
+      const div = document.createElement('div');
+      div.className = `msg-row ${sender}`;
+      div.innerHTML = `<div class="bubble ${sender}">${text}</div>`;
+      chatArea.appendChild(div);
+      // En alta kaydır (Önemli!)
+      setTimeout(() => chatArea.scrollTop = chatArea.scrollHeight, 50); 
+    }
 
-    // Enter'a Basınca Gönder (Shift+Enter alt satıra geçer)
+    // --- Event Listeners ---
+    sendBtn.addEventListener('click', (e) => { e.preventDefault(); sendMessage(); });
+    
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
+      if(e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        handleSend();
+        sendMessage();
       }
     });
 
-    // Input büyüdükçe kutu büyüsün
-    input.addEventListener('input', function() {
-      this.style.height = 'auto';
-      this.style.height = (this.scrollHeight) + 'px';
+    // Alt Bar Yönlendirme
+    document.querySelectorAll('.assistant-item').forEach(item => {
+      item.addEventListener('click', function() {
+        const link = this.getAttribute('data-go');
+        if(link) window.location.href = link;
+      });
     });
 
-    // Diğer Butonlar (Simülasyon)
-    plusBtn.addEventListener('click', () => fileInput.click());
-    micBtn.addEventListener('click', () => alert("Mikrofon yakında aktif olacak evladım!"));
-
-    // 4. Hamburger Menü & Overlay (Yedek Logic)
+    // Menü Açma
     const hamb = document.getElementById("hambBtn");
     const overlay = document.getElementById("menuOverlay");
     if(hamb && overlay){
       hamb.onclick = () => overlay.classList.add("open");
       overlay.onclick = (e) => { if(e.target === overlay) overlay.classList.remove("open"); }
     }
-
-    // 5. Profil Bilgileri (LocalStorage'dan)
-    try {
-      const u = JSON.parse(localStorage.getItem("caynana_user_v1") || "{}");
-      const pic = u.picture || u.avatar || u.avatar_url;
-      const name = u.fullname || u.name || "—";
-      
-      const ico = document.getElementById("profileShortcutIco");
-      if(ico && pic) ico.innerHTML = `<img src="${pic}" alt="avatar">`;
-      
-      const nm = document.getElementById("profileShortcutName");
-      if(nm) nm.textContent = name;
-    } catch(e) {}
-
-    // 6. Alt Bar Yönlendirme
-    document.querySelectorAll('.assistant-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const link = item.getAttribute('data-go');
-        if(link) window.location.href = link;
-      });
-    });
-
   });
 </script>
 
