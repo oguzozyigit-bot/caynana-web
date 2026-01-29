@@ -1,5 +1,8 @@
-// js/chat_page.js (FINAL - ChatGPT UI sayfası controller)
-// Gerekenler: /js/chat.js, /js/chat_store.js
+// FILE: /js/chat_page.js
+// FINAL (SCROLL FIX + AUTO-FOLLOW)
+// ✅ Scroll artık “kilitlenmez”
+// ✅ WhatsApp mantığı: Kullanıcı alttaysa otomatik takip, yukarı çıktıysa bırak
+// ✅ Dosya ekleme + mic + history aynı şekilde çalışır
 
 import { fetchTextResponse } from "./chat.js";
 import { ChatStore } from "./chat_store.js";
@@ -31,18 +34,40 @@ const fileName = $("fileName");
 let pendingFile = null;
 
 // ------------------------
-// UI helpers
+// ✅ SCROLL FIX (AUTO-FOLLOW)
 // ------------------------
-function scrollBottom() {
-  messages.scrollTop = messages.scrollHeight;
+let follow = true;
+
+function isNearBottom(slack = 140) {
+  try {
+    return (messages.scrollHeight - messages.scrollTop - messages.clientHeight) < slack;
+  } catch {
+    return true;
+  }
 }
 
+if (messages) {
+  messages.addEventListener("scroll", () => {
+    follow = isNearBottom();
+  }, { passive: true });
+}
+
+function scrollBottom(force = false) {
+  if (!messages) return;
+  if (force || follow) {
+    messages.scrollTop = messages.scrollHeight;
+  }
+}
+
+// ------------------------
+// UI helpers
+// ------------------------
 function bubble(role, text) {
   const div = document.createElement("div");
   div.className = `bubble ${role === "user" ? "user" : "bot"}`;
   div.textContent = text;
   messages.appendChild(div);
-  scrollBottom();
+  scrollBottom(false);
   return div;
 }
 
@@ -55,7 +80,7 @@ function typingIndicator() {
     </span>
   `;
   messages.appendChild(div);
-  scrollBottom();
+  scrollBottom(false);
   return div;
 }
 
@@ -111,7 +136,6 @@ function loadCurrentChat() {
   const h = ChatStore.history() || [];
 
   if (h.length === 0) {
-    // welcome (asistan otomatik mesaj yazmaz)
     messages.innerHTML = `
       <div style="text-align:center; margin-top:20vh; color:#444;">
         <i class="fa-solid fa-comments" style="font-size:48px; margin-bottom:20px; color:#333;"></i>
@@ -119,10 +143,15 @@ function loadCurrentChat() {
         <p style="font-size:13px; color:#666; margin-top:10px;">Sen sor, ben hallederim.</p>
       </div>
     `;
+    // boş sayfada da altta takip açık kalsın
+    follow = true;
     return;
   }
 
   h.forEach((m) => bubble(m.role, m.content));
+  // geçmiş yüklenince en alta git (force)
+  follow = true;
+  scrollBottom(true);
 }
 
 function storeHistoryAsRoleContent() {
@@ -217,6 +246,9 @@ async function send() {
   ChatStore.add("assistant", reply);
 
   renderHistory();
+
+  // ✅ Mesaj sonrası: eğer kullanıcı alttaysa takip, değilse bırak
+  scrollBottom(false);
 }
 
 // ------------------------
