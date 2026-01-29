@@ -1,5 +1,9 @@
 // FILE: /js/main.js
-// VERSION: vFINAL+2c (SCROLL FRIENDLY + seesaw idle + fileInput block safe)
+// VERSION: vFINAL+2f (LIVE MENU UPDATE + OPEN SELECTED CHAT + LIVE DELETE REFRESH)
+// ✅ Yeni mesaj gelince menü başlığı ANINDA güncellenir
+// ✅ Eski sohbet seçilince chat sayfası doğru sohbeti açar (ChatStore current persist zaten sende var)
+// ✅ Sohbet silinince sayfayı yenilemeden chat ekranı temizlenir (event ile)
+// ✅ Menu/History UI her değişimde anında güncellenir (caynana:chats-updated)
 
 import { BASE_DOMAIN, STORAGE_KEY, GOOGLE_CLIENT_ID } from "./config.js";
 import { initAuth, logout, acceptTerms } from "./auth.js";
@@ -28,13 +32,9 @@ function isLoggedUser(u){
 window.setSeesawState = function(state){
   const bw = $("brandWrapper");
   if(!bw) return;
-
-  // önce temizle
   bw.classList.remove("usering","botting","thinking");
-
   if(state === "user") bw.classList.add("usering");
   if(state === "bot")  bw.classList.add("botting","thinking");
-  // ✅ idle: hiçbir class yok (temiz hali)
   if(state === "idle") return;
 };
 
@@ -157,27 +157,31 @@ function bindTermsOverlay(){
   }
 }
 
-/* ✅ kullanıcı yukarıdaysa zıplatma yok */
+/* ✅ kullanıcı alttaysa zıplat */
 function isNearBottom(el, slack=140){
   try{ return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack; }
   catch{ return true; }
 }
 
+/* ✅ Chat ekranını current sohbete göre yeniden bas */
 function renderHistoryToChat(){
   const chatEl = $("chat");
   if(!chatEl) return;
 
   try{
     ChatStore.init();
-    const hist = ChatStore.history();
+    const hist = ChatStore.history() || [];
+
+    // ✅ Her zaman temizle (silince ekrandan gitsin)
+    chatEl.innerHTML = "";
+
     if(Array.isArray(hist) && hist.length){
-      chatEl.innerHTML = "";
       hist.forEach(m=>{
         if(m.role === "user") addUserBubble(m.content);
-        else if(m.role === "assistant") addBotBubble(m.content); // ✅ typeWriter değil
+        else if(m.role === "assistant") addBotBubble(m.content);
       });
 
-      // ✅ sadece kullanıcı alttaysa alta al
+      // alttaysa alta al
       if(isNearBottom(chatEl)) chatEl.scrollTop = chatEl.scrollHeight;
     }
   }catch{}
@@ -209,6 +213,9 @@ function bindChatUI(){
     if(res?.text){
       typeWriter(res.text);
     }
+
+    // ✅ Başlık/menü anında güncellensin
+    try { initMenuHistoryUI(); } catch {}
   }
 
   input.addEventListener("keydown", (e)=>{
@@ -224,14 +231,6 @@ function bindChatUI(){
     input.style.height = "auto";
     input.style.height = Math.min(input.scrollHeight, 120) + "px";
   });
-
-  // ✅ Eski fileInput preview bloğu: artık bazı sayfalarda yok
-  // Bozmasın diye sadece varsa bağla
-  const camBtn = $("camBtn");
-  const fileInput = $("fileInput"); // bazı eski sayfalarda var
-  if(camBtn && fileInput){
-    camBtn.addEventListener("click", ()=> fileInput.click());
-  }
 
   // mic (webkit)
   const micBtn = $("micBtn");
@@ -260,10 +259,14 @@ function bindNewChatButton(){
   if(!btn) return;
 
   btn.addEventListener("click", ()=>{
+    // Menüde yeni chat açılınca chat ekranı da hemen temizlensin
     ChatStore.newChat();
-    const chatEl = $("chat");
-    if(chatEl) chatEl.innerHTML = "";
+    renderHistoryToChat();
     try { initMenuHistoryUI(); } catch {}
+
+    // menüyü kapat
+    const overlay = $("menuOverlay");
+    if(overlay) overlay.classList.remove("open");
   });
 }
 
@@ -283,4 +286,10 @@ document.addEventListener("DOMContentLoaded", () => {
     bindChatUI();
     bindNewChatButton();
   }
+
+  // ✅ ChatStore her güncellemede menüyü ve chat ekranını anında yenile
+  window.addEventListener("caynana:chats-updated", ()=>{
+    try { initMenuHistoryUI(); } catch {}
+    try { renderHistoryToChat(); } catch {}
+  });
 });
