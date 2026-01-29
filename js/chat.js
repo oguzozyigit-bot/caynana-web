@@ -3,6 +3,7 @@
 // ✅ Hiçbir özelliği eksiltmedim.
 // ✅ FIX: Çift cevap kökü → assistant cevabı ChatStore’a hemen yazılmıyor; typewriter bitmeye yakın gecikmeli yazılıyor.
 // ✅ Scroll: kullanıcı alttaysa auto-follow, yukarı çıktıysa zorlamaz.
+// ✅ FIX: "Mesaj yazınca" (User bubble) artık her zaman en alta kaydırıyor (zorunlu scroll).
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -111,11 +112,12 @@ function _scrollToBottom(el) {
   try { el.scrollTop = el.scrollHeight; } catch {}
 }
 
-/* ✅ UI: bot bubble (history basarken) */
+/* ✅ UI: bot bubble (history basarken - Akıllı Scroll) */
 export function addBotBubble(text, elId="chat"){
   const div = document.getElementById(elId);
   if(!div) return;
 
+  // History basarken kullanıcı yukarıdaysa aşağı çekme
   const follow = _isNearBottom(div);
 
   const bubble = document.createElement("div");
@@ -126,7 +128,7 @@ export function addBotBubble(text, elId="chat"){
   if(follow) _scrollToBottom(div);
 }
 
-/* ✅ UI: typewriter (canlı cevap) */
+/* ✅ UI: typewriter (canlı cevap - Akıllı Scroll) */
 export function typeWriter(text, elId = "chat") {
   const div = document.getElementById(elId);
   if (!div) return;
@@ -154,19 +156,20 @@ export function typeWriter(text, elId = "chat") {
   })();
 }
 
-/* ✅ UI: user bubble */
+/* ✅ UI: user bubble (Kullanıcı yazınca - Zorunlu Scroll) */
 export function addUserBubble(text) {
   const div = document.getElementById("chat");
   if (!div) return;
 
-  const follow = _isNearBottom(div);
-
+  // FIX: Kullanıcı mesaj yazdığında her zaman en alta in (Auto-scroll force)
+  // Kullanıcı eski mesajları okuyor olsa bile, kendi mesajını görmek ister.
+  
   const bubble = document.createElement("div");
   bubble.className = "bubble user";
   bubble.textContent = String(text || "");
   div.appendChild(bubble);
 
-  if(follow) _scrollToBottom(div);
+  _scrollToBottom(div);
 }
 
 /* =========================================================
