@@ -1,7 +1,8 @@
 // FILE: /js/chat.js
-// FINAL++ (AUTO SCROLL GARANTİ + ÇİFT MESAJ YOK + AUTOFOLLOW AKILLI)
-// ✅ FIX: ChatStore'a hemen yazma engellendi (Double Render Fix).
-// ✅ FIX: Scroll artık 3 frame boyunca zorlanıyor (DOM render gecikmesini yutar).
+// ROLLBACK-STABLE (ŞÜKÜR ÖNCESİ)
+// ✅ Assistant cevabı ChatStore’a HEMEN yazmaz (double render + scroll kayması olmaz)
+// ✅ Scroll: 3 frame _forceBottom (DOM gecikmesini yutar)
+// ✅ Name memory + kaynana opener + profile merge DURUYOR (eksiltme yok)
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -99,15 +100,9 @@ function pickAssistantText(data) {
 
 async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
-/* =========================================================
-   ✅ AUTOFOLLOW CORE (kaçırmayan scroll)
-   ========================================================= */
-function _isNearBottom(el, slack = 380) {
-  try { return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack; }
-  catch { return true; }
-}
-
-// ✅ 3 frame bottom (mobil/pc kaçırmaz, dom render'ı bekler)
+/* =========================
+   SCROLL (ŞÜKÜR STABLE)
+   ========================= */
 function _forceBottom(el){
   if(!el) return;
   let n = 0;
@@ -119,28 +114,19 @@ function _forceBottom(el){
   requestAnimationFrame(tick);
 }
 
-/* ✅ UI: bot bubble (history basarken) */
+/* UI helpers */
 export function addBotBubble(text, elId="chat"){
   const div = document.getElementById(elId);
   if(!div) return;
-
-  const follow = _isNearBottom(div);
   const bubble = document.createElement("div");
   bubble.className = "bubble bot";
   bubble.textContent = String(text||"");
   div.appendChild(bubble);
-
-  if(follow) _forceBottom(div);
 }
 
-/* ✅ UI: typewriter (canlı cevap) */
 export function typeWriter(text, elId = "chat") {
   const div = document.getElementById(elId);
   if (!div) return;
-
-  let follow = _isNearBottom(div);
-  const onScroll = () => { follow = _isNearBottom(div); };
-  div.addEventListener("scroll", onScroll, { passive:true });
 
   const bubble = document.createElement("div");
   bubble.className = "bubble bot";
@@ -152,16 +138,14 @@ export function typeWriter(text, elId = "chat") {
   (function type() {
     if (i < s.length) {
       bubble.textContent += s.charAt(i++);
-      if (follow) _forceBottom(div);
+      _forceBottom(div);
       setTimeout(type, 28);
     } else {
-      div.removeEventListener("scroll", onScroll);
-      if (follow) _forceBottom(div);
+      _forceBottom(div);
     }
   })();
 }
 
-/* ✅ UI: user bubble */
 export function addUserBubble(text) {
   const div = document.getElementById("chat");
   if (!div) return;
@@ -171,48 +155,29 @@ export function addUserBubble(text) {
   bubble.textContent = String(text || "");
   div.appendChild(bubble);
 
-  // ✅ Kullanıcı mesaj attığında HER ZAMAN en alta indir.
   _forceBottom(div);
 }
 
-/* =========================================================
-   ✅ KAYNANA "KONU AÇICI"
-   ========================================================= */
+/* =========================
+   Kaynana opener (duruyor)
+   ========================= */
 function _pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
 
 function buildProfileContextForKaynana(profile={}, memP={}) {
-  const born =
-    String(profile.dogumYeri || profile.birth_city || profile.birthPlace || memP.dogumYeri || memP.birth_city || memP.birthPlace || "").trim();
-
-  const live =
-    String(profile.city || profile.yasadigiSehir || profile.living_city || memP.city || memP.yasadigiSehir || memP.living_city || "").trim();
-
-  const team =
-    String(profile.team || memP.team || "").trim();
-
-  const spouse =
-    String(profile.spouse || memP.spouse || "").trim();
-
-  const kidsRaw =
-    String(profile.childNames || memP.childNames || "").trim();
-  const kids =
-    kidsRaw ? kidsRaw.split(/[,/]+/).map(x => x.trim()).filter(Boolean).slice(0, 6) : [];
-
-  const kg =
-    Number(profile.weight_kg || profile.weightKg || memP.weight_kg || memP.weightKg || 0) || 0;
-
-  const cm =
-    Number(profile.height_cm || profile.heightCm || memP.height_cm || memP.heightCm || 0) || 0;
-
+  const born = String(profile.dogumYeri || memP.dogumYeri || "").trim();
+  const live = String(profile.city || memP.city || "").trim();
+  const team = String(profile.team || memP.team || "").trim();
+  const spouse = String(profile.spouse || memP.spouse || "").trim();
+  const kidsRaw = String(profile.childNames || memP.childNames || "").trim();
+  const kids = kidsRaw ? kidsRaw.split(/[,/]+/).map(x=>x.trim()).filter(Boolean).slice(0,6) : [];
+  const kg = Number(profile.weight_kg || memP.weight_kg || 0) || 0;
+  const cm = Number(profile.height_cm || memP.height_cm || 0) || 0;
   return { born, live, team, spouse, kids, kg, cm };
 }
 
 function kaynanaOpener(ctx, hitap="evladım") {
   const pool = [];
-  if (ctx.born && ctx.live && ctx.born.toLowerCase() !== ctx.live.toLowerCase()) {
-    pool.push(`Bak ${hitap}, sen ${ctx.born}lısın ama ${ctx.live}’de yaşıyorsun… hiç memleket özlemi yok mu?`);
-  }
-  if (ctx.live && !ctx.born) pool.push(`${hitap}, ${ctx.live} nasıl gidiyor? Oralar hâlâ aynı mı?`);
+  if (ctx.born && ctx.live && ctx.born.toLowerCase() !== ctx.live.toLowerCase()) pool.push(`Bak ${hitap}, sen ${ctx.born}lısın ama ${ctx.live}’de yaşıyorsun… hiç memleket özlemi yok mu?`);
   if (ctx.spouse) pool.push(`${hitap}, eşin ${ctx.spouse} nasıl?`);
   if (ctx.kids.length) pool.push(`Torunlarım ${ctx.kids.join(", ")} nasıl ${hitap}?`);
   if (ctx.team) pool.push(`${hitap}, ${ctx.team} yine kalbini kırdı mı?`);
@@ -224,8 +189,7 @@ function kaynanaOpener(ctx, hitap="evladım") {
 function isConversationStuck(userMessage="") {
   const t = String(userMessage||"").trim().toLowerCase();
   if(!t) return true;
-  const short = t.length <= 4 || ["evet","hayır","ok","tamam","tm","he","yok","var","olur"].includes(t);
-  return short;
+  return (t.length <= 4 || ["evet","hayır","ok","tamam","tm","he","yok","var","olur"].includes(t));
 }
 
 function getKaynanaState(userId) {
@@ -237,27 +201,18 @@ function setKaynanaState(userId, st) {
   localStorage.setItem(k, JSON.stringify(st || {}));
 }
 
-/* =========================================================
-   ✅ FIX: STORE YAZIMINI GECİKTİR (Çift Mesajı Önler)
-   ========================================================= */
+/* ✅ KRİTİK: Assistant store yazımı GECİKMELİ */
 function scheduleAssistantStoreWrite(outText){
   try{
     const s = String(outText || "");
     const delay = Math.max(600, Math.min(4500, s.length * 12));
-    setTimeout(()=>{
-      try { ChatStore.add?.("assistant", s); } catch {}
-    }, delay);
+    setTimeout(()=>{ try{ ChatStore.add?.("assistant", s); }catch{} }, delay);
   }catch{}
 }
 
-export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistory = []) {
+export async function fetchTextResponse(msg, modeOrHistory = "chat") {
   const message = String(msg || "").trim();
   if (!message) return { text: "", error: true };
-
-  let mode = "chat";
-  if (!Array.isArray(modeOrHistory)) {
-    mode = String(modeOrHistory || "chat").trim() || "chat";
-  }
 
   if (!hasLoginToken()) {
     return { text: "Önce giriş yapman lazım evladım. 🙂", error: true, code: "AUTH_REQUIRED" };
@@ -267,48 +222,17 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     return { text: "Aman evladım sakın. Eğer acil risk varsa 112’yi ara. İstersen anlat, buradayım.", error: true, code: "SAFETY" };
   }
 
-  const profile0 = getProfile();
-  const mem0 = (() => { try { return getMemoryProfile() || {}; } catch { return {}; } })();
-  const knownName =
-    String(profile0.hitap || "").trim() ||
-    firstNameFromFullname(profile0.fullname || "") ||
-    String(mem0.hitap || "").trim() ||
-    firstNameFromFullname(mem0.fullname || mem0.name || "") ||
-    "";
-
-  if (/benim ad(ı|im)\s+neydi|ad(ı|im)\s+neydi|ismim\s+neydi/i.test(message)) {
-    if (knownName) return { text: `Adın ${knownName} evladım. 🙂` };
-    return { text: "Adını söylememiştin evladım. “Adım …” diye yaz da kaydedeyim 🙂" };
-  }
-
+  // isim yakala
   maybePersistNameFromUserMessage(message);
 
   const profile = getProfile();
-  const userId =
-    String(profile?.email || "").trim() ||
-    String(profile?.user_id || "").trim() ||
-    String(profile?.id || "").trim() ||
-    "";
+  const userId = String(profile?.email || profile?.user_id || profile?.id || "").trim();
+  if (!userId) return { text: "Profilde user_id yok. Çıkış yapıp tekrar giriş yapman lazım evladım.", error: true };
 
-  if (!userId) {
-    return { text: "Profilde user_id yok. Çıkış yapıp tekrar giriş yapman lazım evladım.", error: true, code: "NO_USER_ID" };
-  }
+  const memP = (()=>{ try{return getMemoryProfile()||{}}catch{return {}} })();
+  const displayName = String(profile.hitap || firstNameFromFullname(profile.fullname||"") || memP.hitap || firstNameFromFullname(memP.fullname||memP.name||"") || "").trim();
 
-  const st = getKaynanaState(userId);
-  st.lastUserAt = Date.now();
-  st.stuckCount = isConversationStuck(message) ? (Number(st.stuckCount || 0) + 1) : 0;
-  setKaynanaState(userId, st);
-
-  const memP = (() => { try { return getMemoryProfile() || {}; } catch { return {}; } })();
-
-  const displayName =
-    String(profile.hitap || "").trim() ||
-    firstNameFromFullname(profile.fullname || "") ||
-    String(memP.hitap || "").trim() ||
-    firstNameFromFullname(memP.fullname || memP.name || "") ||
-    "";
-
-  const formProfile = {
+  const mergedProfile = mergeProfiles({
     hitap: profile.hitap || null,
     fullname: profile.fullname || null,
     display_name: displayName || null,
@@ -322,54 +246,41 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     team: profile.team || null,
     city: profile.city || null,
     isProfileCompleted: !!profile.isProfileCompleted,
-  };
+    height_cm: profile.height_cm || null,
+    weight_kg: profile.weight_kg || null
+  }, memP);
 
-  const mergedProfile = mergeProfiles(formProfile, memP);
-  const ctx = buildProfileContextForKaynana(profile, memP);
+  // stuck state
+  const st = getKaynanaState(userId);
+  st.stuckCount = isConversationStuck(message) ? (Number(st.stuckCount || 0) + 1) : 0;
+  setKaynanaState(userId, st);
 
-  // user mesajı store (başlık oluşsun)
+  // user store (başlık anında)
   try { ChatStore.add?.("user", message); } catch {}
 
-  const historyForApi = (() => {
-    try {
-      if (typeof ChatStore.getLastForApi === "function") return ChatStore.getLastForApi(30);
-    } catch {}
-    return [];
-  })();
-
+  const ctx = buildProfileContextForKaynana(profile, memP);
   const serverChatId = (ChatStore.getCurrentServerId?.() || null);
-  const hitapForKaynana = String(mergedProfile.hitap || displayName || "evladım").trim() || "evladım";
 
   const payload = {
     text: message,
     message: message,
     user_id: userId,
     chat_id: (serverChatId || readChatId(userId)),
-    mode,
+    mode: String(modeOrHistory || "chat"),
     profile: mergedProfile,
     user_meta: mergedProfile,
-    system_hint: `Kullanıcıya "${hitapForKaynana}" diye hitap et.`,
     web: "auto",
     enable_web_search: true,
-    history: historyForApi
+    history: (ChatStore.getLastForApi?.(30) || [])
   };
 
   const attempt = async () => {
     const res = await apiPOST("/api/chat", payload);
-
-    if (res.status === 401 || res.status === 403) {
-      return { text: "Oturumun düşmüş gibi. Çıkış yapıp tekrar girer misin?", error: true, code: "AUTH_EXPIRED" };
-    }
     if (!res.ok) {
-      const bodyText = await res.text().catch(() => "");
-      const err = new Error(`API Error ${res.status} ${bodyText}`);
-      err.isServer = res.status >= 500 && res.status <= 599;
-      err.status = res.status;
-      throw err;
+      const t = await res.text().catch(()=> "");
+      throw new Error(`API Error ${res.status} ${t}`);
     }
-
-    let data = {};
-    try { data = await res.json(); } catch {}
+    const data = await res.json().catch(()=> ({}));
 
     if (data.chat_id) {
       writeChatId(userId, data.chat_id);
@@ -378,29 +289,24 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
 
     let out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
 
-    // tıkandıysa opener ekle
+    // stuck opener
     const st2 = getKaynanaState(userId);
     if (Number(st2.stuckCount || 0) >= 2) {
-      const opener = kaynanaOpener(ctx, hitapForKaynana);
       st2.stuckCount = 0;
       setKaynanaState(userId, st2);
-      out = `${out}\n\n${opener}`;
+      out = `${out}\n\n${kaynanaOpener(ctx, String(mergedProfile.hitap || "evladım"))}`;
     }
 
-    // ✅ FIX: Gecikmeli yazım (çift render/scroll çakışması önler)
+    // ✅ store yazımı gecikmeli
     scheduleAssistantStoreWrite(out);
 
     return { text: out };
   };
 
-  try {
-    return await attempt();
-  } catch (e) {
-    const shouldRetry = !!e?.isServer || (e?.status == null);
-    if (shouldRetry) {
-      await sleep(600);
-      try { return await attempt(); } catch {}
-    }
+  try { return await attempt(); }
+  catch(e){
+    await sleep(500);
+    try { return await attempt(); } catch {}
     return { text: "Bağlantı koptu gibi. Bir daha dener misin?", error: true, code: "NETWORK" };
   }
 }
