@@ -86,28 +86,49 @@ function bindLogoutAndDelete(){
     });
   }
 
+  // ✅ HESABIMI SİL: UID'Yİ SİLMEDEN ÖNCE AL + TÜM CHAT KAYITLARINI SÜPÜR
   const del = $("deleteAccountBtn");
-if(del){
-  del.addEventListener("click", ()=>{
-    const ok = confirm("Hesabın kalıcı olarak silinecek. Emin misin evladım?");
-    if(!ok) return;
+  if(del){
+    del.addEventListener("click", ()=>{
+      const ok = confirm("Hesabın kalıcı olarak silinecek. Emin misin evladım?");
+      if(!ok) return;
 
-    // local temizliği (şimdilik)
-    try{
-      localStorage.removeItem("caynana_user_v1");
-      localStorage.removeItem("google_id_token");
-      localStorage.removeItem("caynana_api_token");
+      // ✅ önce kullanıcıyı oku (silmeden önce!)
+      const u0 = (()=>{ try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}")}catch{return {}} })();
+      const uid = String(u0.user_id || u0.id || u0.email || "").trim().toLowerCase() || "guest";
 
-      // sohbet kayıtları (kullanıcı bazlı index + current)
-      const u = (()=>{ try{return JSON.parse(localStorage.getItem("caynana_user_v1")||"{}")}catch{return {}} })();
-      const uid = String(u.user_id || u.id || u.email || "").trim().toLowerCase() || "guest";
-      localStorage.removeItem(`caynana_chat_index::${uid}`);
-      localStorage.removeItem(`caynana_chat_current::${uid}`);
-    }catch(e){}
+      // ✅ Google auto-select kapat (bazı cihazlarda hemen geri login olmasın)
+      try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch(e){}
 
-    window.location.href = "/index.html";
-  });
-}
+      // ✅ local süpür
+      try{
+        // auth
+        localStorage.removeItem("caynana_user_v1");
+        localStorage.removeItem("google_id_token");
+        localStorage.removeItem("caynana_api_token");
+
+        // terms & memory (varsa)
+        localStorage.removeItem(`caynana_terms_accepted_at::${uid}`);
+        localStorage.removeItem("caynana_memory_profile");
+
+        // user-scoped chat index + current
+        localStorage.removeItem(`caynana_chat_index::${uid}`);
+        localStorage.removeItem(`caynana_chat_current::${uid}`);
+
+        // ✅ tüm chat içerikleri (caynana_chat_*) komple temiz
+        for(let i = localStorage.length - 1; i >= 0; i--){
+          const k = localStorage.key(i);
+          if(!k) continue;
+          if(k.startsWith("caynana_chat_")) localStorage.removeItem(k);
+          if(k.startsWith("caynana_chat_id:")) localStorage.removeItem(k); // backend chat_id cache
+          if(k.startsWith("caynana_kaynana_state:")) localStorage.removeItem(k);
+        }
+      }catch(e){}
+
+      // ✅ giriş sayfası
+      window.location.replace("/index.html");
+    });
+  }
 }
 
 function gateAuthAndTerms(){
@@ -188,7 +209,6 @@ function renderHistoryToChat(){
     ChatStore.init();
     const hist = ChatStore.history() || [];
 
-    // ✅ Her zaman temizle (silince ekrandan gitsin)
     chatEl.innerHTML = "";
 
     if(Array.isArray(hist) && hist.length){
@@ -197,7 +217,6 @@ function renderHistoryToChat(){
         else if(m.role === "assistant") addBotBubble(m.content);
       });
 
-      // alttaysa alta al
       if(isNearBottom(chatEl)) chatEl.scrollTop = chatEl.scrollHeight;
     }
   }catch{}
@@ -275,12 +294,10 @@ function bindNewChatButton(){
   if(!btn) return;
 
   btn.addEventListener("click", ()=>{
-    // Menüde yeni chat açılınca chat ekranı da hemen temizlensin
     ChatStore.newChat();
     renderHistoryToChat();
     try { initMenuHistoryUI(); } catch {}
 
-    // menüyü kapat
     const overlay = $("menuOverlay");
     if(overlay) overlay.classList.remove("open");
   });
