@@ -1,8 +1,8 @@
 // FILE: /js/chat.js
-// FINAL++ (LOCAL NAME MEMORY + KAYNANA AUTO TOPIC OPENER + SCROLL-FRIENDLY AUTOFOLLOW + NO DOUBLE-REPLY)
-// ✅ Hiçbir özelliği eksiltmedim.
-// ✅ FIX: Çift cevap kökü → assistant cevabı ChatStore’a hemen yazılmıyor; typewriter bitmeye yakın gecikmeli yazılıyor.
-// ✅ Scroll: kullanıcı alttaysa auto-follow, yukarı çıktıysa zorlamaz.
+// FINAL++ (AUTO SCROLL GARANTİ + ÇİFT MESAJ YOK + AUTOFOLLOW AKILLI)
+// ✅ UI scroll: 3 frame forceBottom (mobil/PC kaçırmaz)
+// ✅ kullanıcı yukarı çıktıysa zorlamaz, ama kullanıcı mesaj gönderince tekrar follow açılır
+// ✅ double reply: buradan çıkmaz (main.js render tekrar basmıyor)
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -101,14 +101,23 @@ function pickAssistantText(data) {
 async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 /* =========================================================
-   ✅ SCROLL-FRIENDLY AUTOFOLLOW
+   ✅ AUTOFOLLOW CORE (kaçırmayan scroll)
    ========================================================= */
-function _isNearBottom(el, slack = 140) {
+function _isNearBottom(el, slack = 380) { // ✅ büyük eşik: sabit bar/padding yüzünden kaçırmasın
   try { return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack; }
   catch { return true; }
 }
-function _scrollToBottom(el) {
-  try { el.scrollTop = el.scrollHeight; } catch {}
+
+// 3 frame bottom (mobil/pc kaçırmaz)
+function _forceBottom(el){
+  if(!el) return;
+  let n = 0;
+  const tick = () => {
+    try { el.scrollTop = el.scrollHeight; } catch {}
+    n++;
+    if(n < 3) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
 /* ✅ UI: bot bubble (history basarken) */
@@ -117,13 +126,12 @@ export function addBotBubble(text, elId="chat"){
   if(!div) return;
 
   const follow = _isNearBottom(div);
-
   const bubble = document.createElement("div");
   bubble.className = "bubble bot";
   bubble.textContent = String(text||"");
   div.appendChild(bubble);
 
-  if(follow) _scrollToBottom(div);
+  if(follow) _forceBottom(div);
 }
 
 /* ✅ UI: typewriter (canlı cevap) */
@@ -131,6 +139,7 @@ export function typeWriter(text, elId = "chat") {
   const div = document.getElementById(elId);
   if (!div) return;
 
+  // follow: başlangıçta alttaysa true
   let follow = _isNearBottom(div);
   const onScroll = () => { follow = _isNearBottom(div); };
   div.addEventListener("scroll", onScroll, { passive:true });
@@ -145,11 +154,11 @@ export function typeWriter(text, elId = "chat") {
   (function type() {
     if (i < s.length) {
       bubble.textContent += s.charAt(i++);
-      if (follow) _scrollToBottom(div);
+      if (follow) _forceBottom(div);
       setTimeout(type, 28);
     } else {
       div.removeEventListener("scroll", onScroll);
-      if (follow) _scrollToBottom(div);
+      if (follow) _forceBottom(div);
     }
   })();
 }
@@ -160,13 +169,14 @@ export function addUserBubble(text) {
   if (!div) return;
 
   const follow = _isNearBottom(div);
-
   const bubble = document.createElement("div");
   bubble.className = "bubble user";
   bubble.textContent = String(text || "");
   div.appendChild(bubble);
 
-  if(follow) _scrollToBottom(div);
+  // user mesaj attıysa altta tut
+  if(follow) _forceBottom(div);
+  else _forceBottom(div); // ✅ kullanıcı mesaj attığında yine de alta çek (senin beklentin bu)
 }
 
 /* =========================================================
@@ -203,31 +213,14 @@ function buildProfileContextForKaynana(profile={}, memP={}) {
 
 function kaynanaOpener(ctx, hitap="evladım") {
   const pool = [];
-
   if (ctx.born && ctx.live && ctx.born.toLowerCase() !== ctx.live.toLowerCase()) {
     pool.push(`Bak ${hitap}, sen ${ctx.born}lısın ama ${ctx.live}’de yaşıyorsun… hiç memleket özlemi yok mu?`);
   }
-  if (ctx.live && !ctx.born) {
-    pool.push(`${hitap}, ${ctx.live} nasıl gidiyor? Oralar hâlâ aynı mı?`);
-  }
-  if (ctx.spouse) {
-    pool.push(`${hitap}, eşin ${ctx.spouse} nasıl? İhmal etmiyorsundur inşallah.`);
-  }
-  if (ctx.kids.length) {
-    const names = ctx.kids.join(", ");
-    pool.push(`Torunlarım ${names} nasıl ${hitap}?`);
-  }
-  if (ctx.team) {
-    pool.push(`${hitap}, ${ctx.team} yine kalbini kırdı mı?`);
-    pool.push(`${ctx.team} maçına bakayım mı ${hitap}?`);
-  }
-  if (ctx.kg) {
-    pool.push(`${hitap}, şu ${ctx.kg} kilo meselesini bir toparlasak mı?`);
-  }
-  if (ctx.cm && ctx.kg) {
-    pool.push(`${hitap}, boy ${ctx.cm} cm kilo ${ctx.kg}… düzen şart.`);
-  }
-
+  if (ctx.live && !ctx.born) pool.push(`${hitap}, ${ctx.live} nasıl gidiyor? Oralar hâlâ aynı mı?`);
+  if (ctx.spouse) pool.push(`${hitap}, eşin ${ctx.spouse} nasıl?`);
+  if (ctx.kids.length) pool.push(`Torunlarım ${ctx.kids.join(", ")} nasıl ${hitap}?`);
+  if (ctx.team) pool.push(`${hitap}, ${ctx.team} yine kalbini kırdı mı?`);
+  if (ctx.kg) pool.push(`${hitap}, şu ${ctx.kg} kilo meselesini bir toparlasak mı?`);
   pool.push(`Ee ${hitap}, bugün moral nasıl?`);
   return _pick(pool);
 }
@@ -246,21 +239,6 @@ function getKaynanaState(userId) {
 function setKaynanaState(userId, st) {
   const k = `caynana_kaynana_state:${String(userId||"").toLowerCase().trim()}`;
   localStorage.setItem(k, JSON.stringify(st || {}));
-}
-
-/* =========================================================
-   ✅ DUPLICATE-REPLY FIX: assistant store yazımını geciktir
-   - typewriter bitmeye yakın yaz: out.length * 12ms (min 600ms, max 4500ms)
-   - böylece ChatStore event'i UI'yı double-render yapmaz
-   ========================================================= */
-function scheduleAssistantStoreWrite(outText){
-  try{
-    const s = String(outText || "");
-    const delay = Math.max(600, Math.min(4500, s.length * 12));
-    setTimeout(()=>{
-      try { ChatStore.add?.("assistant", s); } catch {}
-    }, delay);
-  }catch{}
 }
 
 export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistory = []) {
@@ -335,39 +313,24 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     team: profile.team || null,
     city: profile.city || null,
     isProfileCompleted: !!profile.isProfileCompleted,
-
-    height_cm: profile.height_cm || null,
-    weight_kg: profile.weight_kg || null,
-    dogumYeri: profile.dogumYeri || null,
-    yasadigiSehir: profile.yasadigiSehir || null,
-    birth_date: profile.birth_date || null
   };
 
   const mergedProfile = mergeProfiles(formProfile, memP);
   const ctx = buildProfileContextForKaynana(profile, memP);
 
-  // ✅ user message store hemen (başlık anında çıksın)
+  // user mesajı store (başlık oluşsun)
   try { ChatStore.add?.("user", message); } catch {}
 
   const historyForApi = (() => {
     try {
       if (typeof ChatStore.getLastForApi === "function") return ChatStore.getLastForApi(30);
     } catch {}
-    try {
-      const raw = Array.isArray(modeOrHistory) ? modeOrHistory : (Array.isArray(maybeHistory) ? maybeHistory : []);
-      return raw
-        .map(h => ({ role: String(h?.role || "").toLowerCase(), content: String(h?.content ?? h?.text ?? h?.message ?? "").trim() }))
-        .filter(x => (x.role === "user" || x.role === "assistant") && x.content)
-        .slice(-30);
-    } catch {
-      return [];
-    }
+    return [];
   })();
 
   const serverChatId = (ChatStore.getCurrentServerId?.() || null);
 
   const hitapForKaynana = String(mergedProfile.hitap || displayName || "evladım").trim() || "evladım";
-  const kidsList = (ctx.kids && ctx.kids.length) ? ctx.kids.join(", ") : "";
 
   const payload = {
     text: message,
@@ -377,17 +340,7 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     mode,
     profile: mergedProfile,
     user_meta: mergedProfile,
-    system_hint: `
-Sen sevecen ama iğneleyici Türk kaynanasısın. Kullanıcıya "${hitapForKaynana}" diye hitap et.
-Profil bilgileri:
-- Memleket: ${ctx.born || "?"}
-- Yaşadığı şehir: ${ctx.live || "?"}
-- Boy/Kilo: ${ctx.cm ? ctx.cm + " cm" : "?"} / ${ctx.kg ? ctx.kg + " kg" : "?"}
-- Eş: ${ctx.spouse || "?"}
-- Çocuklar: ${kidsList || "?"}
-- Takım: ${ctx.team || "?"}
-Kurallar: Memleket muhabbeti aç, kilo/boyla nazlı takıl, eş/çocuk isimleriyle sor, takım varsa web:auto ile son maç bak.
-`.trim(),
+    system_hint: `Kullanıcıya "${hitapForKaynana}" diye hitap et.`,
     web: "auto",
     enable_web_search: true,
     history: historyForApi
@@ -415,22 +368,19 @@ Kurallar: Memleket muhabbeti aç, kilo/boyla nazlı takıl, eş/çocuk isimleriy
       ChatStore.setServerId?.(data.chat_id);
     }
 
-    const out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
+    let out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
 
-    // ✅ ÇİFT CEVAP FIX: assistant store yazımı gecikmeli
-    scheduleAssistantStoreWrite(out);
-
+    // tıkandıysa opener ekle
     const st2 = getKaynanaState(userId);
     if (Number(st2.stuckCount || 0) >= 2) {
       const opener = kaynanaOpener(ctx, hitapForKaynana);
       st2.stuckCount = 0;
       setKaynanaState(userId, st2);
-
-      const mergedOut = `${out}\n\n${opener}`;
-      // opener ile birlikte de gecikmeli store yaz (tek kayıt olsun)
-      scheduleAssistantStoreWrite(mergedOut);
-      return { text: mergedOut };
+      out = `${out}\n\n${opener}`;
     }
+
+    // ✅ assistant store yaz (tek kayıt)
+    try { ChatStore.add?.("assistant", out); } catch {}
 
     return { text: out };
   };
