@@ -1,8 +1,8 @@
 // FILE: /js/chat.js
-// FINAL+ (LOCAL NAME MEMORY + KAYNANA AUTO TOPIC OPENER + SCROLL FIX)
+// FINAL+ (LOCAL NAME MEMORY + KAYNANA AUTO TOPIC OPENER + SCROLL-FRIENDLY AUTOFOLLOW)
 // ✅ Hiçbir şeyi eksiltmedim.
-// ✅ Sadece şu sorunu düzelttim: Scroll “kilitlenmesin” diye otomatik alta kaydırmayı
-//    sadece kullanıcı alttaysa yapıyoruz. Kullanıcı yukarı çıktıysa zorlamıyoruz.
+// ✅ Sadece otomatik alta kaydırmayı "kullanıcı alttaysa" yapıyorum.
+// ✅ Kullanıcı yukarı kaydırınca artık zorlamıyor → scroll PC’de de çalışır.
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -101,21 +101,19 @@ function pickAssistantText(data) {
 async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 /* =========================================================
-   ✅ SCROLL FIX HELPERS
-   - Kullanıcı yukarı kaydırdıysa otomatik alta kilitleme yapma
+   ✅ SCROLL-FRIENDLY AUTOFOLLOW
+   - Kullanıcı alttaysa otomatik alta kaydır
+   - Kullanıcı yukarı çıktıysa ASLA zorlamaz (PC’de scroll kilidi biter)
    ========================================================= */
-function _isNearBottom(el, slack = 120) {
-  try {
-    return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack;
-  } catch {
-    return true;
-  }
+function _isNearBottom(el, slack = 140) {
+  try { return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack; }
+  catch { return true; }
 }
 function _scrollToBottom(el) {
   try { el.scrollTop = el.scrollHeight; } catch {}
 }
 
-/* ✅ UI: bot bubble (history basarken kullanacağız) */
+/* ✅ UI: bot bubble (history basarken) */
 export function addBotBubble(text, elId="chat"){
   const div = document.getElementById(elId);
   if(!div) return;
@@ -173,7 +171,7 @@ export function addUserBubble(text) {
 }
 
 /* =========================================================
-   ✅ KAYNANA "KONU AÇICI" (PROFİL BAKAR, İNSAN GİBİ)
+   ✅ KAYNANA "KONU AÇICI"
    ========================================================= */
 function _pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
 
@@ -218,20 +216,20 @@ function kaynanaOpener(ctx, hitap="evladım") {
   }
   if (ctx.kids.length) {
     const names = ctx.kids.join(", ");
-    pool.push(`Torunlarım ${names} nasıl ${hitap}? Bir haber ver de içim rahat etsin.`);
+    pool.push(`Torunlarım ${names} nasıl ${hitap}?`);
   }
   if (ctx.team) {
     pool.push(`${hitap}, ${ctx.team} yine kalbini kırdı mı?`);
-    pool.push(`${ctx.team} maçına bakayım mı ${hitap}, yüzünü güldürmüş mü?`);
+    pool.push(`${ctx.team} maçına bakayım mı ${hitap}?`);
   }
   if (ctx.kg) {
-    pool.push(`${hitap}, şu ${ctx.kg} kilo meselesini bir toparlasak mı? Ben karışmıyorum diyorum ama… karışıyorum işte.`);
+    pool.push(`${hitap}, şu ${ctx.kg} kilo meselesini bir toparlasak mı?`);
   }
   if (ctx.cm && ctx.kg) {
-    pool.push(`${hitap}, boy ${ctx.cm} cm, kilo ${ctx.kg}… düzen şart. Sonra “demedim” deme.`);
+    pool.push(`${hitap}, boy ${ctx.cm} cm kilo ${ctx.kg}… düzen şart.`);
   }
 
-  pool.push(`Ee ${hitap}, bugün moral nasıl? Bir anlat bakalım.`);
+  pool.push(`Ee ${hitap}, bugün moral nasıl?`);
   return _pick(pool);
 }
 
@@ -250,7 +248,6 @@ function setKaynanaState(userId, st) {
   const k = `caynana_kaynana_state:${String(userId||"").toLowerCase().trim()}`;
   localStorage.setItem(k, JSON.stringify(st || {}));
 }
-/* ========================================================= */
 
 export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistory = []) {
   const message = String(msg || "").trim();
@@ -266,10 +263,9 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
   }
 
   if (SAFETY_PATTERNS.self_harm.test(message)) {
-    return { text: "Aman evladım sakın. Eğer acil risk varsa 112’yi ara. İstersen ne olduğunu anlat, buradayım.", error: true, code: "SAFETY" };
+    return { text: "Aman evladım sakın. Eğer acil risk varsa 112’yi ara. İstersen anlat, buradayım.", error: true, code: "SAFETY" };
   }
 
-  // ✅ isim hafızası: önce profile + memory_profile’dan oku
   const profile0 = getProfile();
   const mem0 = (() => { try { return getMemoryProfile() || {}; } catch { return {}; } })();
   const knownName =
@@ -279,13 +275,11 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     firstNameFromFullname(mem0.fullname || mem0.name || "") ||
     "";
 
-  // ✅ “benim adım neydi” lokal cevap
   if (/benim ad(ı|im)\s+neydi|ad(ı|im)\s+neydi|ismim\s+neydi/i.test(message)) {
     if (knownName) return { text: `Adın ${knownName} evladım. 🙂` };
     return { text: "Adını söylememiştin evladım. “Adım …” diye yaz da kaydedeyim 🙂" };
   }
 
-  // isim yakala (profil boşsa)
   maybePersistNameFromUserMessage(message);
 
   const profile = getProfile();
@@ -299,7 +293,6 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     return { text: "Profilde user_id yok. Çıkış yapıp tekrar giriş yapman lazım evladım.", error: true, code: "NO_USER_ID" };
   }
 
-  // ✅ kaynana state (tıkandı mı?)
   const st = getKaynanaState(userId);
   st.lastUserAt = Date.now();
   st.stuckCount = isConversationStuck(message) ? (Number(st.stuckCount || 0) + 1) : 0;
@@ -337,10 +330,8 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
   };
 
   const mergedProfile = mergeProfiles(formProfile, memP);
-
   const ctx = buildProfileContextForKaynana(profile, memP);
 
-  // store user
   try { ChatStore.add?.("user", message); } catch {}
 
   const historyForApi = (() => {
@@ -373,19 +364,14 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat", maybeHistor
     user_meta: mergedProfile,
     system_hint: `
 Sen sevecen ama iğneleyici Türk kaynanasısın. Kullanıcıya "${hitapForKaynana}" diye hitap et.
-Profil bilgileri (unutma ve sohbeti açmak için kullan):
+Profil bilgileri:
 - Memleket: ${ctx.born || "?"}
 - Yaşadığı şehir: ${ctx.live || "?"}
 - Boy/Kilo: ${ctx.cm ? ctx.cm + " cm" : "?"} / ${ctx.kg ? ctx.kg + " kg" : "?"}
 - Eş: ${ctx.spouse || "?"}
 - Çocuklar: ${kidsList || "?"}
 - Takım: ${ctx.team || "?"}
-
-Kurallar:
-- Memleket farklı şehirde yaşıyorsa “memleket özlemi” muhabbeti aç.
-- Kilo/boy varsa nazlı dalga geç ama hakaret etme.
-- Eş/çocuk isimleri varsa bazen isimleriyle sor.
-- Takım varsa web:auto ile son maç sonucuna bak; yenildiyse hafif dalga geç, kazandıysa öv.
+Kurallar: Memleket muhabbeti aç, kilo/boyla nazlı takıl, eş/çocuk isimleriyle sor, takım varsa web:auto ile son maç bak.
 `.trim(),
     web: "auto",
     enable_web_search: true,
@@ -415,7 +401,6 @@ Kurallar:
     }
 
     const out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
-
     try { ChatStore.add?.("assistant", out); } catch {}
 
     const st2 = getKaynanaState(userId);
