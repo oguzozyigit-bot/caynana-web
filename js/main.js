@@ -1,9 +1,5 @@
 // FILE: /js/main.js
-// VERSION: vFINAL+2f (LIVE MENU UPDATE + OPEN SELECTED CHAT + LIVE DELETE REFRESH)
-// ✅ Yeni mesaj gelince menü başlığı ANINDA güncellenir
-// ✅ Eski sohbet seçilince chat sayfası doğru sohbeti açar (ChatStore current persist zaten sende var)
-// ✅ Sohbet silinince sayfayı yenilemeden chat ekranı temizlenir (event ile)
-// ✅ Menu/History UI her değişimde anında güncellenir (caynana:chats-updated)
+// VERSION: vFINAL+2g (FIX DOUBLE REPLY + FIX AUTOSCROLL DURING TYPING + SAFE LIVE UPDATES)
 
 import { BASE_DOMAIN, STORAGE_KEY, GOOGLE_CLIENT_ID } from "./config.js";
 import { initAuth, logout, acceptTerms } from "./auth.js";
@@ -48,7 +44,6 @@ function refreshPremiumBars() {
   if ($("ypNum")) $("ypNum").textContent = `${p}%`;
   if ($("ypFill")) $("ypFill").style.width = `${p}%`;
 
-  // Menü profil adı / avatar
   try {
     const name = (u.fullname || u.name || u.display_name || u.email || "—");
     const nm = $("profileShortcutName");
@@ -82,50 +77,41 @@ function bindLogoutAndDelete(){
   const logoutBtn = $("logoutBtn");
   if(logoutBtn){
     logoutBtn.addEventListener("click", ()=> {
-      try { logout(); } catch { location.reload(); }
+      try { logout(); } catch { window.location.replace("/index.html"); }
     });
   }
 
-  // ✅ HESABIMI SİL: UID'Yİ SİLMEDEN ÖNCE AL + TÜM CHAT KAYITLARINI SÜPÜR
   const del = $("deleteAccountBtn");
   if(del){
     del.addEventListener("click", ()=>{
       const ok = confirm("Hesabın kalıcı olarak silinecek. Emin misin evladım?");
       if(!ok) return;
 
-      // ✅ önce kullanıcıyı oku (silmeden önce!)
+      // UID’yi silmeden önce al
       const u0 = (()=>{ try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}")}catch{return {}} })();
       const uid = String(u0.user_id || u0.id || u0.email || "").trim().toLowerCase() || "guest";
 
-      // ✅ Google auto-select kapat (bazı cihazlarda hemen geri login olmasın)
       try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch(e){}
 
-      // ✅ local süpür
       try{
-        // auth
         localStorage.removeItem("caynana_user_v1");
         localStorage.removeItem("google_id_token");
         localStorage.removeItem("caynana_api_token");
-
-        // terms & memory (varsa)
         localStorage.removeItem(`caynana_terms_accepted_at::${uid}`);
         localStorage.removeItem("caynana_memory_profile");
-
-        // user-scoped chat index + current
         localStorage.removeItem(`caynana_chat_index::${uid}`);
         localStorage.removeItem(`caynana_chat_current::${uid}`);
 
-        // ✅ tüm chat içerikleri (caynana_chat_*) komple temiz
+        // tüm chat parçalarını süpür
         for(let i = localStorage.length - 1; i >= 0; i--){
           const k = localStorage.key(i);
           if(!k) continue;
           if(k.startsWith("caynana_chat_")) localStorage.removeItem(k);
-          if(k.startsWith("caynana_chat_id:")) localStorage.removeItem(k); // backend chat_id cache
+          if(k.startsWith("caynana_chat_id:")) localStorage.removeItem(k);
           if(k.startsWith("caynana_kaynana_state:")) localStorage.removeItem(k);
         }
       }catch(e){}
 
-      // ✅ giriş sayfası
       window.location.replace("/index.html");
     });
   }
@@ -169,7 +155,7 @@ function bindTermsOverlay(){
 
   if(closeBtn){
     closeBtn.addEventListener("click", ()=> {
-      try { logout(); } catch { location.reload(); }
+      try { logout(); } catch { window.location.replace("/index.html"); }
     });
   }
 
@@ -200,6 +186,8 @@ function isNearBottom(el, slack=140){
   catch{ return true; }
 }
 
+let __lastRenderedChatId = null;
+
 /* ✅ Chat ekranını current sohbete göre yeniden bas */
 function renderHistoryToChat(){
   const chatEl = $("chat");
@@ -207,8 +195,9 @@ function renderHistoryToChat(){
 
   try{
     ChatStore.init();
-    const hist = ChatStore.history() || [];
+    __lastRenderedChatId = ChatStore.currentId;
 
+    const hist = ChatStore.history() || [];
     chatEl.innerHTML = "";
 
     if(Array.isArray(hist) && hist.length){
@@ -217,9 +206,24 @@ function renderHistoryToChat(){
         else if(m.role === "assistant") addBotBubble(m.content);
       });
 
-      if(isNearBottom(chatEl)) chatEl.scrollTop = chatEl.scrollHeight;
+      chatEl.scrollTop = chatEl.scrollHeight;
     }
   }catch{}
+}
+
+/* ✅ typing sırasında scroll’u “yakala” */
+function keepScrollAtBottomWhileTyping(chatEl, approxMs){
+  if(!chatEl) return ()=>{};
+  const stopAt = Date.now() + Math.max(600, approxMs || 1200);
+
+  const timer = setInterval(()=>{
+    // kullanıcı yukarı çıktıysa zorlamayalım
+    if(!isNearBottom(chatEl, 260)) return;
+    chatEl.scrollTop = chatEl.scrollHeight;
+    if(Date.now() > stopAt) clearInterval(timer);
+  }, 80);
+
+  return ()=> clearInterval(timer);
 }
 
 function bindChatUI(){
@@ -234,6 +238,8 @@ function bindChatUI(){
     const text = String(input.value || "").trim();
     if(!text) return;
 
+    const wasNear = isNearBottom(chatEl, 220);
+
     window.setSeesawState?.("user");
 
     input.value = "";
@@ -241,12 +247,21 @@ function bindChatUI(){
 
     addUserBubble(text);
 
+    if(wasNear) chatEl.scrollTop = chatEl.scrollHeight;
+
     window.setSeesawState?.("bot");
     const res = await fetchTextResponse(text, "chat");
     window.setSeesawState?.("idle");
 
     if(res?.text){
-      typeWriter(res.text);
+      // typing süresince scroll takipçisi
+      const approx = Math.min(12000, (String(res.text).length * 28) + 600);
+      const stop = keepScrollAtBottomWhileTyping(chatEl, approx);
+      try{
+        typeWriter(res.text);
+      } finally {
+        setTimeout(()=> stop(), approx + 200);
+      }
     }
 
     // ✅ Başlık/menü anında güncellensin
@@ -320,9 +335,17 @@ document.addEventListener("DOMContentLoaded", () => {
     bindNewChatButton();
   }
 
-  // ✅ ChatStore her güncellemede menüyü ve chat ekranını anında yenile
+  // ✅ LIVE UPDATE:
+  // - Menü her zaman güncellensin
+  // - Chat SADECE sohbet değiştiyse (seçim/silme/yeni sohbet) yeniden render edilsin
   window.addEventListener("caynana:chats-updated", ()=>{
     try { initMenuHistoryUI(); } catch {}
-    try { renderHistoryToChat(); } catch {}
+
+    try{
+      ChatStore.init();
+      if(ChatStore.currentId && ChatStore.currentId !== __lastRenderedChatId){
+        renderHistoryToChat();
+      }
+    } catch {}
   });
 });
