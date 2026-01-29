@@ -87,11 +87,27 @@ function bindLogoutAndDelete(){
   }
 
   const del = $("deleteAccountBtn");
-  if(del){
-    del.addEventListener("click", ()=>{
-      alert("Hesap silme yakında evladım. 🙂 Şimdilik Güvenli Çıkış yapabilirsin.");
-    });
-  }
+if(del){
+  del.addEventListener("click", ()=>{
+    const ok = confirm("Hesabın kalıcı olarak silinecek. Emin misin evladım?");
+    if(!ok) return;
+
+    // local temizliği (şimdilik)
+    try{
+      localStorage.removeItem("caynana_user_v1");
+      localStorage.removeItem("google_id_token");
+      localStorage.removeItem("caynana_api_token");
+
+      // sohbet kayıtları (kullanıcı bazlı index + current)
+      const u = (()=>{ try{return JSON.parse(localStorage.getItem("caynana_user_v1")||"{}")}catch{return {}} })();
+      const uid = String(u.user_id || u.id || u.email || "").trim().toLowerCase() || "guest";
+      localStorage.removeItem(`caynana_chat_index::${uid}`);
+      localStorage.removeItem(`caynana_chat_current::${uid}`);
+    }catch(e){}
+
+    window.location.href = "/index.html";
+  });
+}
 }
 
 function gateAuthAndTerms(){
