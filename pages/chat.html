@@ -11,6 +11,58 @@
   <link rel="stylesheet" href="/css/layout-common.css?v=1">
 
   <style>
+    /* =========================================
+   CHAT ÖZEL CSS (SCROLL FIX)
+   ========================================= */
+:root {
+  --footerH: 60px;
+  --assistH: 85px;
+  --dockH: 80px;
+}
+
+body, html { 
+  background: #000; 
+  height: 100%; 
+  overflow: hidden; /* Dış scroll engelle */
+}
+
+/* 4. CHAT ALANI (DÜZELTİLDİ) */
+.chat-area {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  
+  /* Üstten Topbar, Alttan Input+Menü kadar boşluk bırak */
+  padding-top: 70px !important; 
+  padding-bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + 20px) !important;
+  padding-left: 16px;
+  padding-right: 16px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* Mesajlar aşağıdan başlar */
+  gap: 12px;
+  
+  overflow-y: auto; /* Kaydırma Açık */
+  -webkit-overflow-scrolling: touch; /* iOS akıcı scroll */
+  z-index: 10; /* En altta kalsın */
+}
+
+/* Mesajlar azken de scroll çalışsın diye görünmez eleman */
+.chat-area::before {
+  content: '';
+  flex: 1 1 auto;
+  min-height: 20px; 
+}
+
+/* Scrollbar Gizleme (Opsiyonel) */
+.chat-area::-webkit-scrollbar { width: 4px; }
+.chat-area::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+/* Diğer bileşenlerin Z-Index'i chat'ten yüksek olmalı */
+.topbar { z-index: 100 !important; }
+.footer-container { z-index: 2400 !important; }
+.assistant-bar { z-index: 2500 !important; }
+.input-dock { z-index: 2600 !important; }
     :root{
       --frameW: min(480px, calc(100vw - 18px));
       --topH: 65px;
