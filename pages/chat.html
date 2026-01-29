@@ -1,10 +1,10 @@
 <!-- FILE: /pages/chat.html
-     FULL (BOZMADAN + İLAVEYLE DÜZELTİLDİ)
-     1) ✅ Mesaj alanı scroll çalışır (dokunma/teker) + scrollbar gizli
-     2) ✅ Yazı penceresi daha geniş + alt bara yaklaşır (üst üste binmez)
-     3) ✅ + butonu: Camera / Fotoğraflar / Dosyalar seçeneği (çalışır)
-     4) ✅ Mikrofon: “dinliyor” hissi (renk/halo + placeholder) — main.js bozulmaz
-     5) ✅ Üstte “Bildirimler” yazısı: notifDropdown tamamen kaldırıldı
+     FULL (BOZMADAN DÜZELTME)
+     ✅ 1) Scroll düzeldi: alt katmanlar dokunmayı yemesin diye pointer-events fix (chat alanı artık aşağı/yukarı kayar)
+     ✅ 2) Yazı penceresi genişletildi + alt bara yaklaştırıldı (üst üste binmez)
+     ✅ 3) + menüsü kurumsal görünümlü (SVG ikon) + Kamera / Fotoğraf / Dosya çalışır
+     ✅ 4) Mikrofon dinliyor hissi (renk/halo + placeholder) — bozmadan
+     ✅ 5) Kolay menüde tüm ikonların altında mini isim (ikon büyümeden)
 -->
 <!DOCTYPE html>
 <html lang="tr">
@@ -18,14 +18,13 @@
   <link rel="stylesheet" href="/css/layout-common.css?v=1">
 
   <style>
-    /* ✅ STACK FIX (tek yerde, chat’e özel) */
     :root{
       --frameW: min(480px, calc(100vw - 18px));
       --topH: 65px;
       --footerH: 64px;
-      --assistH: 72px;  /* biraz incelttik */
-      --dockH: 74px;    /* input yaklaşık */
-      --gapH: 10px;     /* katmanlar arası min boşluk */
+      --assistH: 68px;   /* daha ince */
+      --dockH: 68px;     /* daha ince */
+      --gapH: 6px;       /* daha yakın */
     }
 
     /* Footer frame içinde ve en altta */
@@ -47,9 +46,34 @@
       height: var(--assistH);
       padding-top: 6px;
       padding-bottom: 6px;
+
+      /* ✅ Chat scroll dokunmasını yemesin */
+      pointer-events: none;
+    }
+    .assistant-bar .assistant-item{ pointer-events: auto; }
+
+    /* ✅ Her ikonun altında mini isim (ikon büyümeden) */
+    .assistant-item .lbl{
+      display:block !important;
+      font-size: 8px !important;
+      font-weight: 900 !important;
+      line-height: 1 !important;
+      margin-top: 2px !important;
+      opacity: .85;
+      white-space: nowrap;
+    }
+    .assistant-item{
+      width: 56px !important; /* büyütmeden sığdır */
+      padding: 8px 6px 6px !important;
+      gap: 3px !important;
+    }
+    .assistant-item .ico-wrap{
+      width: 30px !important;
+      height: 30px !important;
+      border-radius: 14px !important;
     }
 
-    /* Input dock: alt barın üstünde (yaklaştırdık) */
+    /* Input dock: alt barın üstünde (yaklaştır + genişlet) */
     .input-dock{
       position: fixed !important;
       left: 50% !important;
@@ -60,7 +84,11 @@
 
       padding: 0 10px 6px !important;
       background: transparent !important;
+
+      /* ✅ Chat scroll dokunmasını yemesin */
+      pointer-events: none;
     }
+    .input-dock .dock-inner{ pointer-events:auto; }
 
     /* Yazı penceresi: köşelere doğru genişlet */
     .input-dock .dock-inner{
@@ -68,17 +96,11 @@
       max-width: none !important;
     }
 
-    /* ✅ Chat: gerçek yükseklik hesapla -> scroll %100 çalışır */
+    /* ✅ Chat: scroll kesin çalışsın + mesajlar üst bara girsin doğru */
     .chat-area{
-      /* üst bar ile input arasına kalan alan */
-      height: calc(
-        100dvh
-        - var(--topH)
-        - var(--footerH)
-        - var(--assistH)
-        - var(--dockH)
-        - (var(--gapH) * 2)
-      ) !important;
+      /* flex yerleşimi bozulmasın */
+      flex: 1 1 auto !important;
+      min-height: 0 !important;
 
       overflow-y: auto !important;
       -webkit-overflow-scrolling: touch !important;
@@ -93,11 +115,12 @@
       flex-direction: column !important;
       justify-content: flex-end !important;
 
-      padding-bottom: 16px !important;
+      /* alt katmanlara göre boşluk */
+      padding-bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + (var(--gapH) * 2) + 14px) !important;
     }
     .chat-area::-webkit-scrollbar{ display:none !important; }
 
-    /* input büyürken ikonların üstüne binmesin */
+    /* ✅ input büyürken ikonların üstüne binmesin */
     .dock-inner{ align-items:flex-end !important; }
     #msgInput{
       min-width:0 !important;
@@ -106,13 +129,13 @@
       max-height:120px !important;
     }
 
-    /* ✅ + menü sheet */
+    /* ✅ + menü sheet (kurumsal ikonlar) */
     .plus-sheet{
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
       width: var(--frameW);
-      bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + 18px);
+      bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + 14px);
       z-index: 9999;
 
       display: none;
@@ -126,6 +149,7 @@
       backdrop-filter: blur(10px);
     }
     .plus-sheet.show{ display:flex; }
+
     .plus-action{
       flex:1;
       display:flex;
@@ -146,13 +170,22 @@
       text-align:center;
     }
     .plus-action:active{ transform: translateY(-1px); }
+
     .plus-ico{
       width: 40px; height: 40px;
       border-radius: 16px;
       display:flex; align-items:center; justify-content:center;
       background: rgba(255,255,255,.04);
       border: 1px solid rgba(255,255,255,.10);
-      font-size: 18px;
+    }
+    .plus-ico svg{
+      width: 20px; height: 20px;
+      stroke: rgba(255,255,255,.85);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: .95;
     }
 
     /* ✅ Mikrofon dinliyor efekti */
@@ -217,8 +250,6 @@
           <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
           <div class="yp-num" id="ypNum">19%</div>
         </div>
-
-        <!-- ✅ notifDropdown kaldırıldı: “Bildirimler” yazısı çıkmasın -->
       </div>
     </div>
   </div>
@@ -271,10 +302,9 @@
         <svg viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
       </button>
 
-      <!-- 3 farklı input: kamera / foto / dosya -->
       <input type="file" id="fileCamera" accept="image/*" capture="environment" hidden>
       <input type="file" id="filePhotos" accept="image/*" hidden>
-      <input type="file" id="fileFiles"  hidden>
+      <input type="file" id="fileFiles" hidden>
 
       <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
 
@@ -288,22 +318,29 @@
     </div>
   </div>
 
-  <!-- ✅ + menü seçenekleri -->
+  <!-- + menü -->
   <div class="plus-sheet" id="plusSheet">
     <div class="plus-action" id="pickCamera">
-      <div class="plus-ico">📷</div>
+      <div class="plus-ico">
+        <svg viewBox="0 0 24 24"><path d="M4 7h4l2-2h4l2 2h4v12H4z"></path><circle cx="12" cy="13" r="3"></circle></svg>
+      </div>
       Kamera
     </div>
     <div class="plus-action" id="pickPhotos">
-      <div class="plus-ico">🖼️</div>
-      Fotoğraflar
+      <div class="plus-ico">
+        <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"></rect><path d="M8 14l2-2 3 3 3-4 2 3"></path></svg>
+      </div>
+      Fotoğraf
     </div>
     <div class="plus-action" id="pickFiles">
-      <div class="plus-ico">📄</div>
-      Dosyalar
+      <div class="plus-ico">
+        <svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path></svg>
+      </div>
+      Dosya
     </div>
   </div>
 
+  <!-- kolay menü -->
   <div class="assistant-bar" id="assistantBar">
     <div class="assistant-item" data-go="/pages/chat.html"><div class="ico-wrap">💬</div><div class="lbl">Sohbet</div></div>
     <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico-wrap">🥗</div><div class="lbl">Diyet</div></div>
@@ -328,7 +365,6 @@
 <script src="/js/layout-common.js?v=1"></script>
 
 <script>
-  // ✅ Bu sayfaya özel: + menüsü ve mikrofon “dinliyor” hissi
   document.addEventListener("DOMContentLoaded", () => {
     const camBtn = document.getElementById("camBtn");
     const plusSheet = document.getElementById("plusSheet");
@@ -345,7 +381,6 @@
     const micBtn = document.getElementById("micBtn");
     const sendBtn = document.getElementById("sendBtn");
 
-    // + menüyü aç/kapat
     function togglePlus(open){
       if(!plusSheet) return;
       plusSheet.classList.toggle("show", !!open);
@@ -387,17 +422,13 @@
       });
     }
 
-    // dosya seçilince: mevcut sistemin (main.js / fal.js) yakalaması için sadece event bırakıyoruz
-    // Ekstra bir şey yapmıyoruz, bozmuyoruz.
-    function onPick(){
-      // seçildiğinde + menüyü kapat
-      togglePlus(false);
-    }
+    // seçilince sheet kapansın
+    function onPick(){ togglePlus(false); }
     if(fileCamera) fileCamera.addEventListener("change", onPick);
     if(filePhotos) filePhotos.addEventListener("change", onPick);
     if(fileFiles)  fileFiles.addEventListener("change", onPick);
 
-    // Mikrofon dinliyor hissi (main.js konuşmayı zaten yazıp gönderiyor)
+    // Mikrofon dinliyor hissi (main.js konuşmayı yazıp gönderiyor)
     let listenTimer = null;
     function setListening(on){
       if(!micBtn || !msgInput) return;
@@ -413,16 +444,12 @@
 
     if(micBtn){
       micBtn.addEventListener("click", ()=>{
-        // görsel hissiyat başlasın
         setListening(true);
-
-        // 10 sn sonra otomatik kapat (main.js result gelince zaten mesaj gider)
         clearTimeout(listenTimer);
-        listenTimer = setTimeout(()=> setListening(false), 10000);
+        listenTimer = setTimeout(()=> setListening(false), 12000);
       });
     }
 
-    // input dolarsa (speech yazdıysa) dinliyor efektini kapat
     if(msgInput){
       msgInput.addEventListener("input", ()=>{
         if(String(msgInput.value||"").trim().length > 0){
@@ -432,7 +459,6 @@
       });
     }
 
-    // gönderince de kapat
     if(sendBtn){
       sendBtn.addEventListener("click", ()=>{
         setListening(false);
