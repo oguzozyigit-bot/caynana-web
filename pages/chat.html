@@ -49,7 +49,7 @@
     }
     .assistant-bar .assistant-item{ pointer-events:auto; }
 
-    /* İkon altı mini isim (ikon büyütmeden) */
+    /* İkon altı mini isim */
     .assistant-item .lbl{
       display:block !important;
       font-size: 8px !important;
@@ -74,8 +74,12 @@
 
       pointer-events: none; /* scroll’u yeme */
     }
-    .input-dock .dock-inner{ pointer-events:auto; width:100% !important; max-width:none !important; }
-    .dock-inner{ align-items:flex-end !important; }
+    .input-dock .dock-inner{
+      pointer-events:auto;
+      width:100% !important;
+      max-width:none !important;
+      align-items:flex-end !important;
+    }
     #msgInput{
       min-width:0 !important;
       white-space:normal !important;
@@ -83,12 +87,17 @@
       max-height:120px !important;
     }
 
-    /* ✅ ASIL ÇÖZÜM: chat-area flex’in içinden çıkıyor → absolute scroll */
+    /* ✅ ASIL SCROLL ÇÖZÜMÜ:
+       - #chat absolute + overflow:auto
+       - justify-content YOK
+       - Alta itme: ::before spacer (flex bug yok)
+    */
     .chat-area{
       position: absolute !important;
       left: 0; right: 0;
       top: var(--topH);
       bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + (var(--gapH) * 2));
+
       padding: 14px 12px;
 
       overflow-y: auto !important;
@@ -96,17 +105,20 @@
       overscroll-behavior: contain !important;
       touch-action: pan-y !important;
 
-      /* scrollbar gizli */
       scrollbar-width: none !important;
+      display:flex !important;
+      flex-direction:column !important;
+      gap: 10px !important;
+
+      /* çok kritik: flex scroll bug’ını öldürür */
+      min-height: 0 !important;
     }
     .chat-area::-webkit-scrollbar{ display:none !important; }
 
-    /* Mesajlar altta biriksin (scroll bozmadan) */
-    .chat-area{
-      display:flex;
-      flex-direction:column;
-      justify-content:flex-end;
-      gap: 10px;
+    /* ✅ Mesaj azsa altta dursun (justify-content yerine spacer) */
+    .chat-area::before{
+      content:"";
+      flex: 1 0 auto;
     }
 
     /* + menü */
@@ -261,7 +273,7 @@
     </div>
   </div>
 
-  <!-- ✅ Scroll kesin çalışan chat -->
+  <!-- ✅ Scroll artık kesin çalışır -->
   <div class="chat-area" id="chat"></div>
 
   <div class="input-dock">
