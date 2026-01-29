@@ -119,6 +119,14 @@
       padding-bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + (var(--gapH) * 2) + 14px) !important;
     }
     .chat-area::-webkit-scrollbar{ display:none !important; }
+       Q/* ✅ SCROLL FIX: alttaki sabit katmanlar scroll'u yemesin */
+.input-dock{ pointer-events:none !important; }
+.input-dock .dock-inner{ pointer-events:auto !important; }
+
+.assistant-bar{ pointer-events:none !important; }
+.assistant-bar .assistant-item{ pointer-events:auto !important; }
+
+.footer-container{ pointer-events:auto !important; } /* footer linkleri tıklansın */
 
     /* ✅ input büyürken ikonların üstüne binmesin */
     .dock-inner{ align-items:flex-end !important; }
