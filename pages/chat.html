@@ -1,11 +1,4 @@
-<!-- FILE: /pages/chat.html
-     FULL (BOZMADAN DÜZELTME)
-     ✅ 1) Scroll düzeldi: alt katmanlar dokunmayı yemesin diye pointer-events fix (chat alanı artık aşağı/yukarı kayar)
-     ✅ 2) Yazı penceresi genişletildi + alt bara yaklaştırıldı (üst üste binmez)
-     ✅ 3) + menüsü kurumsal görünümlü (SVG ikon) + Kamera / Fotoğraf / Dosya çalışır
-     ✅ 4) Mikrofon dinliyor hissi (renk/halo + placeholder) — bozmadan
-     ✅ 5) Kolay menüde tüm ikonların altında mini isim (ikon büyümeden)
--->
+<!-- FILE: /pages/chat.html -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -22,12 +15,11 @@
       --frameW: min(480px, calc(100vw - 18px));
       --topH: 65px;
       --footerH: 64px;
-      --assistH: 68px;   /* daha ince */
-      --dockH: 68px;     /* daha ince */
-      --gapH: 6px;       /* daha yakın */
+      --assistH: 68px;
+      --dockH: 68px;
+      --gapH: 6px;
     }
 
-    /* Footer frame içinde ve en altta */
     .footer-container{
       position: fixed !important;
       left: 50% !important;
@@ -39,20 +31,16 @@
       border-top: 1px solid rgba(255,255,255,.06);
     }
 
-    /* Alt bar footer üstünde */
     .assistant-bar{
       bottom: var(--footerH) !important;
       z-index: 2500 !important;
       height: var(--assistH);
       padding-top: 6px;
       padding-bottom: 6px;
-
-      /* ✅ Chat scroll dokunmasını yemesin */
       pointer-events: none;
     }
     .assistant-bar .assistant-item{ pointer-events: auto; }
 
-    /* ✅ Her ikonun altında mini isim (ikon büyümeden) */
     .assistant-item .lbl{
       display:block !important;
       font-size: 8px !important;
@@ -63,7 +51,7 @@
       white-space: nowrap;
     }
     .assistant-item{
-      width: 56px !important; /* büyütmeden sığdır */
+      width: 56px !important;
       padding: 8px 6px 6px !important;
       gap: 3px !important;
     }
@@ -73,7 +61,6 @@
       border-radius: 14px !important;
     }
 
-    /* Input dock: alt barın üstünde (yaklaştır + genişlet) */
     .input-dock{
       position: fixed !important;
       left: 50% !important;
@@ -81,24 +68,17 @@
       width: var(--frameW) !important;
       bottom: calc(var(--footerH) + var(--assistH) + var(--gapH)) !important;
       z-index: 2600 !important;
-
       padding: 0 10px 6px !important;
       background: transparent !important;
-
-      /* ✅ Chat scroll dokunmasını yemesin */
       pointer-events: none;
     }
     .input-dock .dock-inner{ pointer-events:auto; }
+    .input-dock .dock-inner{ width: 100% !important; max-width: none !important; }
 
-    /* Yazı penceresi: köşelere doğru genişlet */
-    .input-dock .dock-inner{
-      width: 100% !important;
-      max-width: none !important;
-    }
-
-    /* ✅ Chat: scroll kesin çalışsın + mesajlar üst bara girsin doğru */
+    /* ✅ CHAT SCROLL (asıl mesele burada) */
     .chat-area{
-      /* flex yerleşimi bozulmasın */
+      pointer-events: auto !important;
+
       flex: 1 1 auto !important;
       min-height: 0 !important;
 
@@ -107,28 +87,16 @@
       touch-action: pan-y !important;
       overscroll-behavior: contain !important;
 
-      /* scrollbar gizli */
       scrollbar-width: none !important;
 
-      /* mesajlar altta biriksin */
       display: flex !important;
       flex-direction: column !important;
       justify-content: flex-end !important;
 
-      /* alt katmanlara göre boşluk */
       padding-bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + (var(--gapH) * 2) + 14px) !important;
     }
     .chat-area::-webkit-scrollbar{ display:none !important; }
-       Q/* ✅ SCROLL FIX: alttaki sabit katmanlar scroll'u yemesin */
-.input-dock{ pointer-events:none !important; }
-.input-dock .dock-inner{ pointer-events:auto !important; }
 
-.assistant-bar{ pointer-events:none !important; }
-.assistant-bar .assistant-item{ pointer-events:auto !important; }
-
-.footer-container{ pointer-events:auto !important; } /* footer linkleri tıklansın */
-
-    /* ✅ input büyürken ikonların üstüne binmesin */
     .dock-inner{ align-items:flex-end !important; }
     #msgInput{
       min-width:0 !important;
@@ -137,7 +105,6 @@
       max-height:120px !important;
     }
 
-    /* ✅ + menü sheet (kurumsal ikonlar) */
     .plus-sheet{
       position: fixed;
       left: 50%;
@@ -196,7 +163,6 @@
       opacity: .95;
     }
 
-    /* ✅ Mikrofon dinliyor efekti */
     #micBtn.listening{
       background: rgba(190,242,100,.16) !important;
       border: 1px solid rgba(190,242,100,.35) !important;
@@ -326,7 +292,6 @@
     </div>
   </div>
 
-  <!-- + menü -->
   <div class="plus-sheet" id="plusSheet">
     <div class="plus-action" id="pickCamera">
       <div class="plus-ico">
@@ -348,7 +313,6 @@
     </div>
   </div>
 
-  <!-- kolay menü -->
   <div class="assistant-bar" id="assistantBar">
     <div class="assistant-item" data-go="/pages/chat.html"><div class="ico-wrap">💬</div><div class="lbl">Sohbet</div></div>
     <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico-wrap">🥗</div><div class="lbl">Diyet</div></div>
@@ -402,7 +366,6 @@
       });
     }
 
-    // dışarı tıklayınca kapat
     document.addEventListener("click", (e)=>{
       if(!plusSheet || !plusSheet.classList.contains("show")) return;
       const insideSheet = plusSheet.contains(e.target);
@@ -410,7 +373,6 @@
       if(!insideSheet && !insideBtn) togglePlus(false);
     }, true);
 
-    // seçimler
     if(pickCamera && fileCamera){
       pickCamera.addEventListener("click", ()=>{
         togglePlus(false);
@@ -430,13 +392,11 @@
       });
     }
 
-    // seçilince sheet kapansın
     function onPick(){ togglePlus(false); }
     if(fileCamera) fileCamera.addEventListener("change", onPick);
     if(filePhotos) filePhotos.addEventListener("change", onPick);
     if(fileFiles)  fileFiles.addEventListener("change", onPick);
 
-    // Mikrofon dinliyor hissi (main.js konuşmayı yazıp gönderiyor)
     let listenTimer = null;
     function setListening(on){
       if(!micBtn || !msgInput) return;
