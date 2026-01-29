@@ -1,223 +1,372 @@
+<!-- FILE: /pages/sss.html
+     LOGIN SONRASI ŞABLON (ÜST BAR + HAMBURGER + KOLAY MENÜ + FOOTER SABİT)
+     ✅ İçerik: senin /pages/faq.html metni aynen alındı (değişmedi)
+     ✅ Üst/alt bar: login sonrası standart (chat.html ile aynı)
+-->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Sık Sorulan Sorular</title>
-<style>
-  /* --- TEMEL AYARLAR --- */
-  :root { 
-    --bg: #0e0e0e; 
-    --text: #ececec; 
-    --gold: #ffb300; 
-    --pistachio: #bef264; 
-    --card-bg: #1a1a1a; 
-  }
-  
-  body { 
-    margin: 0; padding: 0; 
-    background: #000; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-    color: var(--text); 
-    display: flex; justify-content: center; 
-    height: 100vh; overflow: hidden; 
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Sık Sorulan Sorular</title>
 
-  .mobile-frame { 
-    width: 100%; max-width: 480px; height: 100%; 
-    background: var(--bg); 
-    display: flex; flex-direction: column; 
-    position: relative; 
-  }
-  @media (min-width: 500px) { 
-    .mobile-frame { 
-      height: 95vh; border-radius: 24px; border: 1px solid #333; margin-top: 2.5vh; 
-      box-shadow: 0 0 50px rgba(255, 255, 255, 0.05);
-    } 
-  }
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="/css/style.css?v=2" />
+  <link rel="stylesheet" href="/css/layout-common.css?v=1" />
 
-  /* --- HEADER --- */
-  .header { 
-    padding: 15px 20px; 
-    border-bottom: 1px solid #222; 
-    background: rgba(20,20,20,0.95); 
-    backdrop-filter: blur(10px);
-    z-index: 10;
-    display: flex; align-items: center; gap: 15px;
-  }
-  .back-btn {
-    background: none; border: none; color: var(--gold); 
-    font-size: 24px; cursor: pointer; padding: 0; margin-top: -2px;
-  }
-  .header-title { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+  <style>
+    :root{
+      --frameW: min(480px, calc(100vw - 18px));
+      --topH: 65px;
+      --footerH: 64px;
+      --assistH: 68px;
+      --dockGap: 10px;
 
-  /* --- İÇERİK ALANI --- */
-  .content-area { 
-    flex: 1; overflow-y: auto; padding: 20px; 
-    display: flex; flex-direction: column; gap: 20px; 
-    scrollbar-width: none; 
-  }
-  .content-area::-webkit-scrollbar { display: none; }
+      --gold:#ffb300;
+      --pistachio:#bef264;
+      --red:#ff5252;
+    }
 
-  /* SSS KARTLARI */
-  .faq-item {
-    border-bottom: 1px solid #222;
-    padding-bottom: 20px;
-  }
-  
-  .faq-q {
-    font-size: 15px; color: var(--gold); font-weight: 700;
-    margin-bottom: 8px; line-height: 1.4;
-  }
-  
-  .faq-a {
-    font-size: 14px; color: #ccc; line-height: 1.6;
-  }
+    /* Orta alan scroll */
+    .page-scroll{
+      position:absolute;
+      left:0; right:0;
+      top: var(--topH);
+      bottom: calc(var(--footerH) + var(--assistH) + var(--dockGap));
+      overflow-y:auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width:none;
+      padding: 16px 14px;
+    }
+    .page-scroll::-webkit-scrollbar{ display:none; }
 
-  /* Vurgular */
-  .highlight { color: #fff; font-weight: 600; }
-  .tag { 
-    display: inline-block; padding: 2px 6px; border-radius: 4px; 
-    font-size: 11px; font-weight: bold; margin-bottom: 5px;
-  }
-  .tag.yes { background: rgba(190, 242, 100, 0.15); color: var(--pistachio); }
-  .tag.no { background: rgba(255, 82, 82, 0.15); color: #ff5252; }
+    .page-card{
+      background: rgba(25,25,25,.55);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.55);
+    }
 
-  ul { margin: 5px 0 0 0; padding-left: 20px; }
-  li { margin-bottom: 4px; }
+    .page-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom: 10px;
+    }
+    .page-title{
+      font-size: 16px;
+      font-weight: 1000;
+      color: #fff;
+      margin: 0;
+    }
+    .back-mini{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color:#fff;
+      cursor:pointer;
+      user-select:none;
+      flex: 0 0 auto;
+    }
+    .back-mini:active{ transform: translateY(1px); filter: brightness(.95); }
 
-  /* Footer İmza */
-  .footer-sign { 
-    margin-top: 10px; text-align: center; padding: 20px; 
-    border-top: 1px solid #222; color: var(--pistachio); 
-    font-weight: 700; font-size: 14px; 
-  }
-  .footer-sub { font-size: 11px; color: #666; font-weight: 400; margin-top: 4px; }
+    /* SSS kartları */
+    .faq-item{
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+    }
+    .faq-q{
+      font-size: 14px;
+      color: var(--gold);
+      font-weight: 900;
+      margin-bottom: 8px;
+      line-height: 1.4;
+      letter-spacing: .2px;
+    }
+    .faq-a{
+      font-size: 13px;
+      color: rgba(255,255,255,.78);
+      line-height: 1.65;
+      font-weight: 650;
+    }
 
-</style>
+    .highlight{ color:#fff; font-weight: 800; }
+    .tag{
+      display:inline-block;
+      padding: 3px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 900;
+      margin-bottom: 6px;
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .tag.yes{ background: rgba(190,242,100,0.12); color: var(--pistachio); border-color: rgba(190,242,100,0.20); }
+    .tag.no{ background: rgba(255,82,82,0.12); color: var(--red); border-color: rgba(255,82,82,0.20); }
+
+    .footer-sign{
+      margin-top: 18px;
+      text-align: center;
+      padding: 16px 12px;
+      border-top: 1px solid rgba(255,255,255,.10);
+      color: var(--pistachio);
+      font-weight: 900;
+      font-size: 14px;
+      letter-spacing: .4px;
+    }
+    .footer-sub{
+      font-size: 11px;
+      color: rgba(255,255,255,.55);
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    /* Alt bar + footer frame */
+    .assistant-bar{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--frameW);
+      bottom: var(--footerH);
+      height: var(--assistH);
+      z-index: 2500;
+      pointer-events:none;
+    }
+    .assistant-bar .assistant-item{ pointer-events:auto; }
+
+    .footer-container{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--frameW);
+      bottom: 0;
+      z-index: 2400;
+    }
+  </style>
 </head>
+
 <body>
+<div class="mobile-frame" id="mobileFrame">
 
-<div class="mobile-frame">
-  <div class="header">
-    <button class="back-btn" onclick="history.back()">←</button>
-    <div class="header-title">Sık Sorulan Sorular</div>
+  <!-- ✅ TOPBAR (login sonrası standart) -->
+  <div class="topbar">
+    <div class="left-controls">
+      <button class="hamb-btn" id="hambBtn">☰</button>
+    </div>
+
+    <div class="brand-wrapper" id="brandWrapper" style="cursor:pointer" onclick="location.href='/pages/chat.html'">
+      <div class="logo-area">
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
+          <g class="seesaw-bar" id="seesawBar">
+            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+            <circle cx="3" cy="5" r="3" fill="#bef264" />
+            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+          </g>
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+        </svg>
+        <div class="brand-name">Caynana AI</div>
+      </div>
+      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+    </div>
+
+    <div class="right-controls">
+      <div class="notif-row">
+        <div class="notif-topline">
+          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+            <svg viewBox="0 0 24 24">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <div class="badge" id="notifBadge"></div>
+          </button>
+          <div id="planChip" class="plan-chip">FREE</div>
+        </div>
+
+        <div class="yp-chip">
+          <div class="yp-label">SAMİMİYET</div>
+          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+          <div class="yp-num" id="ypNum">19%</div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="content-area">
+  <!-- ✅ HAMBURGER MENU (login sonrası) -->
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-sidebar">
+      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
 
-    <div class="faq-item">
-      <div class="faq-q">1) Caynana AI nedir?</div>
-      <div class="faq-a">
-        Caynana AI, klasik bir sohbet robotu değildir. O; seninle konuşan, bakan, tepki veren ve zamanla <span class="highlight">ilişki kuran</span> bir dijital asistandır. Sorulara cevap verirken sadece kelimeleri değil, duyguyu ve bağlamı da dikkate alır.
+      <div class="profile-shortcut-wrap" id="profileShortcutMount">
+        <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='/pages/profil.html'">
+          <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
+          <div class="profile-shortcut-text">
+            <div class="profile-shortcut-title">Profil Düzenle</div>
+            <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
+      <div class="history-list" id="historyList"></div>
+
+      <div class="menu-block asistan"><div class="block-head">Asistan AI</div><div class="menu-grid" id="menuAsistan"></div></div>
+      <div class="menu-block astro"><div class="block-head">Astro AI</div><div class="menu-grid" id="menuAstro"></div></div>
+      <div class="menu-block kurumsal"><div class="block-head">Kurumsal</div><div class="menu-grid" id="menuKurumsal"></div></div>
+
+      <div class="menu-footer-actions">
+        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
+        <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
+        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
       </div>
     </div>
-
-    <div class="faq-item">
-      <div class="faq-q">2) Caynana AI ücretsiz mi?</div>
-      <div class="faq-a">
-        <span class="tag yes">EVET</span><br>
-        Caynana AI’nin temel özellikleri ücretsizdir. İlerleyen dönemlerde bazı gelişmiş özellikler veya özel modüller ücretli olabilir. Böyle bir durumda kullanıcı açıkça bilgilendirilir.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">3) Nasıl giriş yapabilirim?</div>
-      <div class="faq-a">
-        Caynana AI’ye yalnızca <strong>Google veya Apple</strong> hesabınla giriş yapabilirsin. E-posta/şifre ya da misafir giriş yoktur.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">4) Avatarımı değiştirebilir miyim?</div>
-      <div class="faq-a">
-        <span class="tag no">HAYIR</span><br>
-        Avatarın, Google veya Apple hesabından gelen profil fotoğrafıdır ve değiştirilemez. Bu, kimlik tutarlılığı ve güven için bilinçli bir tercihtir.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">5) Profil doldurmak zorunlu mu?</div>
-      <div class="faq-a">
-        <span class="tag yes">EVET</span><br>
-        Profil tamamlanmadan Caynana AI tam olarak kullanılamaz. Özellikle <strong>Caynana’nın sana vereceği isim</strong> ve <strong>hitap şekli</strong> zorunludur ve bir kez kaydedilir, sonradan değiştirilemez.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">6) Caynana bana neden bazen sert konuşuyor?</div>
-      <div class="faq-a">
-        Çünkü Caynana bir ilişkisel asistandır. Kullandığı dil senin konuşma tarzına, samimiyet seviyene ve davranışına göre şekillenir. Sınır aşılırsa mesafe koyar, saygı varsa yumuşar. Bu bir hata değil, <span class="highlight">tasarımdır</span>.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">7) Caynana söylediklerimi kaydediyor mu?</div>
-      <div class="faq-a">
-        <span class="tag no">HAYIR</span><br>
-        Kamera ve mikrofon sadece sen izin verdiğinde çalışır. Görüntü ve ses kaydedilmez, sadece anlık analiz için kullanılır. Kontrol her zaman sendedir.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">8) Kamera ile “takip” ne işe yarıyor?</div>
-      <div class="faq-a">
-        Takip açıkken Caynana yüzünü izler, bakışlarına ve göz kırpmana tepki verir, daha canlı ve gerçekçi davranır. İstediğin an <strong>Takibi Kapat</strong> diyerek devre dışı bırakabilirsin.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">9) Mikrofonu kullanmak zorunda mıyım?</div>
-      <div class="faq-a">
-        <span class="tag no">HAYIR</span><br>
-        Caynana AI yazıyla da, sesle de kullanılabilir. Mikrofon tamamen isteğe bağlıdır.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">10) Caynana’nın söyledikleri resmi tavsiye mi?</div>
-      <div class="faq-a">
-        <span class="tag no">HAYIR</span><br>
-        Caynana AI doktor, avukat veya finans danışmanı değildir. Verdikleri öneri niteliğindedir. Kararların sorumluluğu kullanıcıya aittir.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">11) Samimiyet seviyesi nedir?</div>
-      <div class="faq-a">
-        Caynana, herkesle aynı şekilde konuşmaz. Zamanla tanışır, alışır, samimiyet kurar ve buna göre davranır. Saygı varsa yakınlaşır, agresyon varsa mesafe koyar.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">12) Hesabımı silebilir miyim?</div>
-      <div class="faq-a">
-        <span class="tag yes">EVET</span><br>
-        Hesap silme ve veri talepleri için uygulama içindeki Ayarlar bölümünden veya destek kanallarından işlem yapılabilir.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">13) Caynana neden “kaynana” gibi davranıyor?</div>
-      <div class="faq-a">
-        Çünkü lafı dolandırmaz, gerektiğinde uyarır, gerektiğinde sahip çıkar. Ama her zaman kötülüğünü istemez. Tam olarak gerçek hayattaki gibi.
-      </div>
-    </div>
-
-    <div class="faq-item">
-      <div class="faq-q">14) Bir sorun yaşarsam ne yapmalıyım?</div>
-      <div class="faq-a">
-        Uygulama içindeki Ayarlar bölümünden veya destek kanallarından bizimle iletişime geçebilirsin.
-      </div>
-    </div>
-
-    <div class="footer-sign">
-      Caynana AI
-      <div class="footer-sub">Yapay Zekânın Geleneksel Aklı</div>
-    </div>
-
   </div>
+
+  <!-- ✅ ORTA İÇERİK -->
+  <div class="page-scroll">
+    <div class="page-card">
+      <div class="page-head">
+        <h1 class="page-title">Sık Sorulan Sorular</h1>
+        <button class="back-mini" type="button" onclick="history.back()" aria-label="Geri">←</button>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">1) Caynana AI nedir?</div>
+        <div class="faq-a">
+          Caynana AI, klasik bir sohbet robotu değildir. O; seninle konuşan, bakan, tepki veren ve zamanla <span class="highlight">ilişki kuran</span> bir dijital asistandır. Sorulara cevap verirken sadece kelimeleri değil, duyguyu ve bağlamı da dikkate alır.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">2) Caynana AI ücretsiz mi?</div>
+        <div class="faq-a">
+          <span class="tag yes">EVET</span><br>
+          Caynana AI’nin temel özellikleri ücretsizdir. İlerleyen dönemlerde bazı gelişmiş özellikler veya özel modüller ücretli olabilir. Böyle bir durumda kullanıcı açıkça bilgilendirilir.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">3) Nasıl giriş yapabilirim?</div>
+        <div class="faq-a">
+          Caynana AI’ye yalnızca <strong>Google veya Apple</strong> hesabınla giriş yapabilirsin. E-posta/şifre ya da misafir giriş yoktur.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">4) Avatarımı değiştirebilir miyim?</div>
+        <div class="faq-a">
+          <span class="tag no">HAYIR</span><br>
+          Avatarın, Google veya Apple hesabından gelen profil fotoğrafıdır ve değiştirilemez. Bu, kimlik tutarlılığı ve güven için bilinçli bir tercihtir.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">5) Profil doldurmak zorunlu mu?</div>
+        <div class="faq-a">
+          <span class="tag yes">EVET</span><br>
+          Profil tamamlanmadan Caynana AI tam olarak kullanılamaz. Özellikle <strong>Caynana’nın sana vereceği isim</strong> ve <strong>hitap şekli</strong> zorunludur ve bir kez kaydedilir, sonradan değiştirilemez.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">6) Caynana bana neden bazen sert konuşuyor?</div>
+        <div class="faq-a">
+          Çünkü Caynana bir ilişkisel asistandır. Kullandığı dil senin konuşma tarzına, samimiyet seviyene ve davranışına göre şekillenir. Sınır aşılırsa mesafe koyar, saygı varsa yumuşar. Bu bir hata değil, <span class="highlight">tasarımdır</span>.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">7) Caynana söylediklerimi kaydediyor mu?</div>
+        <div class="faq-a">
+          <span class="tag no">HAYIR</span><br>
+          Kamera ve mikrofon sadece sen izin verdiğinde çalışır. Görüntü ve ses kaydedilmez, sadece anlık analiz için kullanılır. Kontrol her zaman sendedir.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">8) Kamera ile “takip” ne işe yarıyor?</div>
+        <div class="faq-a">
+          Takip açıkken Caynana yüzünü izler, bakışlarına ve göz kırpmana tepki verir, daha canlı ve gerçekçi davranır. İstediğin an <strong>Takibi Kapat</strong> diyerek devre dışı bırakabilirsin.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">9) Mikrofonu kullanmak zorunda mıyım?</div>
+        <div class="faq-a">
+          <span class="tag no">HAYIR</span><br>
+          Caynana AI yazıyla da, sesle de kullanılabilir. Mikrofon tamamen isteğe bağlıdır.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">10) Caynana’nın söyledikleri resmi tavsiye mi?</div>
+        <div class="faq-a">
+          <span class="tag no">HAYIR</span><br>
+          Caynana AI doktor, avukat veya finans danışmanı değildir. Verdikleri öneri niteliğindedir. Kararların sorumluluğu kullanıcıya aittir.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">11) Samimiyet seviyesi nedir?</div>
+        <div class="faq-a">
+          Caynana, herkesle aynı şekilde konuşmaz. Zamanla tanışır, alışır, samimiyet kurar ve buna göre davranır. Saygı varsa yakınlaşır, agresyon varsa mesafe koyar.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">12) Hesabımı silebilir miyim?</div>
+        <div class="faq-a">
+          <span class="tag yes">EVET</span><br>
+          Hesap silme ve veri talepleri için uygulama içindeki Ayarlar bölümünden veya destek kanallarından işlem yapılabilir.
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">13) Caynana neden “kaynana” gibi davranıyor?</div>
+        <div class="faq-a">
+          Çünkü lafı dolandırmaz, gerektiğinde uyarır, gerektiğinde sahip çıkar. Ama her zaman kötülüğünü istemez. Tam olarak gerçek hayattaki gibi.
+        </div>
+      </div>
+
+      <div class="faq-item" style="border-bottom:none; padding-bottom:0; margin-bottom:0;">
+        <div class="faq-q">14) Bir sorun yaşarsam ne yapmalıyım?</div>
+        <div class="faq-a">
+          Uygulama içindeki Ayarlar bölümünden veya destek kanallarından bizimle iletişime geçebilirsin.
+        </div>
+      </div>
+
+      <div class="footer-sign">
+        Caynana AI
+        <div class="footer-sub">Yapay Zekânın Geleneksel Aklı</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ✅ ALT KOLAY MENÜ -->
+  <div class="assistant-bar" id="assistantBar"></div>
+
+  <!-- ✅ FOOTER (login sonrası linkler) -->
+  <div class="footer-container">
+    <div class="footer-links">
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
+    </div>
+    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
+  </div>
+
 </div>
+
+<script type="module" src="/js/main.js"></script>
+<script src="/js/layout-common.js?v=1"></script>
 
 </body>
 </html>
