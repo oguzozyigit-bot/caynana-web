@@ -1,9 +1,7 @@
 // FILE: /js/main.js
-// VERSION: vFINAL+2g-FULL (FIX DOUBLE REPLY + FIX AUTOSCROLL DURING TYPING + SAFE LIVE UPDATES + FIX LOGOUT REDIRECT + REAL DELETE)
-// ✅ Logout: her zaman /index.html
-// ✅ Hesabımı Sil: user + token + tüm chat kayıtları + memory + terms temizler, sonra /index.html
-// ✅ Çift mesaj: chat re-render sadece sohbet değişince (id değişimi) + typing sırasında re-render yok
-// ✅ Otomatik scroll: kullanıcı mesaj attıysa autofollow ON; yazarken alta kilit; kullanıcı yukarı kaydırırsa autofollow OFF
+// VERSION: vFINAL+3-SCROLL-FIX (DOM RENDER DELAY + FORCE SCROLL ON SEND + NO CHAT RERENDER ON MESSAGE EVENTS)
+// ✅ Çok kritik: caynana:chats-updated event'inde chat’i tekrar basmıyoruz (double/scroll kırılmasın)
+// ✅ scrollBottom: DOM update’i bekleyip 3 kere aşağı itiyor (10ms/60ms/raf)
 
 import { BASE_DOMAIN, STORAGE_KEY, GOOGLE_CLIENT_ID } from "./config.js";
 import { initAuth, logout, acceptTerms } from "./auth.js";
@@ -28,14 +26,12 @@ function isLoggedUser(u){
   return !!(u?.isSessionActive && (u?.id || u?.user_id) && u?.provider && u?.provider !== "guest");
 }
 
-/* ✅ seesaw state (user/bot/idle) */
 window.setSeesawState = function(state){
   const bw = $("brandWrapper");
   if(!bw) return;
   bw.classList.remove("usering","botting","thinking");
   if(state === "user") bw.classList.add("usering");
   if(state === "bot")  bw.classList.add("botting","thinking");
-  // idle -> none
 };
 
 function refreshPremiumBars() {
@@ -48,7 +44,6 @@ function refreshPremiumBars() {
   if ($("ypNum")) $("ypNum").textContent = `${p}%`;
   if ($("ypFill")) $("ypFill").style.width = `${p}%`;
 
-  // Menü profil adı / avatar
   try {
     const name = (u.fullname || u.name || u.display_name || u.email || "—");
     const nm = $("profileShortcutName");
@@ -78,68 +73,42 @@ function bindBottomBar(){
   });
 }
 
-/* ✅ Logout + Delete */
 function bindLogoutAndDelete(){
-  const logoutBtn = $("logoutBtn");
-  if(logoutBtn){
-    logoutBtn.addEventListener("click", ()=> {
-      try {
-        logout(); // auth.js confirm + reload yapar
-      } catch {
-        window.location.replace("/index.html");
+  $("logoutBtn")?.addEventListener("click", ()=> {
+    try { logout(); } catch { window.location.replace("/index.html"); }
+    setTimeout(()=> window.location.replace("/index.html"), 300);
+  });
+
+  $("deleteAccountBtn")?.addEventListener("click", ()=>{
+    const ok = confirm("Hesabın kalıcı olarak silinecek. Emin misin evladım?");
+    if(!ok) return;
+
+    const u0 = (()=>{ try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}")}catch{return {}} })();
+    const uid = String(u0.user_id || u0.id || u0.email || "").trim().toLowerCase() || "guest";
+    const email = String(u0.email || "").trim().toLowerCase();
+
+    try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch(e){}
+
+    try{
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem("google_id_token");
+      localStorage.removeItem("caynana_api_token");
+      if(email) localStorage.removeItem(termsKey(email));
+      localStorage.removeItem("caynana_memory_profile");
+      localStorage.removeItem(`caynana_chat_index::${uid}`);
+      localStorage.removeItem(`caynana_chat_current::${uid}`);
+
+      for(let i = localStorage.length - 1; i >= 0; i--){
+        const k = localStorage.key(i);
+        if(!k) continue;
+        if(k.startsWith("caynana_chat_")) localStorage.removeItem(k);
+        if(k.startsWith("caynana_chat_id:")) localStorage.removeItem(k);
+        if(k.startsWith("caynana_kaynana_state:")) localStorage.removeItem(k);
       }
-      // auth.js reload ettiği için garanti: fallback redirect
-      setTimeout(()=> window.location.replace("/index.html"), 300);
-    });
-  }
+    }catch(e){}
 
-  const del = $("deleteAccountBtn");
-  if(del){
-    del.addEventListener("click", ()=>{
-      const ok = confirm("Hesabın kalıcı olarak silinecek. Emin misin evladım?");
-      if(!ok) return;
-
-      // UID'yi SİLMEDEN önce al (sonra storage temizlenecek)
-      const u0 = (()=>{ try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||"{}")}catch{return {}} })();
-      const uid = String(u0.user_id || u0.id || u0.email || "").trim().toLowerCase() || "guest";
-      const email = String(u0.email || "").trim().toLowerCase();
-
-      // Google auto-select kapat
-      try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch(e){}
-
-      try{
-        // user + token
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem("google_id_token");
-        localStorage.removeItem("caynana_api_token");
-
-        // terms (email bazlı)
-        if(email) localStorage.removeItem(termsKey(email));
-
-        // memory
-        localStorage.removeItem("caynana_memory_profile");
-
-        // chat store (user scoped)
-        localStorage.removeItem(`caynana_chat_index::${uid}`);
-        localStorage.removeItem(`caynana_chat_current::${uid}`);
-
-        // tüm chat parçaları + state
-        for(let i = localStorage.length - 1; i >= 0; i--){
-          const k = localStorage.key(i);
-          if(!k) continue;
-          if(k.startsWith("caynana_chat_")) localStorage.removeItem(k);
-          if(k.startsWith("caynana_chat_id:")) localStorage.removeItem(k);
-          if(k.startsWith("caynana_kaynana_state:")) localStorage.removeItem(k);
-          if(k.startsWith("caynana_terms_accepted_at::")) {
-            // sadece bu user/email’e ait olanı hedefli silmek isterdik ama güvenli: tümü de silinebilir
-            // (tek cihaz tek kullanıcı mantığında)
-          }
-        }
-      }catch(e){}
-
-      window.location.replace("/index.html");
-    });
-  }
+    window.location.replace("/index.html");
+  });
 }
 
 function gateAuthAndTerms(){
@@ -174,16 +143,13 @@ function bindTermsOverlay(){
   const termsOverlay = $("termsOverlay");
   if(!termsOverlay) return;
 
-  const closeBtn = $("closeTermsBtn");
+  $("closeTermsBtn")?.addEventListener("click", ()=> {
+    try { logout(); } catch { window.location.replace("/index.html"); }
+    setTimeout(()=> window.location.replace("/index.html"), 300);
+  });
+
   const check = $("termsCheck");
   const acceptBtn = $("termsAcceptBtn");
-
-  if(closeBtn){
-    closeBtn.addEventListener("click", ()=> {
-      try { logout(); } catch { window.location.replace("/index.html"); }
-      setTimeout(()=> window.location.replace("/index.html"), 300);
-    });
-  }
 
   if(check && acceptBtn){
     const sync = ()=>{
@@ -207,18 +173,23 @@ function bindTermsOverlay(){
 }
 
 /* ===== Scroll helpers ===== */
-function isNearBottom(el, slack=160){
+function isNearBottom(el, slack=180){
   try{ return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack; }
   catch{ return true; }
 }
+
 function scrollBottom(el){
-  try { el.scrollTop = el.scrollHeight; } catch(e){}
+  if(!el) return;
+
+  // 1) next tick
+  setTimeout(() => { try { el.scrollTop = el.scrollHeight; } catch(e){} }, 10);
+  // 2) render gecikirse
+  setTimeout(() => { try { el.scrollTop = el.scrollHeight; } catch(e){} }, 60);
+  // 3) 1 frame daha
+  requestAnimationFrame(()=>{ try { el.scrollTop = el.scrollHeight; } catch(e){} });
 }
 
-/* ===== Live render control (double reply fix) ===== */
 let __lastRenderedChatId = null;
-let __isTyping = false;          // typing sırasında chat’i yeniden basma
-let __autoFollow = true;         // user mesaj attı → true; user yukarı scroll → false
 
 function renderHistoryToChat(){
   const chatEl = $("chat");
@@ -247,70 +218,43 @@ function bindChatUI(){
   const chatEl = $("chat");
   if(!input || !sendBtn || !chatEl) return;
 
-  // ilk açılış render
   renderHistoryToChat();
 
-  // scroll takip: user yukarı çıkarsa autofollow kapansın
+  let __autoFollow = true;
   chatEl.addEventListener("scroll", ()=>{
-    __autoFollow = isNearBottom(chatEl, 180);
+    __autoFollow = isNearBottom(chatEl, 220);
   }, { passive:true });
-
-  function startTypingAutoScroll(approxMs){
-    __isTyping = true;
-    const stopAt = Date.now() + Math.max(700, approxMs || 1200);
-    const timer = setInterval(()=>{
-      if(!__autoFollow) return;
-      scrollBottom(chatEl);
-      if(Date.now() > stopAt){
-        clearInterval(timer);
-        __isTyping = false;
-      }
-    }, 80);
-    return ()=>{ clearInterval(timer); __isTyping = false; };
-  }
 
   async function sendMessage(){
     const text = String(input.value || "").trim();
     if(!text) return;
-
-    const followBefore = __autoFollow;
 
     window.setSeesawState?.("user");
 
     input.value = "";
     input.style.height = "auto";
 
-    // user bubble ekle
     addUserBubble(text);
 
-    // user mesaj attıysa kesin takip aç
+    // ✅ kullanıcı mesaj attı → kesin aşağı
     __autoFollow = true;
-    if(followBefore || __autoFollow) scrollBottom(chatEl);
+    scrollBottom(chatEl);
 
     window.setSeesawState?.("bot");
-
     const res = await fetchTextResponse(text, "chat");
-
     window.setSeesawState?.("idle");
 
     if(res?.text){
-      const approx = Math.min(14000, (String(res.text).length * 28) + 800);
-      const stop = startTypingAutoScroll(approx);
+      typeWriter(res.text);
 
-      try{
-        typeWriter(res.text);
-      } finally {
-        // typing bitince bir kaç kez daha alta çek (garanti)
-        if(__autoFollow){
-          setTimeout(()=>scrollBottom(chatEl), 80);
-          setTimeout(()=>scrollBottom(chatEl), 260);
-          setTimeout(()=>scrollBottom(chatEl), 900);
-        }
-        setTimeout(()=> stop(), approx + 300);
+      // ✅ typewriter sırasında 3 kere daha aşağı it
+      if(__autoFollow){
+        setTimeout(()=>scrollBottom(chatEl), 120);
+        setTimeout(()=>scrollBottom(chatEl), 420);
+        setTimeout(()=>scrollBottom(chatEl), 1100);
       }
     }
 
-    // Menü başlığı anında güncellensin
     try { initMenuHistoryUI(); } catch {}
   }
 
@@ -328,7 +272,6 @@ function bindChatUI(){
     input.style.height = Math.min(input.scrollHeight, 120) + "px";
   });
 
-  // mic (webkit)
   const micBtn = $("micBtn");
   if(micBtn && "webkitSpeechRecognition" in window){
     const Rec = window.webkitSpeechRecognition;
@@ -356,7 +299,6 @@ function bindNewChatButton(){
 
   btn.addEventListener("click", ()=>{
     ChatStore.newChat();
-    __autoFollow = true;
     renderHistoryToChat();
     try { initMenuHistoryUI(); } catch {}
 
@@ -383,17 +325,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ✅ LIVE UPDATE:
-  // - Menü her zaman güncellensin
-  // - Chat’i sadece sohbet değiştiyse yeniden bas (typing sırasında asla)
+  // Menü her zaman güncellensin.
+  // Chat sadece sohbet değişince yeniden basılsın.
   window.addEventListener("caynana:chats-updated", ()=>{
     try { initMenuHistoryUI(); } catch {}
 
     try{
-      if(__isTyping) return;
-
       ChatStore.init();
       if(ChatStore.currentId && ChatStore.currentId !== __lastRenderedChatId){
-        __autoFollow = true;
         renderHistoryToChat();
       }
     } catch {}
