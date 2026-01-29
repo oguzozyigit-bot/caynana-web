@@ -41,15 +41,12 @@
       bottom: var(--footerH) !important;
       z-index: 2500 !important;
       height: var(--assistH) !important;
-
       padding-top: 6px !important;
       padding-bottom: 6px !important;
-
-      pointer-events: none; /* scroll’u yeme */
+      pointer-events: none;
     }
     .assistant-bar .assistant-item{ pointer-events:auto; }
 
-    /* İkon altı mini isim */
     .assistant-item .lbl{
       display:block !important;
       font-size: 8px !important;
@@ -68,11 +65,9 @@
       width: var(--frameW) !important;
       bottom: calc(var(--footerH) + var(--assistH) + var(--gapH)) !important;
       z-index: 2600 !important;
-
       padding: 0 10px 6px !important;
       background: transparent !important;
-
-      pointer-events: none; /* scroll’u yeme */
+      pointer-events: none;
     }
     .input-dock .dock-inner{
       pointer-events:auto;
@@ -87,17 +82,12 @@
       max-height:120px !important;
     }
 
-    /* ✅ ASIL SCROLL ÇÖZÜMÜ:
-       - #chat absolute + overflow:auto
-       - justify-content YOK
-       - Alta itme: ::before spacer (flex bug yok)
-    */
-    .chat-area{
+    /* ✅ ASIL ÇÖZÜM: SCROLL WRAPPER */
+    .chat-scroll{
       position: absolute !important;
       left: 0; right: 0;
       top: var(--topH);
       bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + (var(--gapH) * 2));
-
       padding: 14px 12px;
 
       overflow-y: auto !important;
@@ -106,19 +96,16 @@
       touch-action: pan-y !important;
 
       scrollbar-width: none !important;
-      display:flex !important;
-      flex-direction:column !important;
-      gap: 10px !important;
-
-      /* çok kritik: flex scroll bug’ını öldürür */
-      min-height: 0 !important;
     }
-    .chat-area::-webkit-scrollbar{ display:none !important; }
+    .chat-scroll::-webkit-scrollbar{ display:none !important; }
 
-    /* ✅ Mesaj azsa altta dursun (justify-content yerine spacer) */
-    .chat-area::before{
-      content:"";
-      flex: 1 0 auto;
+    /* İç #chat: flex olabilir (scroll wrapper olduğu için bug yapmaz) */
+    .chat-area{
+      min-height: 100%;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+      gap: 10px;
     }
 
     /* + menü */
@@ -273,8 +260,10 @@
     </div>
   </div>
 
-  <!-- ✅ Scroll artık kesin çalışır -->
-  <div class="chat-area" id="chat"></div>
+  <!-- ✅ SCROLL BURADA -->
+  <div class="chat-scroll" id="chatScroll">
+    <div class="chat-area" id="chat"></div>
+  </div>
 
   <div class="input-dock">
     <div class="dock-inner">
@@ -299,18 +288,9 @@
   </div>
 
   <div class="plus-sheet" id="plusSheet">
-    <div class="plus-action" id="pickCamera">
-      <div class="plus-ico"><svg viewBox="0 0 24 24"><path d="M4 7h4l2-2h4l2 2h4v12H4z"></path><circle cx="12" cy="13" r="3"></circle></svg></div>
-      Kamera
-    </div>
-    <div class="plus-action" id="pickPhotos">
-      <div class="plus-ico"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"></rect><path d="M8 14l2-2 3 3 3-4 2 3"></path></svg></div>
-      Fotoğraf
-    </div>
-    <div class="plus-action" id="pickFiles">
-      <div class="plus-ico"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path></svg></div>
-      Dosya
-    </div>
+    <div class="plus-action" id="pickCamera"><div class="plus-ico"><svg viewBox="0 0 24 24"><path d="M4 7h4l2-2h4l2 2h4v12H4z"></path><circle cx="12" cy="13" r="3"></circle></svg></div>Kamera</div>
+    <div class="plus-action" id="pickPhotos"><div class="plus-ico"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"></rect><path d="M8 14l2-2 3 3 3-4 2 3"></path></svg></div>Fotoğraf</div>
+    <div class="plus-action" id="pickFiles"><div class="plus-ico"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path></svg></div>Dosya</div>
   </div>
 
   <div class="assistant-bar" id="assistantBar">
@@ -340,11 +320,9 @@
   document.addEventListener("DOMContentLoaded", () => {
     const camBtn = document.getElementById("camBtn");
     const plusSheet = document.getElementById("plusSheet");
-
     const fileCamera = document.getElementById("fileCamera");
     const filePhotos = document.getElementById("filePhotos");
     const fileFiles  = document.getElementById("fileFiles");
-
     const pickCamera = document.getElementById("pickCamera");
     const pickPhotos = document.getElementById("pickPhotos");
     const pickFiles  = document.getElementById("pickFiles");
@@ -358,26 +336,22 @@
       plusSheet.classList.toggle("show", !!open);
     }
 
-    if(camBtn){
-      camBtn.addEventListener("click", (e)=>{
-        e.preventDefault();
-        const isOpen = plusSheet && plusSheet.classList.contains("show");
-        togglePlus(!isOpen);
-      });
-    }
+    camBtn?.addEventListener("click", (e)=>{
+      e.preventDefault();
+      togglePlus(!(plusSheet && plusSheet.classList.contains("show")));
+    });
 
     document.addEventListener("click", (e)=>{
       if(!plusSheet || !plusSheet.classList.contains("show")) return;
-      const insideSheet = plusSheet.contains(e.target);
-      const insideBtn = camBtn && camBtn.contains(e.target);
-      if(!insideSheet && !insideBtn) togglePlus(false);
+      if(plusSheet.contains(e.target)) return;
+      if(camBtn && camBtn.contains(e.target)) return;
+      togglePlus(false);
     }, true);
 
-    if(pickCamera && fileCamera) pickCamera.onclick = ()=>{ togglePlus(false); fileCamera.click(); };
-    if(pickPhotos && filePhotos) pickPhotos.onclick = ()=>{ togglePlus(false); filePhotos.click(); };
-    if(pickFiles && fileFiles)   pickFiles.onclick  = ()=>{ togglePlus(false); fileFiles.click(); };
+    pickCamera && fileCamera && (pickCamera.onclick = ()=>{ togglePlus(false); fileCamera.click(); });
+    pickPhotos && filePhotos && (pickPhotos.onclick = ()=>{ togglePlus(false); filePhotos.click(); });
+    pickFiles  && fileFiles  && (pickFiles.onclick  = ()=>{ togglePlus(false); fileFiles.click(); });
 
-    // mic dinliyor hissi
     let listenTimer = null;
     function setListening(on){
       if(!micBtn || !msgInput) return;
@@ -390,27 +364,24 @@
         msgInput.setAttribute("placeholder", old);
       }
     }
-    if(micBtn){
-      micBtn.addEventListener("click", ()=>{
-        setListening(true);
-        clearTimeout(listenTimer);
-        listenTimer = setTimeout(()=> setListening(false), 12000);
-      });
-    }
-    if(msgInput){
-      msgInput.addEventListener("input", ()=>{
-        if(String(msgInput.value||"").trim().length > 0){
-          setListening(false);
-          clearTimeout(listenTimer);
-        }
-      });
-    }
-    if(sendBtn){
-      sendBtn.addEventListener("click", ()=>{
+
+    micBtn?.addEventListener("click", ()=>{
+      setListening(true);
+      clearTimeout(listenTimer);
+      listenTimer = setTimeout(()=> setListening(false), 12000);
+    });
+
+    msgInput?.addEventListener("input", ()=>{
+      if((msgInput.value||"").trim().length){
         setListening(false);
         clearTimeout(listenTimer);
-      });
-    }
+      }
+    });
+
+    sendBtn?.addEventListener("click", ()=>{
+      setListening(false);
+      clearTimeout(listenTimer);
+    });
   });
 </script>
 
