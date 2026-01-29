@@ -1,11 +1,11 @@
 <!-- FILE: /index.html
-     LOGIN “GEL GEL” SÜRÜMÜ:
-     - Tahtaravalli: her zaman hafif hareket + Google tıklanınca daha canlı
-     - Apple: aktif değil -> uyarı
-     - Arka plan: canlı (gradient shimmer)
-     - “Kaynana gözleri”: sağa sola bakar + ara ara göz kırpar
-     - Sözleşme: ilk girişte zorunlu, onaysız devam yok
-     - Login: auth.js (GSI overlay) ile
+     FULL (NO PATCH NEEDED):
+     - Tahtaravalli: sürekli hafif hareket
+     - “Kaynana gözleri”: büyük, üstte, kaş/kirpik, blink + mouse takip + mouse yoksa kendi bakış
+     - Apple tık: "Apple biraz nazlı çıktı evladım. Şimdilik Google hesabın ile giriş yap."
+     - Google: auth.js (GSI overlay) kullanır
+     - İlk giriş: sözleşme zorunlu (pages/sozlesme.html)
+     - Başarılı giriş: /pages/chat.html
 -->
 <!DOCTYPE html>
 <html lang="tr">
@@ -21,20 +21,14 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
-    :root{
-      --gold:#ffb300;
-      --pistachio:#bef264;
-      --red:#ff5252;
-    }
+    :root{ --gold:#ffb300; --pistachio:#bef264; --red:#ff5252; }
 
-    /* Üst bar sabit */
-    .topbar{
-      position: sticky;
-      top: 0;
-      z-index: 3000;
-    }
+    /* Üst bar sabit + tam ortalı logo */
+    .topbar{ position: sticky; top:0; z-index:3000; }
+    .topbar .left-controls, .topbar .right-controls{ width:80px; }
+    .topbar .brand-wrapper{ margin:0 auto; text-align:center; }
 
-    /* ===== “Gel gel” arka plan (hareketli) ===== */
+    /* Stage */
     .login-stage{
       position: relative;
       flex: 1 1 auto;
@@ -48,13 +42,8 @@
       gap: 12px;
     }
 
-    /* Arka plan katmanları */
-    .bg-anim{
-      position:absolute;
-      inset:0;
-      pointer-events:none;
-      overflow:hidden;
-    }
+    /* Hareketli arka plan */
+    .bg-anim{ position:absolute; inset:0; pointer-events:none; overflow:hidden; }
     .bg-anim::before{
       content:"";
       position:absolute;
@@ -66,15 +55,13 @@
         linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,0));
       transform: rotate(8deg);
       animation: bgFloat 10s ease-in-out infinite;
-      filter: blur(0.2px);
       opacity: .9;
     }
     .bg-anim::after{
       content:"";
       position:absolute;
       inset:0;
-      background:
-        linear-gradient(120deg, transparent 30%, rgba(255,179,0,.06) 50%, transparent 70%);
+      background: linear-gradient(120deg, transparent 30%, rgba(255,179,0,.06) 50%, transparent 70%);
       animation: shimmer 6.5s ease-in-out infinite;
       opacity: .7;
     }
@@ -89,76 +76,7 @@
       100%{ transform: translateX(-40%); }
     }
 
-    /* ===== Kaynana gözleri (animated) ===== */
-    .kaynana-eyes{
-      position:absolute;
-      top: 86px;
-      right: 14px;
-      width: 86px;
-      height: 46px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.25);
-      box-shadow: 0 18px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 10px;
-      padding: 10px;
-      pointer-events:none;
-      backdrop-filter: blur(6px);
-      opacity: .95;
-    }
-    .eye{
-      width: 24px;
-      height: 24px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.92);
-      position: relative;
-      overflow:hidden;
-      box-shadow: inset 0 -2px 0 rgba(0,0,0,.12);
-    }
-    .pupil{
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: rgba(0,0,0,.80);
-      position:absolute;
-      top: 7px;
-      left: 7px;
-      animation: look 4.2s ease-in-out infinite;
-    }
-    .shine{
-      width: 4px; height: 4px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.8);
-      position:absolute;
-      top: 4px; left: 6px;
-      opacity:.8;
-    }
-    /* göz kırpma */
-    .lid{
-      position:absolute;
-      inset:0;
-      background: rgba(0,0,0,.18);
-      transform: translateY(-110%);
-      animation: blink 6.8s ease-in-out infinite;
-      border-radius: 50%;
-    }
-    @keyframes look{
-      0%{ transform: translateX(0); }
-      20%{ transform: translateX(4px); }
-      50%{ transform: translateX(-4px); }
-      80%{ transform: translateX(3px); }
-      100%{ transform: translateX(0); }
-    }
-    @keyframes blink{
-      0%, 92%, 100%{ transform: translateY(-110%); }
-      94%{ transform: translateY(0%); }
-      96%{ transform: translateY(-110%); }
-    }
-
-    /* ===== Premium kart ===== */
+    /* Login card */
     .login-card{
       width: min(460px, 92vw);
       border-radius: 24px;
@@ -175,8 +93,8 @@
       gap: 12px;
       position: relative;
       z-index: 2;
+      backdrop-filter: blur(10px);
     }
-
     .login-lead{
       font-size: 13px;
       font-weight: 950;
@@ -194,9 +112,7 @@
       margin-top: 2px;
     }
     .trust-pill{
-      display:flex;
-      align-items:center;
-      gap:8px;
+      display:flex; align-items:center; gap:8px;
       padding: 8px 10px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,.10);
@@ -207,8 +123,7 @@
       white-space:nowrap;
     }
     .trust-pill .dot{
-      width:8px; height:8px;
-      border-radius:99px;
+      width:8px; height:8px; border-radius:99px;
       background: rgba(190,242,100,.9);
       box-shadow: 0 0 10px rgba(190,242,100,.25);
       flex: 0 0 8px;
@@ -239,7 +154,7 @@
       opacity: .9;
     }
 
-    /* Google / Apple 3D */
+    /* Buttons */
     .btn-3d{
       width: min(420px, 92vw);
       height: 54px;
@@ -284,17 +199,11 @@
     }
     .btn-apple .amark{ font-size: 18px; line-height:1; }
 
-    /* GSI overlay: gerçek tıklanan iframe katmanı */
-    .google-wrap{
-      position: relative;
-      width: min(420px, 92vw);
-      height: 54px;
-    }
+    /* GSI overlay */
+    .google-wrap{ position: relative; width: min(420px, 92vw); height: 54px; }
     #googleBtnWrap{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
+      position:absolute; inset:0;
+      width:100%; height:100%;
       z-index: 50;
       opacity: 0.01;
       cursor:pointer;
@@ -306,7 +215,7 @@
       cursor:pointer !important;
     }
 
-    /* Alt bar sabit (kurumsal linkler) */
+    /* Alt bar */
     .login-footerbar{
       position: fixed;
       left: 50%;
@@ -341,7 +250,7 @@
       color: rgba(255,255,255,.55);
     }
 
-    /* Sözleşme overlay */
+    /* Terms overlay */
     .full-overlay{
       position: fixed;
       inset: 0;
@@ -413,23 +322,112 @@
     }
     #termsAcceptBtn.enabled{ opacity:1; }
 
-    /* Tahtaravalli “idle” hareket (index özel) */
-    .brand-wrapper.idle .seesaw-bar{
-      animation: idleRock 2.6s ease-in-out infinite;
-    }
+    /* Tahtaravalli idle hareket */
+    .brand-wrapper.idle .seesaw-bar{ animation: idleRock 2.6s ease-in-out infinite; }
     @keyframes idleRock{
       0%{ transform: rotate(-3deg); }
       50%{ transform: rotate(3deg); }
       100%{ transform: rotate(-3deg); }
     }
+
+    /* ===== GÖZLER (büyük + kaş + kirpik + blink) ===== */
+    .kaynana-eyes{
+      position:absolute;
+      top: 14px;
+      right: 14px;
+      width: 140px;
+      height: 66px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.32);
+      box-shadow: 0 18px 40px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 14px;
+      padding: 12px 12px;
+      pointer-events:none;
+      backdrop-filter: blur(6px);
+      opacity: .96;
+      z-index: 3;
+    }
+    .eye-wrap{ position:relative; width:38px; height:44px; display:flex; align-items:center; justify-content:center; }
+    .brow{
+      position:absolute;
+      top: -2px;
+      width: 40px;
+      height: 16px;
+      border-top: 4px solid rgba(255,255,255,.55);
+      border-radius: 999px;
+      transform: rotate(-6deg);
+      opacity:.65;
+    }
+    .lashes{
+      position:absolute;
+      top: 10px;
+      width: 46px;
+      height: 10px;
+      opacity:.35;
+      display:flex;
+      justify-content:space-between;
+    }
+    .lashes span{
+      width: 8px; height: 10px;
+      border-top: 2px solid rgba(255,255,255,.55);
+      border-radius: 999px;
+      transform: rotate(18deg);
+    }
+
+    .eye{
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.95);
+      position: relative;
+      overflow:hidden;
+      box-shadow: inset 0 -2px 0 rgba(0,0,0,.12);
+    }
+    .pupil{
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.80);
+      position:absolute;
+      top: 12px;
+      left: 12px;
+      transition: transform .10s linear;
+    }
+    .shine{
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.85);
+      position:absolute;
+      top: 6px; left: 9px;
+      opacity:.9;
+    }
+    .lid{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.20);
+      transform: translateY(-110%);
+      border-radius: 50%;
+      animation: blink 5.8s ease-in-out infinite;
+    }
+    @keyframes blink{
+      0%, 92%, 100%{ transform: translateY(-110%); }
+      94%{ transform: translateY(0%); }
+      96%{ transform: translateY(-110%); }
+    }
+
+    /* “AI” yeşil vurgu (üstteki logo zaten CaynanaAI; burada görsel bir vurgu ekliyoruz) */
+    .brand-name .ai-green{ color: var(--pistachio); }
   </style>
 </head>
 
 <body>
-
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ÜST BAR (logo dizaynı bozulmaz) -->
+  <!-- ÜST BAR -->
   <div class="topbar">
     <div class="left-controls"></div>
 
@@ -443,7 +441,9 @@
           </g>
           <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
         </svg>
-        <div class="brand-name">CaynanaAI</div>
+
+        <!-- CaynanaAI içinde AI yeşil -->
+        <div class="brand-name">Caynana<span class="ai-green">AI</span></div>
       </div>
       <div class="slogan">Yapay Zekanın Geleneksel Aklı</div>
     </div>
@@ -451,16 +451,21 @@
     <div class="right-controls"></div>
   </div>
 
-  <!-- GEL GEL ARKA PLAN + GÖZLER -->
+  <!-- GEL GEL STAGE -->
   <div class="login-stage">
     <div class="bg-anim"></div>
 
+    <!-- GÖZLER -->
     <div class="kaynana-eyes" aria-hidden="true">
-      <div class="eye">
-        <div class="pupil"></div><div class="shine"></div><div class="lid"></div>
+      <div class="eye-wrap">
+        <div class="brow"></div>
+        <div class="lashes"><span></span><span></span><span></span></div>
+        <div class="eye"><div class="pupil" id="p1"></div><div class="shine"></div><div class="lid"></div></div>
       </div>
-      <div class="eye">
-        <div class="pupil"></div><div class="shine"></div><div class="lid"></div>
+      <div class="eye-wrap">
+        <div class="brow" style="transform:rotate(6deg)"></div>
+        <div class="lashes"><span></span><span></span><span></span></div>
+        <div class="eye"><div class="pupil" id="p2"></div><div class="shine"></div><div class="lid"></div></div>
       </div>
     </div>
 
@@ -508,9 +513,10 @@
     </div>
     <div class="login-brand">@CaynanaAI By Ozyigit’s 2026</div>
   </div>
+
 </div>
 
-<!-- SÖZLEŞME OVERLAY -->
+<!-- SÖZLEŞME -->
 <div class="full-overlay" id="termsOverlay">
   <div class="terms-card">
     <div class="terms-head">
@@ -531,7 +537,6 @@
   </div>
 </div>
 
-<!-- Tek motor: auth.js -->
 <script type="module">
   import { STORAGE_KEY } from "/js/config.js";
   import { initAuth, acceptTerms, logout } from "/js/auth.js";
@@ -552,8 +557,9 @@
   }
   function goChat(){ window.location.replace("/pages/chat.html"); }
 
-  // Apple: aktif değil uyarı
-  $("appleLoginBtn")?.addEventListener("click", () => {
+  // ✅ Apple uyarısı (tam metin)
+  $("appleLoginBtn")?.addEventListener("click", (e) => {
+    e.preventDefault();
     alert("Apple biraz nazlı çıktı evladım. Şimdilik Google hesabın ile giriş yap.");
   });
 
@@ -596,16 +602,15 @@
     if(ok) goChat();
   });
 
-  // User varsa: sözleşme kontrol
   if(hasUser()){
     if(hasAcceptedTerms()) goChat();
     else openTerms();
   }
 
-  // Google butonu render
+  // Google render
   initAuth();
 
-  // Google butonuna basınca tahtaravalli daha canlı
+  // Google basınca tahtaravalli daha canlı
   const bw = $("brandWrapper");
   const gBtn = $("googleLoginBtn");
   if(gBtn && bw){
@@ -613,7 +618,54 @@
     gBtn.addEventListener("pointerup", ()=> bw.classList.remove("thinking"));
     gBtn.addEventListener("pointercancel", ()=> bw.classList.remove("thinking"));
   }
-</script>
 
+  // ===== Gözler: mouse takip, mouse yoksa kendi dolaş =====
+  const p1 = $("p1");
+  const p2 = $("p2");
+
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  let lastMoveAt = Date.now();
+
+  function setPupil(px, py){
+    const x = clamp(px, -7, 7);
+    const y = clamp(py, -5, 5);
+    const t = `translate(${x}px, ${y}px)`;
+    if(p1) p1.style.transform = t;
+    if(p2) p2.style.transform = t;
+  }
+
+  // mouse/touch move
+  window.addEventListener("mousemove", (e)=>{
+    lastMoveAt = Date.now();
+    const cx = window.innerWidth * 0.5;
+    const cy = window.innerHeight * 0.35;
+    const dx = (e.clientX - cx) / 60;
+    const dy = (e.clientY - cy) / 60;
+    setPupil(dx, dy);
+  }, { passive:true });
+
+  window.addEventListener("touchmove", (e)=>{
+    const t = e.touches && e.touches[0];
+    if(!t) return;
+    lastMoveAt = Date.now();
+    const cx = window.innerWidth * 0.5;
+    const cy = window.innerHeight * 0.35;
+    const dx = (t.clientX - cx) / 60;
+    const dy = (t.clientY - cy) / 60;
+    setPupil(dx, dy);
+  }, { passive:true });
+
+  // mouse yoksa: kendi bakış turu
+  setInterval(()=>{
+    const idle = (Date.now() - lastMoveAt) > 1200;
+    if(!idle) return;
+
+    const dx = (Math.random()*14 - 7) / 1;  // -7..7
+    const dy = (Math.random()*10 - 5) / 1;  // -5..5
+    setPupil(dx, dy);
+  }, 900);
+
+</script>
 </body>
 </html>
