@@ -1,212 +1,212 @@
 // FILE: /js/menu_history_ui.js
+// FINAL+++ (LIVE UPDATE + SHOPPING + REGL (KADIN) + TEAM BUTTON + NAV FIX)
+// ✅ Alışveriş butonu eklendi
+// ✅ Cinsiyet "Kadin/Kadın/female" ise Regl Takip eklendi
+// ✅ Profilde team varsa butonda takım adıyla gösterildi (pages/clup.html)
+// ✅ Yeni sohbet / başlık oluşunca MENÜ anında güncellenir (caynana:chats-updated dinleniyor)
+// ✅ Eski sohbet tıklayınca chat.html açılır ve doğru sohbet yüklenir (current chat persist)
+// ✅ Silince listeden anında gider
 import { ChatStore } from "./chat_store.js";
 
 const $ = (id) => document.getElementById(id);
 
-function esc(s=""){
-  return String(s).replace(/[&<>"']/g, (m)=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+function esc(s = "") {
+  return String(s).replace(/[&<>"']/g, (m) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[m]));
 }
-function short15(s=""){
+
+function short15(s = "") {
   const t = String(s).trim();
-  if(!t) return "";
-  return t.length > 15 ? t.slice(0,15) : t;
+  if (!t) return "";
+  return t.length > 15 ? t.slice(0, 15) + "…" : t;
 }
-function confirmDelete(){
+
+function confirmDelete() {
   return confirm("Sohbetiniz kalıcı olarak silenecek. Eminmisin evladım?");
 }
 
-/* ✅ PROFİL OKUMA (en toleranslı hali) */
-function safeJson(s, fb={}){ try{ return JSON.parse(s||""); }catch{ return fb; } }
-function getUser(){
-  // bazı yerlerde STORAGE_KEY farklı kullanılabiliyor: ikisini de dene
-  const a = safeJson(localStorage.getItem("caynana_user_v1"), {});
-  if(Object.keys(a||{}).length) return a;
-  return safeJson(localStorage.getItem("caynana_user"), {});
-}
-function norm(s){ return String(s||"").trim().toLowerCase(); }
-
-function pickFirst(obj, keys){
-  for(const k of keys){
-    const v = obj?.[k];
-    if(v !== undefined && v !== null && String(v).trim() !== "") return v;
-  }
-  return "";
-}
-function getGender(u){
-  return pickFirst(u, ["gender","formGender","inpGender","cinsiyet","sex","form_gender"]);
-}
-function isFemaleGender(g){
-  const x = norm(g);
-  return x === "kadın" || x === "kadin" || x === "female" || x === "woman";
-}
-function getTeam(u){
-  return String(pickFirst(u, ["team","formTeam","takim","team_name","form_team","teamName"])).trim();
+function getUserProfile() {
+  try { return JSON.parse(localStorage.getItem("caynana_user_v1") || "{}"); }
+  catch { return {}; }
 }
 
-/* ✅ Menüde var mı? */
-function menuHasHref(container, href){
-  if(!container) return false;
-  const nodes = container.querySelectorAll(".menu-action");
-  for(const n of nodes){
-    const on = (n.getAttribute("onclick") || "");
-    if(on.includes(href)) return true;
-  }
-  return false;
-}
-function appendMenuAction(container, icon, title, href){
-  if(!container) return;
-  const div = document.createElement("div");
-  div.className = "menu-action";
-  div.setAttribute("onclick", `location.href='${href}'`);
-  div.innerHTML = `<div class="ico">${icon}</div><div><div>${esc(title)}</div></div>`;
-  container.appendChild(div);
+function isFemaleGender(g) {
+  const s = String(g || "").toLowerCase().trim();
+  return ["kadin", "kadın", "female", "woman", "f"].includes(s);
 }
 
-function closeMenuOverlay(){
-  const overlay = $("menuOverlay");
-  if(overlay) overlay.classList.remove("open");
+function safeHref(path) {
+  // burada dosya var mı yok mu kontrol etmiyoruz; sadece normalize ediyoruz
+  const p = String(path || "").trim();
+  if (!p) return "/";
+  return p.startsWith("/") ? p : ("/" + p);
 }
-function goChat(){
-  closeMenuOverlay();
+
+function goChatWith(chatId) {
+  try {
+    if (chatId) ChatStore.setCurrent(chatId); // current chat persist
+  } catch {}
+  // her zaman chat sayfasına git
   location.href = "/pages/chat.html";
 }
 
-/* ✅ ASİSTAN MENÜSÜ: dolu olsa bile eksikleri ekle */
-function ensureAsistanMenus(){
+function renderFallbackMenus() {
   const asistan = $("menuAsistan");
-  if(!asistan) return;
-
-  const u = getUser();
-  const female = isFemaleGender(getGender(u));
-  const team = getTeam(u);
-
-  // boşsa temel set
-  if(asistan.children.length === 0){
-    asistan.innerHTML = `
-      <div class="menu-action" onclick="location.href='/pages/chat.html'"><div class="ico">💬</div><div><div>Sohbet</div></div></div>
-      <div class="menu-action" onclick="location.href='/pages/translate.html'"><div class="ico">🛍️</div><div><div>Alışveriş</div></div></div>
-      <div class="menu-action" onclick="location.href='/pages/profil.html'"><div class="ico">🌍</div><div><div>Tercüman</div></div></div>
-      <div class="menu-action" onclick="location.href='/pages/gossip.html'"><div class="ico">🗣️</div><div><div>Dedikodu Kazanı</div></div></div>
-      <div class="menu-action" onclick="location.href='/pages/diyet.html'"><div class="ico">🥗</div><div><div>Diyet</div></div></div>
-      <div class="menu-action" onclick="location.href='/pages/health.html'"><div class="ico">❤️</div><div><div>Sağlık</div></div></div>
-    `;
-  }
-
-  // alışveriş yoksa ekle
-  if(!menuHasHref(asistan, "/pages/translate.html")){
-    appendMenuAction(asistan, "🛍️", "Alışveriş", "/pages/translate.html");
-  }
-
-  // kadınsa regl ekle
-  if(female && !menuHasHref(asistan, "/pages/regl.html")){
-    appendMenuAction(asistan, "🌸", "Regl Takip", "/pages/regl.html");
-  }
-
-  // takım varsa takım adıyla ekle
-  if(team && !menuHasHref(asistan, "/pages/clup.html")){
-    appendMenuAction(asistan, "⚽", team, "/pages/clup.html");
-  }
-}
-
-function renderFallbackMenus(){
   const astro = $("menuAstro");
   const kur = $("menuKurumsal");
+  const p = getUserProfile();
 
-  if(astro && astro.children.length === 0){
-    astro.innerHTML = `
-      <div class="menu-action" onclick="location.href='/pages/fal.html'"><div class="ico">☕</div><div><div>Kahve Falı</div></div></div>
-      <div class="menu-action" onclick="location.href='/pages/tarot.html'"><div class="ico">🃏</div><div><div>Tarot</div></div></div>
-      <div class="menu-action" onclick="location.href='/pages/dream.html'"><div class="ico">👁️</div><div><div>Rüya Tabiri</div></div></div>
-      <div class="menu-action" onclick="location.href='/pages/astro.html'"><div class="ico">♈</div><div><div>Günlük Burç</div></div></div>
+  const team = String(p.team || "").trim();
+  const gender = p.gender || p.cinsiyet;
+
+  // ASİSTAN
+  if (asistan && asistan.children.length === 0) {
+    let extra = "";
+
+    // ✅ Alışveriş (sende yoktu)
+    extra += `
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/alisveris.html")}'">
+        <div class="ico">🛍️</div><div><div>Alışveriş</div></div>
+      </div>
+    `;
+
+    // ✅ Regl (sadece kadın)
+    if (isFemaleGender(gender)) {
+      extra += `
+        <div class="menu-action" onclick="location.href='${safeHref("/pages/regl.html")}'">
+          <div class="ico">🩸</div><div><div>Regl Takip</div></div>
+        </div>
+      `;
+    }
+
+    // ✅ Takım (profilde varsa butonda takım adı)
+    if (team) {
+      extra += `
+        <div class="menu-action" onclick="location.href='${safeHref("/pages/clup.html")}'">
+          <div class="ico">⚽</div><div><div>${esc(team)}</div></div>
+        </div>
+      `;
+    }
+
+    asistan.innerHTML = `
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/chat.html")}'"><div class="ico">💬</div><div><div>Sohbet</div></div></div>
+      ${extra}
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/diyet.html")}'"><div class="ico">🥗</div><div><div>Diyet</div></div></div>
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/health.html")}'"><div class="ico">❤️</div><div><div>Sağlık</div></div></div>
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/translate.html")}'"><div class="ico">🌍</div><div><div>Tercüman</div></div></div>
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/gossip.html")}'"><div class="ico">🗣️</div><div><div>Dedikodu Kazanı</div></div></div>
     `;
   }
 
-  if(kur && kur.children.length === 0){
+  // ASTRO
+  if (astro && astro.children.length === 0) {
+    astro.innerHTML = `
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/fal.html")}'"><div class="ico">☕</div><div><div>Kahve Falı</div></div></div>
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/tarot.html")}'"><div class="ico">🃏</div><div><div>Tarot</div></div></div>
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/dream.html")}'"><div class="ico">👁️</div><div><div>Rüya Tabiri</div></div></div>
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/astro.html")}'"><div class="ico">♈</div><div><div>Günlük Burç</div></div></div>
+    `;
+  }
+
+  // KURUMSAL
+  if (kur && kur.children.length === 0) {
     kur.innerHTML = `
-      <div class="menu-action" onclick="location.href='/pages/membership.html'"><div class="ico">⭐</div><div><div>Üyelik</div></div></div>
-      <div class="menu-action" onclick="location.href='/pages/hakkimizda.html'"><div class="ico">ℹ️</div><div><div>Hakkımızda</div></div></div>
-      <div class="menu-action" onclick="location.href='/pages/sss.html'"><div class="ico">❓</div><div><div>Sık Sorulan Sorular</div></div></div>
-      <div class="menu-action" onclick="location.href='/pages/gizlilik.html'"><div class="ico">🔒</div><div><div>Gizlilik</div></div></div>
-      <div class="menu-action" onclick="location.href='/pages/iletisim.html'"><div class="ico">☎️</div><div><div>İletişim</div></div></div>
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/membership.html")}'"><div class="ico">⭐</div><div><div>Üyelik</div></div></div>
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/hakkimizda.html")}'"><div class="ico">ℹ️</div><div><div>Hakkımızda</div></div></div>
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/sss.html")}'"><div class="ico">❓</div><div><div>Sık Sorulan Sorular</div></div></div>
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/gizlilik.html")}'"><div class="ico">🔒</div><div><div>Gizlilik</div></div></div>
+      <div class="menu-action" onclick="location.href='${safeHref("/pages/iletisim.html")}'"><div class="ico">☎️</div><div><div>İletişim</div></div></div>
     `;
   }
 }
 
-/* ✅ HISTORY: tıklayınca setCurrent + chat’e git */
-function renderHistory(){
+function renderHistory() {
   const listEl = $("historyList");
-  if(!listEl) return;
+  if (!listEl) return;
 
-  const items = ChatStore.list();
+  const items = ChatStore.list(); // son 10
+
   listEl.innerHTML = "";
-  if(!items.length) return;
+  if (!items.length) return;
 
-  items.forEach((c)=>{
+  items.forEach((c) => {
+    const isActive = ChatStore.currentId === c.id;
+
     const title = short15(c.title || "");
-
     const row = document.createElement("div");
     row.className = "history-row";
     row.dataset.chatId = c.id;
 
     row.innerHTML = `
-      <div class="history-title" title="${esc(c.title||"")}">${esc(title || "Sohbet")}</div>
+      <div class="history-title" title="${esc(c.title || "")}">${esc(title || "Sohbet")}</div>
       <div style="display:flex; gap:8px; align-items:center;">
         <div class="history-del" data-act="edit" title="Başlığı Düzenle">✏️</div>
         <div class="history-del" data-act="del" title="Sohbeti Sil">🗑️</div>
       </div>
     `;
 
-    row.addEventListener("click", (e)=>{
+    if (isActive) row.style.borderColor = "rgba(190,242,100,.45)";
+
+    // ✅ tıkla: sohbeti seç + chat sayfasına git
+    row.addEventListener("click", (e) => {
       const act = e.target?.getAttribute?.("data-act");
-      if(act) return;
-      ChatStore.setCurrent(c.id);
-      goChat();
+      if (act) return;
+      goChatWith(c.id);
     });
 
-    row.querySelector('[data-act="edit"]').addEventListener("click",(e)=>{
+    // edit
+    row.querySelector('[data-act="edit"]').addEventListener("click", (e) => {
       e.stopPropagation();
-      const newTitle = prompt("Sohbet başlığını yaz (max 15):", c.title || "");
-      if(newTitle === null) return;
+      const curTitle = c.title || "";
+      const newTitle = prompt("Sohbet başlığını yaz (Enter ile kaydet):", curTitle);
+      if (newTitle === null) return;
       const cleaned = String(newTitle).trim();
-      if(!cleaned) return;
-      ChatStore.renameChat(c.id, cleaned);
+      if (!cleaned) return;
+      ChatStore.renameChat?.(c.id, cleaned);
       renderHistory();
     });
 
-    row.querySelector('[data-act="del"]').addEventListener("click",(e)=>{
+    // delete
+    row.querySelector('[data-act="del"]').addEventListener("click", (e) => {
       e.stopPropagation();
-      if(!confirmDelete()) return;
-      const wasCurrent = (ChatStore.currentId === c.id);
+      if (!confirmDelete()) return;
       ChatStore.deleteChat(c.id);
-
-      // chat sayfasındaysan anında temizlensin
-      if((location.pathname||"").endsWith("/pages/chat.html")){
-        location.reload();
-        return;
-      }
-
       renderHistory();
-      if(wasCurrent) goChat();
+
+      // ✅ chat sayfasındaysak, silinen sohbet ekrandan gitsin diye yönlendir
+      if (location.pathname.endsWith("/pages/chat.html")) {
+        goChatWith(ChatStore.currentId);
+      }
     });
 
     listEl.appendChild(row);
   });
 }
 
-export function initMenuHistoryUI(){
+export function initMenuHistoryUI() {
+  // store init
   try { ChatStore.init(); } catch {}
 
+  // fallback menüler (boşsa doldur)
   renderFallbackMenus();
-  ensureAsistanMenus();
   renderHistory();
 
+  // ✅ live update: yeni mesaj başlığı oluşunca / silince anında güncelle
+  window.removeEventListener("caynana:chats-updated", renderHistory);
+  window.addEventListener("caynana:chats-updated", () => {
+    try { ChatStore.init(); } catch {}
+    renderHistory();
+  });
+
+  // Yeni sohbet butonu
   const newBtn = $("newChatBtn");
-  if(newBtn){
-    newBtn.addEventListener("click", ()=>{
+  if (newBtn) {
+    newBtn.onclick = () => {
       ChatStore.newChat();
-      goChat();
-    });
+      renderHistory();
+      // ✅ direkt chat’e git ve yeni sohbet başlat
+      goChatWith(ChatStore.currentId);
+    };
   }
 }
