@@ -1,5 +1,5 @@
 // FILE: /js/main.js
-// VERSION: vFINAL+2b (FIXED sendMessage + FIXED history render + seesaw states)
+// VERSION: vFINAL+2c (SCROLL FRIENDLY + seesaw idle + fileInput block safe)
 
 import { BASE_DOMAIN, STORAGE_KEY, GOOGLE_CLIENT_ID } from "./config.js";
 import { initAuth, logout, acceptTerms } from "./auth.js";
@@ -28,9 +28,14 @@ function isLoggedUser(u){
 window.setSeesawState = function(state){
   const bw = $("brandWrapper");
   if(!bw) return;
+
+  // önce temizle
   bw.classList.remove("usering","botting","thinking");
+
   if(state === "user") bw.classList.add("usering");
-  if(state === "bot") bw.classList.add("botting","thinking");
+  if(state === "bot")  bw.classList.add("botting","thinking");
+  // ✅ idle: hiçbir class yok (temiz hali)
+  if(state === "idle") return;
 };
 
 function refreshPremiumBars() {
@@ -152,6 +157,12 @@ function bindTermsOverlay(){
   }
 }
 
+/* ✅ kullanıcı yukarıdaysa zıplatma yok */
+function isNearBottom(el, slack=140){
+  try{ return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack; }
+  catch{ return true; }
+}
+
 function renderHistoryToChat(){
   const chatEl = $("chat");
   if(!chatEl) return;
@@ -163,9 +174,11 @@ function renderHistoryToChat(){
       chatEl.innerHTML = "";
       hist.forEach(m=>{
         if(m.role === "user") addUserBubble(m.content);
-        else if(m.role === "assistant") addBotBubble(m.content); // ✅ typeWriter DEĞİL
+        else if(m.role === "assistant") addBotBubble(m.content); // ✅ typeWriter değil
       });
-      chatEl.scrollTop = chatEl.scrollHeight;
+
+      // ✅ sadece kullanıcı alttaysa alta al
+      if(isNearBottom(chatEl)) chatEl.scrollTop = chatEl.scrollHeight;
     }
   }catch{}
 }
@@ -188,10 +201,9 @@ function bindChatUI(){
     input.style.height = "auto";
 
     addUserBubble(text);
+
     window.setSeesawState?.("bot");
-
     const res = await fetchTextResponse(text, "chat");
-
     window.setSeesawState?.("idle");
 
     if(res?.text){
@@ -213,32 +225,12 @@ function bindChatUI(){
     input.style.height = Math.min(input.scrollHeight, 120) + "px";
   });
 
-  // + (camBtn) dosya
+  // ✅ Eski fileInput preview bloğu: artık bazı sayfalarda yok
+  // Bozmasın diye sadece varsa bağla
   const camBtn = $("camBtn");
-  const fileInput = $("fileInput");
-  const filePreview = $("filePreview");
-  const fileName = $("fileName");
-  const fileClear = $("fileClearBtn");
-
+  const fileInput = $("fileInput"); // bazı eski sayfalarda var
   if(camBtn && fileInput){
     camBtn.addEventListener("click", ()=> fileInput.click());
-  }
-  if(fileInput){
-    fileInput.addEventListener("change", ()=>{
-      const f = fileInput.files && fileInput.files[0];
-      if(!f){
-        if(filePreview) filePreview.classList.remove("show");
-        return;
-      }
-      if(fileName) fileName.textContent = f.name;
-      if(filePreview) filePreview.classList.add("show");
-    });
-  }
-  if(fileClear){
-    fileClear.addEventListener("click", ()=>{
-      if(fileInput) fileInput.value = "";
-      if(filePreview) filePreview.classList.remove("show");
-    });
   }
 
   // mic (webkit)
