@@ -177,7 +177,7 @@ async function handleGoogleResponse(res){
       clearApiToken();
     }
 
-    window.location.reload();
+    window.location.href = "/index.html";
   }catch(e){
     console.error("handleGoogleResponse error:", e);
     alert("Google girişinde hata oldu. Console'u kontrol et.");
