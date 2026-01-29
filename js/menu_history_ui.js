@@ -1,4 +1,11 @@
 // FILE: /js/menu_history_ui.js
+// FINAL (ŞÜKÜR-ÖNCESİ STABİL MANTIK)
+// ✅ Bu dosya artık chat’e ASLA dokunmaz (scroll/typing bozulmasın).
+// ✅ Event listener yalnız 1 kere bağlanır (initMenuHistoryUI defalarca çağrılsa bile çoğalmaz).
+// ✅ Menu item click: ChatStore state değiştirmez (yan etki yok).
+// ✅ History click: ChatStore.setCurrent(id) + chat.html’e gider (doğru sohbet açılır).
+// ✅ Delete/Rename: UI anında güncellenir.
+
 import { ChatStore } from "./chat_store.js";
 
 const $ = (id) => document.getElementById(id);
@@ -49,10 +56,11 @@ function addMenuItem(root, ico, label, href){
     <div class="ico">${ico}</div>
     <div><div>${esc(label)}</div></div>
   `;
+  // ✅ Yan etki yok: sadece yönlendir
   div.addEventListener("click", ()=>{
-    ChatStore.setCurrent(ChatStore.currentId);
     location.href = href;
   });
+
   root.appendChild(div);
 }
 
@@ -65,7 +73,7 @@ function renderFallbackMenus(){
   const kur     = $("menuKurumsal");
 
   const p = getProfile();
-  const gender = String(p.gender || p.cinsiyet || "").toLowerCase();
+  const gender = String(p.gender || p.cinsiyet || "").toLowerCase().trim();
   const team   = String(p.team || "").trim();
 
   const isFemale = ["kadın","kadin","female","woman","f"].includes(gender);
@@ -124,30 +132,43 @@ function renderHistory(){
     row.dataset.chatId = c.id;
 
     row.innerHTML = `
-      <div class="history-title">${esc(short15(c.title) || "Sohbet")}</div>
+      <div class="history-title" title="${esc(c.title || "")}">${esc(short15(c.title) || "Sohbet")}</div>
       <div style="display:flex; gap:8px;">
-        <div class="history-del" data-act="edit">✏️</div>
-        <div class="history-del" data-act="del">🗑️</div>
+        <div class="history-del" data-act="edit" title="Başlığı Düzenle">✏️</div>
+        <div class="history-del" data-act="del" title="Sohbeti Sil">🗑️</div>
       </div>
     `;
 
+    // ✅ sohbet aç
     row.addEventListener("click",(e)=>{
-      const act = e.target.getAttribute("data-act");
+      const act = e.target?.getAttribute?.("data-act");
       if(act) return;
+
       ChatStore.setCurrent(c.id);
+
+      // Menü açıkken tıklayınca menüyü kapat (UX)
+      const overlay = $("menuOverlay");
+      if(overlay) overlay.classList.remove("open");
+
       location.href = "/pages/chat.html";
     });
 
+    // edit
     row.querySelector('[data-act="edit"]').onclick = (e)=>{
       e.stopPropagation();
       const nt = prompt("Sohbet başlığını yaz:", c.title || "");
-      if(nt) ChatStore.renameChat(c.id, nt);
+      if(nt){
+        ChatStore.renameChat(c.id, nt);
+        renderHistory(); // anında güncelle
+      }
     };
 
+    // delete
     row.querySelector('[data-act="del"]').onclick = (e)=>{
       e.stopPropagation();
       if(!confirmDelete()) return;
       ChatStore.deleteChat(c.id);
+      renderHistory(); // anında kaybolsun
     };
 
     listEl.appendChild(row);
@@ -155,25 +176,41 @@ function renderHistory(){
 }
 
 /* =========================================================
-   INIT
+   INIT (tek listener, tek bağlama)
    ========================================================= */
+function getUIState(){
+  if(!window.__CAYNANA_MENU_UI__) window.__CAYNANA_MENU_UI__ = { bound:false };
+  return window.__CAYNANA_MENU_UI__;
+}
+
 export function initMenuHistoryUI(){
-  ChatStore.init();
+  // ChatStore init
+  try { ChatStore.init(); } catch {}
 
   renderFallbackMenus();
   renderHistory();
 
-  // Yeni sohbet
+  // Yeni sohbet butonu
   const btn = $("newChatBtn");
-  if(btn){
+  if(btn && !btn.dataset.__bound){
+    btn.dataset.__bound = "1";
     btn.onclick = ()=>{
       ChatStore.newChat();
+
+      const overlay = $("menuOverlay");
+      if(overlay) overlay.classList.remove("open");
+
       location.href = "/pages/chat.html";
     };
   }
 
-  // 🔴 CANLI GÜNCELLEME
-  window.addEventListener("caynana:chats-updated", ()=>{
-    renderHistory();
-  });
+  // ✅ CANLI GÜNCELLEME: sadece 1 kez bağla
+  const st = getUIState();
+  if(!st.bound){
+    st.bound = true;
+    window.addEventListener("caynana:chats-updated", ()=>{
+      try { ChatStore.init(); } catch {}
+      renderHistory();
+    });
+  }
 }
