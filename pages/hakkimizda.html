@@ -1,3 +1,8 @@
+<!-- FILE: /pages/hakkimizda.html
+     LOGIN SONRASI ŞABLON (ÜST BAR + HAMBURGER + KOLAY MENÜ + FOOTER SABİT)
+     ✅ Sadece orta içerik (Hakkımızda metni) login-öncesinden alındı.
+     ✅ Üst/alt bar tasarımı chat.html ile aynı kalır.
+-->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -6,17 +11,33 @@
   <title>Hakkımızda</title>
 
   <link rel="icon" href="data:," />
-  <link rel="stylesheet" href="/css/style.css?v=1" />
+  <link rel="stylesheet" href="/css/style.css?v=2" />
   <link rel="stylesheet" href="/css/layout-common.css?v=1" />
 
   <style>
-    /* Kurumsal içerik görünümü */
-    .page-wrap{
-      padding: 16px;
-      padding-bottom: 190px; /* alt bar + footer */
-      overflow-y:auto;
-      height:100%;
+    :root{
+      --frameW: min(480px, calc(100vw - 18px));
+      --topH: 65px;
+      --footerH: 64px;
+      --assistH: 68px;
+      --dockGap: 10px; /* içerik ile alt bar arası nefes */
+      --gold:#ffb300;
+      --pistachio:#bef264;
     }
+
+    /* Orta alan: chat yerine scrollable içerik */
+    .page-scroll{
+      position:absolute;
+      left:0; right:0;
+      top: var(--topH);
+      bottom: calc(var(--footerH) + var(--assistH) + var(--dockGap));
+      overflow-y:auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width:none;
+      padding: 16px 14px;
+    }
+    .page-scroll::-webkit-scrollbar{ display:none; }
+
     .page-card{
       background: rgba(25,25,25,.55);
       border: 1px solid rgba(255,255,255,.10);
@@ -24,24 +45,37 @@
       padding: 18px;
       box-shadow: 0 18px 45px rgba(0,0,0,.55);
     }
+
+    .page-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom: 10px;
+    }
     .page-title{
       font-size: 16px;
       font-weight: 1000;
-      color: #fff;
-      margin: 0 0 10px;
+      color:#fff;
+      margin:0;
     }
-    .page-text{
-      font-size: 13px;
-      line-height: 1.65;
-      color: rgba(255,255,255,.85);
-      font-weight: 600;
+    .back-mini{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color:#fff;
+      cursor:pointer;
+      user-select:none;
+      flex: 0 0 auto;
     }
+    .back-mini:active{ transform: translateY(1px); filter: brightness(.95); }
 
-    /* Senin tipografi (metin eksilmesin diye) */
-    :root{
-      --gold: #ffb300;
-      --pistachio: #bef264;
-    }
+    /* Metin tipografi (login öncesinden aynen) */
     .intro-text{
       font-size: 14px;
       line-height: 1.7;
@@ -104,19 +138,41 @@
       font-weight: 700;
       margin-top: 4px;
     }
+
+    /* Footer + alt bar her sayfada frame içinde dursun */
+    .assistant-bar{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--frameW);
+      bottom: var(--footerH);
+      height: var(--assistH);
+      z-index: 2500;
+      pointer-events:none;
+    }
+    .assistant-bar .assistant-item{ pointer-events:auto; }
+
+    .footer-container{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--frameW);
+      bottom: 0;
+      z-index: 2400;
+    }
   </style>
 </head>
 
 <body>
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ✅ TOPBAR (SABİT) -->
+  <!-- ✅ TOPBAR (login sonrası standart) -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
     </div>
 
-    <div class="brand-wrapper" id="brandWrapper">
+    <div class="brand-wrapper" id="brandWrapper" style="cursor:pointer" onclick="location.href='/pages/chat.html'">
       <div class="logo-area">
         <svg class="seesaw-svg" viewBox="0 0 40 20">
           <g class="seesaw-bar" id="seesawBar">
@@ -135,15 +191,13 @@
       <div class="notif-row">
         <div class="notif-topline">
           <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
-            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <svg viewBox="0 0 24 24">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
             <div class="badge" id="notifBadge"></div>
           </button>
           <div id="planChip" class="plan-chip">FREE</div>
-        </div>
-
-        <div class="notification-dropdown" id="notifDropdown">
-          <div class="notif-header">Bildirimler</div>
-          <div class="notif-list" id="notifList"></div>
         </div>
 
         <div class="yp-chip">
@@ -151,18 +205,14 @@
           <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
           <div class="yp-num" id="ypNum">19%</div>
         </div>
-
-        <button class="icon-btn-top" id="profileBtn" aria-label="Profil">
-          <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-        </button>
       </div>
     </div>
   </div>
 
-  <!-- ✅ HAMBURGER MENÜ (SABİT) -->
+  <!-- ✅ HAMBURGER MENU (login sonrası standart, içini main.js doldurur) -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
-      <button class="new-chat-btn" onclick="location.href='/'"><span>←</span> SOHBETE DÖN</button>
+      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
 
       <div class="profile-shortcut-wrap" id="profileShortcutMount">
         <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='/pages/profil.html'">
@@ -174,20 +224,12 @@
         </div>
       </div>
 
-      <div class="menu-block asistan">
-        <div class="block-head">Asistan</div>
-        <div class="menu-grid" id="menuAsistan"></div>
-      </div>
+      <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
+      <div class="history-list" id="historyList"></div>
 
-      <div class="menu-block astro">
-        <div class="block-head">Astro AI</div>
-        <div class="menu-grid" id="menuAstro"></div>
-      </div>
-
-      <div class="menu-block kurumsal">
-        <div class="block-head">Kurumsal</div>
-        <div class="menu-grid" id="menuKurumsal"></div>
-      </div>
+      <div class="menu-block asistan"><div class="block-head">Asistan AI</div><div class="menu-grid" id="menuAsistan"></div></div>
+      <div class="menu-block astro"><div class="block-head">Astro AI</div><div class="menu-grid" id="menuAstro"></div></div>
+      <div class="menu-block kurumsal"><div class="block-head">Kurumsal</div><div class="menu-grid" id="menuKurumsal"></div></div>
 
       <div class="menu-footer-actions">
         <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
@@ -197,103 +239,97 @@
     </div>
   </div>
 
-  <!-- ✅ ORTA İÇERİK (SADECE BURASI) -->
-  <div class="page-wrap">
+  <!-- ✅ ORTA İÇERİK -->
+  <div class="page-scroll">
     <div class="page-card">
-      <h1 class="page-title">Hakkımızda</h1>
+      <div class="page-head">
+        <h1 class="page-title">Hakkımızda</h1>
+        <button class="back-mini" type="button" onclick="history.back()" aria-label="Geri">←</button>
+      </div>
 
-      <div class="page-text">
+      <div class="intro-text">
+        Caynana AI, klasik bir sohbet robotu değildir.<br><br>
+        O; dinleyen, bakan, tepki veren ve seninle <span class="highlight">ilişki kuran</span> bir dijital karakterdir.<br><br>
+        Biz Caynana’yı “doğru cevabı veren bir makine” olsun diye değil,
+        <span class="highlight">doğru anda doğru tepkiyi veren bir varlık</span> olsun diye tasarladık.
+      </div>
 
-        <div class="intro-text">
-          Caynana AI, klasik bir sohbet robotu değildir.<br><br>
-          O; dinleyen, bakan, tepki veren ve seninle <span class="highlight">ilişki kuran</span> bir dijital karakterdir.<br><br>
-          Biz Caynana’yı “doğru cevabı veren bir makine” olsun diye değil,
-          <span class="highlight">doğru anda doğru tepkiyi veren bir varlık</span> olsun diye tasarladık.
-        </div>
+      <section>
+        <h3>Neyi Farklı Yapıyoruz?</h3>
+        <ul>
+          <li>Sadece yazdıklarını okumaz, nasıl söylediğine de bakar.</li>
+          <li>Konuştuğunda dinler, yazdığında okur.</li>
+          <li>Göz teması kurar, mimik verir, susar, kızar, güler.</li>
+          <li>Seni “kullanıcı” olarak değil, tanıdığı biri olarak görür.</li>
+        </ul>
+        <p style="margin-top:10px; font-style: italic; color:rgba(255,255,255,.55);">
+          Yani Caynana ile konuşmazsın, Caynana sana eşlik eder.
+        </p>
+      </section>
 
-        <section>
-          <h3>Neyi Farklı Yapıyoruz?</h3>
-          <ul>
-            <li>Sadece yazdıklarını okumaz, nasıl söylediğine de bakar.</li>
-            <li>Konuştuğunda dinler, yazdığında okur.</li>
-            <li>Göz teması kurar, mimik verir, susar, kızar, güler.</li>
-            <li>Seni “kullanıcı” olarak değil, tanıdığı biri olarak görür.</li>
-          </ul>
-          <p style="margin-top:10px; font-style: italic; color:rgba(255,255,255,.55);">
-            Yani Caynana ile konuşmazsın, Caynana sana eşlik eder.
-          </p>
-        </section>
+      <section>
+        <h3>İlişkisel Asistan Nedir?</h3>
+        <p>Caynana bir ilişkisel asistandır. Bu şu demektir:</p>
+        <ul>
+          <li>Seninle zaman içinde bağ kurar.</li>
+          <li>Hitap şeklini öğrenir ve unutmaz.</li>
+          <li>Duyguna göre davranır.</li>
+          <li>Herkesle aynı şekilde konuşmaz.</li>
+        </ul>
+        <p>
+          Caynana’nın tepkileri; <span class="highlight">yazıya, sese, bakışa ve duraksamaya</span> göre değişir.
+          Çünkü gerçek hayatta da insanlar böyle iletişim kurar.
+        </p>
+      </section>
 
-        <section>
-          <h3>İlişkisel Asistan Nedir?</h3>
-          <p>Caynana bir ilişkisel asistandır. Bu şu demektir:</p>
-          <ul>
-            <li>Seninle zaman içinde bağ kurar.</li>
-            <li>Hitap şeklini öğrenir ve unutmaz.</li>
-            <li>Duyguna göre davranır.</li>
-            <li>Herkesle aynı şekilde konuşmaz.</li>
-          </ul>
-          <p>
-            Caynana’nın tepkileri; <span class="highlight">yazıya, sese, bakışa ve duraksamaya</span> göre değişir.
-            Çünkü gerçek hayatta da insanlar böyle iletişim kurar.
-          </p>
-        </section>
+      <section>
+        <h3>Güven ve Gizlilik</h3>
+        <ul>
+          <li>Girişler yalnızca Google ve Apple ile yapılır.</li>
+          <li>Avatarın, giriş yaptığın hesabın fotoğrafıdır.</li>
+          <li>Kamera ve mikrofon sen izin verdiğinde çalışır.</li>
+          <li>Hiçbir görüntü kaydedilmez, analiz anlıktır.</li>
+        </ul>
+        <p style="color:var(--pistachio); font-size:13px; font-weight:800; margin-top:5px;">
+          Kontrol her zaman sende.
+        </p>
+      </section>
 
-        <section>
-          <h3>Güven ve Gizlilik</h3>
-          <ul>
-            <li>Girişler yalnızca Google ve Apple ile yapılır.</li>
-            <li>Avatarın, giriş yaptığın hesabın fotoğrafıdır.</li>
-            <li>Kamera ve mikrofon sen izin verdiğinde çalışır.</li>
-            <li>Hiçbir görüntü kaydedilmez, analiz anlıktır.</li>
-          </ul>
-          <p style="color:var(--pistachio); font-size:13px; font-weight:800; margin-top:5px;">
-            Kontrol her zaman sende.
-          </p>
-        </section>
+      <section>
+        <h3>Neden “Caynana”?</h3>
+        <p>Çünkü Caynana:</p>
+        <ul>
+          <li>Lafı dolandırmaz.</li>
+          <li>Gerektiğinde kızar.</li>
+          <li>Gerektiğinde sahip çıkar.</li>
+          <li>Ama her zaman senin tarafındadır.</li>
+        </ul>
+        <p>Bazen haklısın der, bazen “orada bir dur bakalım” der. Gerçek hayattaki gibi.</p>
+      </section>
 
-        <section>
-          <h3>Neden “Caynana”?</h3>
-          <p>Çünkü Caynana:</p>
-          <ul>
-            <li>Lafı dolandırmaz.</li>
-            <li>Gerektiğinde kızar.</li>
-            <li>Gerektiğinde sahip çıkar.</li>
-            <li>Ama her zaman senin tarafındadır.</li>
-          </ul>
-          <p>Bazen haklısın der, bazen “orada bir dur bakalım” der. Gerçek hayattaki gibi.</p>
-        </section>
+      <section>
+        <h3>Biz Ne Yapmak İstiyoruz?</h3>
+        <p>
+          Amacımız; soğuk arayüzler değil, ezber cevaplar değil,
+          <span class="highlight">insan gibi davranan dijital karakterler</span> üretmek.
+        </p>
+        <p>Caynana bunun ilk adımıdır.</p>
+      </section>
 
-        <section>
-          <h3>Biz Ne Yapmak İstiyoruz?</h3>
-          <p>
-            Amacımız; soğuk arayüzler değil, ezber cevaplar değil,
-            <span class="highlight">insan gibi davranan dijital karakterler</span> üretmek.
-          </p>
-          <p>Caynana bunun ilk adımıdır.</p>
-        </section>
-
-        <div class="footer-sign">
-          Caynana AI
-          <div class="footer-sub">Yapay Zekânın Geleneksel Aklı</div>
-        </div>
-
+      <div class="footer-sign">
+        Caynana AI
+        <div class="footer-sub">Yapay Zekanın Geleneksel Aklı</div>
       </div>
     </div>
   </div>
 
-  <!-- ✅ ALT KAYAN ASİSTAN BAR (SABİT) -->
+  <!-- ✅ ALT KOLAY MENÜ (login sonrası) -->
   <div class="assistant-bar" id="assistantBar">
-    <div class="assistant-item" data-go="/"><div class="ico">💬</div><div class="lbl">Sohbet</div></div>
-    <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico">🥗</div><div class="lbl">Diyet</div></div>
-    <div class="assistant-item" data-go="/pages/saglik.html"><div class="ico">❤️</div><div class="lbl">Sağlık</div></div>
-    <div class="assistant-item" data-go="/pages/astro.html"><div class="ico">♈</div><div class="lbl">Astro</div></div>
-    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico">☕</div><div class="lbl">Fal</div></div>
-    <div class="assistant-item" data-go="/pages/alisveris.html"><div class="ico">🛍️</div><div class="lbl">Alışveriş</div></div>
-    <div class="assistant-item" data-go="/pages/tercuman.html"><div class="ico">🌍</div><div class="lbl">Tercüman</div></div>
+    <!-- İstersen layout-common.js bunu otomatik doldurur; burada boş bırakılabilir.
+         Şimdilik mevcut düzenin bozulmaması için bırakıyoruz. -->
   </div>
 
-  <!-- ✅ FOOTER (ZORUNLU YAZI) -->
+  <!-- ✅ FOOTER (login sonrası linkler) -->
   <div class="footer-container">
     <div class="footer-links">
       <a href="/pages/hakkimizda.html">Hakkımızda</a>
@@ -306,21 +342,9 @@
 
 </div>
 
+<!-- ✅ login sonrası motorlar -->
+<script type="module" src="/js/main.js"></script>
 <script src="/js/layout-common.js?v=1"></script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    try {
-      const u = JSON.parse(localStorage.getItem("caynana_user_v1") || "{}");
-      const pic = u.picture || u.avatar || u.avatar_url;
-      const name = u.fullname || u.name || "—";
-      const ico = document.getElementById("profileShortcutIco");
-      if(ico && pic) ico.innerHTML = `<img src="${pic}" alt="avatar">`;
-      const nm = document.getElementById("profileShortcutName");
-      if(nm) nm.textContent = name;
-    } catch(e) {}
-  });
-</script>
 
 </body>
 </html>
