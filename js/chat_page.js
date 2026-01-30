@@ -1,18 +1,9 @@
 // FILE: /js/chat_page.js
-// FINAL (CHAT.html uyumlu ID + SCROLL FIX + AUTO-FOLLOW + STT AUTO-SEND + SEESAW)
-// ✅ messages container: #chat
-// ✅ Auto-follow: alttaysan takip, yukarı çıktıysa bırak
-// ✅ DOM render sonrası scroll: requestAnimationFrame
-// ✅ Wheel/touch parent'ta boğulmaz
-// ✅ STT: konuşma bitince otomatik gönder
-// ✅ Tahtaravalli: usering/botting/thinking class
-// ✅ FIX: fetchTextResponse imzası doğru
-// ✅ FIX: assistant store double-write yok (chat.js zaten delayed write yapıyor)
+// FINAL (CHAT.html uyumlu + STT AUTO-SEND + SEESAW + HISTORY EDIT/DELETE RULES)
 
 import { fetchTextResponse } from "./chat.js";
 import { ChatStore } from "./chat_store.js";
 
-// Login zorunlu: token yoksa index'e yolla
 const t = (localStorage.getItem("google_id_token") || "").trim();
 if (!t) window.location.href = "/index.html";
 
@@ -23,31 +14,24 @@ const menuToggle = $("hambBtn");
 const historyList = $("historyList");
 const newChatBtn = $("newChatBtn");
 
-// ✅ CHAT container
 const messages = $("chat");
 
 const msgInput = $("msgInput");
 const sendBtn = $("sendBtn");
 const micBtn = $("micBtn");
 
-// seesaw / brand
 const brandWrapper = $("brandWrapper");
 
 let pendingFile = null;
 
 // ------------------------
-// ✅ SCROLL FIX (AUTO-FOLLOW)
+// Scroll
 // ------------------------
 let follow = true;
-
 function isNearBottom(slack = 140) {
-  try {
-    return (messages.scrollHeight - messages.scrollTop - messages.clientHeight) < slack;
-  } catch {
-    return true;
-  }
+  try { return (messages.scrollHeight - messages.scrollTop - messages.clientHeight) < slack; }
+  catch { return true; }
 }
-
 function scrollBottom(force = false) {
   if (!messages) return;
   requestAnimationFrame(() => {
@@ -55,18 +39,14 @@ function scrollBottom(force = false) {
     if (force || follow) messages.scrollTop = messages.scrollHeight;
   });
 }
-
 if (messages) {
   messages.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
   messages.addEventListener("touchmove", (e) => e.stopPropagation(), { passive: true });
-
-  messages.addEventListener("scroll", () => {
-    follow = isNearBottom();
-  }, { passive: true });
+  messages.addEventListener("scroll", () => { follow = isNearBottom(); }, { passive: true });
 }
 
 // ------------------------
-// ✅ Tahtaravalli state
+// Seesaw
 // ------------------------
 function setSeesaw(mode = "") {
   if (!brandWrapper) return;
@@ -81,13 +61,10 @@ function clearSeesaw() {
 // ------------------------
 // UI helpers
 // ------------------------
-function roleToClass(role){
-  return role === "user" ? "user" : "bot";
-}
+function roleToClass(role){ return role === "user" ? "user" : "bot"; }
 
 function bubble(role, text) {
   if (!messages) return null;
-
   const div = document.createElement("div");
   div.className = `bubble ${roleToClass(role)}`;
   div.textContent = text;
@@ -104,7 +81,6 @@ function bubble(role, text) {
 
 function typingIndicator() {
   if (!messages) return null;
-
   const div = document.createElement("div");
   div.className = "bubble bot";
   div.innerHTML = `
@@ -130,8 +106,10 @@ function autoGrow() {
 }
 
 // ------------------------
-// Sidebar (last 10 chats)
+// History UI (kalem + çöp kutusu)
 // ------------------------
+let editingId = null;
+
 function renderHistory() {
   if (!historyList) return;
   historyList.innerHTML = "";
@@ -143,21 +121,87 @@ function renderHistory() {
     row.className = "history-row" + (ChatStore.currentId === c.id ? " active" : "");
     row.title = c.title || "Sohbet";
 
+    const isEditing = (editingId === c.id);
+
     row.innerHTML = `
-      <div class="history-title">${c.title || "Sohbet"}</div>
-      <button class="history-del" title="Sil">🗑️</button>
+      <div style="flex:1; min-width:0;">
+        ${
+          isEditing
+          ? `<input class="history-edit" id="edit_${c.id}" value="${(c.title||"").replace(/"/g,'&quot;')}" 
+               style="width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10);
+                      color:#fff; border-radius:12px; padding:10px 10px; font-weight:900; outline:none;" />`
+          : `<div class="history-title">${c.title || "Sohbet"}</div>`
+        }
+      </div>
+
+      <button class="history-edit-btn" title="Başlığı Düzenle"
+        style="width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+               border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04); cursor:pointer;">✏️</button>
+
+      <button class="history-del" title="Sil"
+        style="width:34px;height:34px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+               border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04); cursor:pointer;">🗑️</button>
     `;
 
+    // row click: sohbet aç (editing değilse)
     row.addEventListener("click", () => {
-      ChatStore.currentId = c.id;
+      if (editingId === c.id) return;
+      ChatStore.setCurrent(c.id);
       loadCurrentChat();
       renderHistory();
       menuOverlay?.classList.remove("open");
     });
 
+    // ✏️ edit
+    row.querySelector(".history-edit-btn")?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (editingId === c.id) {
+        // zaten edit modunda -> iptal
+        editingId = null;
+        renderHistory();
+        return;
+      }
+      editingId = c.id;
+      renderHistory();
+
+      // focus
+      setTimeout(() => {
+        const inp = document.getElementById(`edit_${c.id}`);
+        inp?.focus();
+        inp?.select?.();
+      }, 30);
+    });
+
+    // input key events
+    if (isEditing) {
+      setTimeout(() => {
+        const inp = document.getElementById(`edit_${c.id}`);
+        if (!inp) return;
+
+        inp.addEventListener("keydown", (ev) => {
+          if (ev.key === "Escape") {
+            editingId = null;
+            renderHistory();
+          }
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            const v = String(inp.value || "").trim();
+            if (v) {
+              ChatStore.renameChat(c.id, v);
+            }
+            editingId = null;
+            renderHistory();
+          }
+        });
+      }, 0);
+    }
+
+    // 🗑️ delete with confirm
     row.querySelector(".history-del")?.addEventListener("click", (e) => {
       e.stopPropagation();
-      ChatStore.deleteChat(c.id);
+      const ok = confirm("Sohbetiniz kalıcı olarak silinecek. Emin misin evladım?");
+      if (!ok) return;
+      ChatStore.deleteChat(c.id, true);
       loadCurrentChat();
       renderHistory();
     });
@@ -192,7 +236,7 @@ function loadCurrentChat() {
 }
 
 // ------------------------
-// Mic (STT) + AUTO SEND
+// STT
 // ------------------------
 let __rec = null;
 let __sttBusy = false;
@@ -213,7 +257,6 @@ function startSTT() {
   rec.interimResults = false;
   rec.continuous = false;
 
-  // UI: mic glow (chat.html inline css)
   micBtn?.classList.add("listening");
 
   rec.onresult = (e) => {
@@ -225,32 +268,24 @@ function startSTT() {
     }
   };
 
-  rec.onerror = () => {
-    // sessiz geç
-  };
-
   rec.onend = async () => {
     __sttBusy = false;
     micBtn?.classList.remove("listening");
 
-    // ✅ konuşma bitti: otomatik gönder
     const txt = (msgInput?.value || "").trim();
-    if (txt) {
-      await send(true); // stt mode
-    }
+    if (txt) await send(true);
   };
 
   rec.start();
 }
 
 // ------------------------
-// Send flow
+// Send
 // ------------------------
-async function send(fromSTT = false) {
+async function send() {
   const text = (msgInput?.value || "").trim();
   if (!text && !pendingFile) return;
 
-  // usering seesaw
   setSeesaw("usering");
 
   const h0 = ChatStore.history() || [];
@@ -265,33 +300,24 @@ async function send(fromSTT = false) {
   autoGrow();
   setSendActive();
 
-  // thinking seesaw
   setSeesaw("thinking");
-
   const loader = typingIndicator();
 
   let reply = "Evladım bir şeyler ters gitti.";
   try {
-    // ✅ fetchTextResponse imzası: (msg, mode)
     const out = await fetchTextResponse(text || "Merhaba", "chat");
     reply = out?.text || reply;
   } catch {}
 
   try { loader?.remove(); } catch {}
 
-  // botting seesaw
   setSeesaw("botting");
-
   bubble("assistant", reply);
 
-  // ❌ assistant store double-write yok:
-  // chat.js zaten scheduleAssistantStoreWrite ile yazıyor.
-  // Burada sadece UI bubble basıyoruz.
-
+  // ✅ assistant store yok (chat.js delayed write var)
   renderHistory();
   scrollBottom(false);
 
-  // kısa bir süre sonra idle
   setTimeout(() => clearSeesaw(), 700);
 }
 
@@ -302,7 +328,6 @@ menuToggle?.addEventListener("click", () => {
   menuOverlay?.classList.toggle("open");
 });
 
-// overlay tıklayınca kapat
 menuOverlay?.addEventListener("click", (e) => {
   const sidebarEl = e.currentTarget?.querySelector?.(".menu-sidebar");
   if (!sidebarEl) return;
@@ -323,7 +348,6 @@ msgInput?.addEventListener("input", () => {
   autoGrow();
   setSendActive();
   setSeesaw("usering");
-  // kısa idle
   clearTimeout(window.__typingIdle);
   window.__typingIdle = setTimeout(() => clearSeesaw(), 500);
 });
@@ -347,3 +371,9 @@ autoGrow();
 setSendActive();
 scrollBottom(true);
 clearSeesaw();
+
+// live update: chat_store emitUpdated event
+window.addEventListener("caynana:chats-updated", () => {
+  // sadece menü listesi güncellensin
+  renderHistory();
+});
