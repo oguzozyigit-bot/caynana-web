@@ -1,4 +1,4 @@
-<!-- FILE: /index.html (FULL - FIXED: ALWAYS TYPEWRITER + APPLE KAYNANA + NO EDGE GLITCH + EYES TRACK DEMO) -->
+<!-- FILE: /index.html (FULL - NO BACKGROUND BOXES + FIXED BARS + CENTER EYES + ICON STACK + FAQ CHAT DEMO) -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -15,7 +15,7 @@
   <style>
     :root{ --gold:#ffb300; --pistachio:#bef264; --red:#ff5252; }
 
-    /* Üst bar sabit + ortalı logo */
+    /* Üst bar sabit */
     .topbar{ position: sticky; top:0; z-index:3000; }
     .topbar .left-controls, .topbar .right-controls{ width:80px; }
     .topbar .brand-wrapper{ margin:0 auto; text-align:center; }
@@ -26,7 +26,7 @@
       flex: 1 1 auto;
       min-height: 0;
       overflow: hidden;
-      padding: 18px 16px 180px;
+      padding: 18px 16px 170px; /* alt bar boşluğu */
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -34,7 +34,7 @@
       gap: 14px;
     }
 
-    /* Hareketli arka plan */
+    /* Hafif arkaplan (sayfa genel) */
     .bg-anim{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
     .bg-anim::before{
       content:"";
@@ -47,7 +47,7 @@
         linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,0));
       transform: rotate(8deg);
       animation: bgFloat 10s ease-in-out infinite;
-      opacity: .9;
+      opacity: .85;
     }
     .bg-anim::after{
       content:"";
@@ -55,7 +55,7 @@
       inset:0;
       background: linear-gradient(120deg, transparent 30%, rgba(255,179,0,.06) 50%, transparent 70%);
       animation: shimmer 6.5s ease-in-out infinite;
-      opacity: .7;
+      opacity: .65;
     }
     @keyframes bgFloat{
       0%{ transform: translateY(0) rotate(8deg); }
@@ -68,133 +68,140 @@
       100%{ transform: translateX(-40%); }
     }
 
-    /* Login card */
-    .login-card{
-      width: min(460px, 92vw);
-      border-radius: 24px;
-      border: 1px solid rgba(255,255,255,.12);
-      background:
-        radial-gradient(900px 280px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
-        radial-gradient(900px 280px at 100% 0%, rgba(190,242,100,.08), transparent 60%),
-        rgba(14,14,14,.92);
-      box-shadow: 0 40px 120px rgba(0,0,0,.75);
-      padding: 18px 16px 16px;
+    /* ===== GÖZLER (ORTALI, BİR TIK KÜÇÜK, ZEMİN YOK) ===== */
+    .kaynana-eyes{
+      position: relative;
+      z-index: 3;
+      margin-top: 10px;
+      width: 210px;
+      height: 90px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 18px;
+      pointer-events:none;
+      /* ✅ zemin yok */
+      background: transparent;
+      border: none;
+      box-shadow: none;
+    }
+    .eye-wrap{ position:relative; width:64px; height:78px; display:flex; align-items:center; justify-content:center; }
+    .brow{
+      position:absolute;
+      top: -6px;
+      width: 66px;
+      height: 18px;
+      border-top: 5px solid rgba(255,255,255,.55);
+      border-radius: 999px;
+      transform: rotate(-6deg);
+      opacity:.60;
+    }
+    .lashes{
+      position:absolute;
+      top: 16px;
+      width: 68px;
+      height: 12px;
+      opacity:.30;
+      display:flex;
+      justify-content:space-between;
+    }
+    .lashes span{
+      width: 10px; height: 10px;
+      border-top: 2px solid rgba(255,255,255,.55);
+      border-radius: 999px;
+      transform: rotate(18deg);
+    }
+    .eye{
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.95);
+      position: relative;
+      overflow:hidden;
+      box-shadow: inset 0 -3px 0 rgba(0,0,0,.12);
+    }
+    .pupil{
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(0,0,0,.80);
+      position:absolute;
+      top: 19px;
+      left: 19px;
+      transition: transform .10s linear;
+    }
+    .shine{
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.85);
+      position:absolute;
+      top: 10px; left: 13px;
+      opacity:.9;
+    }
+    .lid{
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.18);
+      transform: translateY(-110%);
+      border-radius: 50%;
+      animation: blink 5.8s ease-in-out infinite;
+    }
+    @keyframes blink{
+      0%, 92%, 100%{ transform: translateY(-110%); }
+      94%{ transform: translateY(0%); }
+      96%{ transform: translateY(-110%); }
+    }
+
+    /* ===== ICON STACK (GOOGLE üstte, APPLE altta) ===== */
+    .login-stack{
+      position: relative;
+      z-index: 3;
+      width: min(440px, 92vw);
       display:flex;
       flex-direction:column;
       align-items:center;
       gap: 12px;
-      position: relative;
-      z-index: 3;
-      backdrop-filter: blur(10px);
-      margin-top: 80px;
+      margin-top: 6px;
     }
 
-    .login-lead{
-      font-size: 13px;
-      font-weight: 950;
-      color: rgba(255,255,255,.86);
-      letter-spacing:.2px;
-      margin-top: 2px;
-    }
-
-    .trust-row{
-      width:100%;
-      display:flex;
-      justify-content:center;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top: 2px;
-    }
-    .trust-pill{
-      display:flex; align-items:center; gap:8px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.75);
-      font-weight: 900;
-      font-size: 11px;
-      white-space:nowrap;
-    }
-    .trust-pill .dot{
-      width:8px; height:8px; border-radius:99px;
-      background: rgba(190,242,100,.9);
-      box-shadow: 0 0 10px rgba(190,242,100,.25);
-      flex: 0 0 8px;
-    }
-
-    .trust-bullets{
-      width:100%;
-      text-align:left;
-      margin-top: 4px;
-      color: rgba(255,255,255,.72);
-      font-weight: 800;
-      font-size: 12px;
-      line-height: 1.45;
-      padding-left: 4px;
-    }
-    .trust-bullets li{
-      list-style:none;
-      margin: 6px 0;
-      display:flex;
-      gap:10px;
-      align-items:flex-start;
-    }
-    .trust-bullets li::before{
-      content:"🔒";
-      font-size: 12px;
-      line-height: 1.2;
-      margin-top: 2px;
-      opacity: .9;
-    }
-
-    /* Buttons */
-    .btn-3d{
-      width: min(420px, 92vw);
-      height: 54px;
+    .btn-icon{
+      width: 100%;
+      height: 56px;
       border-radius: 18px;
-      border: none;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05); /* buton zemin olur, sorun yok */
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap: 12px;
       font-weight: 950;
       font-size: 15px;
-      cursor: pointer;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 10px;
-      box-shadow: 0 14px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.20);
-      transition: transform .12s ease, filter .12s ease;
+      cursor:pointer;
       user-select:none;
+      box-shadow: 0 14px 30px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.15);
+      transition: transform .12s ease, filter .12s ease;
     }
-    .btn-3d:active{ transform: translateY(1px); filter: brightness(.97); }
+    .btn-icon:active{ transform: translateY(1px); filter: brightness(.97); }
 
-    .btn-google{
-      background: linear-gradient(135deg, #4285F4, #2b6fe8);
-      color:#fff;
-      border: 1px solid rgba(255,255,255,.14);
-      position: relative;
-    }
-    .btn-google .gmark{
-      width:18px; height:18px;
-      border-radius: 6px;
+    .g-badge{
+      width: 26px; height: 26px;
+      border-radius: 10px;
       background:#fff;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
       color:#4285F4;
+      display:flex; align-items:center; justify-content:center;
       font-weight: 1000;
-      font-size: 12px;
-      line-height:1;
+    }
+    .a-badge{
+      width: 26px; height: 26px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.12);
+      display:flex; align-items:center; justify-content:center;
+      font-size: 16px;
     }
 
-    .btn-apple{
-      background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(255,255,255,.06));
-      color:#fff;
-      border: 1px solid rgba(255,255,255,.12);
-    }
-    .btn-apple .amark{ font-size: 18px; line-height:1; }
-
-    /* GSI overlay */
-    .google-wrap{ position: relative; width: min(420px, 92vw); height: 54px; }
+    /* GSI overlay (google butonu tıklamayı iframe’e bırakır) */
+    .google-wrap{ position: relative; width: 100%; height: 56px; }
     #googleBtnWrap{
       position:absolute; inset:0;
       width:100%; height:100%;
@@ -207,6 +214,66 @@
       height:100% !important;
       pointer-events:auto !important;
       cursor:pointer !important;
+    }
+
+    /* ===== DEMO: Apple altından başlar, aşağı akar, üstte kaybolur ===== */
+    .demo-wrap{
+      position: relative;
+      z-index: 2;
+      width: min(440px, 92vw);
+      margin-top: 6px;
+      max-height: 220px;
+      overflow: hidden; /* ✅ Apple altında başlar, üstte kaybolur */
+    }
+
+    .demo-stream{
+      width:100%;
+      display:flex;
+      flex-direction:column; /* ✅ üstten aşağı akar */
+      gap: 10px;
+      padding: 0;
+    }
+
+    .demo-bubble{
+      max-width: 88%;
+      padding: 10px 12px;
+      border-radius: 16px;
+      font-weight: 780;
+      font-size: 12px;
+      line-height: 1.35;
+      color: rgba(255,255,255,.92);
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      box-shadow: 0 12px 28px rgba(0,0,0,.22);
+      backdrop-filter: blur(6px);
+    }
+    .demo-bubble.bot{
+      border-left: 3px solid var(--gold);
+      margin-right:auto;
+    }
+    .demo-bubble.user{
+      border-right: 3px solid var(--pistachio);
+      margin-left:auto;
+      text-align:right;
+    }
+
+    .demo-typing{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      margin-top: 6px;
+      opacity:.9;
+    }
+    .demo-typing .dot{
+      width:6px;height:6px;border-radius:99px;
+      background: rgba(255,255,255,.70);
+      animation: dot 1.1s infinite ease-in-out;
+    }
+    .demo-typing .dot:nth-child(2){ animation-delay:.15s; }
+    .demo-typing .dot:nth-child(3){ animation-delay:.3s; }
+    @keyframes dot{
+      0%,100%{ transform: translateY(0); opacity:.55; }
+      50%{ transform: translateY(-4px); opacity:1; }
     }
 
     /* Alt bar */
@@ -315,177 +382,13 @@
       opacity:.65;
     }
     #termsAcceptBtn.enabled{ opacity:1; }
-
-    /* Tahtaravalli idle hareket */
-    .brand-wrapper.idle .seesaw-bar{ animation: idleRock 2.6s ease-in-out infinite; }
-    @keyframes idleRock{
-      0%{ transform: rotate(-3deg); }
-      50%{ transform: rotate(3deg); }
-      100%{ transform: rotate(-3deg); }
-    }
-
-    /* ===== GÖZLER (yukarıda) ===== */
-    .kaynana-eyes{
-      position:absolute;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 210px;
-      height: 98px;
-      border-radius: 26px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.22);
-      box-shadow: 0 18px 40px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.08);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 16px;
-      padding: 12px 12px;
-      pointer-events:none;
-      backdrop-filter: blur(6px);
-      opacity: .98;
-      z-index: 5;
-    }
-    .eye-wrap{ position:relative; width:60px; height:76px; display:flex; align-items:center; justify-content:center; }
-    .brow{
-      position:absolute;
-      top: -6px;
-      width: 64px;
-      height: 18px;
-      border-top: 5px solid rgba(255,255,255,.55);
-      border-radius: 999px;
-      transform: rotate(-6deg);
-      opacity:.65;
-    }
-    .lashes{
-      position:absolute;
-      top: 15px;
-      width: 66px;
-      height: 12px;
-      opacity:.35;
-      display:flex;
-      justify-content:space-between;
-    }
-    .lashes span{
-      width: 10px; height: 10px;
-      border-top: 2px solid rgba(255,255,255,.55);
-      border-radius: 999px;
-      transform: rotate(18deg);
-    }
-    .eye{
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.95);
-      position: relative;
-      overflow:hidden;
-      box-shadow: inset 0 -3px 0 rgba(0,0,0,.12);
-    }
-    .pupil{
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: rgba(0,0,0,.80);
-      position:absolute;
-      top: 19px;
-      left: 19px;
-      transition: transform .10s linear;
-    }
-    .shine{
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.85);
-      position:absolute;
-      top: 10px; left: 13px;
-      opacity:.9;
-    }
-    .lid{
-      position:absolute;
-      inset:0;
-      background: rgba(0,0,0,.20);
-      transform: translateY(-110%);
-      border-radius: 50%;
-      animation: blink 5.8s ease-in-out infinite;
-    }
-    @keyframes blink{
-      0%, 92%, 100%{ transform: translateY(-110%); }
-      94%{ transform: translateY(0%); }
-      96%{ transform: translateY(-110%); }
-    }
-    .brand-name .ai-green{ color: var(--pistachio); }
-
-    /* ===== Demo: yukarı taşan uçlar görünmesin (mask + max height) ===== */
-    .prelogin-demo{
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: 92px;
-      width: min(460px, 92vw);
-      z-index: 2;
-      pointer-events:none;
-      max-height: 165px;
-      overflow: hidden;
-      /* üstte yumuşak fade: gözün yanına uçlar çıkmasın */
-      -webkit-mask-image: linear-gradient(to top, black 0%, black 80%, transparent 100%);
-      mask-image: linear-gradient(to top, black 0%, black 80%, transparent 100%);
-    }
-
-    .demo-stream{
-      width:100%;
-      display:flex;
-      flex-direction:column-reverse;
-      gap: 10px;
-      padding: 0;
-    }
-
-    .demo-bubble{
-      max-width: 88%;
-      padding: 10px 12px;
-      border-radius: 16px;
-      font-weight: 750;
-      font-size: 12px;
-      line-height: 1.35;
-      color: rgba(255,255,255,.92);
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      box-shadow: 0 12px 28px rgba(0,0,0,.22);
-      backdrop-filter: blur(6px);
-    }
-    .demo-bubble.bot{
-      border-left: 3px solid var(--gold);
-      margin-right:auto;
-    }
-    .demo-bubble.user{
-      border-right: 3px solid var(--pistachio);
-      margin-left:auto;
-      text-align:right;
-    }
-
-    .demo-typing{
-      display:flex;
-      gap:6px;
-      align-items:center;
-      margin-top: 4px;
-      opacity:.9;
-    }
-    .demo-typing .dot{
-      width:6px;height:6px;border-radius:99px;
-      background: rgba(255,255,255,.70);
-      animation: dot 1.1s infinite ease-in-out;
-    }
-    .demo-typing .dot:nth-child(2){ animation-delay:.15s; }
-    .demo-typing .dot:nth-child(3){ animation-delay:.3s; }
-    @keyframes dot{
-      0%,100%{ transform: translateY(0); opacity:.55; }
-      50%{ transform: translateY(-4px); opacity:1; }
-    }
   </style>
 </head>
 
 <body>
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ÜST BAR -->
+  <!-- ÜST BAR (sabit) -->
   <div class="topbar">
     <div class="left-controls"></div>
 
@@ -499,7 +402,7 @@
           </g>
           <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
         </svg>
-        <div class="brand-name">Caynana<span class="ai-green">AI</span></div>
+        <div class="brand-name">Caynana<span style="color:var(--pistachio);">AI</span></div>
       </div>
       <div class="slogan">Yapay Zekanın Geleneksel Aklı</div>
     </div>
@@ -525,51 +428,32 @@
       </div>
     </div>
 
-    <!-- Login card -->
-    <div class="login-card">
-      <div class="login-lead">Üyelik Ücretsizdir.</div>
-
-      <div class="trust-row">
-        <div class="trust-pill"><span class="dot" style="animation:none"></span> Güvenli giriş</div>
-        <div class="trust-pill"><span class="dot" style="animation:none"></span> İzinle çalışır</div>
-        <div class="trust-pill"><span class="dot" style="animation:none"></span> Şeffaf gizlilik</div>
-      </div>
-
-      <ul class="trust-bullets">
-        <li>Giriş sadece Google / Apple ile yapılır.</li>
-        <li>Görüntü/ses kaydedilmez; analiz anlıktır.</li>
-        <li>İstediğin an çıkış yapabilirsin.</li>
-      </ul>
-
-      <!-- GOOGLE -->
+    <!-- ICON STACK -->
+    <div class="login-stack">
+      <!-- Google (ikon) -->
       <div class="google-wrap">
-        <button class="btn-3d btn-google" id="googleLoginBtn" type="button">
-          <span class="gmark">G</span> Google Hesabın İle Giriş Yap
+        <button class="btn-icon" id="googleLoginBtn" type="button">
+          <span class="g-badge">G</span> Google ile Giriş Yap
         </button>
         <div id="googleBtnWrap"></div>
       </div>
 
-      <!-- APPLE -->
-      <button class="btn-3d btn-apple" id="appleLoginBtn" type="button">
-        <span class="amark"></span> Apple Hesabın İle Giriş Yap
+      <!-- Apple (ikon) -->
+      <button class="btn-icon" id="appleLoginBtn" type="button">
+        <span class="a-badge"></span> Apple ile Giriş Yap
       </button>
 
-      <div style="margin-top:4px;font-size:11px;font-weight:800;color:rgba(255,255,255,.55);">
-        Devam ederek Kullanıcı Sözleşmesi’ni onaylayacaksın.
+      <!-- DEMO (Apple altından başlar) -->
+      <div class="demo-wrap">
+        <div class="demo-stream" id="demoStream"></div>
+        <div class="demo-typing" id="demoTyping">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </div>
       </div>
     </div>
-
-    <!-- ✅ ALT BOŞLUK: ZEMİNSİZ DEMO -->
-    <div class="prelogin-demo" aria-hidden="true">
-      <div class="demo-stream" id="demoStream"></div>
-      <div class="demo-typing" id="demoTyping">
-        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-      </div>
-    </div>
-
   </div>
 
-  <!-- ALT BAR -->
+  <!-- ALT BAR (sabit) -->
   <div class="login-footerbar">
     <div class="login-links">
       <a href="/pages/about.html">Hakkımızda</a>
@@ -675,7 +559,7 @@
 
   initAuth();
 
-  // ===== Gözler: pointer varsa onu takip, yoksa demo yazılarını takip =====
+  // ===== GÖZLER: pointer varsa onu takip, yoksa demo yazısını takip =====
   const p1 = $("p1");
   const p2 = $("p2");
   const eyesBox = $("eyesBox");
@@ -719,12 +603,12 @@
     const idle = (Date.now() - lastPointerAt) > 900;
     if(!idle) return;
 
-    // demo alandaki en yeni balonun merkezine bak
     let tx = window.innerWidth/2;
-    let ty = window.innerHeight*0.78;
+    let ty = window.innerHeight*0.72;
 
     try{
-      const last = demoStream?.querySelector?.(".demo-bubble:last-child") || demoStream?.querySelector?.(".demo-bubble");
+      // en yeni baloncuk (en alttaki) hedef
+      const last = demoStream?.lastElementChild;
       const r = last?.getBoundingClientRect?.();
       if(r){
         tx = r.left + r.width/2;
@@ -735,41 +619,26 @@
     aimAt(tx, ty);
   }, 220);
 
-  // ===== DEMO: 15 kullanıcı + 15 kaynana, alttan yukarı akar, TÜMÜ daktilo (yavaş) =====
+  // ===== DEMO: mini SSS Q/A, kullanıcı -> kaynana, daktilo, aşağı akar, üstten kaybolur =====
   const stream = demoStream;
   const typing = $("demoTyping");
-
   const turns = [
-    ["user","Kaynana… bugün moralim sıfır."],
-    ["bot","Evladım, bir anlat bakalım… Ne oldu da suratın asıldı?"],
-    ["user","İş güç üst üste geldi, kafam dolu."],
-    ["bot","E normal! Ama sen de kendini ihmal ediyorsun. Bir su iç önce."],
-    ["user","Bugün de doğru düzgün yemek yemedim."],
-    ["bot","Hah! Sonra ‘niye halsizim’… Azdan az, çoktan çok gitmez evladım."],
-    ["user","Bir plan yapalım mı?"],
-    ["bot","Yaparız tabii. Önce uyku, su, sonra hafif yürüyüş. Başka yolu yok."],
-    ["user","Peki motivasyonum yok."],
-    ["bot","Motivasyon gelmez, disiplin gelir. Hadi küçükten başla."],
-    ["user","Yarın erken kalksam?"],
-    ["bot","Aferin. 10 dakika bile kârdır. Sonra 15 olur, 20 olur."],
-    ["user","Sen bana kızıyor musun?"],
-    ["bot","Kızmıyorum. Ama kaynana gibi dürtüyorum… sevdiğimden."],
-    ["user","Tamam, başlıyorum."],
-    ["bot","Heh işte. Şimdi Google’la giriş yap da ben seni toparlayayım."],
-    ["user","Kahve falı da bakarsın değil mi?"],
-    ["bot","Bakmaz mıyım! Ama önce şu hedefleri yazalım evladım."],
-    ["user","Diyet menüsü de istiyorum."],
-    ["bot","Var. Günlük menün hazır. Düzenli gel, S.P de artar."],
-    ["user","S.P neydi?"],
-    ["bot","Samimiyet puanı evladım. Yani ben sana ne kadar ‘evin oğlu/kızı’ diyorum."],
-    ["user","İyiymiş 🙂"],
-    ["bot","İyidir tabii. Ama küfür yok, şımarma yok. 😀"],
-    ["user","Tamam kaynana."],
-    ["bot","Aferin. Hadi giriş yap, başlıyoruz."],
-    ["user","Başlıyorum."],
-    ["bot","Gel bakalım… İyi ki geldin."],
-    ["user","Hazırım."],
-    ["bot","Ben de hazırım. Google’a bas."],
+    ["user","Kaynana… sana nasıl üye olurum?"],
+    ["bot","Google ya da Apple’dan birini seç evladım. Şimdilik Google daha hızlı."],
+    ["user","Üyelik ücretli mi?"],
+    ["bot","Ücretsiz başlıyorsun evladım. Sonra istersen PLUS/PRO bakarız."],
+    ["user","Sözleşme zorunlu mu?"],
+    ["bot","Zorunlu. Onaylamadan içeri giremezsin. Düzen şart."],
+    ["user","Verilerimi kaydediyor musun?"],
+    ["bot","Görüntü/ses kaydetmem. Sadece izin verdiğin profil bilgisi durur."],
+    ["user","S.P ne işe yarıyor?"],
+    ["bot","Samimiyet puanı evladım. Artarsa ben de sana daha ‘içten’ konuşurum."],
+    ["user","Küfür edersem?"],
+    ["bot","Hop! Kaynana kızar. S.P düşer. Ağzını topla."],
+    ["user","Profil doldurunca ne olur?"],
+    ["bot","Her alan bir ödül. İşin kolaylaşır, ben de seni daha iyi tanırım."],
+    ["user","Peki giriş yaptıktan sonra ilk sayfa ne?"],
+    ["bot","Sohbet sayfası. Orası ana yerin. Hadi bas Google’a."]
   ];
 
   function makeBubble(cls){
@@ -792,30 +661,32 @@
 
   async function runDemo(){
     if(!stream) return;
+
+    // reset
+    stream.innerHTML = "";
     let i = 0;
 
     while(true){
       const [who, txt] = turns[i % turns.length];
       const cls = (who === "user") ? "user" : "bot";
 
-      // typing dots sadece bot yazarken görünsün
       if(typing) typing.style.display = (cls === "bot") ? "flex" : "none";
 
       const bubble = makeBubble(cls);
       stream.appendChild(bubble);
 
-      // Daktilo daha yavaş ve HER MESAJDA
+      // daktilo yavaş ve hep
       const speed = (cls === "user") ? 30 : 28;
       await typeInto(bubble, txt, speed);
 
-      // max 12 baloncuk
-      const children = Array.from(stream.children);
-      if(children.length > 12){
-        children.slice(0, children.length - 12).forEach(n => n.remove());
+      // max 10 baloncuk (üstten kaybolsun)
+      const kids = Array.from(stream.children);
+      if(kids.length > 10){
+        kids.slice(0, kids.length - 10).forEach(n=>n.remove());
       }
 
       i++;
-      await sleep(480);
+      await sleep(520);
     }
   }
 
