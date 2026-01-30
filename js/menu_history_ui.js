@@ -1,10 +1,9 @@
 // FILE: /js/menu_history_ui.js
-// FINAL (ŞÜKÜR-ÖNCESİ STABİL MANTIK)
-// ✅ Bu dosya artık chat’e ASLA dokunmaz (scroll/typing bozulmasın).
-// ✅ Event listener yalnız 1 kere bağlanır (initMenuHistoryUI defalarca çağrılsa bile çoğalmaz).
-// ✅ Menu item click: ChatStore state değiştirmez (yan etki yok).
-// ✅ History click: ChatStore.setCurrent(id) + chat.html’e gider (doğru sohbet açılır).
-// ✅ Delete/Rename: UI anında güncellenir.
+// ✅ Chat’e ASLA dokunmaz
+// ✅ Event listener yalnız 1 kere bağlanır
+// ✅ History click: ChatStore.setCurrent(id) + chat.html’e gider
+// ✅ Delete/Rename: UI anında güncellenir
+// ✅ Profil: isim + resim garanti görünür (menü açıldığında “—” kalmaz)
 
 import { ChatStore } from "./chat_store.js";
 
@@ -27,7 +26,7 @@ function confirmDelete(){
 }
 
 /* =========================================================
-   PROFİL OKU (gender / team)
+   PROFİL OKU + PROFİL KISAYOLUNU BOYA (İSİM/RESİM)
    ========================================================= */
 function getProfile(){
   try{
@@ -37,13 +36,35 @@ function getProfile(){
   }
 }
 
+function paintProfileShortcut(){
+  const p = getProfile();
+
+  const name =
+    String(p.fullname || p.name || p.display_name || p.email || "—").trim() || "—";
+
+  const pic =
+    String(p.picture || p.avatar || p.avatar_url || "").trim();
+
+  const nm = $("profileShortcutName");
+  if(nm) nm.textContent = name;
+
+  const ico = $("profileShortcutIco");
+  if(ico){
+    if(pic){
+      ico.innerHTML = `<img src="${pic}" alt="avatar">`;
+    }else{
+      ico.textContent = "👤";
+    }
+  }
+}
+
 /* =========================================================
    MENÜYE EKSİKSE EKLE
    ========================================================= */
 function hasMenuItem(root, href){
   if(!root) return false;
   return Array.from(root.querySelectorAll(".menu-action"))
-    .some(el => (el.getAttribute("data-href") || "").includes(href));
+    .some(el => (el.getAttribute("data-href") || "") === href);
 }
 
 function addMenuItem(root, ico, label, href){
@@ -56,6 +77,7 @@ function addMenuItem(root, ico, label, href){
     <div class="ico">${ico}</div>
     <div><div>${esc(label)}</div></div>
   `;
+
   // ✅ Yan etki yok: sadece yönlendir
   div.addEventListener("click", ()=>{
     location.href = href;
@@ -146,7 +168,6 @@ function renderHistory(){
 
       ChatStore.setCurrent(c.id);
 
-      // Menü açıkken tıklayınca menüyü kapat (UX)
       const overlay = $("menuOverlay");
       if(overlay) overlay.classList.remove("open");
 
@@ -159,7 +180,7 @@ function renderHistory(){
       const nt = prompt("Sohbet başlığını yaz:", c.title || "");
       if(nt){
         ChatStore.renameChat(c.id, nt);
-        renderHistory(); // anında güncelle
+        renderHistory();
       }
     };
 
@@ -168,7 +189,7 @@ function renderHistory(){
       e.stopPropagation();
       if(!confirmDelete()) return;
       ChatStore.deleteChat(c.id);
-      renderHistory(); // anında kaybolsun
+      renderHistory();
     };
 
     listEl.appendChild(row);
@@ -184,8 +205,10 @@ function getUIState(){
 }
 
 export function initMenuHistoryUI(){
-  // ChatStore init
   try { ChatStore.init(); } catch {}
+
+  // ✅ profil kartını garanti boyayalım
+  paintProfileShortcut();
 
   renderFallbackMenus();
   renderHistory();
@@ -210,6 +233,7 @@ export function initMenuHistoryUI(){
     st.bound = true;
     window.addEventListener("caynana:chats-updated", ()=>{
       try { ChatStore.init(); } catch {}
+      paintProfileShortcut();
       renderHistory();
     });
   }
