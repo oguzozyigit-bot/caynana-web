@@ -145,4 +145,167 @@ export function typeWriter(text, elId = "chat") {
 }
 
 export function addUserBubble(text) {
-  const div = document.getElement
+  const div = document.getElementById("chat");
+  if (!div) return;
+
+  const bubble = document.createElement("div");
+  bubble.className = "bubble user";
+  bubble.textContent = String(text || "");
+  div.appendChild(bubble);
+
+  _forceBottom(div);
+}
+
+// Kaynana opener
+function _pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+function buildProfileContextForKaynana(profile={}, memP={}) {
+  const born = String(profile.dogumYeri || memP.dogumYeri || "").trim();
+  const live = String(profile.city || memP.city || "").trim();
+  const team = String(profile.team || memP.team || "").trim();
+  const spouse = String(profile.spouse || memP.spouse || "").trim();
+  const kidsRaw = String(profile.childNames || memP.childNames || "").trim();
+  const kids = kidsRaw ? kidsRaw.split(/[,/]+/).map(x=>x.trim()).filter(Boolean).slice(0,6) : [];
+  const kg = Number(profile.weight_kg || memP.weight_kg || 0) || 0;
+  const cm = Number(profile.height_cm || memP.height_cm || 0) || 0;
+  return { born, live, team, spouse, kids, kg, cm };
+}
+
+function kaynanaOpener(ctx, hitap="evladım") {
+  const pool = [];
+  if (ctx.born && ctx.live && ctx.born.toLowerCase() !== ctx.live.toLowerCase())
+    pool.push(`Bak ${hitap}, sen ${ctx.born}lısın ama ${ctx.live}’de yaşıyorsun… hiç memleket özlemi yok mu?`);
+  if (ctx.spouse) pool.push(`${hitap}, eşin ${ctx.spouse} nasıl?`);
+  if (ctx.kids.length) pool.push(`Torunlarım ${ctx.kids.join(", ")} nasıl ${hitap}?`);
+  if (ctx.team) pool.push(`${hitap}, ${ctx.team} yine kalbini kırdı mı?`);
+  if (ctx.kg) pool.push(`${hitap}, şu ${ctx.kg} kilo meselesini bir toparlasak mı?`);
+  pool.push(`Ee ${hitap}, bugün moral nasıl?`);
+  return _pick(pool);
+}
+
+function isConversationStuck(userMessage="") {
+  const t = String(userMessage||"").trim().toLowerCase();
+  if(!t) return true;
+  return (t.length <= 4 || ["evet","hayır","ok","tamam","tm","he","yok","var","olur"].includes(t));
+}
+
+function getKaynanaState(userId) {
+  const k = `caynana_kaynana_state:${String(userId||"").toLowerCase().trim()}`;
+  try { return JSON.parse(localStorage.getItem(k) || "{}"); } catch { return {}; }
+}
+function setKaynanaState(userId, st) {
+  const k = `caynana_kaynana_state:${String(userId||"").toLowerCase().trim()}`;
+  localStorage.setItem(k, JSON.stringify(st || {}));
+}
+
+// Assistant store write: delayed
+function scheduleAssistantStoreWrite(outText){
+  try{
+    const s = String(outText || "");
+    const delay = Math.max(600, Math.min(4500, s.length * 12));
+    setTimeout(()=>{ try{ ChatStore.add?.("assistant", s); }catch{} }, delay);
+  }catch{}
+}
+
+export async function fetchTextResponse(msg, modeOrHistory = "chat") {
+  const message = String(msg || "").trim();
+  if (!message) return { text: "", error: true };
+
+  if (!hasLoginToken()) {
+    return { text: "Önce giriş yapman lazım evladım. 🙂", error: true, code: "AUTH_REQUIRED" };
+  }
+
+  if (SAFETY_PATTERNS.self_harm.test(message)) {
+    return { text: "Aman evladım sakın. Eğer acil risk varsa 112’yi ara. İstersen anlat, buradayım.", error: true, code: "SAFETY" };
+  }
+
+  // isim yakala
+  maybePersistNameFromUserMessage(message);
+
+  const profile = getProfile();
+  const userId = String(profile?.email || profile?.user_id || profile?.id || "").trim();
+  if (!userId) return { text: "Profilde user_id yok. Çıkış yapıp tekrar giriş yapman lazım evladım.", error: true };
+
+  const memP = (()=>{ try{return getMemoryProfile()||{}}catch{return {}} })();
+  const displayName = String(
+    profile.hitap ||
+    firstNameFromFullname(profile.fullname||"") ||
+    memP.hitap ||
+    firstNameFromFullname(memP.fullname||memP.name||"") ||
+    ""
+  ).trim();
+
+  const mergedProfile = mergeProfiles({
+    hitap: profile.hitap || null,
+    fullname: profile.fullname || null,
+    display_name: displayName || null,
+    botName: profile.botName || null,
+    dob: profile.dob || null,
+    gender: profile.gender || null,
+    maritalStatus: profile.maritalStatus || null,
+    spouse: profile.spouse || null,
+    childCount: profile.childCount || null,
+    childNames: profile.childNames || null,
+    team: profile.team || null,
+    city: profile.city || null,
+    isProfileCompleted: !!profile.isProfileCompleted,
+    height_cm: profile.height_cm || null,
+    weight_kg: profile.weight_kg || null
+  }, memP);
+
+  const st = getKaynanaState(userId);
+  st.stuckCount = isConversationStuck(message) ? (Number(st.stuckCount || 0) + 1) : 0;
+  setKaynanaState(userId, st);
+
+  // user store (başlık anında)
+  try { ChatStore.add?.("user", message); } catch {}
+
+  const ctx = buildProfileContextForKaynana(profile, memP);
+  const serverChatId = (ChatStore.getCurrentServerId?.() || null);
+
+  const payload = {
+    text: message,
+    message: message,
+    user_id: userId,
+    chat_id: (serverChatId || readChatId(userId)),
+    mode: String(modeOrHistory || "chat"),
+    profile: mergedProfile,
+    user_meta: mergedProfile,
+    web: "auto",
+    enable_web_search: true,
+    history: (ChatStore.getLastForApi?.(30) || [])
+  };
+
+  const attempt = async () => {
+    const res = await apiPOST("/api/chat", payload);
+    if (!res.ok) {
+      const t = await res.text().catch(()=> "");
+      throw new Error(`API Error ${res.status} ${t}`);
+    }
+    const data = await res.json().catch(()=> ({}));
+
+    if (data.chat_id) {
+      writeChatId(userId, data.chat_id);
+      ChatStore.setServerId?.(data.chat_id);
+    }
+
+    let out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
+
+    const st2 = getKaynanaState(userId);
+    if (Number(st2.stuckCount || 0) >= 2) {
+      st2.stuckCount = 0;
+      setKaynanaState(userId, st2);
+      out = `${out}\n\n${kaynanaOpener(ctx, String(mergedProfile.hitap || "evladım"))}`;
+    }
+
+    scheduleAssistantStoreWrite(out);
+    return { text: out };
+  };
+
+  try { return await attempt(); }
+  catch(e){
+    await sleep(500);
+    try { return await attempt(); } catch {}
+    return { text: "Bağlantı koptu gibi. Bir daha dener misin?", error: true, code: "NETWORK" };
+  }
+}
