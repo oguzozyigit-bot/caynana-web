@@ -1,8 +1,9 @@
 // FILE: /js/main.js
-// ROLLBACK-STABLE (ŞÜKÜR ÖNCESİ)
-// ✅ Chat’i hiçbir eventte tekrar render ETME (mesaj gelince titretmesin)
+// ROLLBACK-STABLE (ŞÜKÜR ÖNCESİ) + CHATSCROLL FIX
+// ✅ Chat’i hiçbir eventte tekrar render ETME
 // ✅ Sadece menü/history update
 // ✅ Scroll: send sonrası + typing sırasında zorla aşağı
+// ✅ KRİTİK FIX: scrollTop artık #chatScroll üzerinde (chat.html’de scroll yapan eleman bu)
 
 import { BASE_DOMAIN, STORAGE_KEY, GOOGLE_CLIENT_ID } from "./config.js";
 import { initAuth, logout, acceptTerms } from "./auth.js";
@@ -29,18 +30,39 @@ window.setSeesawState = function(state){
   if(state === "bot")  bw.classList.add("botting","thinking");
 };
 
+// ✅ chat.html’de scroll yapan eleman: #chatScroll
+function getScrollEl(){
+  return $("chatScroll") || $("chat") || null;
+}
+
 function refreshPremiumBars() {
   const u = getUser();
   document.body.classList.toggle("is-logged", isLoggedUser(u));
+
   const yp = Number(u?.yp_percent ?? 19);
   const p = Math.max(5, Math.min(100, yp));
   if ($("ypNum")) $("ypNum").textContent = `${p}%`;
   if ($("ypFill")) $("ypFill").style.width = `${p}%`;
+
+  // ✅ Profil kartı bazen boş kalıyordu → burada garanti boya
+  try {
+    const nm = $("profileShortcutName");
+    if(nm){
+      nm.textContent = (u.fullname || u.name || u.display_name || u.email || "—");
+    }
+    const ico = $("profileShortcutIco");
+    if(ico){
+      const pic = u.picture || u.avatar || u.avatar_url;
+      if(pic) ico.innerHTML = `<img src="${pic}" alt="avatar">`;
+      else ico.textContent = "👤";
+    }
+  } catch {}
 }
 
 function bindHamburger(){
-  $("hambBtn")?.addEventListener("click", ()=> $("menuOverlay")?.classList.add("open"));
-  $("menuOverlay")?.addEventListener("click", (e)=> { if(e.target === $("menuOverlay")) $("menuOverlay")?.classList.remove("open"); });
+  const overlay = $("menuOverlay");
+  $("hambBtn")?.addEventListener("click", ()=> overlay?.classList.add("open"));
+  overlay?.addEventListener("click", (e)=> { if(e.target === overlay) overlay?.classList.remove("open"); });
 }
 
 function bindBottomBar(){
@@ -62,6 +84,7 @@ function bindLogoutAndDelete(){
     const ok = confirm("Hesabın kalıcı olarak silinecek. Emin misin evladım?");
     if(!ok) return;
     try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch(e){}
+
     try{
       const u0 = safeJson(localStorage.getItem(STORAGE_KEY), {});
       const uid = String(u0.user_id || u0.id || u0.email || "").trim().toLowerCase() || "guest";
@@ -74,6 +97,7 @@ function bindLogoutAndDelete(){
       localStorage.removeItem("caynana_memory_profile");
       localStorage.removeItem(`caynana_chat_index::${uid}`);
       localStorage.removeItem(`caynana_chat_current::${uid}`);
+
       for(let i = localStorage.length - 1; i >= 0; i--){
         const k = localStorage.key(i);
         if(!k) continue;
@@ -82,6 +106,7 @@ function bindLogoutAndDelete(){
         if(k.startsWith("caynana_kaynana_state:")) localStorage.removeItem(k);
       }
     }catch(e){}
+
     window.location.replace("/index.html");
   });
 }
@@ -142,25 +167,30 @@ function bindTermsOverlay(){
   }
 }
 
-// scroll helper (DOM gecikmesine dayanıklı)
-function scrollBottom(el){
-  if(!el) return;
-  requestAnimationFrame(()=>{ try{ el.scrollTop = el.scrollHeight; }catch{} });
-  setTimeout(()=>{ try{ el.scrollTop = el.scrollHeight; }catch{} }, 20);
-  setTimeout(()=>{ try{ el.scrollTop = el.scrollHeight; }catch{} }, 80);
+// ✅ scroll helper: #chatScroll üzerinde çalışır (DOM gecikmesine dayanıklı)
+function scrollBottom(){
+  const sc = getScrollEl();
+  if(!sc) return;
+  requestAnimationFrame(()=>{ try{ sc.scrollTop = sc.scrollHeight; }catch{} });
+  setTimeout(()=>{ try{ sc.scrollTop = sc.scrollHeight; }catch{} }, 20);
+  setTimeout(()=>{ try{ sc.scrollTop = sc.scrollHeight; }catch{} }, 80);
 }
 
 function renderHistoryToChat(){
   const chatEl = $("chat");
   if(!chatEl) return;
+
   ChatStore.init();
   const hist = ChatStore.history() || [];
   chatEl.innerHTML = "";
+
   hist.forEach(m=>{
     if(m.role === "user") addUserBubble(m.content);
     else if(m.role === "assistant") addBotBubble(m.content);
   });
-  scrollBottom(chatEl);
+
+  // ✅ inner #chat değil, wrapper scroll
+  scrollBottom();
 }
 
 function bindChatUI(){
@@ -181,7 +211,7 @@ function bindChatUI(){
     input.style.height = "auto";
 
     addUserBubble(text);
-    scrollBottom(chatEl);
+    scrollBottom();
 
     window.setSeesawState?.("bot");
     const res = await fetchTextResponse(text, "chat");
@@ -189,10 +219,11 @@ function bindChatUI(){
 
     if(res?.text){
       typeWriter(res.text);
+
       // typing sırasında da alta tut
-      setTimeout(()=>scrollBottom(chatEl), 120);
-      setTimeout(()=>scrollBottom(chatEl), 420);
-      setTimeout(()=>scrollBottom(chatEl), 900);
+      setTimeout(()=>scrollBottom(), 120);
+      setTimeout(()=>scrollBottom(), 420);
+      setTimeout(()=>scrollBottom(), 900);
     }
 
     try { initMenuHistoryUI(); } catch {}
@@ -240,5 +271,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ✅ Event: SADECE menü güncelle (chat’i yeniden çizme!)
   window.addEventListener("caynana:chats-updated", ()=>{
     try { initMenuHistoryUI(); } catch {}
+    // chat render yok
   });
 });
