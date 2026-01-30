@@ -1,17 +1,15 @@
 // FILE: /js/chat_page.js
-// FINAL (SCROLL FIX + AUTO-FOLLOW)
-// ✅ Scroll artık “kilitlenmez”
-// ✅ WhatsApp mantığı: Kullanıcı alttaysa otomatik takip, yukarı çıktıysa bırak
-// ✅ Dosya ekleme + mic + history aynı şekilde çalışır
+// FINAL (SCROLL FIX ULTRA + AUTO-FOLLOW)
+// ✅ Mouse / touch ile yukarı-aşağı kaydırma kesin çalışır
+// ✅ Auto-follow: alttaysan takip, yukarı çıktıysan bırak
+// ✅ DOM render sonrası scroll: requestAnimationFrame
 
 import { fetchTextResponse } from "./chat.js";
 import { ChatStore } from "./chat_store.js";
 
 // Login zorunlu: token yoksa index'e yolla
 const t = (localStorage.getItem("google_id_token") || "").trim();
-if (!t) {
-  window.location.href = "/index.html";
-}
+if (!t) window.location.href = "/index.html";
 
 const $ = (id) => document.getElementById(id);
 
@@ -20,7 +18,16 @@ const menuToggle = $("menuToggle");
 const historyList = $("historyList");
 const newChatBtn = $("newChatBtn");
 
-const messages = $("messagesContainer");
+// --- SCROLL CONTAINER: garantili bul ---
+function getMessagesEl(){
+  return (
+    $("messagesContainer") ||
+    document.querySelector(".chat-area") ||
+    document.querySelector('[data-scroll="chat"]')
+  );
+}
+let messages = getMessagesEl();
+
 const msgInput = $("msgInput");
 const sendBtn = $("sendBtn");
 const micBtn = $("micBtn");
@@ -38,40 +45,71 @@ let pendingFile = null;
 // ------------------------
 let follow = true;
 
-function isNearBottom(slack = 140) {
+function isNearBottom(el, slack = 140) {
   try {
-    return (messages.scrollHeight - messages.scrollTop - messages.clientHeight) < slack;
+    return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack;
   } catch {
     return true;
   }
 }
 
-if (messages) {
+function bindScrollGuards(){
+  messages = getMessagesEl();
+  if (!messages) return;
+
+  // parent'ların wheel/touch'u yutmasını engelle
+  messages.addEventListener("wheel", (e) => e.stopPropagation(), { passive: true });
+  messages.addEventListener("touchmove", (e) => e.stopPropagation(), { passive: true });
+
+  // follow toggle
   messages.addEventListener("scroll", () => {
-    follow = isNearBottom();
+    follow = isNearBottom(messages);
   }, { passive: true });
 }
 
 function scrollBottom(force = false) {
+  messages = getMessagesEl();
   if (!messages) return;
-  if (force || follow) {
-    messages.scrollTop = messages.scrollHeight;
-  }
+
+  // DOM güncellendikten sonra ölçüm doğru olsun
+  requestAnimationFrame(() => {
+    if (!messages) return;
+    if (force || follow) messages.scrollTop = messages.scrollHeight;
+  });
 }
 
 // ------------------------
 // UI helpers
 // ------------------------
+function roleToClass(role){
+  // ChatStore "assistant" kullanıyor, css .bubble.bot bekliyor
+  if (role === "user") return "user";
+  return "bot";
+}
+
 function bubble(role, text) {
+  messages = getMessagesEl();
+  if (!messages) return null;
+
   const div = document.createElement("div");
-  div.className = `bubble ${role === "user" ? "user" : "bot"}`;
+  div.className = `bubble ${roleToClass(role)}`;
   div.textContent = text;
+
+  // Eğer boş placeholder HTML'i basıldıysa temizle
+  if (messages.dataset.empty === "1") {
+    messages.innerHTML = "";
+    messages.dataset.empty = "0";
+  }
+
   messages.appendChild(div);
   scrollBottom(false);
   return div;
 }
 
 function typingIndicator() {
+  messages = getMessagesEl();
+  if (!messages) return null;
+
   const div = document.createElement("div");
   div.className = "bubble bot";
   div.innerHTML = `
@@ -85,12 +123,13 @@ function typingIndicator() {
 }
 
 function setSendActive() {
-  const hasText = !!(msgInput.value || "").trim();
+  const hasText = !!(msgInput?.value || "").trim();
   const hasFile = !!pendingFile;
-  sendBtn.classList.toggle("active", hasText || hasFile);
+  sendBtn?.classList.toggle("active", hasText || hasFile);
 }
 
 function autoGrow() {
+  if (!msgInput) return;
   msgInput.style.height = "auto";
   msgInput.style.height = Math.min(msgInput.scrollHeight, 150) + "px";
 }
@@ -99,6 +138,7 @@ function autoGrow() {
 // Sidebar (last 10 chats)
 // ------------------------
 function renderHistory() {
+  if (!historyList) return;
   historyList.innerHTML = "";
 
   const items = ChatStore.list(); // son 10
@@ -117,10 +157,10 @@ function renderHistory() {
       ChatStore.currentId = c.id;
       loadCurrentChat();
       renderHistory();
-      sidebar.classList.remove("open");
+      sidebar?.classList.remove("open");
     });
 
-    row.querySelector(".del-btn").addEventListener("click", (e) => {
+    row.querySelector(".del-btn")?.addEventListener("click", (e) => {
       e.stopPropagation();
       ChatStore.deleteChat(c.id);
       loadCurrentChat();
@@ -132,10 +172,14 @@ function renderHistory() {
 }
 
 function loadCurrentChat() {
+  messages = getMessagesEl();
+  if (!messages) return;
+
   messages.innerHTML = "";
   const h = ChatStore.history() || [];
 
   if (h.length === 0) {
+    // CSS zaten :empty mesajı basıyor, ama senin eski tasarım placeholder’ını da koruyalım:
     messages.innerHTML = `
       <div style="text-align:center; margin-top:20vh; color:#444;">
         <i class="fa-solid fa-comments" style="font-size:48px; margin-bottom:20px; color:#333;"></i>
@@ -143,13 +187,15 @@ function loadCurrentChat() {
         <p style="font-size:13px; color:#666; margin-top:10px;">Sen sor, ben hallederim.</p>
       </div>
     `;
-    // boş sayfada da altta takip açık kalsın
+    messages.dataset.empty = "1";
     follow = true;
+    scrollBottom(true);
     return;
   }
 
+  messages.dataset.empty = "0";
   h.forEach((m) => bubble(m.role, m.content));
-  // geçmiş yüklenince en alta git (force)
+
   follow = true;
   scrollBottom(true);
 }
@@ -208,8 +254,11 @@ function startSTT() {
 // Send flow
 // ------------------------
 async function send() {
-  const text = (msgInput.value || "").trim();
+  const text = (msgInput?.value || "").trim();
   if (!text && !pendingFile) return;
+
+  messages = getMessagesEl();
+  if (!messages) return;
 
   // Welcome temizle (ilk gerçek mesajda)
   const h0 = ChatStore.history() || [];
@@ -241,25 +290,23 @@ async function send() {
     reply = out?.text || reply;
   } catch {}
 
-  try { loader.remove(); } catch {}
+  try { loader?.remove(); } catch {}
   bubble("assistant", reply);
   ChatStore.add("assistant", reply);
 
   renderHistory();
-
-  // ✅ Mesaj sonrası: eğer kullanıcı alttaysa takip, değilse bırak
   scrollBottom(false);
 }
 
 // ------------------------
 // Events
 // ------------------------
-menuToggle?.addEventListener("click", () => sidebar.classList.toggle("open"));
+menuToggle?.addEventListener("click", () => sidebar?.classList.toggle("open"));
 newChatBtn?.addEventListener("click", () => {
   ChatStore.newChat();
   loadCurrentChat();
   renderHistory();
-  sidebar.classList.remove("open");
+  sidebar?.classList.remove("open");
 });
 
 sendBtn?.addEventListener("click", send);
@@ -282,7 +329,9 @@ micBtn?.addEventListener("click", startSTT);
 // Boot
 // ------------------------
 ChatStore.init();
+bindScrollGuards();
 loadCurrentChat();
 renderHistory();
 autoGrow();
 setSendActive();
+scrollBottom(true);
