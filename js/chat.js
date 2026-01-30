@@ -1,332 +1,389 @@
-// FILE: /js/chat.js
-// ROLLBACK-STABLE (ŞÜKÜR ÖNCESİ) + ✅ OKUNABİLİR SCROLL FIX
-// ✅ Assistant cevabı ChatStore’a HEMEN yazmaz (double render + scroll kayması olmaz)
-// ✅ Scroll: 3 frame _forceBottom (DOM gecikmesini yutar)
-// ✅ OKUNABİLİR SCROLL: Kullanıcı yukarı çıkarsa artık ZORLA aşağı çekmez (asıl sorun buydu)
-// ✅ Name memory + kaynana opener + profile merge DURUYOR (eksiltme yok)
+<!-- FILE: /pages/chat.html -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Caynana Sohbet</title>
 
-import { apiPOST } from "./api.js";
-import { STORAGE_KEY } from "./config.js";
-import { ChatStore } from "./chat_store.js";
-import { getMemoryProfile, setMemoryProfile } from "./memory_profile.js";
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/style.css?v=2">
+  <link rel="stylesheet" href="/css/layout-common.css?v=1">
 
-const SAFETY_PATTERNS = {
-  self_harm: /intihar|ölmek istiyorum|kendimi as(?:ıcam|acağım)|bileklerimi kes/i
-};
-
-function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
-function getProfile() { return safeJson(localStorage.getItem(STORAGE_KEY), {}); }
-function setProfile(p) { localStorage.setItem(STORAGE_KEY, JSON.stringify(p || {})); }
-
-function hasLoginToken() {
-  const apiToken = (localStorage.getItem("caynana_api_token") || "").trim();
-  const google = (localStorage.getItem("google_id_token") || "").trim();
-  return !!(apiToken || google);
-}
-
-function firstNameFromFullname(full = "") {
-  const s = String(full || "").trim();
-  if (!s) return "";
-  return s.split(/\s+/)[0];
-}
-
-// USER SCOPED CHAT_ID
-function getChatKeyForUser(userId) {
-  const u = String(userId || "").trim().toLowerCase();
-  return u ? `caynana_chat_id:${u}` : "caynana_chat_id";
-}
-function readChatId(userId) {
-  const key = getChatKeyForUser(userId);
-  const v = (localStorage.getItem(key) || "").trim();
-  if (!v || v === "null" || v === "undefined") return null;
-  return v;
-}
-function writeChatId(userId, chatId) {
-  const key = getChatKeyForUser(userId);
-  if (chatId) localStorage.setItem(key, String(chatId));
-}
-
-// NAME CAPTURE
-function extractNameFromText(text = "") {
-  const s = String(text || "").trim();
-  let m = s.match(/\b(adım|ismim)\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
-  if (m && m[2]) return m[2];
-  m = s.match(/\bben\s+([A-Za-zÇĞİÖŞÜçğıöşü'’\-]{2,})(?:\b|$)/i);
-  if (m && m[1]) return m[1];
-  return "";
-}
-
-function maybePersistNameFromUserMessage(userMessage) {
-  const p = getProfile();
-  const has = !!(String(p.hitap || "").trim() || String(p.fullname || "").trim());
-  if (has) return;
-
-  const name = extractNameFromText(userMessage);
-  if (!name) return;
-
-  p.fullname = name;
-  const fn = firstNameFromFullname(name);
-  if (!p.hitap) p.hitap = fn || name;
-  setProfile(p);
-
-  try {
-    setMemoryProfile({ name, hitap: (p.hitap || fn || name), fullname: name });
-  } catch {}
-}
-
-function cleanValue(v) {
-  if (v === null || v === undefined) return null;
-  const s = typeof v === "string" ? v.trim() : v;
-  if (s === "") return null;
-  return s;
-}
-function mergeProfiles(formProfile = {}, memProfile = {}) {
-  const out = { ...(memProfile || {}) };
-  for (const [k, v] of Object.entries(formProfile || {})) {
-    const cv = cleanValue(v);
-    if (cv !== null) out[k] = cv;
-  }
-  return out;
-}
-
-function pickAssistantText(data) {
-  if (!data || typeof data !== "object") return "";
-  const keys = ["assistant_text", "text", "assistant", "reply", "answer", "output"];
-  for (const k of keys) {
-    const v = String(data[k] || "").trim();
-    if (v) return v;
-  }
-  return "";
-}
-
-async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
-
-/* =========================
-   SCROLL (ŞÜKÜR STABLE) + ✅ OKUNABİLİR
-   ========================= */
-function _forceBottom(el){
-  if(!el) return;
-  let n = 0;
-  const tick = () => {
-    try { el.scrollTop = el.scrollHeight; } catch {}
-    n++;
-    if(n < 3) requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
-}
-
-// ✅ Kullanıcı altta mı? (okunabilir scroll için şart)
-function _isNearBottom(el, slack = 220){
-  try { return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack; }
-  catch { return true; }
-}
-
-/* UI helpers */
-export function addBotBubble(text, elId="chat"){
-  const div = document.getElementById(elId);
-  if(!div) return;
-
-  const follow = _isNearBottom(div);
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble bot";
-  bubble.textContent = String(text||"");
-  div.appendChild(bubble);
-
-  // ✅ sadece kullanıcı alttaysa alta çek
-  if(follow) _forceBottom(div);
-}
-
-export function typeWriter(text, elId = "chat") {
-  const div = document.getElementById(elId);
-  if (!div) return;
-
-  // ✅ başlangıçta alttaysa takip et, kullanıcı yukarı çıkarsa bırak
-  let follow = _isNearBottom(div);
-  const onScroll = () => { follow = _isNearBottom(div); };
-  div.addEventListener("scroll", onScroll, { passive:true });
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble bot";
-  div.appendChild(bubble);
-
-  const s = String(text || "");
-  let i = 0;
-
-  (function type() {
-    if (i < s.length) {
-      bubble.textContent += s.charAt(i++);
-      if (follow) _forceBottom(div);   // ✅ sadece alttaysa
-      setTimeout(type, 28);
-    } else {
-      div.removeEventListener("scroll", onScroll);
-      if (follow) _forceBottom(div);   // ✅ sadece alttaysa
-    }
-  })();
-}
-
-export function addUserBubble(text) {
-  const div = document.getElementById("chat");
-  if (!div) return;
-
-  const bubble = document.createElement("div");
-  bubble.className = "bubble user";
-  bubble.textContent = String(text || "");
-  div.appendChild(bubble);
-
-  // ✅ kullanıcı mesaj attıysa doğal olarak alta git (bu isteniyor)
-  _forceBottom(div);
-}
-
-/* =========================
-   Kaynana opener (duruyor)
-   ========================= */
-function _pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
-
-function buildProfileContextForKaynana(profile={}, memP={}) {
-  const born = String(profile.dogumYeri || memP.dogumYeri || "").trim();
-  const live = String(profile.city || memP.city || "").trim();
-  const team = String(profile.team || memP.team || "").trim();
-  const spouse = String(profile.spouse || memP.spouse || "").trim();
-  const kidsRaw = String(profile.childNames || memP.childNames || "").trim();
-  const kids = kidsRaw ? kidsRaw.split(/[,/]+/).map(x=>x.trim()).filter(Boolean).slice(0,6) : [];
-  const kg = Number(profile.weight_kg || memP.weight_kg || 0) || 0;
-  const cm = Number(profile.height_cm || memP.height_cm || 0) || 0;
-  return { born, live, team, spouse, kids, kg, cm };
-}
-
-function kaynanaOpener(ctx, hitap="evladım") {
-  const pool = [];
-  if (ctx.born && ctx.live && ctx.born.toLowerCase() !== ctx.live.toLowerCase()) pool.push(`Bak ${hitap}, sen ${ctx.born}lısın ama ${ctx.live}’de yaşıyorsun… hiç memleket özlemi yok mu?`);
-  if (ctx.spouse) pool.push(`${hitap}, eşin ${ctx.spouse} nasıl?`);
-  if (ctx.kids.length) pool.push(`Torunlarım ${ctx.kids.join(", ")} nasıl ${hitap}?`);
-  if (ctx.team) pool.push(`${hitap}, ${ctx.team} yine kalbini kırdı mı?`);
-  if (ctx.kg) pool.push(`${hitap}, şu ${ctx.kg} kilo meselesini bir toparlasak mı?`);
-  pool.push(`Ee ${hitap}, bugün moral nasıl?`);
-  return _pick(pool);
-}
-
-function isConversationStuck(userMessage="") {
-  const t = String(userMessage||"").trim().toLowerCase();
-  if(!t) return true;
-  return (t.length <= 4 || ["evet","hayır","ok","tamam","tm","he","yok","var","olur"].includes(t));
-}
-
-function getKaynanaState(userId) {
-  const k = `caynana_kaynana_state:${String(userId||"").toLowerCase().trim()}`;
-  try { return JSON.parse(localStorage.getItem(k) || "{}"); } catch { return {}; }
-}
-function setKaynanaState(userId, st) {
-  const k = `caynana_kaynana_state:${String(userId||"").toLowerCase().trim()}`;
-  localStorage.setItem(k, JSON.stringify(st || {}));
-}
-
-/* ✅ KRİTİK: Assistant store yazımı GECİKMELİ */
-function scheduleAssistantStoreWrite(outText){
-  try{
-    const s = String(outText || "");
-    const delay = Math.max(600, Math.min(4500, s.length * 12));
-    setTimeout(()=>{ try{ ChatStore.add?.("assistant", s); }catch{} }, delay);
-  }catch{}
-}
-
-export async function fetchTextResponse(msg, modeOrHistory = "chat") {
-  const message = String(msg || "").trim();
-  if (!message) return { text: "", error: true };
-
-  if (!hasLoginToken()) {
-    return { text: "Önce giriş yapman lazım evladım. 🙂", error: true, code: "AUTH_REQUIRED" };
-  }
-
-  if (SAFETY_PATTERNS.self_harm.test(message)) {
-    return { text: "Aman evladım sakın. Eğer acil risk varsa 112’yi ara. İstersen anlat, buradayım.", error: true, code: "SAFETY" };
-  }
-
-  // isim yakala
-  maybePersistNameFromUserMessage(message);
-
-  const profile = getProfile();
-  const userId = String(profile?.email || profile?.user_id || profile?.id || "").trim();
-  if (!userId) return { text: "Profilde user_id yok. Çıkış yapıp tekrar giriş yapman lazım evladım.", error: true };
-
-  const memP = (()=>{ try{return getMemoryProfile()||{}}catch{return {}} })();
-  const displayName = String(profile.hitap || firstNameFromFullname(profile.fullname||"") || memP.hitap || firstNameFromFullname(memP.fullname||memP.name||"") || "").trim();
-
-  const mergedProfile = mergeProfiles({
-    hitap: profile.hitap || null,
-    fullname: profile.fullname || null,
-    display_name: displayName || null,
-    botName: profile.botName || null,
-    dob: profile.dob || null,
-    gender: profile.gender || null,
-    maritalStatus: profile.maritalStatus || null,
-    spouse: profile.spouse || null,
-    childCount: profile.childCount || null,
-    childNames: profile.childNames || null,
-    team: profile.team || null,
-    city: profile.city || null,
-    isProfileCompleted: !!profile.isProfileCompleted,
-    height_cm: profile.height_cm || null,
-    weight_kg: profile.weight_kg || null
-  }, memP);
-
-  // stuck state
-  const st = getKaynanaState(userId);
-  st.stuckCount = isConversationStuck(message) ? (Number(st.stuckCount || 0) + 1) : 0;
-  setKaynanaState(userId, st);
-
-  // user store (başlık anında)
-  try { ChatStore.add?.("user", message); } catch {}
-
-  const ctx = buildProfileContextForKaynana(profile, memP);
-  const serverChatId = (ChatStore.getCurrentServerId?.() || null);
-
-  const payload = {
-    text: message,
-    message: message,
-    user_id: userId,
-    chat_id: (serverChatId || readChatId(userId)),
-    mode: String(modeOrHistory || "chat"),
-    profile: mergedProfile,
-    user_meta: mergedProfile,
-    web: "auto",
-    enable_web_search: true,
-    history: (ChatStore.getLastForApi?.(30) || [])
-  };
-
-  const attempt = async () => {
-    const res = await apiPOST("/api/chat", payload);
-    if (!res.ok) {
-      const t = await res.text().catch(()=> "");
-      throw new Error(`API Error ${res.status} ${t}`);
-    }
-    const data = await res.json().catch(()=> ({}));
-
-    if (data.chat_id) {
-      writeChatId(userId, data.chat_id);
-      ChatStore.setServerId?.(data.chat_id);
+  <style>
+    :root{
+      --frameW: min(480px, calc(100vw - 18px));
+      --topH: 65px;
+      --footerH: 64px;
+      --assistH: 68px;
+      --dockH: 68px;
+      --gapH: 6px;
     }
 
-    let out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
-
-    // stuck opener
-    const st2 = getKaynanaState(userId);
-    if (Number(st2.stuckCount || 0) >= 2) {
-      st2.stuckCount = 0;
-      setKaynanaState(userId, st2);
-      out = `${out}\n\n${kaynanaOpener(ctx, String(mergedProfile.hitap || "evladım"))}`;
+    /* Footer frame içinde */
+    .footer-container{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+      bottom: 0 !important;
+      z-index: 2400 !important;
+      background: rgba(0,0,0,.92);
+      border-top: 1px solid rgba(255,255,255,.06);
     }
 
-    // ✅ store yazımı gecikmeli
-    scheduleAssistantStoreWrite(out);
+    /* Alt bar */
+    .assistant-bar{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+      bottom: var(--footerH) !important;
+      z-index: 2500 !important;
+      height: var(--assistH) !important;
+      padding-top: 6px !important;
+      padding-bottom: 6px !important;
+      pointer-events: none;
+    }
+    .assistant-bar .assistant-item{ pointer-events:auto; }
 
-    return { text: out };
-  };
+    .assistant-item .lbl{
+      display:block !important;
+      font-size: 8px !important;
+      font-weight: 900 !important;
+      line-height: 1 !important;
+      margin-top: 2px !important;
+      opacity: .85;
+      white-space: nowrap;
+    }
 
-  try { return await attempt(); }
-  catch(e){
-    await sleep(500);
-    try { return await attempt(); } catch {}
-    return { text: "Bağlantı koptu gibi. Bir daha dener misin?", error: true, code: "NETWORK" };
-  }
-}
+    /* Input dock */
+    .input-dock{
+      position: fixed !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      width: var(--frameW) !important;
+      bottom: calc(var(--footerH) + var(--assistH) + var(--gapH)) !important;
+      z-index: 2600 !important;
+      padding: 0 10px 6px !important;
+      background: transparent !important;
+      pointer-events: none;
+    }
+    .input-dock .dock-inner{
+      pointer-events:auto;
+      width:100% !important;
+      max-width:none !important;
+      align-items:flex-end !important;
+    }
+    #msgInput{
+      min-width:0 !important;
+      white-space:normal !important;
+      overflow:hidden !important;
+      max-height:120px !important;
+    }
+
+    /* ✅ ASIL ÇÖZÜM: SCROLL WRAPPER */
+    .chat-scroll{
+      position: absolute !important;
+      left: 0; right: 0;
+      top: var(--topH);
+      bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + (var(--gapH) * 2));
+      padding: 14px 12px;
+
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      overscroll-behavior: contain !important;
+      touch-action: pan-y !important;
+
+      scrollbar-width: none !important;
+    }
+    .chat-scroll::-webkit-scrollbar{ display:none !important; }
+
+    /* İç #chat: flex olabilir (scroll wrapper olduğu için bug yapmaz) */
+    .chat-area{
+      min-height: 100%;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+      gap: 10px;
+    }
+
+    /* + menü */
+    .plus-sheet{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: var(--frameW);
+      bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + 14px);
+      z-index: 9999;
+
+      display: none;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 18px;
+
+      background: rgba(15,15,15,.96);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 18px 50px rgba(0,0,0,.60);
+      backdrop-filter: blur(10px);
+    }
+    .plus-sheet.show{ display:flex; }
+
+    .plus-action{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+      align-items:center;
+      justify-content:center;
+
+      padding: 10px 8px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      cursor:pointer;
+      user-select:none;
+      color: rgba(255,255,255,.86);
+      font-weight: 900;
+      font-size: 11px;
+      text-align:center;
+    }
+    .plus-action:active{ transform: translateY(-1px); }
+    .plus-ico{
+      width: 40px; height: 40px;
+      border-radius: 16px;
+      display:flex; align-items:center; justify-content:center;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .plus-ico svg{
+      width: 20px; height: 20px;
+      stroke: rgba(255,255,255,.85);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: .95;
+    }
+
+    /* Mikrofon dinliyor efekti */
+    #micBtn.listening{
+      background: rgba(190,242,100,.16) !important;
+      border: 1px solid rgba(190,242,100,.35) !important;
+      box-shadow: 0 0 18px rgba(190,242,100,.18);
+      position: relative;
+    }
+    #micBtn.listening::after{
+      content:"";
+      position:absolute;
+      inset:-6px;
+      border-radius: 18px;
+      border: 1px solid rgba(190,242,100,.22);
+      animation: micPulse 1s ease-in-out infinite;
+    }
+    @keyframes micPulse{
+      0%{ transform: scale(1); opacity:.55; }
+      50%{ transform: scale(1.08); opacity:.25; }
+      100%{ transform: scale(1); opacity:.55; }
+    }
+  </style>
+</head>
+
+<body>
+<div class="mobile-frame" id="mobileFrame">
+
+  <div class="topbar">
+    <div class="left-controls">
+      <button class="hamb-btn" id="hambBtn">☰</button>
+    </div>
+
+    <div class="brand-wrapper" id="brandWrapper" style="cursor:pointer" onclick="location.href='/pages/chat.html'">
+      <div class="logo-area">
+        <svg class="seesaw-svg" viewBox="0 0 40 20">
+          <g class="seesaw-bar" id="seesawBar">
+            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
+            <circle cx="3" cy="5" r="3" fill="#bef264" />
+            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
+          </g>
+          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
+        </svg>
+        <div class="brand-name">Caynana AI</div>
+      </div>
+      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+    </div>
+
+    <div class="right-controls">
+      <div class="notif-row">
+        <div class="notif-topline">
+          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <div class="badge" id="notifBadge"></div>
+          </button>
+          <div id="planChip" class="plan-chip">FREE</div>
+        </div>
+
+        <div class="yp-chip">
+          <div class="yp-label">SAMİMİYET</div>
+          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
+          <div class="yp-num" id="ypNum">19%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-sidebar">
+      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
+
+      <div class="profile-shortcut-wrap" id="profileShortcutMount">
+        <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='/pages/profil.html'">
+          <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
+          <div class="profile-shortcut-text">
+            <div class="profile-shortcut-title">Profil Düzenle</div>
+            <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
+      <div class="history-list" id="historyList"></div>
+
+      <div class="menu-block asistan"><div class="block-head">Asistan AI</div><div class="menu-grid" id="menuAsistan"></div></div>
+      <div class="menu-block astro"><div class="block-head">Astro AI</div><div class="menu-grid" id="menuAstro"></div></div>
+      <div class="menu-block kurumsal"><div class="block-head">Kurumsal</div><div class="menu-grid" id="menuKurumsal"></div></div>
+
+      <div class="menu-footer-actions">
+        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
+        <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
+        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ SCROLL BURADA -->
+  <div class="chat-scroll" id="chatScroll">
+    <div class="chat-area" id="chat"></div>
+  </div>
+
+  <div class="input-dock">
+    <div class="dock-inner">
+      <button class="icon-btn" id="camBtn" aria-label="Dosya / Fotoğraf">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+      </button>
+
+      <input type="file" id="fileCamera" accept="image/*" capture="environment" hidden>
+      <input type="file" id="filePhotos" accept="image/*" hidden>
+      <input type="file" id="fileFiles" hidden>
+
+      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
+
+      <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+      </button>
+
+      <button class="send-btn" id="sendBtn" aria-label="Gönder">
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="plus-sheet" id="plusSheet">
+    <div class="plus-action" id="pickCamera"><div class="plus-ico"><svg viewBox="0 0 24 24"><path d="M4 7h4l2-2h4l2 2h4v12H4z"></path><circle cx="12" cy="13" r="3"></circle></svg></div>Kamera</div>
+    <div class="plus-action" id="pickPhotos"><div class="plus-ico"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"></rect><path d="M8 14l2-2 3 3 3-4 2 3"></path></svg></div>Fotoğraf</div>
+    <div class="plus-action" id="pickFiles"><div class="plus-ico"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path></svg></div>Dosya</div>
+  </div>
+
+  <div class="assistant-bar" id="assistantBar">
+    <div class="assistant-item" data-go="/pages/chat.html"><div class="ico-wrap">💬</div><div class="lbl">Sohbet</div></div>
+    <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico-wrap">🥗</div><div class="lbl">Diyet</div></div>
+    <div class="assistant-item" data-go="/pages/health.html"><div class="ico-wrap">❤️</div><div class="lbl">Sağlık</div></div>
+    <div class="assistant-item" data-go="/pages/astro.html"><div class="ico-wrap">♈</div><div class="lbl">Burç</div></div>
+    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico-wrap">☕</div><div class="lbl">Fal</div></div>
+  </div>
+
+  <div class="footer-container">
+    <div class="footer-links">
+      <a href="/pages/hakkimizda.html">Hakkımızda</a>
+      <a href="/pages/sss.html">SSS</a>
+      <a href="/pages/gizlilik.html">Gizlilik</a>
+      <a href="/pages/iletisim.html">İletişim</a>
+    </div>
+    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
+  </div>
+
+</div>
+
+<script type="module" src="/js/main.js"></script>
+<script src="/js/layout-common.js?v=1"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const camBtn = document.getElementById("camBtn");
+    const plusSheet = document.getElementById("plusSheet");
+    const fileCamera = document.getElementById("fileCamera");
+    const filePhotos = document.getElementById("filePhotos");
+    const fileFiles  = document.getElementById("fileFiles");
+    const pickCamera = document.getElementById("pickCamera");
+    const pickPhotos = document.getElementById("pickPhotos");
+    const pickFiles  = document.getElementById("pickFiles");
+
+    const msgInput = document.getElementById("msgInput");
+    const micBtn = document.getElementById("micBtn");
+    const sendBtn = document.getElementById("sendBtn");
+
+    function togglePlus(open){
+      if(!plusSheet) return;
+      plusSheet.classList.toggle("show", !!open);
+    }
+
+    camBtn?.addEventListener("click", (e)=>{
+      e.preventDefault();
+      togglePlus(!(plusSheet && plusSheet.classList.contains("show")));
+    });
+
+    document.addEventListener("click", (e)=>{
+      if(!plusSheet || !plusSheet.classList.contains("show")) return;
+      if(plusSheet.contains(e.target)) return;
+      if(camBtn && camBtn.contains(e.target)) return;
+      togglePlus(false);
+    }, true);
+
+    pickCamera && fileCamera && (pickCamera.onclick = ()=>{ togglePlus(false); fileCamera.click(); });
+    pickPhotos && filePhotos && (pickPhotos.onclick = ()=>{ togglePlus(false); filePhotos.click(); });
+    pickFiles  && fileFiles  && (pickFiles.onclick  = ()=>{ togglePlus(false); fileFiles.click(); });
+
+    let listenTimer = null;
+    function setListening(on){
+      if(!micBtn || !msgInput) return;
+      micBtn.classList.toggle("listening", !!on);
+      if(on){
+        msgInput.dataset.__oldph = msgInput.getAttribute("placeholder") || "";
+        msgInput.setAttribute("placeholder", "Dinliyorum evladım…");
+      }else{
+        const old = msgInput.dataset.__oldph || "Ne lazım evladım?";
+        msgInput.setAttribute("placeholder", old);
+      }
+    }
+
+    micBtn?.addEventListener("click", ()=>{
+      setListening(true);
+      clearTimeout(listenTimer);
+      listenTimer = setTimeout(()=> setListening(false), 12000);
+    });
+
+    msgInput?.addEventListener("input", ()=>{
+      if((msgInput.value||"").trim().length){
+        setListening(false);
+        clearTimeout(listenTimer);
+      }
+    });
+
+    sendBtn?.addEventListener("click", ()=>{
+      setListening(false);
+      clearTimeout(listenTimer);
+    });
+  });
+</script>
+
+</body>
+</html>
