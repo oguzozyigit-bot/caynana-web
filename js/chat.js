@@ -329,21 +329,41 @@ export async function fetchTextResponse(msg, modeOrHistory = "chat") {
     }
 
     if (data && typeof data === "object") {
-      const spScore = (data.sp_score ?? data.spScore ?? null);
-      const spDelta = (data.sp_delta ?? data.spDelta ?? 0);
+  const spScore   = (data.sp_score ?? data.spScore ?? null);
+  const spDelta   = (data.sp_delta ?? data.spDelta ?? 0);
+  const spReasons = (data.sp_reasons || data.spReasons || {});
 
-      if (spScore !== null && spScore !== undefined) {
-        setSamimiyetUI(spScore);
-        try {
-          const p2 = getProfile();
-          p2.sp_score = parseInt(spScore, 10);
-          setProfile(p2);
-        } catch {}
+  // skor UI
+  if (spScore !== null && spScore !== undefined) {
+    setSamimiyetUI(spScore);
+    try {
+      const p2 = getProfile();
+      p2.sp_score = parseInt(spScore, 10);
+      setProfile(p2);
+    } catch {}
+  }
+
+  // ✅ +5 (günün ilk mesaj bonusu) balonunu günde 1 kez göster
+  if (spDelta) {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const seenKey = `caynana_sp_firstmsg_seen:${String(userId).toLowerCase()}:${todayKey}`;
+
+    const isFirstMsgBonus =
+      (spDelta === 5) &&
+      (spReasons.first_msg_bonus === 5 || spReasons.first_msg_bonus === +5 || spReasons.first_msg_bonus != null);
+
+    if (spDelta === 5 && isFirstMsgBonus) {
+      const seen = (localStorage.getItem(seenKey) || "") === "1";
+      if (!seen) {
+        showSPBalloon(spDelta);
+        localStorage.setItem(seenKey, "1");
       }
-
-      // ✅ balon patla
-      if (spDelta) showSPBalloon(spDelta);
+    } else {
+      // -5 ceza, -1 küfür, +1 yalakalık vb hepsi her sefer gösterilebilir
+      showSPBalloon(spDelta);
     }
+  }
+}
 
     let out = pickAssistantText(data) || "Bir aksilik oldu evladım.";
 
