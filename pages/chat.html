@@ -98,11 +98,20 @@
       scrollbar-width: none !important; /* firefox hide */
       display:flex;
       flex-direction:column;
-      justify-content:flex-end;
+
+      /* ❌ justify-content:flex-end;  (scroll drag bug yapıyordu) */
+
       gap: 10px;
       min-height: 0 !important;
+      min-width: 0 !important;
     }
     #chat.chat-area::-webkit-scrollbar{ display:none !important; } /* webkit hide */
+
+    /* ✅ Az mesaj varken bile içerik altta dursun (WhatsApp hissi) */
+    #chat.chat-area::before{
+      content:"";
+      flex: 1 0 auto;
+    }
 
     /* + menü */
     .plus-sheet{
@@ -308,6 +317,7 @@
 </div>
 
 <script type="module" src="/js/main.js"></script>
+<script type="module" src="/js/chat_page.js"></script>
 <script src="/js/layout-common.js?v=1"></script>
 
 <script>
