@@ -1,7 +1,7 @@
 // FILE: /js/chat.js
 // STABLE (LOCAL NAME MEMORY + KAYNANA OPENER + DELAYED STORE WRITE)
 // ✅ Assistant cevabı ChatStore’a HEMEN yazmaz (double render/çift mesaj riskini azaltır)
-// ✅ Scroll: 3 frame _forceBottom (DOM gecikmesini yutar)
+// ✅ Scroll: 3 frame _forceBottom (DOM gecikmesini yutar)  ✅ FIX: #chatScroll varsa onu scroll'lar
 // ✅ Name memory + kaynana opener + profile merge korunur
 
 import { apiPOST } from "./api.js";
@@ -100,12 +100,24 @@ function pickAssistantText(data) {
 
 async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
-// SCROLL HELPER
+/* =========================
+   SCROLL HELPER (FIXED)
+   - chat.html’de scroll yapan eleman: #chatScroll
+   - yoksa fallback: elementin kendisi
+   ========================= */
+function _getScrollEl(fallbackEl){
+  const sc = document.getElementById("chatScroll"); // ✅ senin chat.html
+  if(sc) return sc;
+  return fallbackEl || null;
+}
+
 function _forceBottom(el){
-  if(!el) return;
+  const sc = _getScrollEl(el);
+  if(!sc) return;
+
   let n = 0;
   const tick = () => {
-    try { el.scrollTop = el.scrollHeight; } catch {}
+    try { sc.scrollTop = sc.scrollHeight; } catch {}
     n++;
     if(n < 3) requestAnimationFrame(tick);
   };
@@ -116,10 +128,14 @@ function _forceBottom(el){
 export function addBotBubble(text, elId="chat"){
   const div = document.getElementById(elId);
   if(!div) return;
+
   const bubble = document.createElement("div");
   bubble.className = "bubble bot";
   bubble.textContent = String(text||"");
   div.appendChild(bubble);
+
+  // ✅ bot balonu eklenince alta indir (wrapper doğru scroll’lanır)
+  _forceBottom(div);
 }
 
 export function typeWriter(text, elId = "chat") {
