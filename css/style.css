@@ -170,31 +170,15 @@ html,body{
   flex:1 1 auto;
   min-height:0;
   overflow-y:auto;
-
   padding:15px;
-  padding-bottom:58px;
-
   display:flex;
   flex-direction:column;
   gap:10px;
-
-  /* ✅ Scroll fix */
+  padding-bottom:58px;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
-
-  /* ❌ BUG kaynağı: bunu kaldırdık */
-  /* justify-content:flex-end; */
+  justify-content:flex-end;
 }
-
-/* ✅ Az mesaj varken bile mesajlar altta dursun (WhatsApp hissi) */
-.chat-area::before{
-  content:"";
-  flex:1 0 auto;
-}
-
-/* ✅ Boş chat mesajı (eski :empty::before çakışmasın diye :after yaptık) */
-.chat-area:empty::after{
+.chat-area:empty::before{
   content:"Kaynana burada evladım… yaz da iki laflayalım 🙂";
   color:#666;
   font-size:12px;
