@@ -1,9 +1,12 @@
 // =========================================================
 // FILE: /js/auth.js
-// VERSION: vFINAL+3b (NO BREAK + LOGOUT FIX -> ALWAYS /index.html)
-// ✅ İLAVE: logout artık /pages/chat.html’de kalmaz; HER ZAMAN /index.html’e gider.
-// ✅ İLAVE: logout sırasında google auto-select kapatılır (hemen tekrar login yapmasın).
-// ✅ EKSİLTME YOK: senin mevcut akışın aynı.
+// VERSION: vFINAL+4 (SP_SCORE SINGLE SOURCE + FREE DEFAULT + APPLE MSG + NO BREAK)
+// ✅ logout her zaman /index.html
+// ✅ google auto-select kapatılır
+// ✅ yp_percent KALDIRILDI (artık SP var)
+// ✅ sp_score default 10 (kural)
+// ✅ plan default FREE (kural)
+// ✅ Apple tıklanınca senin mesajın
 // =========================================================
 
 import { GOOGLE_CLIENT_ID, STORAGE_KEY, BASE_DOMAIN } from "./config.js";
@@ -135,6 +138,17 @@ async function fetchBackendToken(googleIdToken){
   return token;
 }
 
+// (opsiyonel) backend terms ping — sende /api/terms/accept var
+async function pingTermsAccept(){
+  try{
+    await fetch(`${BASE_DOMAIN}/api/terms/accept`, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ ok:true })
+    });
+  }catch{}
+}
+
 async function handleGoogleResponse(res){
   try{
     const idToken = (res?.credential || "").trim();
@@ -152,6 +166,7 @@ async function handleGoogleResponse(res){
     const savedTermsAt = localStorage.getItem(termsKey(email)) || null;
     const stableId = getOrCreateStableId();
 
+    // ✅ KURAL: herkes FREE + SP 10 ile başlar
     const user = {
       id: stableId,
       user_id: stableId,
@@ -165,7 +180,12 @@ async function handleGoogleResponse(res){
       isSessionActive: true,
       lastLoginAt: new Date().toISOString(),
       terms_accepted_at: savedTermsAt,
-      yp_percent: 50
+
+      // ✅ TEK PUAN: SP
+      sp_score: 10,
+
+      // ✅ plan
+      plan: "FREE"
     };
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
@@ -236,7 +256,7 @@ export function initAuth() {
 
 export function handleLogin(provider) {
   if(provider !== "google"){
-    alert("Apple girişi yakında evladım.");
+    alert("Apple biraz nazlı çıktı evladım. Şimdilik Google hesabın ile giriş yap.");
     return;
   }
 
@@ -258,22 +278,23 @@ export async function acceptTerms() {
 
   user.terms_accepted_at = ts;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+
+  // (opsiyonel) backend'e de bildir
+  await pingTermsAccept();
+
   return true;
 }
 
 export function logout() {
   if (confirm("Gidiyor musun evladım?")) {
-    // ✅ auto-select kapat (yoksa bazen anında tekrar oturum açtırıyor)
     try { window.google?.accounts?.id?.disableAutoSelect?.(); } catch (e) {
       console.warn("disableAutoSelect failed", e);
     }
 
-    // temizle
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem("google_id_token");
     localStorage.removeItem(API_TOKEN_KEY);
 
-    // ✅ HER ZAMAN giriş sayfası
     window.location.replace("/index.html");
   }
 }
