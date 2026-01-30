@@ -5,6 +5,7 @@
 // ✅ Kaynana opener + profile merge korunur
 // ✅ NEW: Samimiyet UI (sp_score/sp_delta) +1/-1 toast
 // ✅ NEW: İzinli profil kaydı akışına uyum -> otomatik isim kaydetme KAPALI
+// ✅ FIX: Assistant store write DUP SAFE (2x/3x/patlama biter)
 
 import { apiPOST } from "./api.js";
 import { STORAGE_KEY } from "./config.js";
@@ -205,12 +206,39 @@ function setKaynanaState(userId, st) {
   localStorage.setItem(k, JSON.stringify(st || {}));
 }
 
-// Assistant store write: delayed
+// Assistant store write: delayed (DUP SAFE)
+let __lastAssistantWritten = "";
+
 function scheduleAssistantStoreWrite(outText){
   try{
-    const s = String(outText || "");
+    const s = String(outText || "").trim();
+    if(!s) return;
+
+    // aynı metni iki kere yazma
+    if(__lastAssistantWritten === s) return;
+
+    // store'un son mesajı zaten buysa yazma
+    try{
+      const last = (ChatStore.getLastForApi?.(1) || [])[0];
+      if(last && String(last.role||"") === "assistant" && String(last.content||"").trim() === s){
+        __lastAssistantWritten = s;
+        return;
+      }
+    }catch{}
+
     const delay = Math.max(600, Math.min(4500, s.length * 12));
-    setTimeout(()=>{ try{ ChatStore.add?.("assistant", s); }catch{} }, delay);
+    setTimeout(()=> {
+      try{
+        if(__lastAssistantWritten === s) return;
+        const last2 = (ChatStore.getLastForApi?.(1) || [])[0];
+        if(last2 && String(last2.role||"") === "assistant" && String(last2.content||"").trim() === s){
+          __lastAssistantWritten = s;
+          return;
+        }
+        ChatStore.add?.("assistant", s);
+        __lastAssistantWritten = s;
+      }catch{}
+    }, delay);
   }catch{}
 }
 
