@@ -2,388 +2,145 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Caynana Sohbet</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Caynana Sohbet</title>
 
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/css/style.css?v=2">
-  <link rel="stylesheet" href="/css/layout-common.css?v=1">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/css/style.css?v=2">
+<link rel="stylesheet" href="/css/layout-common.css?v=1">
 
-  <style>
-    :root{
-      --frameW: min(480px, calc(100vw - 18px));
-      --topH: 65px;
-      --footerH: 64px;
-      --assistH: 68px;
-      --dockH: 68px;
-      --gapH: 6px;
-    }
+<style>
+:root{
+  --frameW: min(480px, calc(100vw - 18px));
+  --topH: 65px;
+  --footerH: 64px;
+  --assistH: 68px;
+  --dockH: 68px;
+  --gapH: 6px;
+}
 
-    /* Footer frame içinde */
-    .footer-container{
-      position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: var(--frameW) !important;
-      bottom: 0 !important;
-      z-index: 2400 !important;
-      background: rgba(0,0,0,.92);
-      border-top: 1px solid rgba(255,255,255,.06);
-    }
+/* ==== SABİT ALT KATMANLAR ==== */
+.footer-container{
+  position: fixed;
+  left:50%;
+  transform:translateX(-50%);
+  width:var(--frameW);
+  bottom:0;
+  z-index:2400;
+  background:rgba(0,0,0,.92);
+}
 
-    /* Alt bar */
-    .assistant-bar{
-      position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: var(--frameW) !important;
-      bottom: var(--footerH) !important;
-      z-index: 2500 !important;
-      height: var(--assistH) !important;
-      padding-top: 6px !important;
-      padding-bottom: 6px !important;
-      pointer-events: none;
-    }
-    .assistant-bar .assistant-item{ pointer-events:auto; }
+.assistant-bar{
+  position: fixed;
+  left:50%;
+  transform:translateX(-50%);
+  width:var(--frameW);
+  bottom:var(--footerH);
+  z-index:2500;
+  height:var(--assistH);
+}
 
-    .assistant-item .lbl{
-      display:block !important;
-      font-size: 8px !important;
-      font-weight: 900 !important;
-      line-height: 1 !important;
-      margin-top: 2px !important;
-      opacity: .85;
-      white-space: nowrap;
-    }
+.input-dock{
+  position: fixed;
+  left:50%;
+  transform:translateX(-50%);
+  width:var(--frameW);
+  bottom:calc(var(--footerH) + var(--assistH) + var(--gapH));
+  z-index:2600;
+}
 
-    /* Input dock */
-    .input-dock{
-      position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: var(--frameW) !important;
-      bottom: calc(var(--footerH) + var(--assistH) + var(--gapH)) !important;
-      z-index: 2600 !important;
-      padding: 0 10px 6px !important;
-      background: transparent !important;
-      pointer-events: none;
-    }
-    .input-dock .dock-inner{
-      pointer-events:auto;
-      width:100% !important;
-      max-width:none !important;
-      align-items:flex-end !important;
-    }
-    #msgInput{
-      min-width:0 !important;
-      white-space:normal !important;
-      overflow:hidden !important;
-      max-height:120px !important;
-    }
+/* ==== SCROLL ALANI (TEK SCROLL) ==== */
+.chat-scroll{
+  position:absolute;
+  left:0;
+  right:0;
+  top:var(--topH);
+  bottom:calc(var(--footerH) + var(--assistH) + var(--dockH) + 12px);
 
-    /* ✅ ASIL ÇÖZÜM: SCROLL WRAPPER */
-    .chat-scroll{
-      position: absolute !important;
-      left: 0; right: 0;
-      top: var(--topH);
-      bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + (var(--gapH) * 2));
-      padding: 14px 12px;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
 
-      overflow-y: auto !important;
-      -webkit-overflow-scrolling: touch !important;
-      overscroll-behavior: contain !important;
-      touch-action: pan-y !important;
+  padding:14px 12px;
+  scrollbar-width:none;
+}
+.chat-scroll::-webkit-scrollbar{ display:none; }
 
-      scrollbar-width: none !important;
-    }
-    .chat-scroll::-webkit-scrollbar{ display:none !important; }
+/* ==== CHAT ALANI ==== */
+/* ❌ flex-end YOK */
+/* ❌ scroll burada DEĞİL */
+.chat-area{
+  display:block;
+}
 
-    /* İç #chat: flex olabilir (scroll wrapper olduğu için bug yapmaz) */
-    .chat-area{
-      min-height: 100%;
-      display:flex;
-      flex-direction:column;
-      justify-content:flex-end;
-      gap: 10px;
-    }
-
-    /* + menü */
-    .plus-sheet{
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      width: var(--frameW);
-      bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + 14px);
-      z-index: 9999;
-
-      display: none;
-      gap: 10px;
-      padding: 10px;
-      border-radius: 18px;
-
-      background: rgba(15,15,15,.96);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 18px 50px rgba(0,0,0,.60);
-      backdrop-filter: blur(10px);
-    }
-    .plus-sheet.show{ display:flex; }
-
-    .plus-action{
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      gap: 6px;
-      align-items:center;
-      justify-content:center;
-
-      padding: 10px 8px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.10);
-      cursor:pointer;
-      user-select:none;
-      color: rgba(255,255,255,.86);
-      font-weight: 900;
-      font-size: 11px;
-      text-align:center;
-    }
-    .plus-action:active{ transform: translateY(-1px); }
-    .plus-ico{
-      width: 40px; height: 40px;
-      border-radius: 16px;
-      display:flex; align-items:center; justify-content:center;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.10);
-    }
-    .plus-ico svg{
-      width: 20px; height: 20px;
-      stroke: rgba(255,255,255,.85);
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      opacity: .95;
-    }
-
-    /* Mikrofon dinliyor efekti */
-    #micBtn.listening{
-      background: rgba(190,242,100,.16) !important;
-      border: 1px solid rgba(190,242,100,.35) !important;
-      box-shadow: 0 0 18px rgba(190,242,100,.18);
-      position: relative;
-    }
-    #micBtn.listening::after{
-      content:"";
-      position:absolute;
-      inset:-6px;
-      border-radius: 18px;
-      border: 1px solid rgba(190,242,100,.22);
-      animation: micPulse 1s ease-in-out infinite;
-    }
-    @keyframes micPulse{
-      0%{ transform: scale(1); opacity:.55; }
-      50%{ transform: scale(1.08); opacity:.25; }
-      100%{ transform: scale(1); opacity:.55; }
-    }
-  </style>
+/* küçük boşluk */
+.bubble{ margin-bottom:10px; }
+</style>
 </head>
 
 <body>
-<div class="mobile-frame" id="mobileFrame">
+<div class="mobile-frame">
 
-  <div class="topbar">
-    <div class="left-controls">
-      <button class="hamb-btn" id="hambBtn">☰</button>
-    </div>
+<!-- TOPBAR -->
+<div class="topbar">
+  <button class="hamb-btn" id="hambBtn">☰</button>
+  <div class="brand-wrapper" onclick="location.href='/pages/chat.html'">
+    <div class="brand-name">Caynana AI</div>
+    <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
+  </div>
+</div>
 
-    <div class="brand-wrapper" id="brandWrapper" style="cursor:pointer" onclick="location.href='/pages/chat.html'">
-      <div class="logo-area">
-        <svg class="seesaw-svg" viewBox="0 0 40 20">
-          <g class="seesaw-bar" id="seesawBar">
-            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
-            <circle cx="3" cy="5" r="3" fill="#bef264" />
-            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
-          </g>
-          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
-        </svg>
-        <div class="brand-name">Caynana AI</div>
-      </div>
-      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
-    </div>
-
-    <div class="right-controls">
-      <div class="notif-row">
-        <div class="notif-topline">
-          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
-            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            <div class="badge" id="notifBadge"></div>
-          </button>
-          <div id="planChip" class="plan-chip">FREE</div>
-        </div>
-
-        <div class="yp-chip">
-          <div class="yp-label">SAMİMİYET</div>
-          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
-          <div class="yp-num" id="ypNum">19%</div>
-        </div>
+<!-- HAMBURGER -->
+<div class="menu-overlay" id="menuOverlay">
+  <div class="menu-sidebar">
+    <button class="new-chat-btn" id="newChatBtn">+ YENİ SOHBET BAŞLAT</button>
+    <div class="profile-shortcut-wrap">
+      <div class="profile-shortcut-btn" onclick="location.href='/pages/profil.html'">
+        <div id="profileShortcutIco">👤</div>
+        <div id="profileShortcutName">—</div>
       </div>
     </div>
+    <div class="section-title">GEÇMİŞ SOHBETLER</div>
+    <div id="historyList"></div>
+
+    <div class="menu-block"><div id="menuAsistan"></div></div>
+    <div class="menu-block"><div id="menuAstro"></div></div>
+    <div class="menu-block"><div id="menuKurumsal"></div></div>
+
+    <a id="logoutBtn">🛡️ Güvenli Çıkış</a>
+    <a id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
   </div>
+</div>
 
-  <div class="menu-overlay" id="menuOverlay">
-    <div class="menu-sidebar">
-      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
+<!-- SCROLL -->
+<div class="chat-scroll" id="chatScroll">
+  <div class="chat-area" id="chat"></div>
+</div>
 
-      <div class="profile-shortcut-wrap" id="profileShortcutMount">
-        <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='/pages/profil.html'">
-          <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
-          <div class="profile-shortcut-text">
-            <div class="profile-shortcut-title">Profil Düzenle</div>
-            <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
-      <div class="history-list" id="historyList"></div>
-
-      <div class="menu-block asistan"><div class="block-head">Asistan AI</div><div class="menu-grid" id="menuAsistan"></div></div>
-      <div class="menu-block astro"><div class="block-head">Astro AI</div><div class="menu-grid" id="menuAstro"></div></div>
-      <div class="menu-block kurumsal"><div class="block-head">Kurumsal</div><div class="menu-grid" id="menuKurumsal"></div></div>
-
-      <div class="menu-footer-actions">
-        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
-        <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
-        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
-      </div>
-    </div>
+<!-- INPUT -->
+<div class="input-dock">
+  <div class="dock-inner">
+    <button id="camBtn">+</button>
+    <textarea id="msgInput" placeholder="Ne lazım evladım?"></textarea>
+    <button id="micBtn">🎤</button>
+    <button id="sendBtn">➤</button>
   </div>
+</div>
 
-  <!-- ✅ SCROLL BURADA -->
-  <div class="chat-scroll" id="chatScroll">
-    <div class="chat-area" id="chat"></div>
-  </div>
+<!-- ALT BAR -->
+<div class="assistant-bar">
+  <div class="assistant-item">💬</div>
+  <div class="assistant-item">🥗</div>
+  <div class="assistant-item">❤️</div>
+</div>
 
-  <div class="input-dock">
-    <div class="dock-inner">
-      <button class="icon-btn" id="camBtn" aria-label="Dosya / Fotoğraf">
-        <svg viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
-      </button>
-
-      <input type="file" id="fileCamera" accept="image/*" capture="environment" hidden>
-      <input type="file" id="filePhotos" accept="image/*" hidden>
-      <input type="file" id="fileFiles" hidden>
-
-      <textarea id="msgInput" rows="1" placeholder="Ne lazım evladım?" spellcheck="false"></textarea>
-
-      <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
-        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-      </button>
-
-      <button class="send-btn" id="sendBtn" aria-label="Gönder">
-        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
-      </button>
-    </div>
-  </div>
-
-  <div class="plus-sheet" id="plusSheet">
-    <div class="plus-action" id="pickCamera"><div class="plus-ico"><svg viewBox="0 0 24 24"><path d="M4 7h4l2-2h4l2 2h4v12H4z"></path><circle cx="12" cy="13" r="3"></circle></svg></div>Kamera</div>
-    <div class="plus-action" id="pickPhotos"><div class="plus-ico"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"></rect><path d="M8 14l2-2 3 3 3-4 2 3"></path></svg></div>Fotoğraf</div>
-    <div class="plus-action" id="pickFiles"><div class="plus-ico"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path></svg></div>Dosya</div>
-  </div>
-
-  <div class="assistant-bar" id="assistantBar">
-    <div class="assistant-item" data-go="/pages/chat.html"><div class="ico-wrap">💬</div><div class="lbl">Sohbet</div></div>
-    <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico-wrap">🥗</div><div class="lbl">Diyet</div></div>
-    <div class="assistant-item" data-go="/pages/health.html"><div class="ico-wrap">❤️</div><div class="lbl">Sağlık</div></div>
-    <div class="assistant-item" data-go="/pages/astro.html"><div class="ico-wrap">♈</div><div class="lbl">Burç</div></div>
-    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico-wrap">☕</div><div class="lbl">Fal</div></div>
-  </div>
-
-  <div class="footer-container">
-    <div class="footer-links">
-      <a href="/pages/hakkimizda.html">Hakkımızda</a>
-      <a href="/pages/sss.html">SSS</a>
-      <a href="/pages/gizlilik.html">Gizlilik</a>
-      <a href="/pages/iletisim.html">İletişim</a>
-    </div>
-    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
-  </div>
+<div class="footer-container">
+  <div>@CaynanaAI By Ozyigit's 2026</div>
+</div>
 
 </div>
 
 <script type="module" src="/js/main.js"></script>
-<script src="/js/layout-common.js?v=1"></script>
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const camBtn = document.getElementById("camBtn");
-    const plusSheet = document.getElementById("plusSheet");
-    const fileCamera = document.getElementById("fileCamera");
-    const filePhotos = document.getElementById("filePhotos");
-    const fileFiles  = document.getElementById("fileFiles");
-    const pickCamera = document.getElementById("pickCamera");
-    const pickPhotos = document.getElementById("pickPhotos");
-    const pickFiles  = document.getElementById("pickFiles");
-
-    const msgInput = document.getElementById("msgInput");
-    const micBtn = document.getElementById("micBtn");
-    const sendBtn = document.getElementById("sendBtn");
-
-    function togglePlus(open){
-      if(!plusSheet) return;
-      plusSheet.classList.toggle("show", !!open);
-    }
-
-    camBtn?.addEventListener("click", (e)=>{
-      e.preventDefault();
-      togglePlus(!(plusSheet && plusSheet.classList.contains("show")));
-    });
-
-    document.addEventListener("click", (e)=>{
-      if(!plusSheet || !plusSheet.classList.contains("show")) return;
-      if(plusSheet.contains(e.target)) return;
-      if(camBtn && camBtn.contains(e.target)) return;
-      togglePlus(false);
-    }, true);
-
-    pickCamera && fileCamera && (pickCamera.onclick = ()=>{ togglePlus(false); fileCamera.click(); });
-    pickPhotos && filePhotos && (pickPhotos.onclick = ()=>{ togglePlus(false); filePhotos.click(); });
-    pickFiles  && fileFiles  && (pickFiles.onclick  = ()=>{ togglePlus(false); fileFiles.click(); });
-
-    let listenTimer = null;
-    function setListening(on){
-      if(!micBtn || !msgInput) return;
-      micBtn.classList.toggle("listening", !!on);
-      if(on){
-        msgInput.dataset.__oldph = msgInput.getAttribute("placeholder") || "";
-        msgInput.setAttribute("placeholder", "Dinliyorum evladım…");
-      }else{
-        const old = msgInput.dataset.__oldph || "Ne lazım evladım?";
-        msgInput.setAttribute("placeholder", old);
-      }
-    }
-
-    micBtn?.addEventListener("click", ()=>{
-      setListening(true);
-      clearTimeout(listenTimer);
-      listenTimer = setTimeout(()=> setListening(false), 12000);
-    });
-
-    msgInput?.addEventListener("input", ()=>{
-      if((msgInput.value||"").trim().length){
-        setListening(false);
-        clearTimeout(listenTimer);
-      }
-    });
-
-    sendBtn?.addEventListener("click", ()=>{
-      setListening(false);
-      clearTimeout(listenTimer);
-    });
-  });
-</script>
-
+<script src="/js/layout-common.js"></script>
 </body>
 </html>
