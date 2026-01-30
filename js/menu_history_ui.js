@@ -3,7 +3,8 @@
 // ✅ Event listener yalnız 1 kere bağlanır
 // ✅ History click: ChatStore.setCurrent(id) + chat.html’e gider
 // ✅ Delete/Rename: UI anında güncellenir
-// ✅ Profil: isim + resim garanti görünür (menü açıldığında “—” kalmaz)
+// ✅ Kalem: satır içinde input açar, Enter kaydeder, Esc iptal
+// ✅ Profil: isim + resim garanti görünür
 
 import { ChatStore } from "./chat_store.js";
 
@@ -78,7 +79,6 @@ function addMenuItem(root, ico, label, href){
     <div><div>${esc(label)}</div></div>
   `;
 
-  // ✅ Yan etki yok: sadece yönlendir
   div.addEventListener("click", ()=>{
     location.href = href;
   });
@@ -103,18 +103,21 @@ function renderFallbackMenus(){
   /* ---- ASİSTAN ---- */
   if(asistan){
     addMenuItem(asistan, "💬", "Sohbet", "/pages/chat.html");
-    addMenuItem(asistan, "🛍️", "Alışveriş", "/pages/alisveris.html");
-    addMenuItem(asistan, "🌍", "Tercüman", "/pages/translate.html");
+
+    // ✅ KURAL: Alışveriş -> /pages/translate.html
+    addMenuItem(asistan, "🛍️", "Alışveriş", "/pages/translate.html");
+
+    // ✅ KURAL: Tercüman -> /pages/profil.html (sen böyle istedin)
+    addMenuItem(asistan, "🌍", "Tercüman", "/pages/profil.html");
+
     addMenuItem(asistan, "🗣️", "Dedikodu Kazanı", "/pages/gossip.html");
     addMenuItem(asistan, "🥗", "Diyet", "/pages/diyet.html");
     addMenuItem(asistan, "❤️", "Sağlık", "/pages/health.html");
 
-    // ✅ Regl (sadece kadın)
     if(isFemale){
       addMenuItem(asistan, "🩸", "Regl Takip", "/pages/regl.html");
     }
 
-    // ✅ Takım (profilde varsa, adıyla)
     if(team){
       addMenuItem(asistan, "⚽", team, "/pages/clup.html");
     }
@@ -139,8 +142,10 @@ function renderFallbackMenus(){
 }
 
 /* =========================================================
-   GEÇMİŞ SOHBETLER
+   GEÇMİŞ SOHBETLER (inline edit)
    ========================================================= */
+let editingId = null;
+
 function renderHistory(){
   const listEl = $("historyList");
   if(!listEl) return;
@@ -153,46 +158,82 @@ function renderHistory(){
     row.className = "history-row";
     row.dataset.chatId = c.id;
 
+    const isEditing = (editingId === c.id);
+
     row.innerHTML = `
-      <div class="history-title" title="${esc(c.title || "")}">${esc(short15(c.title) || "Sohbet")}</div>
-      <div style="display:flex; gap:8px;">
+      <div style="flex:1;min-width:0;">
+        ${
+          isEditing
+            ? `<input class="history-edit" data-edit="${c.id}" value="${esc(c.title || "")}"
+                 style="width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.10);
+                        color:#fff; border-radius:12px; padding:10px 10px; font-weight:900; outline:none;" />`
+            : `<div class="history-title" title="${esc(c.title || "")}">${esc(short15(c.title) || "Sohbet")}</div>`
+        }
+      </div>
+
+      <div style="display:flex; gap:8px; flex-shrink:0;">
         <div class="history-del" data-act="edit" title="Başlığı Düzenle">✏️</div>
         <div class="history-del" data-act="del" title="Sohbeti Sil">🗑️</div>
       </div>
     `;
 
-    // ✅ sohbet aç
+    // sohbet aç
     row.addEventListener("click",(e)=>{
       const act = e.target?.getAttribute?.("data-act");
-      if(act) return;
+      const isInp = e.target?.getAttribute?.("data-edit");
+      if(act || isInp) return;
 
       ChatStore.setCurrent(c.id);
-
       const overlay = $("menuOverlay");
       if(overlay) overlay.classList.remove("open");
-
       location.href = "/pages/chat.html";
     });
 
-    // edit
-    row.querySelector('[data-act="edit"]').onclick = (e)=>{
+    // edit toggle
+    row.querySelector('[data-act="edit"]')?.addEventListener("click", (e)=>{
       e.stopPropagation();
-      const nt = prompt("Sohbet başlığını yaz:", c.title || "");
-      if(nt){
-        ChatStore.renameChat(c.id, nt);
-        renderHistory();
-      }
-    };
+      editingId = (editingId === c.id) ? null : c.id;
+      renderHistory();
 
-    // delete
-    row.querySelector('[data-act="del"]').onclick = (e)=>{
+      // focus
+      setTimeout(()=>{
+        const inp = listEl.querySelector(`input[data-edit="${c.id}"]`);
+        inp?.focus?.();
+        inp?.select?.();
+      }, 20);
+    });
+
+    // delete (confirm + force)
+    row.querySelector('[data-act="del"]')?.addEventListener("click",(e)=>{
       e.stopPropagation();
       if(!confirmDelete()) return;
-      ChatStore.deleteChat(c.id);
+      ChatStore.deleteChat(c.id, true); // ✅ force
       renderHistory();
-    };
+    });
 
     listEl.appendChild(row);
+
+    // input events (enter/esc)
+    if(isEditing){
+      setTimeout(()=>{
+        const inp = listEl.querySelector(`input[data-edit="${c.id}"]`);
+        if(!inp) return;
+
+        inp.addEventListener("keydown", (ev)=>{
+          if(ev.key === "Escape"){
+            editingId = null;
+            renderHistory();
+          }
+          if(ev.key === "Enter"){
+            ev.preventDefault();
+            const v = String(inp.value || "").trim();
+            if(v) ChatStore.renameChat(c.id, v);
+            editingId = null;
+            renderHistory();
+          }
+        });
+      }, 0);
+    }
   });
 }
 
@@ -207,9 +248,7 @@ function getUIState(){
 export function initMenuHistoryUI(){
   try { ChatStore.init(); } catch {}
 
-  // ✅ profil kartını garanti boyayalım
   paintProfileShortcut();
-
   renderFallbackMenus();
   renderHistory();
 
@@ -219,15 +258,13 @@ export function initMenuHistoryUI(){
     btn.dataset.__bound = "1";
     btn.onclick = ()=>{
       ChatStore.newChat();
-
       const overlay = $("menuOverlay");
       if(overlay) overlay.classList.remove("open");
-
       location.href = "/pages/chat.html";
     };
   }
 
-  // ✅ CANLI GÜNCELLEME: sadece 1 kez bağla
+  // canlı güncelleme
   const st = getUIState();
   if(!st.bound){
     st.bound = true;
