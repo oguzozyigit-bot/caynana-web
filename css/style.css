@@ -1,440 +1,106 @@
-/* FILE: /css/style.css  (FULL - MENU FIX + BASE) */
+/* FILE: /css/layout-common.css
+   REPLACE ALL — ultra minimal bottom bar:
+   - Daha az yer kaplar (daha kısa)
+   - Varsayılan: SADECE ikon
+   - Sadece AKTİF olanda mini yazı görünür
+*/
 :root{
-  --bg-outer:#000;
-  --bg:#0e0e0e;
-  --text:#ececec;
-
-  --gold:#ffb300;
-  --pistachio:#bef264;
-  --red:#ff5252;
-
-  --glass:rgba(20,20,20,.98);
-  --border:rgba(255,255,255,.12);
-
-  --frame-max:480px;
+  --frameW: min(480px, calc(100vw - 18px));
+  --footerH: 56px; /* footer daha sıkı */
 }
 
-*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html,body{
-  margin:0; padding:0;
-  width:100%;
-  height:100dvh;
-  background:var(--bg-outer);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  color:var(--text);
-  overflow:hidden;
+/* Alt kayan bar (daha ince) */
+.assistant-bar{
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--frameW);
+  bottom: var(--footerH);
+  z-index: 2500;
+
   display:flex;
   align-items:center;
-  justify-content:center;
+  gap: 8px;
+  padding: 8px 10px;
+
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+
+  background: rgba(0,0,0,.72);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  border-top: 1px solid rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
 }
-::-webkit-scrollbar{ display:none; }
+.assistant-bar::-webkit-scrollbar{ display:none; }
 
-.mobile-frame{
-  width:100%;
-  height:100%;
-  max-width: var(--frame-max);
-  background: var(--bg);
-  position:relative;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  box-shadow:0 0 50px rgba(255,255,255,0.05);
-  min-height:0;
-}
-@media (min-width:500px){
-  .mobile-frame{
-    height:95dvh;
-    border-radius:24px;
-    border:1px solid #333;
-  }
-}
+/* Item (kompakt, ikon ağırlıklı) */
+.assistant-item{
+  flex: 0 0 auto;
+  width: 52px;
+  padding: 8px 6px 6px;
+  border-radius: 16px;
 
-/* =========================
-   TOPBAR
-   ========================= */
-.topbar{
-  flex:0 0 65px;
-  background: var(--glass);
-  border-bottom: 1px solid var(--border);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 12px;
-  z-index:3000;
-}
-.left-controls{ width:80px; display:flex; align-items:center; }
-.right-controls{ display:flex; gap:8px; justify-content:flex-end; align-items:center; }
-
-.hamb-btn{
-  background:none;
-  border:none;
-  cursor:pointer;
-  color:#aaa;
-  font-size:26px;
-  padding:5px;
-  line-height:1;
-}
-
-.brand-wrapper{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  flex:1;
-  min-width:0;
-}
-.logo-area{ display:flex; align-items:center; gap:10px; min-width:0; }
-.brand-name{ font-weight:900; font-size:15px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:220px; }
-.slogan{ font-size:9px; color:#888; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px; }
-
-.seesaw-svg{ width:36px; height:18px; overflow:visible; }
-.seesaw-bar{ transform-origin:20px 8px; transition:transform .5s cubic-bezier(.17,.88,.32,1.27); }
-.brand-wrapper.usering .seesaw-bar{ transform:rotate(-15deg); }
-.brand-wrapper.botting .seesaw-bar{ transform:rotate(15deg); }
-.brand-wrapper.thinking .seesaw-bar{ animation:rock 1s infinite ease-in-out; }
-@keyframes rock{ 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
-
-/* =========================
-   NOTIF + PLAN + S.P
-   ========================= */
-.notif-row{ display:flex; gap:6px; position:relative; flex-direction:column; align-items:flex-end; }
-.notif-topline{ display:flex; align-items:center; gap:8px; }
-
-.icon-btn-top{
-  background:none; border:none; cursor:pointer;
-  padding:6px; display:flex; align-items:center;
-  position:relative; border-radius:14px;
-}
-.icon-btn-top svg{ width:22px; height:22px; stroke:#aaa; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-
-.plan-chip{
-  font-size:10px; font-weight:900; letter-spacing:.7px;
-  padding:5px 10px; border-radius:999px;
-  border:1px solid rgba(255,255,255,.10);
   background: rgba(255,255,255,.04);
-  color: rgba(255,255,255,.75);
-  text-transform:uppercase; white-space:nowrap; user-select:none;
+  border: 1px solid rgba(255,255,255,.08);
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap: 4px;
+
+  color: rgba(255,255,255,.70);
+  user-select:none;
+  cursor:pointer;
 }
 
-/* S.P chip */
-.yp-chip{
-  display:flex; align-items:center; gap:6px;
-  padding:4px 8px; border:1px solid #333;
-  background:#151515; border-radius:999px;
-}
-.yp-label{ font-size:0; }
-.yp-label::after{
-  content:"S.P";
-  font-size:9px;
-  font-weight:900;
-  color:rgba(255,255,255,.75);
-}
-.yp-meter{ width:40px; height:4px; border-radius:2px; background:#222; overflow:hidden; }
-.yp-fill{ height:100%; width:50%; background:linear-gradient(90deg,var(--red),var(--gold),var(--pistachio)); transition:width .5s; }
-.yp-num{ font-size:9px; color:#ccc; font-weight:900; width:30px; text-align:right; }
+.assistant-item .ico-wrap{
+  width: 32px;
+  height: 32px;
+  border-radius: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-/* Badge: sayı göster (JS setBadgeCount ile) */
-.badge{
-  position:absolute;
-  top:2px;
-  right:2px;
-  min-width:16px;
-  height:16px;
-  padding:0 4px;
-  border-radius:999px;
-  background:var(--red);
-  color:#fff;
-  font-size:10px;
-  font-weight:900;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+/* SVG ikonlar */
+.assistant-item .ico-wrap svg{
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: .95;
+}
+
+/* Varsayılan: yazı gizli */
+.assistant-item .lbl{
   display:none;
-  align-items:center;
-  justify-content:center;
-  line-height:16px;
-}
-
-/* Bildirim sallanma */
-@keyframes bellWiggle{
-  0%{transform:rotate(0)}
-  20%{transform:rotate(-12deg)}
-  40%{transform:rotate(10deg)}
-  60%{transform:rotate(-8deg)}
-  80%{transform:rotate(6deg)}
-  100%{transform:rotate(0)}
-}
-.icon-btn-top.wiggle svg{ animation: bellWiggle .9s ease-in-out infinite; }
-
-/* =========================
-   CHAT
-   ========================= */
-.chat-area{
-  flex:1 1 auto;
-  min-height:0;
-  overflow-y:auto;
-  padding:15px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  padding-bottom:58px;
-  -webkit-overflow-scrolling: touch;
-  justify-content:flex-end;
-}
-.chat-area:empty::before{
-  content:"Kaynana burada evladım… yaz da iki laflayalım 🙂";
-  color:#666;
-  font-size:12px;
-  padding:12px;
-  display:block;
-  text-align:center;
-}
-
-.bubble{
-  max-width:85%;
-  padding:10px 14px;
-  border-radius:14px;
-  font-size:14px;
-  line-height:1.4;
-  position:relative;
-  word-wrap:break-word;
-}
-.bubble.bot{
-  align-self:flex-start;
-  background:#1c1c1c;
-  border-left:3px solid var(--gold);
-  color:#ddd;
-  border-top-left-radius:10px;
-}
-.bubble.user{
-  align-self:flex-end;
-  background:#222;
-  border-right:3px solid var(--pistachio);
-  color:#fff;
-  border-top-right-radius:10px;
-  text-align:right;
-}
-
-/* =========================
-   DOCK
-   ========================= */
-.input-dock{
-  flex:0 0 auto;
-  padding:0 10px 8px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  z-index:3000;
-}
-.dock-inner{
-  width:100%;
-  max-width:380px;
-  min-height:50px;
-  display:flex;
-  align-items:flex-end;
-  gap:6px;
-  background:#1a1a1a;
-  border:1px solid #333;
-  border-radius:25px;
-  padding:6px;
-}
-.icon-btn{ width:38px; height:38px; border-radius:50%; border:none; background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
-.icon-btn svg{ width:20px; height:20px; stroke:#aaa; stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round; }
-
-#msgInput, textarea{
-  flex:1 1 auto;
-  min-width:0;
-  background:transparent;
-  border:none;
-  outline:none;
-  color:#fff;
-  font-size:14px;
-  padding:10px 6px;
-  line-height:18px;
-  font-family:inherit;
-  resize:none;
-  white-space:normal;
-  overflow:hidden;
-  max-height:120px;
-}
-.send-btn{ width:38px; height:38px; border-radius:50%; background:var(--pistachio); color:#000; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
-.send-btn svg{ width:20px; height:20px; fill:none; stroke:#000; stroke-width:2; }
-
-/* focus: textarea kare yok */
-#msgInput:focus{ outline:none !important; box-shadow:none !important; }
-
-/* =========================
-   HAMBURGER MENU (BURASI EKSİKTİ — şimdi düzeldi)
-   ========================= */
-.menu-overlay{ position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:5000; opacity:0; pointer-events:none; transition:.3s; display:flex; }
-.menu-overlay.open{ opacity:1; pointer-events:auto; z-index:9999; }
-.menu-sidebar{
-  width:280px; height:100%;
-  background:#111; padding:20px;
-  transform:translateX(-100%); transition:.3s;
-  display:flex; flex-direction:column;
-  border-right:1px solid #333;
-  overflow-y:auto;
-}
-.menu-overlay.open .menu-sidebar{ transform:translateX(0); }
-
-.new-chat-btn{
-  width:100%;
-  background:var(--pistachio);
-  color:#000;
-  border:none;
-  padding:12px;
-  border-radius:12px;
-  font-weight:900;
-  cursor:pointer;
-  margin-bottom:14px;
-  font-size:13px;
-  display:flex;
-  justify-content:center;
-  gap:6px;
-  box-shadow: 0 10px 18px rgba(0,0,0,.35);
-}
-
-.profile-shortcut-wrap{ margin:10px 0 14px; }
-.profile-shortcut-btn{
-  display:flex; align-items:center; gap:10px;
-  padding:12px;
-  border-radius:16px;
-  cursor:pointer;
-  background: linear-gradient(180deg, rgba(255,179,0,.20), rgba(0,0,0,0));
-  border: 1px solid rgba(255,179,0,.45);
-  box-shadow: 0 16px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.14);
-}
-.profile-shortcut-ico{
-  width:34px; height:34px;
-  border-radius:12px;
-  overflow:hidden;
-  display:flex; align-items:center; justify-content:center;
-  background:#ffb300;
-  color:#111;
-  flex:0 0 34px;
-}
-.profile-shortcut-ico img{ width:100%; height:100%; object-fit:cover; display:block; }
-.profile-shortcut-title{ font-weight:950; color:#ffb300; }
-.profile-shortcut-sub{ font-size:12px; color:rgba(255,255,255,.70); }
-
-.section-title{
-  font-size:10px;
-  color:#666;
-  margin:10px 0 8px;
-  text-transform:uppercase;
-  letter-spacing:1px;
-  font-weight:900;
-  border-bottom:1px solid #222;
-  padding-bottom:5px;
-}
-
-/* History row */
-.history-list{ display:flex; flex-direction:column; gap:6px; }
-.history-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  padding:10px;
-  background:#1a1a1a;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:12px;
-}
-.history-title{
-  font-size:13px;
-  font-weight:800;
-  color:#ddd;
-  max-width:160px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .2px;
   white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.history-del{
-  width:34px; height:34px;
-  border-radius:12px;
-  display:flex; align-items:center; justify-content:center;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.04);
 }
 
-/* Menu blocks + actions */
-.menu-block{
-  background: rgba(20,20,20,.55);
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius:18px;
-  padding:12px;
-  margin:10px 0;
+/* Aktifte: renk + yazı görünür */
+.assistant-item.active{
+  color: #ffb300;
+  border-color: rgba(255,179,0,.30);
+  background: rgba(255,179,0,.10);
 }
-.block-head{
-  padding:2px 2px 10px;
-  border-bottom:1px solid rgba(255,255,255,.10);
-  margin-bottom:10px;
-  text-transform:uppercase;
-  font-weight:900;
-  font-size:11px;
-  letter-spacing:.8px;
+.assistant-item.active .ico-wrap{
+  background: rgba(255,179,0,.08);
+  border-color: rgba(255,179,0,.25);
 }
-.menu-block.asistan .block-head{ color:var(--gold); }
-.menu-block.astro .block-head{ color:var(--pistachio); }
-.menu-block.kurumsal .block-head{ color:var(--red); }
-
-.menu-grid{ display:grid; grid-template-columns:1fr; gap:10px; }
-
-.menu-action{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:12px;
-  border-radius:16px;
-  cursor:pointer;
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,0));
-  border: 1px solid rgba(255,255,255,.10);
-}
-.menu-action .ico{
-  width:38px; height:38px;
-  border-radius:14px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:18px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.04);
-}
-.menu-action > div > div{ font-size:14px; font-weight:900; color:#e8e8e8; }
-
-/* Menu footer actions */
-.menu-footer-actions{
-  margin-top:auto;
-  padding-top:14px;
-  border-top:1px solid #222;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-.action-link{
-  font-size:12px;
-  color:#ccc;
-  padding:12px;
-  cursor:pointer;
+.assistant-item.active .lbl{
   display:block;
-  background:#1a1a1a;
-  border-radius:12px;
-  text-align:center;
-  font-weight:800;
 }
-.delete-acc{ color:var(--red); background:transparent; border:1px solid #333; }
 
-/* =========================
-   FOOTER
-   ========================= */
-.footer-container{
-  text-align:center;
-  padding:10px 0;
-  border-top:1px solid #1a1a1a;
-  width:100%;
-  background:linear-gradient(to top, rgba(0,0,0,.55), transparent);
-  flex:0 0 auto;
-}
-.footer-links{ display:flex; justify-content:center; gap:12px; margin-bottom:5px; flex-wrap:wrap; padding:0 12px; }
-.footer-links a{ color:#555; font-size:10px; text-decoration:none; white-space:nowrap; }
-.footer-brand{ font-size:9px; color:#444; font-weight:700; letter-spacing:.2px; }
-
-/* OVERLAY */
-.full-overlay{ position: fixed; inset:0; width:100vw; height:100vh; background: rgba(0,0,0,.92); z-index: 9000; display:none; align-items:center; justify-content:center; }
-.full-overlay.active{ display:flex; }
+/* Tıklama hissi */
+.assistant-item:active{ transform: translateY(-1px); }
