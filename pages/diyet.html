@@ -5,40 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Diyet Planım</title>
   <link rel="icon" href="data:," />
-  <link rel="stylesheet" href="/css/style.css?v=2" />
-  <link rel="stylesheet" href="/css/layout-common.css?v=1" />
+  <link rel="stylesheet" href="/css/style.css?v=1" />
 
   <style>
     :root{
       --gold:#ffb300;
       --pistachio:#bef264;
       --red:#ff5252;
-
-      /* chat.html ile aynı mantık */
-      --frameW: min(480px, calc(100vw - 18px));
-      --topH: 65px;
-      --footerH: 64px;
-      --assistH: 68px;
-      --gapH: 6px;
     }
 
-    /* ✅ Menü overlay'i style.css yönetiyor. Burada sakın display:none yapma. */
-    /* (silindi) .menu-overlay { display:none; pointer-events:none; } */
+    /* (mevcut) menü overlay kontrolün sende */
+    .menu-overlay { display:none; pointer-events:none; }
+    .menu-overlay.open { display:flex; pointer-events:auto; }
 
     .diet-wrap{
-      position:absolute;
-      left:0; right:0;
-      top: var(--topH);
-      bottom: calc(var(--footerH) + var(--assistH) + var(--gapH));
       padding: 16px;
+      padding-bottom: 100px;
       display:flex;
       flex-direction:column;
       gap:16px;
       overflow-y:auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      touch-action: pan-y;
-      min-height:0;
+      height:100%;
     }
 
     .card{
@@ -217,34 +204,64 @@
     }
     @keyframes slideDown { from{ top:-50px; opacity:0 } to{ top:80px; opacity:1 } }
 
-    /* Doğum tarihi 3'lü seçim düzeni */
     .dob-row{ display:flex; gap:10px; }
 
-    /* ✅ Alt bar (assistant-bar) chat.html ile aynı konumda */
-    .assistant-bar{
-      position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: var(--frameW) !important;
-      bottom: var(--footerH) !important;
-      z-index: 2500 !important;
-      height: var(--assistH) !important;
-      padding-top: 6px !important;
-      padding-bottom: 6px !important;
-      pointer-events: none;
+    /* =========================================================
+       ✅ FIX 1: TOPBAR taşmasın / içerik altta kalmasın (sadece bu sayfa)
+       Üst bara dokunmuyoruz: sadece bu sayfada hizayı sıkıştırıyoruz.
+       ========================================================= */
+    .topbar{
+      height:65px !important;
+      flex:0 0 65px !important;
+      padding:0 10px !important;
     }
-    .assistant-bar .assistant-item{ pointer-events:auto; }
+    .notif-row{
+      flex-direction:row !important;
+      align-items:center !important;
+      gap:8px !important;
+    }
+    .notif-topline{
+      display:flex !important;
+      align-items:center !important;
+      gap:8px !important;
+    }
+    .yp-chip{
+      padding: 3px 7px !important;
+      gap: 6px !important;
+    }
+    .yp-meter{ width: 34px !important; }
+    .yp-num{ width: 44px !important; font-size: 9px !important; }
 
-    /* Footer frame içinde sabit */
-    .footer-container{
-      position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: var(--frameW) !important;
-      bottom: 0 !important;
-      z-index: 2400 !important;
-      background: rgba(0,0,0,.92);
-      border-top: 1px solid rgba(255,255,255,.06);
+    /* =========================================================
+       ✅ FIX 2: “Bildirimler” yazısı görünmesin (dropdown bu modülde kapalı)
+       Üst bara dokunmuyoruz; sadece dropdown’u gizliyoruz.
+       ========================================================= */
+    .notification-dropdown{ display:none !important; }
+
+    /* =========================================================
+       ✅ FIX 3: Select dropdown beyaz zemin / beyaz yazı olmasın
+       ========================================================= */
+    .diet-select{
+      background: rgba(255,255,255,0.06) !important;
+      color:#fff !important;
+    }
+    .diet-select option{
+      background:#111 !important;
+      color:#fff !important;
+    }
+    .diet-select option[value=""]{ color: rgba(255,255,255,.65) !important; }
+
+    /* =========================================================
+       ✅ FIX 4: Number input spinner (oklar) gizle
+       ========================================================= */
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button{
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"]{
+      -moz-appearance: textfield;
+      appearance: textfield;
     }
   </style>
 </head>
@@ -252,13 +269,13 @@
 <body>
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- TOPBAR -->
+  <!-- TOPBAR (aynen korunuyor) -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
     </div>
 
-    <div class="brand-wrapper" id="brandWrapper" style="cursor:pointer" onclick="location.href='/pages/chat.html'">
+    <div class="brand-wrapper" id="brandWrapper">
       <div class="logo-area">
         <svg class="seesaw-svg" viewBox="0 0 40 20">
           <g class="seesaw-bar" id="seesawBar">
@@ -301,7 +318,7 @@
     </div>
   </div>
 
-  <!-- MENU -->
+  <!-- MENU (aynen korunuyor) -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
@@ -342,7 +359,7 @@
     </div>
   </div>
 
-  <!-- CONTENT (orta alan) -->
+  <!-- CONTENT -->
   <div class="diet-wrap">
 
     <div id="profileSetup" class="card">
@@ -416,26 +433,15 @@
       </div>
 
       <div class="bmi-talk" id="bmiTalk">—</div>
-
       <div style="height:10px"></div>
 
       <button class="btn-yes" id="btnGenerate">GÜNLÜK DİYET MENÜMÜ VER</button>
-
       <div class="meal-list" id="mealList"></div>
     </div>
 
   </div>
 
   <div class="diet-notif" id="dietNotif">🔔 Bugün diyet menün geldi, incele evladım!</div>
-
-  <!-- ALT MODÜL BAR (dokunmuyoruz, sadece navigation) -->
-  <div class="assistant-bar" id="assistantBar">
-    <div class="assistant-item" data-go="/pages/chat.html"><div class="ico-wrap">💬</div><div class="lbl">Sohbet</div></div>
-    <div class="assistant-item" data-go="/pages/diyet.html"><div class="ico-wrap">🥗</div><div class="lbl">Diyet</div></div>
-    <div class="assistant-item" data-go="/pages/health.html"><div class="ico-wrap">❤️</div><div class="lbl">Sağlık</div></div>
-    <div class="assistant-item" data-go="/pages/astro.html"><div class="ico-wrap">♈</div><div class="lbl">Burç</div></div>
-    <div class="assistant-item" data-go="/pages/fal.html"><div class="ico-wrap">☕</div><div class="lbl">Fal</div></div>
-  </div>
 
   <div class="footer-container">
     <div class="footer-links">
@@ -449,10 +455,6 @@
 
 </div>
 
-<!-- Ortak scriptler -->
-<script type="module" src="/js/main.js"></script>
-<script src="/js/layout-common.js?v=1"></script>
-
 <script type="module">
   import { BASE_DOMAIN, STORAGE_KEY } from "/js/config.js";
   const DIET_API = "/api/diet/today";
@@ -462,11 +464,31 @@
   function todayStr(){ return new Date().toISOString().split("T")[0]; }
   function baseUrl(){ return (BASE_DOMAIN || "").replace(/\/+$/, ""); }
 
-  function getApiToken(){
-    return (localStorage.getItem("caynana_api_token") || "").trim();
+  /* ✅ SP'yi tek yere bağla: localStorage[STORAGE_KEY].sp_score */
+  function setSamimiyetUI(score){
+    const s = Math.max(0, Math.min(100, parseInt(score||0,10)||0));
+    const fill = $("ypFill");
+    const num  = $("ypNum");
+    if(fill) fill.style.width = `${s}%`;
+    if(num)  num.textContent = `${s}/100`;
   }
-  function getGoogleToken(){
-    return (localStorage.getItem("google_id_token") || "").trim();
+  function syncSamimiyetFromLocal(){
+    try{
+      const p = safeJson(localStorage.getItem(STORAGE_KEY));
+      const s1 = p?.sp_score;
+      if(s1 !== undefined && s1 !== null){
+        setSamimiyetUI(s1);
+        return;
+      }
+    }catch{}
+    try{
+      const u = safeJson(localStorage.getItem("caynana_user_v1"));
+      const s2 = u?.sp_score;
+      if(s2 !== undefined && s2 !== null){
+        setSamimiyetUI(s2);
+        return;
+      }
+    }catch{}
   }
 
   function getUserLocal(){
@@ -490,6 +512,9 @@
     n.style.display = "block";
     setTimeout(()=> n.style.display="none", 5000);
   }
+
+  function getApiToken(){ return (localStorage.getItem("caynana_api_token") || "").trim(); }
+  function getGoogleToken(){ return (localStorage.getItem("google_id_token") || "").trim(); }
 
   async function postDiet(payload){
     const apiToken = getApiToken();
@@ -599,7 +624,6 @@
     });
   }
 
-  // DOB dropdownlar
   function pad2(n){ return String(n).padStart(2,"0"); }
   function getDobFromSelects(){
     const y = $("dobYear").value;
@@ -691,6 +715,8 @@
   }
 
   async function init(){
+    syncSamimiyetFromLocal(); // ✅ her sayfada aynı SP
+
     buildDobOptions();
 
     const userLocal = getUserLocal();
@@ -801,20 +827,12 @@
     }
   };
 
-  // Profile button
-  $("profileBtn")?.addEventListener("click", ()=> location.href="/pages/profil.html");
-  $("profileShortcutBtn")?.addEventListener("click", ()=> location.href="/pages/profil.html");
-
-  // Alt bar navigation
-  document.querySelectorAll(".assistant-item[data-go]").forEach(el=>{
-    el.addEventListener("click", ()=> location.href = el.getAttribute("data-go"));
-  });
-
   init();
 </script>
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
+    // Menü aç/kapat aynı kalır
     const hamb = document.getElementById("hambBtn");
     const overlay = document.getElementById("menuOverlay");
 
@@ -823,6 +841,7 @@
       overlay.addEventListener("click", (e) => { if(e.target === overlay) overlay.classList.remove("open"); });
     }
 
+    // Profil kısayol görseli
     try {
       const u = JSON.parse(localStorage.getItem("caynana_user_v1") || "{}");
       const pic = u.picture || u.avatar || u.avatar_url;
