@@ -1,4 +1,4 @@
-<!-- FILE: /index.html (FULL - EYES UP + CHAT DEMO UPWARD + TYPEWRITER BOTH + NO DEMO BG) -->
+<!-- FILE: /index.html (FULL - FIXED: ALWAYS TYPEWRITER + APPLE KAYNANA + NO EDGE GLITCH + EYES TRACK DEMO) -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -86,7 +86,7 @@
       position: relative;
       z-index: 3;
       backdrop-filter: blur(10px);
-      margin-top: 80px; /* göz yukarıda; card hafif aşağı */
+      margin-top: 80px;
     }
 
     .login-lead{
@@ -324,14 +324,14 @@
       100%{ transform: rotate(-3deg); }
     }
 
-    /* ===== GÖZLER (YUKARIDA, BÜYÜK, GEREKİRSE KÜÇÜK) ===== */
+    /* ===== GÖZLER (yukarıda) ===== */
     .kaynana-eyes{
       position:absolute;
       top: 12px;
       left: 50%;
       transform: translateX(-50%);
-      width: 220px;
-      height: 102px;
+      width: 210px;
+      height: 98px;
       border-radius: 26px;
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.22);
@@ -339,25 +339,18 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      gap: 18px;
-      padding: 14px 14px;
+      gap: 16px;
+      padding: 12px 12px;
       pointer-events:none;
       backdrop-filter: blur(6px);
       opacity: .98;
       z-index: 5;
     }
-    @media (max-height: 720px){
-      .kaynana-eyes{
-        width: 200px;
-        height: 92px;
-      }
-    }
-
-    .eye-wrap{ position:relative; width:62px; height:78px; display:flex; align-items:center; justify-content:center; }
+    .eye-wrap{ position:relative; width:60px; height:76px; display:flex; align-items:center; justify-content:center; }
     .brow{
       position:absolute;
       top: -6px;
-      width: 66px;
+      width: 64px;
       height: 18px;
       border-top: 5px solid rgba(255,255,255,.55);
       border-radius: 999px;
@@ -366,8 +359,8 @@
     }
     .lashes{
       position:absolute;
-      top: 16px;
-      width: 70px;
+      top: 15px;
+      width: 66px;
       height: 12px;
       opacity:.35;
       display:flex;
@@ -380,8 +373,8 @@
       transform: rotate(18deg);
     }
     .eye{
-      width: 62px;
-      height: 62px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       background: rgba(255,255,255,.95);
       position: relative;
@@ -394,8 +387,8 @@
       border-radius: 50%;
       background: rgba(0,0,0,.80);
       position:absolute;
-      top: 20px;
-      left: 20px;
+      top: 19px;
+      left: 19px;
       transition: transform .10s linear;
     }
     .shine{
@@ -403,7 +396,7 @@
       border-radius: 50%;
       background: rgba(255,255,255,.85);
       position:absolute;
-      top: 10px; left: 14px;
+      top: 10px; left: 13px;
       opacity:.9;
     }
     .lid{
@@ -421,52 +414,28 @@
     }
     .brand-name .ai-green{ color: var(--pistachio); }
 
-    /* ===== ALT BOŞLUKTA DEMO (zeminsiz) ===== */
+    /* ===== Demo: yukarı taşan uçlar görünmesin (mask + max height) ===== */
     .prelogin-demo{
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
-      bottom: 92px; /* footer üstü */
+      bottom: 92px;
       width: min(460px, 92vw);
       z-index: 2;
       pointer-events:none;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap: 10px;
-    }
-    .demo-logo{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap: 4px;
-      opacity: .92;
-      margin-bottom: 2px;
-    }
-    .demo-logo .line{
-      display:flex;
-      align-items:center;
-      gap: 10px;
-    }
-    .demo-logo .name{
-      font-weight:1000;
-      font-size:16px;
-      letter-spacing:.2px;
-      color:#fff;
-    }
-    .demo-logo .slog{
-      font-size:11px;
-      font-weight:900;
-      color: rgba(255,255,255,.62);
+      max-height: 165px;
+      overflow: hidden;
+      /* üstte yumuşak fade: gözün yanına uçlar çıkmasın */
+      -webkit-mask-image: linear-gradient(to top, black 0%, black 80%, transparent 100%);
+      mask-image: linear-gradient(to top, black 0%, black 80%, transparent 100%);
     }
 
-    /* ✅ Zemin yok: sadece baloncuklar */
     .demo-stream{
       width:100%;
       display:flex;
-      flex-direction:column-reverse; /* ✅ alttan yukarı büyüsün */
+      flex-direction:column-reverse;
       gap: 10px;
-      padding: 0; /* zemin yok */
+      padding: 0;
     }
 
     .demo-bubble{
@@ -510,7 +479,6 @@
       0%,100%{ transform: translateY(0); opacity:.55; }
       50%{ transform: translateY(-4px); opacity:1; }
     }
-
   </style>
 </head>
 
@@ -543,8 +511,8 @@
   <div class="login-stage">
     <div class="bg-anim"></div>
 
-    <!-- GÖZLER (yukarıda) -->
-    <div class="kaynana-eyes" aria-hidden="true">
+    <!-- GÖZLER -->
+    <div class="kaynana-eyes" aria-hidden="true" id="eyesBox">
       <div class="eye-wrap">
         <div class="brow"></div>
         <div class="lashes"><span></span><span></span><span></span></div>
@@ -591,24 +559,12 @@
       </div>
     </div>
 
-    <!-- ✅ ALT BOŞLUK: LOGO + ZEMİNSİZ DEMO -->
+    <!-- ✅ ALT BOŞLUK: ZEMİNSİZ DEMO -->
     <div class="prelogin-demo" aria-hidden="true">
-      <div class="demo-logo">
-        <div class="line">
-          <svg class="seesaw-svg" viewBox="0 0 40 20" style="width:42px;height:20px;">
-            <g class="seesaw-bar">
-              <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
-              <circle cx="3" cy="5" r="3" fill="#bef264" />
-              <circle cx="37" cy="5" r="3" fill="#ffb300" />
-            </g>
-            <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
-          </svg>
-          <div class="name">Caynana<span class="ai-green">AI</span></div>
-        </div>
-        <div class="slog">Yapay Zekanın Geleneksel Aklı</div>
-      </div>
-
       <div class="demo-stream" id="demoStream"></div>
+      <div class="demo-typing" id="demoTyping">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      </div>
     </div>
 
   </div>
@@ -667,11 +623,13 @@
   }
   function goChat(){ window.location.replace("/pages/chat.html"); }
 
+  // ✅ Apple: kaynana dili
   $("appleLoginBtn")?.addEventListener("click", (e) => {
     e.preventDefault();
-    alert("Apple biraz nazlı çıktı evladım. Biraz sabır. Şimdilik Google hesabın ile devam et.");
+    alert("Apple daha hazır değil evladım… Biraz sabır. Şimdilik Google hesabın ile devam et, ben seni içeri alayım.");
   });
 
+  // terms
   const termsOverlay = $("termsOverlay");
   const termsCheck = $("termsCheck");
   const termsAcceptBtn = $("termsAcceptBtn");
@@ -717,11 +675,14 @@
 
   initAuth();
 
-  // ===== Gözler: mouse takip, mouse yoksa kendi dolaş =====
+  // ===== Gözler: pointer varsa onu takip, yoksa demo yazılarını takip =====
   const p1 = $("p1");
   const p2 = $("p2");
+  const eyesBox = $("eyesBox");
+  const demoStream = $("demoStream");
+
   function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-  let lastMoveAt = Date.now();
+  let lastPointerAt = Date.now();
 
   function setPupil(px, py){
     const x = clamp(px, -10, 10);
@@ -731,123 +692,131 @@
     if(p2) p2.style.transform = t;
   }
 
-  window.addEventListener("mousemove", (e)=>{
-    lastMoveAt = Date.now();
-    const cx = window.innerWidth * 0.5;
-    const cy = window.innerHeight * 0.22; // yukarıdaki gözlere daha yakın referans
-    const dx = (e.clientX - cx) / 45;
-    const dy = (e.clientY - cy) / 55;
+  function aimAt(clientX, clientY){
+    if(!eyesBox) return;
+    const r = eyesBox.getBoundingClientRect();
+    const cx = r.left + r.width/2;
+    const cy = r.top + r.height/2;
+    const dx = (clientX - cx) / 55;
+    const dy = (clientY - cy) / 65;
     setPupil(dx, dy);
+  }
+
+  window.addEventListener("mousemove", (e)=>{
+    lastPointerAt = Date.now();
+    aimAt(e.clientX, e.clientY);
   }, { passive:true });
 
   window.addEventListener("touchmove", (e)=>{
     const t = e.touches && e.touches[0];
     if(!t) return;
-    lastMoveAt = Date.now();
-    const cx = window.innerWidth * 0.5;
-    const cy = window.innerHeight * 0.22;
-    const dx = (t.clientX - cx) / 45;
-    const dy = (t.clientY - cy) / 55;
-    setPupil(dx, dy);
+    lastPointerAt = Date.now();
+    aimAt(t.clientX, t.clientY);
   }, { passive:true });
 
+  // idle: demo yazısını takip et
   setInterval(()=>{
-    const idle = (Date.now() - lastMoveAt) > 1200;
+    const idle = (Date.now() - lastPointerAt) > 900;
     if(!idle) return;
-    const dx = (Math.random()*20 - 10);
-    const dy = (Math.random()*16 - 8);
-    setPupil(dx, dy);
-  }, 900);
 
-  // ===== DEMO: 15 kullanıcı + 15 kaynana (alttan yukarı akar), daktilo ikisinde de =====
-  const stream = $("demoStream");
+    // demo alandaki en yeni balonun merkezine bak
+    let tx = window.innerWidth/2;
+    let ty = window.innerHeight*0.78;
+
+    try{
+      const last = demoStream?.querySelector?.(".demo-bubble:last-child") || demoStream?.querySelector?.(".demo-bubble");
+      const r = last?.getBoundingClientRect?.();
+      if(r){
+        tx = r.left + r.width/2;
+        ty = r.top + r.height/2;
+      }
+    }catch{}
+
+    aimAt(tx, ty);
+  }, 220);
+
+  // ===== DEMO: 15 kullanıcı + 15 kaynana, alttan yukarı akar, TÜMÜ daktilo (yavaş) =====
+  const stream = demoStream;
+  const typing = $("demoTyping");
 
   const turns = [
-    ["user", "Kaynana… bugün moralim sıfır."],
-    ["bot",  "Evladım, bir anlat bakalım… Ne oldu da suratın asıldı?"],
-    ["user", "İş güç üst üste geldi, kafam dolu."],
-    ["bot",  "E normal! Ama sen de kendini ihmal ediyorsun. Bir su iç önce."],
-    ["user", "Bugün de doğru düzgün yemek yemedim."],
-    ["bot",  "Hah! Sonra ‘niye halsizim’… Azdan az, çoktan çok gitmez evladım."],
-    ["user", "Bir plan yapalım mı?"],
-    ["bot",  "Yaparız tabii. Önce uyku, su, sonra hafif yürüyüş. Başka yolu yok."],
-    ["user", "Peki motivasyonum yok."],
-    ["bot",  "Motivasyon gelmez, disiplin gelir. Hadi küçükten başla."],
-    ["user", "Yarın erken kalksam?"],
-    ["bot",  "Aferin. 10 dakika bile kârdır. Sonra 15 olur, 20 olur."],
-    ["user", "Sen bana kızıyor musun?"],
-    ["bot",  "Kızmıyorum. Ama kaynana gibi dürtüyorum… sevdiğimden."],
-    ["user", "Tamam, başlıyorum."],
-    ["bot",  "Heh işte. Şimdi Google’la giriş yap da ben seni toparlayayım."],
-    ["user", "Kahve falı da bakarsın değil mi?"],
-    ["bot",  "Bakmaz mıyım! Ama önce şu hedefleri yazalım evladım."],
-    ["user", "Diyet menüsü de istiyorum."],
-    ["bot",  "Var. Günlük menün hazır. Düzenli gel, S.P de artar."],
-    ["user", "S.P neydi?"],
-    ["bot",  "Samimiyet puanı evladım. Yani ben sana ne kadar ‘evin oğlu/kızı’ diyorum."],
-    ["user", "İyiymiş 🙂"],
-    ["bot",  "İyidir tabii. Ama küfür yok, şımarma yok. 😀"],
-    ["user", "Tamam kaynana."],
-    ["bot",  "Aferin. Hadi giriş yap, başlıyoruz."],
-    ["user", "Başlıyorum."],
-    ["bot",  "Gel bakalım… İyi ki geldin."],
-    ["user", "Hazırım."],
-    ["bot",  "Ben de hazırım. Google’a bas."],
+    ["user","Kaynana… bugün moralim sıfır."],
+    ["bot","Evladım, bir anlat bakalım… Ne oldu da suratın asıldı?"],
+    ["user","İş güç üst üste geldi, kafam dolu."],
+    ["bot","E normal! Ama sen de kendini ihmal ediyorsun. Bir su iç önce."],
+    ["user","Bugün de doğru düzgün yemek yemedim."],
+    ["bot","Hah! Sonra ‘niye halsizim’… Azdan az, çoktan çok gitmez evladım."],
+    ["user","Bir plan yapalım mı?"],
+    ["bot","Yaparız tabii. Önce uyku, su, sonra hafif yürüyüş. Başka yolu yok."],
+    ["user","Peki motivasyonum yok."],
+    ["bot","Motivasyon gelmez, disiplin gelir. Hadi küçükten başla."],
+    ["user","Yarın erken kalksam?"],
+    ["bot","Aferin. 10 dakika bile kârdır. Sonra 15 olur, 20 olur."],
+    ["user","Sen bana kızıyor musun?"],
+    ["bot","Kızmıyorum. Ama kaynana gibi dürtüyorum… sevdiğimden."],
+    ["user","Tamam, başlıyorum."],
+    ["bot","Heh işte. Şimdi Google’la giriş yap da ben seni toparlayayım."],
+    ["user","Kahve falı da bakarsın değil mi?"],
+    ["bot","Bakmaz mıyım! Ama önce şu hedefleri yazalım evladım."],
+    ["user","Diyet menüsü de istiyorum."],
+    ["bot","Var. Günlük menün hazır. Düzenli gel, S.P de artar."],
+    ["user","S.P neydi?"],
+    ["bot","Samimiyet puanı evladım. Yani ben sana ne kadar ‘evin oğlu/kızı’ diyorum."],
+    ["user","İyiymiş 🙂"],
+    ["bot","İyidir tabii. Ama küfür yok, şımarma yok. 😀"],
+    ["user","Tamam kaynana."],
+    ["bot","Aferin. Hadi giriş yap, başlıyoruz."],
+    ["user","Başlıyorum."],
+    ["bot","Gel bakalım… İyi ki geldin."],
+    ["user","Hazırım."],
+    ["bot","Ben de hazırım. Google’a bas."],
   ];
 
   function makeBubble(cls){
     const el = document.createElement("div");
     el.className = `demo-bubble ${cls}`;
+    el.textContent = "";
     return el;
   }
 
-  function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+  const sleep = (ms)=>new Promise(r=>setTimeout(r, ms));
 
-  async function typeInto(el, text){
+  async function typeInto(el, text, speed=28){
     el.textContent = "";
     const s = String(text || "");
     for(let i=0;i<s.length;i++){
       el.textContent += s[i];
-      await sleep(18);
+      await sleep(speed);
     }
   }
 
   async function runDemo(){
     if(!stream) return;
+    let i = 0;
 
-    // en alttan yukarı büyüsün: column-reverse olduğu için append -> altta görünür
-    // bir önceki konuşmalar üstte birikir.
-    for(let i=0;i<turns.length;i++){
-      const [who, txt] = turns[i];
+    while(true){
+      const [who, txt] = turns[i % turns.length];
       const cls = (who === "user") ? "user" : "bot";
+
+      // typing dots sadece bot yazarken görünsün
+      if(typing) typing.style.display = (cls === "bot") ? "flex" : "none";
+
       const bubble = makeBubble(cls);
       stream.appendChild(bubble);
 
-      // typing dots küçük bir an
-      const typing = document.createElement("div");
-      typing.className = "demo-typing";
-      typing.innerHTML = `<span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
-      bubble.appendChild(typing);
-      await sleep(220);
-      typing.remove();
+      // Daktilo daha yavaş ve HER MESAJDA
+      const speed = (cls === "user") ? 30 : 28;
+      await typeInto(bubble, txt, speed);
 
-      await typeInto(bubble, txt);
-
-      // max 12 baloncuk göster (taşmasın)
+      // max 12 baloncuk
       const children = Array.from(stream.children);
       if(children.length > 12){
-        // column-reverse: en eskiler en altta listede? DOM sırası append ile artıyor.
-        // fazla olunca ilk eklenenleri kaldır:
         children.slice(0, children.length - 12).forEach(n => n.remove());
       }
 
-      await sleep(320);
+      i++;
+      await sleep(480);
     }
-
-    // bitince tekrar başa dön
-    await sleep(1200);
-    stream.innerHTML = "";
-    runDemo();
   }
 
   runDemo();
