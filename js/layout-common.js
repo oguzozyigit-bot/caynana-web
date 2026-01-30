@@ -1,8 +1,86 @@
 // FILE: /js/layout-common.js
-// REPLACE ALL — aynı 10 menü ama minimal (ikon-only), aktif olan yazı gösterir
-document.addEventListener("DOMContentLoaded", () => {
+// FINAL - BARLARA DOKUNMAZ: sadece içerik mount eder
+// ✅ assistantBar: 10 ikon, sadece aktif label görünür
+// ✅ SP sync: tek kaynak sp_score -> ypFill/ypNum günceller (tüm sayfalarda)
+// ✅ hamburger open/close
+// ✅ menuAsistan / menuAstro / menuKurumsal doldurur (koşullu: regl, özel günler, takım)
 
-  const bar = document.getElementById("assistantBar");
+document.addEventListener("DOMContentLoaded", () => {
+  const $ = (id) => document.getElementById(id);
+
+  // ----------------------------
+  // Helpers: localStorage profile
+  // ----------------------------
+  function safeJson(s, fb = {}) { try { return JSON.parse(s || ""); } catch { return fb; } }
+
+  // Tek kaynağa yakın okuma: önce caynana_user_v1, sonra STORAGE_KEY olabilecek adaylar
+  function getUserLocal(){
+    const candidates = [
+      "caynana_user_v1",
+      "caynana_profile_v1",
+      "caynana_user",
+      "caynana_user_v2",
+      "caynana_profile",
+      "STORAGE_KEY", // bazen yanlışlıkla key adıyla kaydediliyor
+    ];
+
+    // Önce bilinenler
+    for (const k of candidates){
+      const obj = safeJson(localStorage.getItem(k), null);
+      if (obj && typeof obj === "object" && Object.keys(obj).length) return obj;
+    }
+
+    // En son: localStorage’da sp_score içeren bir json bulmaya çalış
+    try{
+      for (let i=0; i<localStorage.length; i++){
+        const key = localStorage.key(i);
+        if(!key) continue;
+        const raw = localStorage.getItem(key) || "";
+        if(raw && raw[0] === "{"){
+          const obj = safeJson(raw, null);
+          if(obj && typeof obj === "object" && ("sp_score" in obj || "plan" in obj || "user_id" in obj)) return obj;
+        }
+      }
+    }catch{}
+
+    return {};
+  }
+
+  // ----------------------------
+  // ✅ SP Sync (tek yer)
+  // ----------------------------
+  function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+  function setSamimiyetUI(score){
+    const s = clamp(parseInt(score || 0, 10) || 0, 0, 100);
+    const fill = $("ypFill");
+    const num  = $("ypNum");
+    if(fill) fill.style.width = `${s}%`;
+    if(num)  num.textContent = `${s}/100`;
+  }
+
+  function syncSP(){
+    const u = getUserLocal();
+    if (u && (u.sp_score !== undefined && u.sp_score !== null)) {
+      setSamimiyetUI(u.sp_score);
+    }
+  }
+
+  // Sayfa açılışında bir kez
+  syncSP();
+
+  // Diğer scriptler sp_score’ı güncellerse, aynı tab’da da anında güncellensin:
+  window.addEventListener("storage", (e) => {
+    if(!e || !e.key) return;
+    if (String(e.key).includes("caynana") || String(e.key).includes("profile") || String(e.key).includes("STORAGE")) {
+      syncSP();
+    }
+  });
+
+  // ----------------------------
+  // ✅ assistantBar (10 ikon)
+  // ----------------------------
+  const bar = $("assistantBar");
 
   const iconSvg = (name) => {
     const map = {
@@ -20,21 +98,30 @@ document.addEventListener("DOMContentLoaded", () => {
     return map[name] || map.chat;
   };
 
-  if(bar){
-    const items = [
-      { label:"Sohbet",     href:"/pages/chat.html",      icon:"chat"  },
-      { label:"Alışveriş",  href:"/pages/translate.html", icon:"bag"   },
-      { label:"Tercüman",   href:"/pages/profil.html",    icon:"globe" },
-      { label:"Dedikodu",   href:"/pages/gossip.html",    icon:"spark" },
-      { label:"Diyet",      href:"/pages/diyet.html",     icon:"leaf"  },
-      { label:"Sağlık",     href:"/pages/health.html",    icon:"heart" },
-      { label:"Kahve",      href:"/pages/fal.html",       icon:"cup"   },
-      { label:"Tarot",      href:"/pages/tarot.html",     icon:"cards" },
-      { label:"Rüya",       href:"/pages/dream.html",     icon:"eye"   },
-      { label:"Burç",       href:"/pages/astro.html",     icon:"star"  },
-    ];
+  const barItems = [
+    { label:"Sohbet",     href:"/pages/chat.html",      icon:"chat"  },
+    { label:"Alışveriş",  href:"/pages/translate.html", icon:"bag"   },
+    { label:"Tercüman",   href:"/pages/profil.html",    icon:"globe" },
+    { label:"Dedikodu",   href:"/pages/gossip.html",    icon:"spark" },
+    { label:"Diyet",      href:"/pages/diyet.html",     icon:"leaf"  },
+    { label:"Sağlık",     href:"/pages/health.html",    icon:"heart" },
+    { label:"Kahve",      href:"/pages/fal.html",       icon:"cup"   },
+    { label:"Tarot",      href:"/pages/tarot.html",     icon:"cards" },
+    { label:"Rüya",       href:"/pages/dream.html",     icon:"eye"   },
+    { label:"Burç",       href:"/pages/astro.html",     icon:"star"  },
+  ];
 
-    bar.innerHTML = items.map(it => `
+  function setBarLabelsVisibility(){
+    if(!bar) return;
+    bar.querySelectorAll(".assistant-item").forEach(el=>{
+      const isActive = el.classList.contains("active");
+      const lbl = el.querySelector(".lbl");
+      if(lbl) lbl.style.display = isActive ? "block" : "none";
+    });
+  }
+
+  if (bar) {
+    bar.innerHTML = barItems.map(it => `
       <div class="assistant-item" data-go="${it.href}">
         <div class="ico-wrap">${iconSvg(it.icon)}</div>
         <div class="lbl">${it.label}</div>
@@ -53,13 +140,135 @@ document.addEventListener("DOMContentLoaded", () => {
       const go = el.getAttribute("data-go") || "";
       el.classList.toggle("active", go && path.endsWith(go));
     });
+
+    // sadece aktif olan label
+    setBarLabelsVisibility();
   }
 
-  // hamburger aç/kapa (varsa)
-  const hamb = document.getElementById("hambBtn");
-  const overlay = document.getElementById("menuOverlay");
+  // ----------------------------
+  // ✅ Hamburger open/close (aynı davranış)
+  // ----------------------------
+  const hamb = $("hambBtn");
+  const overlay = $("menuOverlay");
   if(hamb && overlay){
     hamb.addEventListener("click", ()=> overlay.classList.add("open"));
     overlay.addEventListener("click", (e)=> { if(e.target === overlay) overlay.classList.remove("open"); });
   }
+
+  // ----------------------------
+  // ✅ Hamburger menü modülleri mount
+  // (Üst/alt bar tasarımına dokunmaz, sadece içerik doldurur)
+  // ----------------------------
+  function menuButtonHTML(label, href, emoji){
+    return `
+      <div class="menu-action" data-go="${href}">
+        <div class="ico">${emoji}</div>
+        <div><div>${label}</div></div>
+      </div>
+    `;
+  }
+
+  function hasAnySpecialDays(u){
+    // senin kuralın: eş doğum günü / yıldönümü / nişan / çocuk doğum günü vb doluysa göster
+    const keys = [
+      "spouse_birthday",
+      "wedding_anniversary",
+      "engagement_anniversary",
+      "child_birthdays",
+      "child_birthday",
+      "special_days"
+    ];
+    return keys.some(k => {
+      const v = u?.[k];
+      if(!v) return false;
+      if(typeof v === "string") return !!v.trim();
+      if(Array.isArray(v)) return v.length > 0;
+      if(typeof v === "object") return Object.keys(v).length > 0;
+      return false;
+    });
+  }
+
+  function mountHamburgerModules(){
+    const u = getUserLocal();
+
+    const menuAsistan = $("menuAsistan");
+    const menuAstro = $("menuAstro");
+    const menuKurumsal = $("menuKurumsal");
+
+    if(menuAsistan){
+      let html = "";
+      html += menuButtonHTML("Sohbet", "/pages/chat.html", "💬");
+      html += menuButtonHTML("Alışveriş", "/pages/translate.html", "🛒");
+      html += menuButtonHTML("Tercüman", "/pages/profil.html", "🌍");
+      html += menuButtonHTML("Dedikodu Kazanı", "/pages/gossip.html", "🫖");
+      html += menuButtonHTML("Diyet", "/pages/diyet.html", "🥗");
+      html += menuButtonHTML("Sağlık", "/pages/health.html", "❤️");
+
+      // Regl: sadece kadınsa
+      const gender = String(u?.gender || u?.Gender || "").toLowerCase();
+      const isWoman = gender.includes("kad") || gender.includes("woman") || gender === "f";
+      if (isWoman) {
+        html += menuButtonHTML("Regl Takip", "/pages/regl.html", "🩸");
+      }
+
+      // Özel günler: koşullu
+      if (hasAnySpecialDays(u)) {
+        html += menuButtonHTML("Özel Günler", "/pages/specialdays.html", "🎉");
+      }
+
+      // Takım: profilde varsa
+      const team = String(u?.team || "").trim();
+      if (team) {
+        html += menuButtonHTML(team, "/pages/clup.html", "⚽");
+      }
+
+      menuAsistan.innerHTML = html;
+    }
+
+    if(menuAstro){
+      let html = "";
+      html += menuButtonHTML("Kahve Falı", "/pages/fal.html", "☕");
+      html += menuButtonHTML("Tarot", "/pages/tarot.html", "🃏");
+      html += menuButtonHTML("Rüya Tabiri", "/pages/dream.html", "👁️");
+      html += menuButtonHTML("Günlük Burç", "/pages/astro.html", "♈");
+      menuAstro.innerHTML = html;
+    }
+
+    if(menuKurumsal){
+      let html = "";
+      html += menuButtonHTML("Üyelik", "/pages/membership.html", "💎");
+      html += menuButtonHTML("Hakkımızda", "/pages/hakkimizda.html", "ℹ️");
+      html += menuButtonHTML("Sık Sorulan Sorular", "/pages/sss.html", "❓");
+      html += menuButtonHTML("Gizlilik", "/pages/gizlilik.html", "🔒");
+      html += menuButtonHTML("İletişim", "/pages/iletisim.html", "📩");
+      menuKurumsal.innerHTML = html;
+    }
+
+    // Tıklamalar
+    document.querySelectorAll(".menu-action[data-go]").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const go = btn.getAttribute("data-go");
+        if(go) location.href = go;
+      });
+    });
+  }
+
+  mountHamburgerModules();
+
+  // ----------------------------
+  // ✅ Profil kısayol metni (Google ad soyad)
+  // ----------------------------
+  try{
+    const u = getUserLocal();
+    const nm = $("profileShortcutName");
+    if(nm){
+      const name = u?.fullname || u?.name || u?.display_name || "—";
+      nm.textContent = String(name);
+    }
+    const ico = $("profileShortcutIco");
+    if(ico){
+      const pic = u?.picture || u?.avatar || u?.avatar_url;
+      if(pic) ico.innerHTML = `<img src="${pic}" alt="avatar" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+    }
+  }catch{}
 });
