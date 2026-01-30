@@ -1,8 +1,7 @@
 // FILE: /js/chat.js
-// ROLLBACK-STABLE (ŞÜKÜR ÖNCESİ) + ✅ OKUNABİLİR SCROLL FIX
+// ROLLBACK-STABLE (ŞÜKÜR ÖNCESİ)
 // ✅ Assistant cevabı ChatStore’a HEMEN yazmaz (double render + scroll kayması olmaz)
 // ✅ Scroll: 3 frame _forceBottom (DOM gecikmesini yutar)
-// ✅ OKUNABİLİR SCROLL: Kullanıcı yukarı çıkarsa artık ZORLA aşağı çekmez (asıl sorun buydu)
 // ✅ Name memory + kaynana opener + profile merge DURUYOR (eksiltme yok)
 
 import { apiPOST } from "./api.js";
@@ -102,7 +101,7 @@ function pickAssistantText(data) {
 async function sleep(ms) { return new Promise((r) => setTimeout(r, ms)); }
 
 /* =========================
-   SCROLL (ŞÜKÜR STABLE) + ✅ OKUNABİLİR
+   SCROLL (ŞÜKÜR STABLE)
    ========================= */
 function _forceBottom(el){
   if(!el) return;
@@ -115,36 +114,19 @@ function _forceBottom(el){
   requestAnimationFrame(tick);
 }
 
-// ✅ Kullanıcı altta mı? (okunabilir scroll için şart)
-function _isNearBottom(el, slack = 220){
-  try { return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack; }
-  catch { return true; }
-}
-
 /* UI helpers */
 export function addBotBubble(text, elId="chat"){
   const div = document.getElementById(elId);
   if(!div) return;
-
-  const follow = _isNearBottom(div);
-
   const bubble = document.createElement("div");
   bubble.className = "bubble bot";
   bubble.textContent = String(text||"");
   div.appendChild(bubble);
-
-  // ✅ sadece kullanıcı alttaysa alta çek
-  if(follow) _forceBottom(div);
 }
 
 export function typeWriter(text, elId = "chat") {
   const div = document.getElementById(elId);
   if (!div) return;
-
-  // ✅ başlangıçta alttaysa takip et, kullanıcı yukarı çıkarsa bırak
-  let follow = _isNearBottom(div);
-  const onScroll = () => { follow = _isNearBottom(div); };
-  div.addEventListener("scroll", onScroll, { passive:true });
 
   const bubble = document.createElement("div");
   bubble.className = "bubble bot";
@@ -156,11 +138,10 @@ export function typeWriter(text, elId = "chat") {
   (function type() {
     if (i < s.length) {
       bubble.textContent += s.charAt(i++);
-      if (follow) _forceBottom(div);   // ✅ sadece alttaysa
+      _forceBottom(div);
       setTimeout(type, 28);
     } else {
-      div.removeEventListener("scroll", onScroll);
-      if (follow) _forceBottom(div);   // ✅ sadece alttaysa
+      _forceBottom(div);
     }
   })();
 }
@@ -174,7 +155,6 @@ export function addUserBubble(text) {
   bubble.textContent = String(text || "");
   div.appendChild(bubble);
 
-  // ✅ kullanıcı mesaj attıysa doğal olarak alta git (bu isteniyor)
   _forceBottom(div);
 }
 
