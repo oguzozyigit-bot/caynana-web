@@ -1,5 +1,5 @@
 // FILE: /js/tarot_page.js
-// COLORFUL ORIGINAL TAROT: flip + vibrant backs + vibrant fronts (motor later)
+// FULL DECK (78) + hidden horizontal scroll + flip reveal + colorful original SVG art
 
 import { initMenuHistoryUI } from "/js/menu_history_ui.js";
 import { STORAGE_KEY } from "/js/config.js";
@@ -33,7 +33,6 @@ const POS = {
   5:["Durum","Engel","Tavsiye","Dış Etki","Sonuç"]
 };
 
-// Renk paletleri (kartlara çeşit)
 const PALETTES = [
   { a:"#ff3d71", b:"#6c5ce7", c:"#00d2d3" },
   { a:"#ffb300", b:"#00c2ff", c:"#bef264" },
@@ -42,139 +41,171 @@ const PALETTES = [
   { a:"#ff7a00", b:"#ff3d71", c:"#00d2d3" },
 ];
 
-// Orijinal kart listesi (kısa ama yeterli; istersen 22’ye çıkarırız)
-const CARDS = [
-  { key:"fool",    n:"Deli (0)",       sym:"🪶", u:"Yeni sayfa açılıyor. Cesaret et.", r:"Dağınıklık. Ayağını yere bas." },
-  { key:"mag",     n:"Büyücü (I)",     sym:"✨", u:"Elindeki imkanlar yeter. Başlat.", r:"Planı netleştir. Kandırılma." },
-  { key:"priest",  n:"Başrahibe (II)", sym:"🌙", u:"İç sesini dinle. Sabır.", r:"Kuruntuya kapılma. Kanıt ara." },
-  { key:"emp",     n:"İmparator (IV)", sym:"🛡️", u:"Düzen kur. Sınır koy.", r:"Kontrolcülük ve inat." },
-  { key:"love",    n:"Aşıklar (VI)",   sym:"💞", u:"Bir seçim var. Netleş.", r:"Kararsızlık." },
-  { key:"chariot", n:"Savaş Arabası",  sym:"🏁", u:"Disiplinle kazanırsın.", r:"Hırsın gözünü kör etmesin." },
-  { key:"strength",n:"Güç",            sym:"🦁", u:"Yumuşak güç kazanır.", r:"Öfke ve kontrol kaybı." },
-  { key:"hermit",  n:"Ermiş",          sym:"🏮", u:"Geri çekil, netleş.", r:"Kopma, yalnızlaşma." },
-  { key:"wheel",   n:"Kader Çarkı",    sym:"🎡", u:"Dönüm noktası.", r:"Aynı hatayı tekrar etme." },
-  { key:"justice", n:"Adalet",         sym:"⚖️", u:"Hak yerini bulur.", r:"Dengesizlik." },
-  { key:"tower",   n:"Kule",           sym:"🏛️", u:"Gerçek ortaya çıkar.", r:"Direnme, ders çıkar." },
-  { key:"star",    n:"Yıldız",         sym:"⭐", u:"Ferahlık geliyor.", r:"Umudu erteleme." },
-  { key:"sun",     n:"Güneş",          sym:"☀️", u:"Aydınlık ve rahatlama.", r:"Ego şişmesi." },
-  { key:"moon",    n:"Ay",             sym:"🌫️", u:"Net değil, acele etme.", r:"Yanılsama." },
-  { key:"world",   n:"Dünya",          sym:"🌍", u:"Emek karşılığı.", r:"Bitirmeden bırakma." },
-];
-
-function pickUniqueCard(used){
-  for(let t=0;t<200;t++){
-    const c = CARDS[Math.floor(Math.random()*CARDS.length)];
-    if(!used.has(c.key)){
-      used.add(c.key);
-      return c;
-    }
-  }
-  return CARDS[Math.floor(Math.random()*CARDS.length)];
+function hashStr(s){
+  let h=0;
+  for(let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) >>> 0;
+  return h;
 }
-
 function pickPalette(seedStr){
-  // deterministic-ish
-  let h = 0;
-  for(let i=0;i<seedStr.length;i++) h = (h*31 + seedStr.charCodeAt(i)) >>> 0;
+  const h = hashStr(seedStr);
   return PALETTES[h % PALETTES.length];
 }
 
-// ✅ Kart sırtı: çok renkli premium desen (SVG)
-function deckBackSVG(seed="kaynana"){
+// --------- FULL DECK GENERATION (78) ----------
+const MAJOR = [
+  "Deli (0)","Büyücü (I)","Başrahibe (II)","İmparatoriçe (III)","İmparator (IV)","Aziz (V)",
+  "Aşıklar (VI)","Savaş Arabası (VII)","Güç (VIII)","Ermiş (IX)","Kader Çarkı (X)","Adalet (XI)",
+  "Asılan Adam (XII)","Dönüşüm (XIII)","Denge (XIV)","Şeytan (XV)","Kule (XVI)","Yıldız (XVII)",
+  "Ay (XVIII)","Güneş (XIX)","Mahkeme (XX)","Dünya (XXI)"
+];
+
+const SUITS = [
+  { key:"asalar", name:"Asalar", sym:"🪵", accent:"#ffb300" },
+  { key:"kupalar", name:"Kupalar", sym:"🏺", accent:"#00c2ff" },
+  { key:"kiliclar", name:"Kılıçlar", sym:"⚔️", accent:"#ff5252" },
+  { key:"tilsimlar", name:"Tılsımlar", sym:"🪙", accent:"#bef264" },
+];
+
+const RANKS = [
+  { key:"as",  name:"As",  sym:"✶" },
+  ...Array.from({length:9},(_,i)=>({ key:String(i+2), name:String(i+2), sym:"•" })), // 2..10
+  { key:"vale",    name:"Vale",    sym:"♟️" },
+  { key:"sovalye", name:"Şövalye", sym:"🏇" },
+  { key:"kralice", name:"Kraliçe", sym:"👑" },
+  { key:"kral",    name:"Kral",    sym:"👑" },
+];
+
+function buildDeck(){
+  const deck = [];
+
+  // Major 22
+  MAJOR.forEach((nm, idx)=>{
+    deck.push({
+      id: `major_${idx}`,
+      type: "major",
+      name: nm,
+      suit: null,
+      rank: null,
+      sym: "🃏",
+      seed: `major:${idx}:${nm}`
+    });
+  });
+
+  // Minor 56
+  SUITS.forEach(s=>{
+    RANKS.forEach(r=>{
+      deck.push({
+        id: `minor_${s.key}_${r.key}`,
+        type: "minor",
+        name: `${s.name} - ${r.name}`,
+        suit: s,
+        rank: r,
+        sym: s.sym,
+        seed: `minor:${s.key}:${r.key}`
+      });
+    });
+  });
+
+  return deck; // 78
+}
+
+const FULL_DECK = buildDeck();
+
+// --------- COLORFUL SVG BACK ----------
+function deckBackSVG(seed){
   const p = pickPalette(seed);
   return `
   <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="${p.a}" stop-opacity="0.35"/>
-        <stop offset="0.55" stop-color="${p.b}" stop-opacity="0.28"/>
-        <stop offset="1" stop-color="${p.c}" stop-opacity="0.25"/>
+        <stop offset="0" stop-color="${p.a}" stop-opacity="0.40"/>
+        <stop offset="0.55" stop-color="${p.b}" stop-opacity="0.30"/>
+        <stop offset="1" stop-color="${p.c}" stop-opacity="0.28"/>
       </linearGradient>
-      <radialGradient id="glow" cx="50%" cy="35%" r="70%">
-        <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>
+      <radialGradient id="orb" cx="50%" cy="40%" r="70%">
+        <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
         <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
       </radialGradient>
-      <pattern id="stars" width="20" height="20" patternUnits="userSpaceOnUse">
-        <circle cx="4" cy="6" r="1" fill="rgba(255,255,255,.25)"/>
-        <circle cx="16" cy="14" r="1" fill="rgba(255,255,255,.18)"/>
-        <circle cx="12" cy="4" r="0.8" fill="rgba(255,255,255,.16)"/>
+      <pattern id="stars" width="18" height="18" patternUnits="userSpaceOnUse">
+        <circle cx="4" cy="6" r="1" fill="rgba(255,255,255,.30)"/>
+        <circle cx="14" cy="14" r="1" fill="rgba(255,255,255,.20)"/>
+        <circle cx="12" cy="4" r="0.8" fill="rgba(255,255,255,.18)"/>
       </pattern>
     </defs>
 
-    <rect x="0" y="0" width="100" height="140" rx="16" fill="rgba(0,0,0,.75)"/>
+    <rect x="0" y="0" width="100" height="140" rx="16" fill="rgba(0,0,0,.80)"/>
     <rect x="6" y="8" width="88" height="124" rx="14" fill="url(#bg)"/>
-    <rect x="6" y="8" width="88" height="124" rx="14" fill="url(#stars)" opacity="0.55"/>
+    <rect x="6" y="8" width="88" height="124" rx="14" fill="url(#stars)" opacity="0.60"/>
+    <circle cx="50" cy="70" r="28" fill="url(#orb)"/>
 
-    <circle cx="50" cy="70" r="28" fill="url(#glow)"/>
-    <path d="M50 28 L58 52 L84 56 L64 72 L70 98 L50 86 L30 98 L36 72 L16 56 L42 52 Z"
-          fill="rgba(255,255,255,.10)"/>
-    <path d="M50 38 L56 54 L74 56 L60 66 L64 84 L50 74 L36 84 L40 66 L26 56 L44 54 Z"
-          fill="rgba(0,0,0,.25)"/>
+    <path d="M50 26 L60 52 L88 56 L66 72 L72 100 L50 86 L28 100 L34 72 L12 56 L40 52 Z"
+          fill="rgba(255,255,255,.12)"/>
+    <path d="M50 36 L56 52 L74 54 L60 64 L64 84 L50 74 L36 84 L40 64 L26 54 L44 52 Z"
+          fill="rgba(0,0,0,.28)"/>
 
     <rect x="10" y="14" width="80" height="112" rx="12"
           fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2"/>
-    <rect x="14" y="18" width="72" height="104" rx="10"
-          fill="none" stroke="rgba(255,255,255,.10)" stroke-width="2"/>
-
-    <text x="50" y="125" text-anchor="middle"
+    <text x="50" y="126" text-anchor="middle"
           font-family="system-ui, -apple-system, Segoe UI, Arial"
           font-size="9" font-weight="900"
-          fill="rgba(255,255,255,.55)">Caynana Tarot</text>
+          fill="rgba(255,255,255,.62)">Caynana Tarot</text>
   </svg>`;
 }
 
-// ✅ Kart yüzü: çok renkli simge illüstrasyonu (SVG)
-function faceSVG(card){
-  const p = pickPalette(card.key);
-  const sym = card.sym || "✶";
+// --------- COLORFUL SVG FACE ----------
+function faceSVG(card, rev){
+  const p = pickPalette(card.seed);
+  const suitAccent = card.suit?.accent || p.a;
+  const title = card.type === "major" ? card.name : card.name;
+  const sym = card.type === "major" ? "✶" : (card.suit?.sym || "✶");
+  const rankSym = card.rank?.sym || "✶";
+
+  // “ters” görseli: iç frame’i 180 döndürürüz
+  const rot = rev ? `transform="rotate(180 60 60)"` : "";
 
   return `
   <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="fbg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="${p.a}" stop-opacity="0.28"/>
-        <stop offset="0.55" stop-color="${p.b}" stop-opacity="0.22"/>
-        <stop offset="1" stop-color="${p.c}" stop-opacity="0.20"/>
+        <stop offset="0" stop-color="${p.a}" stop-opacity="0.34"/>
+        <stop offset="0.55" stop-color="${p.b}" stop-opacity="0.26"/>
+        <stop offset="1" stop-color="${p.c}" stop-opacity="0.24"/>
       </linearGradient>
-      <radialGradient id="orb" cx="50%" cy="45%" r="60%">
+      <radialGradient id="glow" cx="50%" cy="45%" r="60%">
         <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
         <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
       </radialGradient>
     </defs>
 
-    <rect x="10" y="10" width="100" height="100" rx="18"
-          fill="rgba(0,0,0,.35)" stroke="rgba(255,255,255,.16)" stroke-width="2"/>
-    <rect x="14" y="14" width="92" height="92" rx="16" fill="url(#fbg)"/>
-    <circle cx="60" cy="58" r="34" fill="url(#orb)"/>
+    <g ${rot}>
+      <rect x="10" y="10" width="100" height="100" rx="18"
+            fill="rgba(0,0,0,.34)" stroke="rgba(255,255,255,.16)" stroke-width="2"/>
+      <rect x="14" y="14" width="92" height="92" rx="16" fill="url(#fbg)"/>
+      <circle cx="60" cy="58" r="34" fill="url(#glow)"/>
 
-    <!-- orbit lines -->
-    <path d="M24 60 C40 34, 80 34, 96 60" stroke="rgba(255,255,255,.18)" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <path d="M24 60 C40 86, 80 86, 96 60" stroke="rgba(255,255,255,.12)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M24 60 C40 34, 80 34, 96 60" stroke="rgba(255,255,255,.18)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M24 60 C40 86, 80 86, 96 60" stroke="rgba(255,255,255,.12)" stroke-width="3" fill="none" stroke-linecap="round"/>
 
-    <!-- center symbol -->
-    <text x="60" y="72" text-anchor="middle"
-          font-family="Apple Color Emoji, Segoe UI Emoji, system-ui"
-          font-size="38">${sym}</text>
+      <circle cx="60" cy="60" r="20" fill="rgba(0,0,0,.22)" stroke="rgba(255,255,255,.14)" stroke-width="2"/>
+      <text x="60" y="70" text-anchor="middle"
+            font-family="Apple Color Emoji, Segoe UI Emoji, system-ui"
+            font-size="30">${sym}</text>
 
-    <!-- top mini marks -->
-    <circle cx="30" cy="30" r="3" fill="rgba(255,255,255,.25)"/>
-    <circle cx="90" cy="30" r="3" fill="rgba(255,255,255,.18)"/>
-    <circle cx="30" cy="90" r="3" fill="rgba(255,255,255,.18)"/>
-    <circle cx="90" cy="90" r="3" fill="rgba(255,255,255,.25)"/>
+      <text x="22" y="28" font-family="system-ui, -apple-system, Segoe UI, Arial"
+            font-size="12" font-weight="900" fill="${suitAccent}" opacity="0.95">${rankSym}</text>
+      <text x="98" y="100" text-anchor="end" font-family="system-ui, -apple-system, Segoe UI, Arial"
+            font-size="12" font-weight="900" fill="${suitAccent}" opacity="0.85">${rankSym}</text>
+    </g>
   </svg>`;
 }
 
-// ===== State =====
+// --------- STATE ----------
 const state = {
   need: 1,
   ready: false,
-  used: new Set(),
-  picked: [] // {card, rev, posLabel}
+  used: new Set(),   // selected card ids
+  picked: []         // {card, rev, posLabel}
 };
-
-function renderNeed(){
-  $("needTxt").textContent = `Seçilecek: ${state.need} kart`;
-}
 
 function setPill(text, good=true){
   const p = $("statePill");
@@ -184,20 +215,24 @@ function setPill(text, good=true){
   p.style.background  = good ? "rgba(190,242,100,.10)" : "rgba(255,82,82,.10)";
   p.style.color       = good ? "rgba(190,242,100,.95)" : "rgba(255,82,82,.95)";
 }
-
 function showThinking(on){
   $("thinking").classList.toggle("show", !!on);
+}
+
+function renderNeed(){
+  const txt = $("needTxt");
+  if(txt) txt.textContent = `Seçilecek: ${state.need} kart`;
 }
 
 function renderPicked(){
   const box = $("picked");
   box.innerHTML = "";
-  state.picked.forEach((p)=>{
+  state.picked.forEach(p=>{
     const div = document.createElement("div");
     div.className = "picked-card";
     div.innerHTML = `
       <div class="picked-pos">${p.posLabel}</div>
-      <div class="picked-name">${p.card.n}</div>
+      <div class="picked-name">${p.card.name}</div>
       <div class="picked-tag ${p.rev ? "rev" : ""}">${p.rev ? "TERS" : "DÜZ"}</div>
     `;
     box.appendChild(div);
@@ -206,19 +241,17 @@ function renderPicked(){
 
 function makeLongReading(){
   const lines = [];
-  lines.push(`<b>Evladım…</b> kartlar renkli ama ben daha renkliyim. 🙂`);
-  lines.push(`<br><br><b>Kartların:</b>`);
+  lines.push(`<b>Evladım…</b> tam deste seçtin, iyi. Şimdi kartların diliyle konuşacağım.`);
+  lines.push(`<br><br><b>Seçtiklerin:</b>`);
   state.picked.forEach(p=>{
-    const txt = p.rev ? p.card.r : p.card.u;
-    lines.push(`<br>• <b>${p.posLabel}:</b> ${p.card.n} (${p.rev?"ters":"düz"}) — ${txt}`);
+    lines.push(`<br>• <b>${p.posLabel}:</b> ${p.card.name} (${p.rev?"ters":"düz"})`);
   });
-  lines.push(`<br><br><b>Özet:</b>`);
+  lines.push(`<br><br><b>Kaynana yorumu:</b>`);
   const revCount = state.picked.filter(x=>x.rev).length;
   lines.push(revCount >= Math.ceil(state.need/2)
-    ? `Ters enerji fazla. “İnat etme, düzelt” diyor. Plan + sabır şart.`
-    : `Enerji iyi. Doğru adımı atarsan işin açılır. Şımarmak yok 🙂`);
-  lines.push(`<br><br><b>Kaynana tavsiyesi:</b> Bugün tek hedef seç. Bitir. Sonra diğerine geç.`);
-  lines.push(`<br><br><b>Kapanış:</b> Neyse halin çıksın falın… ama ben sende toparlanma görüyorum.`);
+    ? `Ters çok. “Düzelt, toparla, plan yap” diyor.`
+    : `Genel enerji iyi. “Devam et” diyor ama şımarmak yok 🙂`);
+  lines.push(`<br><br><b>Son söz:</b> Neyse halin çıksın falın… Hadi bakalım.`);
   return lines.join("");
 }
 
@@ -231,52 +264,20 @@ async function runReading(){
   box.classList.add("show");
 }
 
-function resetAll(){
-  state.ready = false;
-  state.used = new Set();
-  state.picked = [];
-  $("resultBox").classList.remove("show");
-  $("resultBox").innerHTML = "";
-  setPill("Hazır", true);
-  buildGrid();
-  renderPicked();
-  toast("Sıfırlandı evladım.");
-}
+// --------- BUILD STRIP (78) ----------
+function buildDeckStrip(){
+  const strip = $("deckStrip");
+  strip.innerHTML = "";
 
-function bindSpreads(){
-  document.querySelectorAll("#spreads .seg").forEach(seg=>{
-    seg.addEventListener("click", ()=>{
-      document.querySelectorAll("#spreads .seg").forEach(x=>x.classList.remove("active"));
-      seg.classList.add("active");
-      state.need = parseInt(seg.getAttribute("data-n"),10);
-      renderNeed();
-      resetAll();
-    });
-  });
-}
+  FULL_DECK.forEach((card, idx)=>{
+    const flip = document.createElement("div");
+    flip.className = "flip";
+    flip.dataset.id = card.id;
 
-function bindButtons(){
-  $("btnShuffle").addEventListener("click", ()=>{
-    state.ready = true;
-    setPill("Karıştı", true);
-    toast("Karıştırdım evladım. Seç bakalım.");
-  });
-  $("btnReset").addEventListener("click", resetAll);
-}
-
-function buildGrid(){
-  const grid = $("grid");
-  grid.innerHTML = "";
-
-  for(let i=0;i<16;i++){
-    const wrap = document.createElement("div");
-    wrap.className = "flip";
-    wrap.dataset.slot = String(i);
-
-    wrap.innerHTML = `
+    flip.innerHTML = `
       <div class="inner">
         <div class="face back">
-          <div class="backsvg">${deckBackSVG("slot:"+i)}</div>
+          <div class="backsvg">${deckBackSVG(card.seed + ":" + idx)}</div>
         </div>
         <div class="face front">
           <div class="frame" data-art></div>
@@ -289,27 +290,13 @@ function buildGrid(){
       </div>
     `;
 
-    wrap.querySelector(".back").addEventListener("click", ()=> onPick(wrap));
-    grid.appendChild(wrap);
-  }
+    flip.querySelector(".back").addEventListener("click", ()=> onPick(flip, card));
+    strip.appendChild(flip);
+  });
 }
 
-function flipReveal(wrap, card, rev, posLabel){
-  const art = wrap.querySelector("[data-art]");
-  const title = wrap.querySelector("[data-title]");
-  const pos = wrap.querySelector("[data-pos]");
-  const revEl = wrap.querySelector("[data-rev]");
-
-  art.innerHTML = faceSVG(card);
-  title.textContent = card.n;
-  pos.textContent = posLabel;
-  revEl.textContent = rev ? "TERS" : "DÜZ";
-  revEl.classList.toggle("rev", !!rev);
-
-  wrap.classList.add("flipped");
-}
-
-function onPick(wrap){
+// --------- PICK FLOW ----------
+function onPick(flipEl, card){
   if(!state.ready){
     toast("Önce karıştır evladım.");
     return;
@@ -318,27 +305,79 @@ function onPick(wrap){
     toast("Yeter evladım. Fazlası kafa karıştırır.");
     return;
   }
-  if(wrap.classList.contains("flipped")) return;
+  if(state.used.has(card.id)) return;
 
-  const card = pickUniqueCard(state.used);
-  const rev = Math.random() < 0.38;
   const posLabel = POS[state.need][state.picked.length] || `Kart ${state.picked.length+1}`;
+  const rev = Math.random() < 0.38;
 
+  // state
+  state.used.add(card.id);
   state.picked.push({ card, rev, posLabel });
 
-  flipReveal(wrap, card, rev, posLabel);
-  wrap.classList.add("disabled");
+  // flip reveal
+  const art = flipEl.querySelector("[data-art]");
+  const title = flipEl.querySelector("[data-title]");
+  const pos = flipEl.querySelector("[data-pos]");
+  const revEl = flipEl.querySelector("[data-rev]");
+
+  art.innerHTML = faceSVG(card, rev);
+  title.textContent = card.name;
+  pos.textContent = posLabel;
+  revEl.textContent = rev ? "TERS" : "DÜZ";
+  revEl.classList.toggle("rev", !!rev);
+
+  flipEl.classList.add("flipped");
+  flipEl.classList.add("disabled");
+
   renderPicked();
 
   if(state.picked.length === state.need){
     setPill("Okunuyor…", true);
-    document.querySelectorAll(".flip").forEach(el=>{
-      if(!el.classList.contains("flipped")) el.classList.add("disabled");
-    });
+    // diğerlerini disable hissi (tam kilitleme yok; ama tıklanamaz çünkü state.need doldu)
     runReading();
   }
 }
 
+// --------- CONTROLS ----------
+function resetAll(){
+  state.ready = false;
+  state.used = new Set();
+  state.picked = [];
+  $("resultBox").classList.remove("show");
+  $("resultBox").innerHTML = "";
+  setPill("Hazır", true);
+  renderNeed();
+  renderPicked();
+
+  // stripte flipleri geri al
+  document.querySelectorAll(".flip").forEach(el=>{
+    el.classList.remove("flipped");
+    el.classList.remove("disabled");
+  });
+  toast("Sıfırlandı evladım.");
+}
+
+function bindSpreads(){
+  document.querySelectorAll("#spreads .seg").forEach(seg=>{
+    seg.addEventListener("click", ()=>{
+      document.querySelectorAll("#spreads .seg").forEach(x=>x.classList.remove("active"));
+      seg.classList.add("active");
+      state.need = parseInt(seg.getAttribute("data-n"),10);
+      resetAll();
+    });
+  });
+}
+
+function bindButtons(){
+  $("btnShuffle").addEventListener("click", ()=>{
+    state.ready = true;
+    setPill("Karıştı", true);
+    toast("Karıştırdım evladım. Kaydır, seç.");
+  });
+  $("btnReset").addEventListener("click", resetAll);
+}
+
+// --------- BOOT ----------
 document.addEventListener("DOMContentLoaded", ()=>{
   const token = (localStorage.getItem("google_id_token") || "").trim();
   if(!token){ location.href="/index.html"; return; }
@@ -352,16 +391,11 @@ document.addEventListener("DOMContentLoaded", ()=>{
   });
 
   syncTopUI();
-  renderNeed();
   setPill("Hazır", true);
+  renderNeed();
+  renderPicked();
 
-  // deck stack art
-  const b1 = $("deckBack1"), b2 = $("deckBack2"), b3 = $("deckBack3");
-  if(b1) b1.innerHTML = deckBackSVG("stack1");
-  if(b2) b2.innerHTML = deckBackSVG("stack2");
-  if(b3) b3.innerHTML = deckBackSVG("stack3");
-
-  buildGrid();
+  buildDeckStrip();
   bindSpreads();
   bindButtons();
 });
