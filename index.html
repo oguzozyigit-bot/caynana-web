@@ -1,4 +1,4 @@
-<!-- FILE: /index.html (FULL - FINAL FIX: APPLE CLICK WORKS + POPUP + DEMO ONE-BY-ONE + CLIP UNDER APPLE) -->
+<!-- FILE: /index.html (FULL - DEMO FLOW FIX: real upward flow + clip under apple + no block jumps) -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -12,8 +12,6 @@
 
   <style>
     :root{ --gold:#ffb300; --pistachio:#bef264; --red:#ff5252; }
-
-    /* ✅ Tam siyah zemin */
     html,body{ background:#000 !important; }
     .mobile-frame{ background:#000 !important; }
 
@@ -22,12 +20,11 @@
     .topbar .left-controls, .topbar .right-controls{ width:80px; }
     .topbar .brand-wrapper{ margin:0 auto; text-align:center; }
 
-    /* Stage */
     .login-stage{
       position: relative;
       min-height: 100dvh;
       overflow: hidden;
-      padding: 16px 14px 120px; /* footer + demo input */
+      padding: 16px 14px 120px;
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -35,173 +32,107 @@
       background:#000;
     }
 
-    /* ===== GÖZLER (zeminsiz) ===== */
+    /* Gözler */
     #eyesBox{
-      width: 200px;
-      height: 86px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 16px;
-      pointer-events:none;
-      background: transparent;
-      border: none;
-      box-shadow: none;
-      z-index: 3;
-      margin-top: 6px;
+      width: 200px; height: 86px;
+      display:flex; align-items:center; justify-content:center; gap: 16px;
+      pointer-events:none; background: transparent; border: none; box-shadow: none;
+      z-index: 3; margin-top: 6px;
     }
     .eye-wrap{ position:relative; width:60px; height:72px; display:flex; align-items:center; justify-content:center; }
-    .brow{
-      position:absolute; top: -6px;
-      width: 62px; height: 18px;
-      border-top: 5px solid rgba(255,255,255,.55);
-      border-radius: 999px;
-      transform: rotate(-6deg);
-      opacity:.55;
-    }
-    .lashes{
-      position:absolute; top: 15px;
-      width: 64px; height: 12px;
-      opacity:.28;
-      display:flex; justify-content:space-between;
-    }
-    .lashes span{
-      width: 10px; height: 10px;
-      border-top: 2px solid rgba(255,255,255,.55);
-      border-radius: 999px;
-      transform: rotate(18deg);
-    }
-    .eye{
-      width: 58px; height: 58px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.95);
-      position: relative;
-      overflow:hidden;
-      box-shadow: inset 0 -3px 0 rgba(0,0,0,.12);
-    }
-    .pupil{
-      width: 21px; height: 21px;
-      border-radius: 50%;
-      background: rgba(0,0,0,.80);
-      position:absolute; top: 18px; left: 18px;
-      transition: transform .10s linear;
-    }
-    .shine{
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.85);
-      position:absolute; top: 10px; left: 12px;
-      opacity:.9;
-    }
-    .lid{
-      position:absolute; inset:0;
-      background: rgba(0,0,0,.18);
-      transform: translateY(-110%);
-      border-radius: 50%;
-      animation: blink 5.8s ease-in-out infinite;
-    }
-    @keyframes blink{
-      0%, 92%, 100%{ transform: translateY(-110%); }
-      94%{ transform: translateY(0%); }
-      96%{ transform: translateY(-110%); }
-    }
+    .brow{ position:absolute; top:-6px; width:62px; height:18px; border-top:5px solid rgba(255,255,255,.55); border-radius:999px; transform:rotate(-6deg); opacity:.55; }
+    .lashes{ position:absolute; top:15px; width:64px; height:12px; opacity:.28; display:flex; justify-content:space-between; }
+    .lashes span{ width:10px; height:10px; border-top:2px solid rgba(255,255,255,.55); border-radius:999px; transform:rotate(18deg); }
+    .eye{ width:58px; height:58px; border-radius:50%; background:rgba(255,255,255,.95); position:relative; overflow:hidden; box-shadow: inset 0 -3px 0 rgba(0,0,0,.12); }
+    .pupil{ width:21px; height:21px; border-radius:50%; background:rgba(0,0,0,.80); position:absolute; top:18px; left:18px; transition:transform .10s linear; }
+    .shine{ width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,.85); position:absolute; top:10px; left:12px; opacity:.9; }
+    .lid{ position:absolute; inset:0; background:rgba(0,0,0,.18); transform:translateY(-110%); border-radius:50%; animation:blink 5.8s ease-in-out infinite; }
+    @keyframes blink{ 0%,92%,100%{transform:translateY(-110%)} 94%{transform:translateY(0)} 96%{transform:translateY(-110%)} }
 
-    /* ===== Login buttons ===== */
-    .login-stack{
-      width: min(440px, 92vw);
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap: 12px;
-      z-index: 3;
-    }
+    /* Login buttons */
+    .login-stack{ width:min(440px, 92vw); display:flex; flex-direction:column; align-items:center; gap: 12px; z-index: 5; }
     .btn-icon{
-      width: 100%;
-      height: 56px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.05);
+      width:100%; height:56px; border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
       color:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap: 12px;
-      font-weight: 950;
-      font-size: 15px;
-      cursor:pointer;
-      user-select:none;
-      box-shadow: 0 14px 30px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.12);
+      display:flex; align-items:center; justify-content:center; gap:12px;
+      font-weight:950; font-size:15px; cursor:pointer; user-select:none;
+      box-shadow:0 14px 30px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.12);
       transition: transform .12s ease, filter .12s ease;
     }
     .btn-icon:active{ transform: translateY(1px); filter: brightness(.97); }
 
     .badge-3d{
-      width: 32px; height: 32px;
-      border-radius: 12px;
+      width:32px; height:32px; border-radius:12px;
       display:flex; align-items:center; justify-content:center;
-      box-shadow: 0 10px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.18);
+      box-shadow:0 10px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.18);
     }
     .g-badge{ background:#fff; }
     .g-badge svg{ width:18px; height:18px; display:block; }
-    .a-badge{ background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.10); }
+    .a-badge{ background: rgba(255,255,255,.10); border:1px solid rgba(255,255,255,.10); }
     .a-badge svg{ width:18px; height:18px; display:block; fill:#fff; opacity:.92; }
 
-    /* Apple kesin tıklansın */
-    #appleLoginBtn{ position: relative; z-index: 9999 !important; pointer-events: auto !important; }
-
-    /* Google GSI overlay */
-    .google-wrap{ position: relative; width: 100%; height: 56px; }
-    #googleBtnWrap{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      z-index: 50;
-      opacity: 0.01;
-      cursor:pointer;
-    }
+    /* Google overlay */
+    .google-wrap{ position: relative; width:100%; height:56px; }
+    #googleBtnWrap{ position:absolute; inset:0; width:100%; height:100%; z-index:50; opacity:.01; cursor:pointer; }
     #googleBtnWrap iframe{ width:100% !important; height:100% !important; pointer-events:auto !important; cursor:pointer !important; }
 
-    /* ===== DEMO VIEWPORT (CLIP UNDER APPLE) ===== */
+    /* Apple kesin tıklansın */
+    #appleLoginBtn{ position: relative; z-index: 9999 !important; pointer-events:auto !important; }
+
+    /* ===== DEMO VIEWPORT (Apple altı → input üstü) ===== */
     #demoViewport{
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
       width: min(440px, 92vw);
       z-index: 2;
-      overflow: hidden;     /* ✅ apple altına girince kaybolur */
-      pointer-events:none !important;
+      overflow: hidden;     /* ✅ Apple altına girince kaybolma hissi */
+      pointer-events:none;
       /* top/bottom JS */
     }
-    #demoStream{
-      width:100%;
+
+    /* ✅ Gerçek akış: container alt sabit */
+    #demoInner{
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 0;
       display:flex;
-      flex-direction:column-reverse; /* newest bottom */
+      flex-direction:column;
       gap: 10px;
       padding: 0;
-      min-height: 120px;
     }
+
     .demo-bubble{
-      max-width: 88%;
-      padding: 10px 12px;
-      border-radius: 16px;
-      font-weight: 780;
-      font-size: 12px;
-      line-height: 1.35;
+      max-width:88%;
+      padding:10px 12px;
+      border-radius:16px;
+      font-weight:780;
+      font-size:12px;
+      line-height:1.35;
       color: rgba(255,255,255,.92);
-      border: 1px solid rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
-      box-shadow: 0 12px 28px rgba(0,0,0,.22);
+      box-shadow:0 12px 28px rgba(0,0,0,.22);
       backdrop-filter: blur(6px);
     }
-    .demo-bubble.bot{ border-left: 3px solid var(--gold); margin-right:auto; }
-    .demo-bubble.user{ border-right: 3px solid var(--pistachio); margin-left:auto; text-align:right; }
-    .demo-bubble.warn{ border-left: 3px solid var(--red); }
+    .demo-bubble.bot{ border-left:3px solid var(--gold); margin-right:auto; }
+    .demo-bubble.user{ border-right:3px solid var(--pistachio); margin-left:auto; text-align:right; }
+    .demo-bubble.warn{ border-left:3px solid var(--red); }
 
+    /* typing dots */
     #demoTyping{
-      display:flex;
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 0;
+      transform: translateY(38px);
+      display:none;
       gap:6px;
       align-items:center;
-      margin-top: 8px;
+      justify-content:flex-start;
       opacity:.9;
+      pointer-events:none;
     }
     #demoTyping .dot{
       width:6px;height:6px;border-radius:99px;
@@ -210,18 +141,15 @@
     }
     #demoTyping .dot:nth-child(2){ animation-delay:.15s; }
     #demoTyping .dot:nth-child(3){ animation-delay:.3s; }
-    @keyframes dot{
-      0%,100%{ transform: translateY(0); opacity:.55; }
-      50%{ transform: translateY(-4px); opacity:1; }
-    }
+    @keyframes dot{ 0%,100%{transform:translateY(0);opacity:.55} 50%{transform:translateY(-4px);opacity:1} }
 
-    /* ===== DEMO INPUT: sabit (chat gibi) ===== */
+    /* Demo input sabit */
     #demoInputBar{
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
       width: min(480px, calc(100vw - 18px));
-      bottom: 66px; /* footer üstü */
+      bottom: 66px;
       z-index: 2600;
       padding: 0 14px;
       pointer-events:none;
@@ -240,20 +168,18 @@
       backdrop-filter: blur(10px);
     }
     .icon-btn-demo{
-      width:38px; height:38px;
-      border-radius:50%;
-      border:none;
-      background: rgba(255,255,255,.04);
+      width:38px; height:38px; border-radius:50%;
+      border:none; background: rgba(255,255,255,.04);
       display:flex; align-items:center; justify-content:center;
       flex-shrink:0;
     }
     .icon-btn-demo svg{
       width:20px; height:20px;
       stroke: rgba(255,255,255,.75);
-      stroke-width: 2;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+      stroke-width:2;
+      fill:none;
+      stroke-linecap:round;
+      stroke-linejoin:round;
     }
     #demoInputText{
       flex:1 1 auto;
@@ -262,8 +188,8 @@
       font-size:14px;
       padding:10px 6px;
       line-height:18px;
-      font-weight: 850;
-      white-space: nowrap;
+      font-weight:850;
+      white-space:nowrap;
       overflow:hidden;
       text-overflow: ellipsis;
       opacity:.92;
@@ -271,14 +197,11 @@
     .demo-caret{
       width:2px; height:18px;
       background: rgba(190,242,100,.9);
-      border-radius: 2px;
+      border-radius:2px;
       animation: caret 1.05s infinite;
       margin-left: -2px;
     }
-    @keyframes caret{
-      0%,45%{ opacity:0; }
-      55%,100%{ opacity:1; }
-    }
+    @keyframes caret{ 0%,45%{opacity:0} 55%,100%{opacity:1} }
     .send-btn-demo{
       width:38px; height:38px;
       border-radius:50%;
@@ -286,15 +209,12 @@
       border:none;
       display:flex; align-items:center; justify-content:center;
       flex-shrink:0;
-      box-shadow: 0 10px 18px rgba(0,0,0,.35);
+      box-shadow:0 10px 18px rgba(0,0,0,.35);
     }
     .send-btn-demo svg{
       width:20px; height:20px;
-      stroke:#000;
-      stroke-width: 2;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+      stroke:#000; stroke-width:2; fill:none;
+      stroke-linecap:round; stroke-linejoin:round;
     }
 
     /* Footer */
@@ -320,17 +240,8 @@
       font-size:12px;
       font-weight: 900;
     }
-    .login-links a{
-      color: rgba(255,255,255,.70);
-      text-decoration:none;
-      white-space:nowrap;
-    }
-    .login-brand{
-      text-align:center;
-      font-size:11px;
-      font-weight: 900;
-      color: rgba(255,255,255,.55);
-    }
+    .login-links a{ color: rgba(255,255,255,.70); text-decoration:none; white-space:nowrap; }
+    .login-brand{ text-align:center; font-size:11px; font-weight:900; color: rgba(255,255,255,.55); }
 
     /* Terms overlay */
     .full-overlay{
@@ -370,35 +281,19 @@
       cursor:pointer;
     }
     #termsFrame{ width:100%; height: 330px; border:0; background:#fff; }
-    .agreement{
-      padding: 12px 14px 14px;
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
-    }
-    .agree-row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      color: rgba(255,255,255,.85);
-      font-weight: 900;
-      font-size: 12px;
-    }
+    .agreement{ padding: 12px 14px 14px; display:flex; flex-direction:column; gap: 10px; }
+    .agree-row{ display:flex; gap:10px; align-items:center; color: rgba(255,255,255,.85); font-weight: 900; font-size: 12px; }
     .agree-row input{ width:18px; height:18px; }
     #termsAcceptBtn{
-      width:100%;
-      height: 48px;
-      border-radius: 16px;
-      border:none;
+      width:100%; height:48px;
+      border-radius:16px; border:none;
       background: var(--gold, #ffb300);
-      color:#111;
-      font-weight: 950;
-      cursor:pointer;
-      opacity:.65;
+      color:#111; font-weight:950;
+      cursor:pointer; opacity:.65;
     }
     #termsAcceptBtn.enabled{ opacity:1; }
 
-    /* ✅ TOAST POPUP (epop) */
+    /* Toast popup */
     .cyn-toast{
       position: fixed;
       left: 50%;
@@ -449,6 +344,8 @@
 
   <!-- STAGE -->
   <div class="login-stage">
+
+    <!-- GÖZLER -->
     <div id="eyesBox" aria-hidden="true">
       <div class="eye-wrap">
         <div class="brow"></div>
@@ -462,6 +359,7 @@
       </div>
     </div>
 
+    <!-- BUTTONS -->
     <div class="login-stack">
       <div class="google-wrap">
         <button class="btn-icon" id="googleLoginBtn" type="button">
@@ -489,16 +387,16 @@
       </button>
     </div>
 
-    <!-- Viewport: clip under apple -->
+    <!-- DEMO VIEWPORT -->
     <div id="demoViewport" aria-hidden="true">
-      <div id="demoStream"></div>
+      <div id="demoInner"></div>
       <div id="demoTyping">
         <span class="dot"></span><span class="dot"></span><span class="dot"></span>
       </div>
     </div>
   </div>
 
-  <!-- Demo input bar -->
+  <!-- DEMO INPUT BAR -->
   <div id="demoInputBar" aria-hidden="true">
     <div class="dock-inner-demo">
       <button class="icon-btn-demo" type="button" aria-hidden="true">
@@ -518,7 +416,7 @@
     </div>
   </div>
 
-  <!-- Footer -->
+  <!-- FOOTER -->
   <div class="login-footerbar">
     <div class="login-links">
       <a href="/pages/about.html">Hakkımızda</a>
@@ -531,7 +429,7 @@
 
 </div>
 
-<!-- Terms -->
+<!-- TERMS -->
 <div class="full-overlay" id="termsOverlay">
   <div class="terms-card">
     <div class="terms-head">
@@ -556,7 +454,6 @@
 
   const $ = (id) => document.getElementById(id);
   const sleep = (ms)=>new Promise(r=>setTimeout(r, ms));
-
   function safeJson(s, fb={}){ try{ return JSON.parse(s||""); }catch{ return fb; } }
   function termsKey(email=""){ return `caynana_terms_accepted_at::${String(email||"").toLowerCase().trim()}`; }
   function hasUser(){ const u = safeJson(localStorage.getItem(STORAGE_KEY), {}); return !!(u && u.email && u.isSessionActive); }
@@ -568,7 +465,7 @@
   }
   function goChat(){ window.location.replace("/pages/chat.html"); }
 
-  // ✅ Toast popup
+  // Toast popup
   function showToast(msg){
     const el = document.createElement("div");
     el.className = "cyn-toast";
@@ -618,23 +515,25 @@
   const appleBtn = $("appleLoginBtn");
   const demoViewport = $("demoViewport");
   const demoInputBar = $("demoInputBar");
-  const demoStream = $("demoStream");
+  const demoInner = $("demoInner");
   const demoTyping = $("demoTyping");
   const demoInputText = $("demoInputText");
 
-  // Layout viewport: top=apple bottom=input
+  // ✅ Viewport boundaries: TOP=apple altı, BOTTOM=input üstü
   function layoutDemoViewportHard(){
     if(!appleBtn || !demoViewport || !demoInputBar) return;
+
     const apply = ()=>{
       const a = appleBtn.getBoundingClientRect();
       const inp = demoInputBar.getBoundingClientRect();
+
       const topPx = Math.max(0, Math.round(a.bottom + 8));
       const bottomPx = Math.max(0, Math.round(window.innerHeight - (inp.top - 8)));
+
       demoViewport.style.top = topPx + "px";
       demoViewport.style.bottom = bottomPx + "px";
-      const h = window.innerHeight - topPx - bottomPx;
-      if(h < 140) demoViewport.style.bottom = Math.max(0, bottomPx - 60) + "px";
     };
+
     requestAnimationFrame(()=>requestAnimationFrame(apply));
   }
   layoutDemoViewportHard();
@@ -642,6 +541,62 @@
   window.addEventListener("orientationchange", ()=> setTimeout(layoutDemoViewportHard, 250), { passive:true });
   setTimeout(layoutDemoViewportHard, 350);
   setTimeout(layoutDemoViewportHard, 900);
+
+  // ✅ "Üst taraf akmıyor" fix: yüksekliği taşınca üstten sil (yüksekliğe göre)
+  function trimToFit(){
+    if(!demoViewport || !demoInner) return;
+    const maxH = demoViewport.clientHeight;
+    // fazla taşma olursa en eskiyi sil (üstten)
+    while(demoInner.scrollHeight > maxH && demoInner.children.length > 1){
+      demoInner.removeChild(demoInner.firstElementChild);
+    }
+  }
+
+  // Bubble create
+  function makeBubble(cls){
+    const el = document.createElement("div");
+    el.className = `demo-bubble ${cls}`;
+    el.textContent = "";
+    return el;
+  }
+
+  async function typeInto(el, text, speed=34){
+    el.textContent = "";
+    const s = String(text || "");
+    for(let i=0;i<s.length;i++){
+      el.textContent += s[i];
+      // her birkaç karakterde trim (smooth)
+      if(i % 12 === 0) trimToFit();
+      await sleep(speed);
+    }
+    trimToFit();
+  }
+
+  async function typeIntoInput(text){
+    if(!demoInputText) return;
+    demoInputText.textContent = "";
+    const s = String(text || "");
+    for(let i=0;i<s.length;i++){
+      demoInputText.textContent += s[i];
+      await sleep(36);
+    }
+  }
+
+  // ✅ Apple click: popup + chat warn (daktilo)
+  appleBtn?.addEventListener("click", async (e)=>{
+    e.preventDefault();
+    showToast("Apple biraz nazlı çıktı evladım… Şimdilik Google’la devam et. 🙂");
+
+    layoutDemoViewportHard();
+
+    if(demoTyping) demoTyping.style.display = "flex";
+    await sleep(220);
+    if(demoTyping) demoTyping.style.display = "none";
+
+    const warn = makeBubble("bot warn");
+    demoInner.appendChild(warn);
+    await typeInto(warn, "Evladım Apple daha hazır değil… Biraz sabır. Şimdilik Google ile devam et, ben seni içeri alayım.", 34);
+  });
 
   // Seesaw
   const bw = $("brandWrapper");
@@ -653,56 +608,7 @@
   }
   function seesawIdle(){ if(!bw) return; bw.classList.remove("usering","botting","thinking"); }
 
-  // Typewriter
-  function makeBubble(cls){
-    const el = document.createElement("div");
-    el.className = `demo-bubble ${cls}`;
-    el.textContent = "";
-    return el;
-  }
-  async function typeInto(el, text, speed=34){
-    el.textContent = "";
-    const s = String(text || "");
-    for(let i=0;i<s.length;i++){
-      el.textContent += s[i];
-      await sleep(speed);
-    }
-  }
-  async function typeIntoInput(text){
-    if(!demoInputText) return;
-    demoInputText.textContent = "";
-    const s = String(text || "");
-    for(let i=0;i<s.length;i++){
-      demoInputText.textContent += s[i];
-      await sleep(36);
-    }
-  }
-  function trimBubbles(max=22){
-    if(!demoStream) return;
-    const kids = Array.from(demoStream.children);
-    if(kids.length > max) kids.slice(max).forEach(n=>n.remove());
-  }
-
-  // Apple click: popup + (isteğe bağlı) chat’e warn bubble da ekleyelim
-  appleBtn?.addEventListener("click", async (e)=>{
-    e.preventDefault();
-    showToast("Apple biraz nazlı çıktı evladım… Şimdilik Google’la devam et. 🙂");
-    layoutDemoViewportHard();
-
-    // chat’e de daktilo ile düşsün
-    seesaw("bot");
-    if(demoTyping) demoTyping.style.display = "flex";
-    await sleep(220);
-    if(demoTyping) demoTyping.style.display = "none";
-
-    const warn = makeBubble("bot warn");
-    demoStream.prepend(warn);
-    await typeInto(warn, "Evladım Apple daha hazır değil… Biraz sabır. Şimdilik Google ile devam et, ben seni içeri alayım.", 34);
-    trimBubbles(22);
-    seesawIdle();
-  });
-
-  // Eyes follow rules
+  // Eyes follow rules (pointer > newest; idle looks down to read)
   const p1 = $("p1");
   const p2 = $("p2");
   const eyesBox = $("eyesBox");
@@ -725,6 +631,7 @@
     const dy = (clientY - cy) / 65;
     setPupil(dx, dy);
   }
+
   window.addEventListener("mousemove",(e)=>{ lastPointerAt = Date.now(); aimAt(e.clientX,e.clientY); }, { passive:true });
   window.addEventListener("touchmove",(e)=>{
     const t = e.touches && e.touches[0];
@@ -741,7 +648,7 @@
     let ty = window.innerHeight*0.86;
 
     try{
-      const newest = demoStream?.firstElementChild; // newest
+      const newest = demoInner?.lastElementChild; // altta
       const r = newest?.getBoundingClientRect?.();
       if(r){
         tx = r.left + r.width/2;
@@ -752,7 +659,7 @@
     aimAt(tx, ty);
   }, 240);
 
-  // Demo loop (tek tek)
+  // ✅ TEK DÖNGÜ: blok blok zıplama yok
   const QA = [
     ["Kaynana… sana nasıl üye olurum?","Google ile giriş yap evladım. Üyelik ücretsiz."],
     ["Üyelik ücretli mi?","Üyelik ücretsiz evladım. İçeri gir, kullan."],
@@ -769,7 +676,6 @@
     ["SSS nerede?","En altta SSS var, ama ben de buradayım."],
     ["İletişim nerede?","En altta İletişim var."],
   ];
-
   const recent = [];
   function pickQA(){
     for(let t=0;t<40;t++){
@@ -784,39 +690,45 @@
     return QA[Math.floor(Math.random()*QA.length)];
   }
 
+  let DEMO_LOCK = false;
   async function demoLoop(){
-    if(!demoStream) return;
-    demoStream.innerHTML = "";
+    if(DEMO_LOCK) return;
+    DEMO_LOCK = true;
+
+    // temiz başla
+    demoInner.innerHTML = "";
+    trimToFit();
 
     while(true){
       layoutDemoViewportHard();
+      trimToFit();
 
       const [q,a] = pickQA();
 
-      // user input typing
+      // 1) input yaz (user)
       seesaw("user");
       if(demoTyping) demoTyping.style.display = "none";
       await typeIntoInput(q);
       await sleep(220);
 
-      // user bubble
+      // 2) user bubble -> alt (append)
       const ub = makeBubble("user");
-      demoStream.prepend(ub);
+      demoInner.appendChild(ub);
       await typeInto(ub, q, 32);
       if(demoInputText) demoInputText.textContent = "";
-      trimBubbles(22);
+      trimToFit();
       await sleep(360);
 
-      // bot bubble
+      // 3) bot bubble
       seesaw("bot");
       if(demoTyping) demoTyping.style.display = "flex";
       await sleep(420);
       if(demoTyping) demoTyping.style.display = "none";
 
       const bb = makeBubble("bot");
-      demoStream.prepend(bb);
+      demoInner.appendChild(bb);
       await typeInto(bb, a, 34);
-      trimBubbles(22);
+      trimToFit();
 
       seesawIdle();
       await sleep(820);
