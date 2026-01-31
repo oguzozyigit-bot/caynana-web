@@ -1,9 +1,10 @@
 // FILE: /js/membership_page.js
 // Plans: FREE / PLUS / PRO (design-first)
-// ✅ Limits exactly as user specified
+// ✅ Limits exactly as specified
 // ✅ Save selected plan to localStorage (STORAGE_KEY plan)
 // ✅ 30 days no-cancel rule shown for PLUS/PRO
 // ✅ Google Play note (text only)
+// ✅ NEW: "MEVCUT PLAN" badge on current plan card
 
 import { initMenuHistoryUI } from "/js/menu_history_ui.js";
 import { STORAGE_KEY } from "/js/config.js";
@@ -134,7 +135,22 @@ function render(){
     const feats = (p.features||[]).map(x=>`<div class="li"><div class="b">✓</div><div class="t">${x}</div></div>`).join("");
     const astro = (p.astro||[]).map(x=>`<div class="li"><div class="b">✶</div><div class="t">${x}</div></div>`).join("");
 
+    const currentBadge = (cur === p.key)
+      ? `<div style="
+            position:absolute; left:12px; top:12px;
+            padding:6px 10px;
+            border-radius:999px;
+            border:1px solid rgba(190,242,100,.25);
+            background: rgba(190,242,100,.10);
+            color: rgba(190,242,100,.95);
+            font-weight: 1000;
+            font-size: 10px;
+            letter-spacing:.6px;
+          ">MEVCUT PLAN</div>`
+      : "";
+
     el.innerHTML = `
+      ${currentBadge}
       <div class="plan-head">
         <div>
           <div class="plan-name">${p.name}</div>
@@ -164,9 +180,9 @@ function render(){
 
     wrap.appendChild(el);
 
-    // current plan highlight
+    // current plan border a bit warmer
     if(cur === p.key){
-      el.style.borderColor = "rgba(255,179,0,.30)";
+      el.style.borderColor = "rgba(255,179,0,.28)";
     }
   });
 }
@@ -193,7 +209,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
     e.currentTarget.classList.remove("open");
   });
 
-  // set initial selected = current plan (or plus)
   const cur = String(getUser().plan || "free").toLowerCase();
   selected = (cur === "free") ? "plus" : cur;
 
@@ -220,14 +235,12 @@ document.addEventListener("DOMContentLoaded", ()=>{
       return;
     }
 
-    // free (downgrade)
     const ok = confirm("FREE’e dönmek istiyor musun? (Demo)");
     if(!ok) return;
     applyPlan("free");
   });
 
   $("btnRestore")?.addEventListener("click", ()=>{
-    // demo: read local plan
     const cur3 = String(getUser().plan || "free").toLowerCase();
     toast(`Plan yenilendi: ${cur3.toUpperCase()} (demo)`);
     render();
