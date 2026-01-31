@@ -1,7 +1,9 @@
 // FILE: /js/teacher_page.js
-// Teacher says the target word ONCE (rate=1.0) – no slow, no syllable, no extra talk.
-// Strict pronunciation: similarity >= 0.92
-// Correct => auto next word, Wrong => repeat same word (teacher says once again)
+// GUARANTEED single-speak:
+// - Teacher says ONLY target word ONCE
+// - No slow, no syllable, no extra talk
+// - Prevent double/triple event binding
+// - Speaker uses pointerdown only, with lock
 
 const $ = (id)=>document.getElementById(id);
 
@@ -11,7 +13,7 @@ function toast(msg){
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(window.__to);
-  window.__to = setTimeout(()=>t.classList.remove("show"), 1600);
+  window.__to = setTimeout(()=>t.classList.remove("show"), 1400);
 }
 
 const LOCALES = { en:"en-US", de:"de-DE", fr:"fr-FR", it:"it-IT" };
@@ -43,26 +45,6 @@ function similarity(a,b){
   return 1 - (dist / Math.max(m,n));
 }
 
-function speakOnce(word, lang){
-  return new Promise((resolve)=>{
-    if(!("speechSynthesis" in window)){
-      resolve(false); return;
-    }
-    try{
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(String(word||""));
-      u.lang = LOCALES[lang] || "en-US";
-      u.rate = 1.0;   // ✅ sabit, asla bozma
-      u.pitch = 1.0;
-      u.onend = ()=> resolve(true);
-      u.onerror = ()=> resolve(false);
-      window.speechSynthesis.speak(u);
-    }catch{
-      resolve(false);
-    }
-  });
-}
-
 function makeRecognizer(lang){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR) return null;
@@ -73,7 +55,7 @@ function makeRecognizer(lang){
   return rec;
 }
 
-/* A1 starter – büyütürüz */
+// ✅ A1 starter
 const DATA = {
   en: [
     { tr:"elma", target:"apple" },
@@ -113,12 +95,19 @@ const DATA = {
   ],
 };
 
-let lang = "en";
-let idx = 0;
-let listening = false;
+const state = (()=>{
+  if(!window.__CAYNANA_TEACHER__) window.__CAYNANA_TEACHER__ = {
+    lang: "en",
+    idx: 0,
+    listening: false,
+    speaking: false,
+    bound: false
+  };
+  return window.__CAYNANA_TEACHER__;
+})();
 
-function list(){ return DATA[lang] || DATA.en; }
-function cur(){ return list()[idx]; }
+function list(){ return DATA[state.lang] || DATA.en; }
+function cur(){ return list()[state.idx]; }
 
 function setUI(){
   const item = cur();
@@ -131,12 +120,48 @@ function setUI(){
   $("resultMsg").textContent = "—";
   $("resultMsg").className = "status";
   $("scoreTop").textContent = "—";
+  $("studentTop").textContent = "Mikrofona bas ve söyle.";
+}
+
+async function speakOnce(word){
+  if(!("speechSynthesis" in window)) {
+    toast("Ses motoru yok.");
+    return false;
+  }
+
+  // ✅ lock: asla üst üste bindirme
+  if(state.speaking) return false;
+  state.speaking = true;
+
+  try{
+    window.speechSynthesis.cancel();
+
+    const u = new SpeechSynthesisUtterance(String(word||""));
+    u.lang = LOCALES[state.lang] || "en-US";
+    u.rate = 1.0;    // ✅ SABİT
+    u.pitch = 1.0;
+
+    const done = ()=>{ state.speaking = false; };
+
+    u.onend = done;
+    u.onerror = done;
+
+    window.speechSynthesis.speak(u);
+
+    // güvenlik: bazı cihazlarda onend gecikir
+    setTimeout(()=>{ state.speaking = false; }, 4500);
+
+    return true;
+  }catch{
+    state.speaking = false;
+    return false;
+  }
 }
 
 async function teacherSpeak(){
   const item = cur();
   $("teacherStatus").textContent = "🔊";
-  await speakOnce(item.target, lang);
+  await speakOnce(item.target);      // ✅ TEK KERE
   $("teacherStatus").textContent = "—";
 }
 
@@ -145,7 +170,7 @@ async function onWrong(score){
   $("resultMsg").className = "status bad";
   $("scoreTop").textContent = `Skor: ${Math.round(score*100)}%`;
   toast("Tekrar et");
-  await teacherSpeak(); // ✅ yine aynı kelime, tek sefer
+  await teacherSpeak();
 }
 
 async function onCorrect(score){
@@ -154,24 +179,23 @@ async function onCorrect(score){
   $("scoreTop").textContent = `Skor: ${Math.round(score*100)}%`;
   toast("Aferin");
 
-  // otomatik sonraki kelime
-  idx++;
-  if(idx >= list().length) idx = 0;
+  state.idx++;
+  if(state.idx >= list().length) state.idx = 0;
 
   setUI();
   await teacherSpeak();
 }
 
 async function startListen(){
-  if(listening) return;
+  if(state.listening) return;
 
-  const rec = makeRecognizer(lang);
+  const rec = makeRecognizer(state.lang);
   if(!rec){
     toast("Bu cihaz konuşmayı yazıya çevirmiyor.");
     return;
   }
 
-  listening = true;
+  state.listening = true;
   $("btnMic").classList.add("listening");
   $("studentTop").textContent = "Dinliyorum…";
 
@@ -181,26 +205,23 @@ async function startListen(){
     const heard = e.results?.[0]?.[0]?.transcript || "";
     $("heardBox").textContent = heard ? `Söyledin: ${heard}` : "Duyamadım…";
 
-    listening = false;
+    state.listening = false;
     $("btnMic").classList.remove("listening");
     $("studentTop").textContent = "Mikrofona bas ve söyle.";
 
     if(!heard.trim()){
-      toast("Duyamadım. Tekrar söyle.");
+      toast("Duyamadım. Tekrar.");
       await teacherSpeak();
       return;
     }
 
     const sc = similarity(expected, heard);
-    if(sc >= 0.92){
-      await onCorrect(sc);
-    }else{
-      await onWrong(sc);
-    }
+    if(sc >= 0.92) await onCorrect(sc);
+    else await onWrong(sc);
   };
 
   rec.onerror = async ()=>{
-    listening = false;
+    state.listening = false;
     $("btnMic").classList.remove("listening");
     $("studentTop").textContent = "Mikrofona bas ve söyle.";
     toast("Mikrofon hatası (izin/HTTPS)");
@@ -208,8 +229,8 @@ async function startListen(){
   };
 
   rec.onend = ()=>{
-    if(listening){
-      listening = false;
+    if(state.listening){
+      state.listening = false;
       $("btnMic").classList.remove("listening");
       $("studentTop").textContent = "Mikrofona bas ve söyle.";
     }
@@ -217,29 +238,45 @@ async function startListen(){
 
   try{ rec.start(); }
   catch{
-    listening = false;
+    state.listening = false;
     $("btnMic").classList.remove("listening");
     $("studentTop").textContent = "Mikrofona bas ve söyle.";
     toast("Mikrofon açılamadı.");
   }
 }
 
-document.addEventListener("DOMContentLoaded", async ()=>{
-  $("backBtn").addEventListener("click", ()=>{
+function bindOnce(){
+  if(state.bound) return;
+  state.bound = true;
+
+  $("backBtn")?.addEventListener("click", ()=>{
     if(history.length>1) history.back();
     else location.href = "/pages/chat.html";
   });
 
-  $("langSel").addEventListener("change", async ()=>{
-    lang = $("langSel").value || "en";
-    idx = 0;
+  $("langSel")?.addEventListener("change", async ()=>{
+    state.lang = $("langSel").value || "en";
+    state.idx = 0;
     setUI();
     await teacherSpeak();
   });
 
-  $("btnSpeak").addEventListener("click", teacherSpeak);
-  $("btnMic").addEventListener("click", startListen);
+  // ✅ Speaker: pointerdown only (click spam yok)
+  $("btnSpeak")?.addEventListener("pointerdown", async (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    await teacherSpeak();
+  });
 
+  $("btnMic")?.addEventListener("pointerdown", async (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    await startListen();
+  });
+}
+
+document.addEventListener("DOMContentLoaded", async ()=>{
+  bindOnce();
   setUI();
-  await teacherSpeak();
+  await teacherSpeak();  // ilk açılışta 1 kez
 });
