@@ -2,368 +2,215 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Tercüman</title>
 
-  <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="/css/style.css?v=2">
-  <link rel="stylesheet" href="/css/layout-common.css?v=1">
+  <link rel="icon" href="data:," />
 
   <style>
     :root{
-      --frameW: min(480px, calc(100vw - 18px));
-      --topH: 65px;
-      --footerH: 64px;
-      --assistH: 68px;
-      --dockH: 72px;
-      --gapH: 6px;
-
+      --bg:#000;
+      --glass: rgba(255,255,255,.06);
+      --border: rgba(255,255,255,.10);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.62);
       --gold:#ffb300;
-      --pistachio:#bef264;
+      --pist:#bef264;
       --red:#ff5252;
     }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html,body{ margin:0; padding:0; width:100%; height:100dvh; background:var(--bg); color:var(--text); overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
 
-    /* Footer frame içinde */
-    .footer-container{
-      position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: var(--frameW) !important;
-      bottom: 0 !important;
-      z-index: 2400 !important;
-      background: rgba(0,0,0,.92);
-      border-top: 1px solid rgba(255,255,255,.06);
+    .frame{
+      width:100%;
+      max-width:480px;
+      height:100%;
+      margin:0 auto;
+      position:relative;
+      background: #000;
+      overflow:hidden;
+      border-left: 1px solid rgba(255,255,255,.06);
+      border-right: 1px solid rgba(255,255,255,.06);
     }
 
-    /* Alt bar */
-    .assistant-bar{
-      position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: var(--frameW) !important;
-      bottom: var(--footerH) !important;
-      z-index: 2500 !important;
-      height: var(--assistH) !important;
-      padding-top: 6px !important;
-      padding-bottom: 6px !important;
-      pointer-events: none;
-    }
-    .assistant-bar .assistant-item{ pointer-events:auto; }
-    .assistant-item .lbl{
-      display:block !important;
-      font-size: 8px !important;
-      font-weight: 900 !important;
-      line-height: 1 !important;
-      margin-top: 2px !important;
-      opacity: .85;
-      white-space: nowrap;
-    }
-
-    /* Orta alan */
-    .xlate-area{
-      position:absolute !important;
-      left:0; right:0;
-      top: var(--topH);
-      bottom: calc(var(--footerH) + var(--assistH) + var(--dockH) + (var(--gapH) * 2));
-      padding: 12px;
-      overflow: hidden;
+    /* Back */
+    .back{
+      position:absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 50;
+      width: 44px;
+      height: 44px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(20,20,20,.55);
+      color: #fff;
+      font-size: 22px;
+      font-weight: 900;
       display:flex;
-      flex-direction:column;
-      gap: 10px;
-      min-height:0;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      box-shadow: 0 18px 40px rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
     }
+    .back:active{ transform: translateY(1px); }
 
-    /* Üst panel (karşı taraf) + alt panel (ben) */
-    .panels{
-      flex: 1 1 auto;
-      min-height: 0;
+    /* Two sides */
+    .split{
+      position:absolute;
+      inset: 0;
       display:grid;
       grid-template-rows: 1fr 1fr;
       gap: 10px;
+      padding: 64px 12px 12px; /* top space for back button */
     }
 
-    .panel{
-      border-radius: 22px;
-      border: 1px solid rgba(255,255,255,.10);
+    .side{
+      border-radius: 26px;
+      border: 1px solid var(--border);
       background: rgba(255,255,255,.03);
       overflow:hidden;
+      position:relative;
       display:flex;
       flex-direction:column;
       min-height:0;
-      position: relative;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 26px 80px rgba(0,0,0,.65);
     }
 
-    .panel-head{
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(255,255,255,.06);
+    /* Top side is mirrored for tabletop reading */
+    .side.top{
+      transform: rotate(180deg);
+    }
+    .side.top .content, .side.top .bar{
+      transform: rotate(180deg);
+    }
+
+    .bar{
       display:flex;
       align-items:center;
-      justify-content:space-between;
       gap: 10px;
+      padding: 12px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
       background: rgba(0,0,0,.35);
     }
-    .panel-title{
+
+    .who{
       font-size: 12px;
       font-weight: 1000;
+      letter-spacing: .2px;
       color:#fff;
       white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      max-width: 60%;
-    }
-    .panel-sub{
-      font-size: 11px;
-      font-weight: 900;
-      color: rgba(255,255,255,.70);
-      white-space:nowrap;
     }
 
-    /* Karşı taraf paneli 180° */
-    .mirror{
-      transform: rotate(180deg);
-    }
-    .mirror .panel-head,
-    .mirror .panel-body{
-      transform: rotate(180deg);
-    }
-
-    .panel-body{
-      flex: 1 1 auto;
-      min-height:0;
-      overflow:auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 12px;
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
-    }
-
-    .bubble{
-      max-width: 92%;
-      padding: 10px 12px;
-      border-radius: 16px;
-      font-weight: 900;
-      font-size: 13px;
-      line-height: 1.35;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.35);
-      color: rgba(255,255,255,.92);
-      word-break: break-word;
-    }
-    .bubble.me{ align-self:flex-end; border-right:3px solid var(--pistachio); text-align:right; }
-    .bubble.them{ align-self:flex-start; border-left:3px solid var(--gold); }
-    .bubble.sys{ align-self:center; opacity:.85; background: rgba(255,255,255,.03); max-width: 98%; text-align:center; }
-    .bubble.kaynana{
-      align-self:flex-start;
-      border-left:3px solid var(--red);
-      background: rgba(255,82,82,.08);
-      font-weight: 1000;
-    }
-    .bubble.kaynana .tag{
-      display:inline-flex;
-      padding:4px 8px;
-      border-radius:999px;
-      font-size:10px;
-      font-weight:1000;
-      border:1px solid rgba(255,82,82,.25);
-      background: rgba(255,82,82,.16);
-      margin-bottom:6px;
-    }
-
-    /* Mode tabs */
-    .modes{
-      display:flex;
-      gap:8px;
-      margin-bottom: 4px;
-    }
-    .mode{
+    .lang{
       flex:1;
-      padding: 10px 10px;
-      border-radius: 14px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.78);
-      font-weight: 1000;
-      font-size: 12px;
-      text-align:center;
-      cursor:pointer;
-      user-select:none;
-    }
-    .mode.active{
-      border-color: rgba(190,242,100,.30);
-      background: rgba(190,242,100,.10);
-      color: rgba(190,242,100,.95);
-    }
-
-    /* Dil satırı */
-    .langbar{
+      min-width: 0;
       display:flex;
-      gap:8px;
+      gap: 8px;
       align-items:center;
-      flex-wrap:wrap;
-      margin-top: 8px;
+      justify-content:flex-end;
     }
-    .sel{
-      flex:1;
-      min-width: 140px;
+
+    select{
+      max-width: 220px;
+      width: 100%;
       background: rgba(255,255,255,.06);
       border: 1px solid rgba(255,255,255,.12);
-      color: #fff;
+      color:#fff;
       padding: 10px 12px;
       border-radius: 14px;
       font-size: 13px;
+      font-weight: 1000;
       outline:none;
-      font-weight: 900;
-      appearance:none;
-      -webkit-appearance:none;
+      appearance: none;
+      -webkit-appearance: none;
     }
-    .sel option{ background:#111; color:#fff; }
+    select option{
+      background:#111 !important;
+      color:#fff !important;
+    }
 
-    .chips{
+    .mic{
+      width: 46px;
+      height: 46px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
       display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top: 8px;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      flex: 0 0 46px;
     }
-    .chip{
-      padding: 7px 10px;
+    .mic svg{ width: 22px; height:22px; stroke:#fff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.92; }
+    .mic.listening{
+      border-color: rgba(190,242,100,.35);
+      background: rgba(190,242,100,.12);
+      box-shadow: 0 0 22px rgba(190,242,100,.18);
+    }
+    .mic:active{ transform: translateY(1px); }
+
+    .content{
+      flex: 1 1 auto;
+      min-height:0;
+      padding: 12px;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+      display:flex;
+      flex-direction:column;
+      gap: 10px;
+    }
+
+    .block{
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.32);
+      padding: 12px;
+    }
+    .label{
+      font-size: 11px;
+      font-weight: 1000;
+      color: rgba(255,255,255,.70);
+      letter-spacing: .3px;
+      margin-bottom: 6px;
+    }
+    .text{
+      font-size: 14px;
+      font-weight: 900;
+      color: rgba(255,255,255,.92);
+      line-height: 1.35;
+      word-break: break-word;
+      min-height: 20px;
+    }
+    .hint{
+      font-size: 11px;
+      font-weight: 900;
+      color: rgba(255,255,255,.55);
+      line-height: 1.35;
+      margin-top: 6px;
+    }
+
+    .status{
+      position:absolute;
+      right: 12px;
+      bottom: 12px;
+      padding: 8px 10px;
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.88);
-      font-weight: 1000;
+      background: rgba(0,0,0,.38);
+      color: rgba(255,255,255,.80);
       font-size: 11px;
-      cursor:pointer;
-      user-select:none;
-    }
-    .chip.on{
-      border-color: rgba(190,242,100,.25);
-      background: rgba(190,242,100,.10);
-      color: rgba(190,242,100,.95);
-    }
-    .chip.lock{
-      opacity:.45;
-      cursor:not-allowed;
-    }
-
-    /* Dock */
-    .input-dock{
-      position: fixed !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: var(--frameW) !important;
-      bottom: calc(var(--footerH) + var(--assistH) + var(--gapH)) !important;
-      z-index: 2600 !important;
-      padding: 0 10px 6px !important;
-      background: transparent !important;
-    }
-    .dock-inner{
-      width:100%;
-      display:flex;
-      align-items:flex-end;
-      gap: 8px;
-      background:#1a1a1a;
-      border:1px solid #333;
-      border-radius: 25px;
-      padding: 8px;
-    }
-    .icon-btn{
-      width:40px; height:40px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      flex-shrink:0;
-    }
-    .icon-btn svg{
-      width:20px; height:20px;
-      stroke:#ddd; fill:none;
-      stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
-      opacity:.9;
-    }
-    .icon-btn.listening{
-      border-color: rgba(190,242,100,.35);
-      background: rgba(190,242,100,.10);
-      box-shadow: 0 0 18px rgba(190,242,100,.12);
-    }
-
-    #msgInput{
-      flex:1;
-      min-width:0;
-      background: transparent;
-      border:none;
-      outline:none;
-      color:#fff;
-      font-size:14px;
-      line-height: 18px;
-      padding: 10px 6px;
-      font-family: inherit;
-      resize:none;
-      max-height: 120px;
-      overflow:hidden;
-    }
-
-    .send-btn{
-      width:40px; height:40px;
-      border-radius: 18px;
-      border:none;
-      background: var(--pistachio);
-      color:#111;
-      font-weight:1000;
-      cursor:pointer;
-      flex-shrink:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-shadow: 0 12px 26px rgba(190,242,100,.12);
-    }
-    .send-btn svg{
-      width:20px; height:20px;
-      stroke:#111; fill:none;
-      stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
-    }
-
-    .ok-btn{
-      margin-left: 4px;
-      width:40px; height:40px;
-      border-radius: 18px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      color:#fff;
-      font-weight:1000;
-      cursor:pointer;
-      flex-shrink:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    /* Foto modu */
-    .photo-row{
-      display:none;
-      gap:10px;
-      align-items:center;
-      margin-top: 10px;
-      flex-wrap:wrap;
-    }
-    .photo-row.show{ display:flex; }
-    .photo-preview{
-      width: 64px; height:64px;
-      border-radius: 18px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      object-fit: cover;
-      display:none;
+      font-weight: 1000;
+      backdrop-filter: blur(10px);
     }
 
     .toast{
       position: fixed;
       left: 50%;
-      top: 84px;
+      top: 14px;
       transform: translateX(-50%);
       z-index: 99999;
       padding: 10px 14px;
@@ -376,185 +223,90 @@
       backdrop-filter: blur(10px);
       display:none;
       color: rgba(255,255,255,.92);
-      max-width: min(440px, calc(100vw - 24px));
+      max-width: min(480px, calc(100vw - 24px));
       white-space: nowrap;
       overflow:hidden;
       text-overflow: ellipsis;
     }
     .toast.show{ display:block; }
-
   </style>
 </head>
 
 <body>
-<div class="mobile-frame" id="mobileFrame">
+  <div class="frame">
+    <button class="back" id="backBtn" aria-label="Geri">←</button>
 
-  <!-- TOPBAR (chat.html ile aynı) -->
-  <div class="topbar">
-    <div class="left-controls">
-      <button class="hamb-btn" id="hambBtn">☰</button>
-    </div>
-
-    <div class="brand-wrapper" id="brandWrapper" style="cursor:pointer" onclick="location.href='/pages/chat.html'">
-      <div class="logo-area">
-        <svg class="seesaw-svg" viewBox="0 0 40 20">
-          <g class="seesaw-bar" id="seesawBar">
-            <line x1="0" y1="8" x2="40" y2="8" stroke="#ccc" stroke-width="2" stroke-linecap="round" />
-            <circle cx="3" cy="5" r="3" fill="#bef264" />
-            <circle cx="37" cy="5" r="3" fill="#ffb300" id="orangeBall" />
-          </g>
-          <polygon points="17,14 23,14 20,8" fill="none" stroke="#666" stroke-width="1.5" />
-        </svg>
-        <div class="brand-name">Caynana AI</div>
-      </div>
-      <div class="slogan">Yapay Zekânın Geleneksel Aklı</div>
-    </div>
-
-    <div class="right-controls">
-      <div class="notif-row">
-        <div class="notif-topline">
-          <button class="icon-btn-top" id="notifBtn" aria-label="Bildirimler">
-            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-            <div class="badge" id="notifBadge"></div>
-          </button>
-          <div id="planChip" class="plan-chip">FREE</div>
-        </div>
-
-        <div class="yp-chip">
-          <div class="yp-label">SAMİMİYET</div>
-          <div class="yp-meter"><div class="yp-fill" id="ypFill"></div></div>
-          <div class="yp-num" id="ypNum">10/100</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MENU (chat.html ile aynı) -->
-  <div class="menu-overlay" id="menuOverlay">
-    <div class="menu-sidebar">
-      <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
-
-      <div class="profile-shortcut-wrap" id="profileShortcutMount">
-        <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='/pages/profil.html'">
-          <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
-          <div class="profile-shortcut-text">
-            <div class="profile-shortcut-title">Profil Düzenle</div>
-            <div class="profile-shortcut-sub" id="profileShortcutName">—</div>
+    <div class="split">
+      <!-- TOP (Karşı taraf, ters) -->
+      <section class="side top" id="sideTop">
+        <div class="bar">
+          <div class="who">Karşı Taraf</div>
+          <div class="lang">
+            <select id="topLang"></select>
+            <button class="mic" id="topMic" aria-label="Karşı taraf mikrofon">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+            </button>
           </div>
         </div>
-      </div>
 
-      <div class="section-title" id="historyTitle">GEÇMİŞ SOHBETLER</div>
-      <div class="history-list" id="historyList"></div>
+        <div class="content">
+          <div class="block">
+            <div class="label">Duyulan (Karşı taraf)</div>
+            <div class="text" id="topHeard">—</div>
+            <div class="hint">Konuşma biter bitmez çeviririm.</div>
+          </div>
 
-      <div class="menu-block asistan"><div class="block-head">Asistan AI</div><div class="menu-grid" id="menuAsistan"></div></div>
-      <div class="menu-block astro"><div class="block-head">Astro AI</div><div class="menu-grid" id="menuAstro"></div></div>
-      <div class="menu-block kurumsal"><div class="block-head">Kurumsal</div><div class="menu-grid" id="menuKurumsal"></div></div>
+          <div class="block">
+            <div class="label">Sana Çeviri</div>
+            <div class="text" id="topTranslated">—</div>
+          </div>
+        </div>
 
-      <div class="menu-footer-actions">
-        <a class="action-link" id="logoutBtn">🛡️ Güvenli Çıkış</a>
-        <a class="action-link delete-acc" id="deleteAccountBtn">🗑️ Hesabımı Sil</a>
-        <div class="footer-copy">@CaynanaAI By Ozyigit's 2026</div>
-      </div>
+        <div class="status" id="topStatus">Hazır</div>
+      </section>
+
+      <!-- BOTTOM (Ben) -->
+      <section class="side" id="sideBottom">
+        <div class="bar">
+          <div class="who">Ben</div>
+          <div class="lang">
+            <select id="botLang"></select>
+            <button class="mic" id="botMic" aria-label="Benim mikrofon">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                <line x1="12" y1="19" x2="12" y2="23"></line>
+                <line x1="8" y1="23" x2="16" y2="23"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="content">
+          <div class="block">
+            <div class="label">Duyulan (Sen)</div>
+            <div class="text" id="botHeard">—</div>
+            <div class="hint">Doğru yazdı mı diye burada görürsün.</div>
+          </div>
+
+          <div class="block">
+            <div class="label">Karşı Tarafa Çeviri</div>
+            <div class="text" id="botTranslated">—</div>
+          </div>
+        </div>
+
+        <div class="status" id="botStatus">Hazır</div>
+      </section>
     </div>
   </div>
 
-  <!-- ORTA: Tercüman cihazı -->
-  <div class="xlate-area">
+  <div class="toast" id="toast">—</div>
 
-    <div class="modes" id="modes">
-      <div class="mode active" data-mode="text">Yazı</div>
-      <div class="mode" data-mode="voice">Ses</div>
-      <div class="mode" data-mode="photo">Foto</div>
-    </div>
-
-    <div class="langbar">
-      <select class="sel" id="srcLang"></select>
-      <select class="sel" id="dstLang"></select>
-    </div>
-
-    <!-- PLUS/PRO: hedef çoklu -->
-    <div class="chips" id="dstMulti" style="display:none;"></div>
-
-    <!-- Foto seçimi -->
-    <div class="photo-row" id="photoRow">
-      <button class="icon-btn" id="photoBtn" aria-label="Foto seç">
-        <svg viewBox="0 0 24 24"><path d="M4 7h4l2-2h4l2 2h4v12H4z"></path><circle cx="12" cy="13" r="3"></circle></svg>
-      </button>
-      <input type="file" id="photoInput" accept="image/*" hidden>
-      <img id="photoPreview" class="photo-preview" alt="preview">
-      <div style="font-weight:900;color:rgba(255,255,255,.70);font-size:12px;">
-        Foto OCR motoru sonra. Şimdilik metni aşağıya yaz/düzelt → Okey.
-      </div>
-    </div>
-
-    <div class="panels">
-      <!-- Karşı taraf -->
-      <div class="panel mirror" id="panelThem">
-        <div class="panel-head">
-          <div class="panel-title" id="themTitle">Karşı Taraf</div>
-          <div class="panel-sub" id="themLang">—</div>
-        </div>
-        <div class="panel-body" id="themBody">
-          <div class="bubble sys">Okey gelince çeviri burada görünecek.</div>
-        </div>
-      </div>
-
-      <!-- Ben -->
-      <div class="panel" id="panelMe">
-        <div class="panel-head">
-          <div class="panel-title" id="meTitle">Ben</div>
-          <div class="panel-sub" id="meLang">—</div>
-        </div>
-        <div class="panel-body" id="meBody">
-          <div class="bubble sys">Konuş / yaz… Sonra Okeyle karşı tarafa gönder.</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- Dock -->
-  <div class="input-dock">
-    <div class="dock-inner">
-      <button class="icon-btn" id="camBtn" aria-label="Foto (Foto modunda)">
-        <svg viewBox="0 0 24 24"><path d="M4 7h4l2-2h4l2 2h4v12H4z"></path><circle cx="12" cy="13" r="3"></circle></svg>
-      </button>
-
-      <button class="icon-btn" id="micBtn" aria-label="Mikrofon">
-        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-      </button>
-
-      <textarea id="msgInput" rows="1" placeholder="Konuşulan metin / yazı..." spellcheck="false"></textarea>
-
-      <button class="send-btn" id="sendBtn" aria-label="Çevir">
-        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
-      </button>
-
-      <button class="ok-btn" id="okBtn" aria-label="Okey">OK</button>
-    </div>
-  </div>
-
-  <!-- Alt bar / footer (chat.html ile aynı) -->
-  <div class="assistant-bar" id="assistantBar"></div>
-
-  <div class="footer-container">
-    <div class="footer-links">
-      <a href="/pages/hakkimizda.html">Hakkımızda</a>
-      <a href="/pages/sss.html">SSS</a>
-      <a href="/pages/gizlilik.html">Gizlilik</a>
-      <a href="/pages/iletisim.html">İletişim</a>
-    </div>
-    <div class="footer-brand">@CaynanaAI By Ozyigit's 2026</div>
-  </div>
-
-</div>
-
-<div class="toast" id="toast">—</div>
-
-<!-- ✅ cache kır -->
-<script type="module" src="/js/main.js?v=2"></script>
-<script src="/js/layout-common.js?v=1"></script>
-<script type="module" src="/js/translate_page.js?v=1"></script>
+  <script type="module" src="/js/translate_page.js?v=2"></script>
 </body>
 </html>
