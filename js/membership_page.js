@@ -1,16 +1,14 @@
 // FILE: /js/membership_page.js
-// Plans: FREE / PLUS / PRO (design-first)
-// ✅ Limits exactly as specified
-// ✅ Save selected plan to localStorage (STORAGE_KEY plan)
-// ✅ 30 days no-cancel rule shown for PLUS/PRO
-// ✅ Google Play note (text only)
-// ✅ NEW: "MEVCUT PLAN" badge on current plan card
+// ✅ Fix: badges no overlap (uses badge-wrap)
+// ✅ Color themes per plan (free/plus/pro)
+// ✅ Each plan has bottom "upgrade icon"
+// ✅ If current plan is PRO -> PRO card shows "EN ÜST PLAN" (no upgrade icon)
+// ✅ Clicking card selects; clicking upgrade button selects + scrolls CTA
 
 import { initMenuHistoryUI } from "/js/menu_history_ui.js";
 import { STORAGE_KEY } from "/js/config.js";
 
 const $ = (id)=>document.getElementById(id);
-
 function safeJson(s, fb={}){ try{return JSON.parse(s||"");}catch{return fb;} }
 function setJson(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
 
@@ -34,6 +32,7 @@ function setUser(u){
 const PLANS = [
   {
     key:"free",
+    css:"free",
     name:"FREE",
     price:"0 TL",
     sub:"Süresiz",
@@ -58,6 +57,7 @@ const PLANS = [
   },
   {
     key:"plus",
+    css:"plus",
     name:"PLUS",
     price:"99 TL",
     sub:"30 gün iptal yok • oto yenileme",
@@ -83,6 +83,7 @@ const PLANS = [
   },
   {
     key:"pro",
+    css:"pro",
     name:"PRO",
     price:"249 TL",
     sub:"30 gün iptal yok • oto yenileme",
@@ -114,43 +115,60 @@ function planPillText(p){
   return `Plan: ${String(p||"FREE").toUpperCase()}`;
 }
 
+function iconUp(){
+  return `<svg viewBox="0 0 24 24"><path d="M12 19V5"></path><path d="M7 10l5-5 5 5"></path></svg>`;
+}
+function iconCheck(){
+  return `<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"></path></svg>`;
+}
+function iconCrown(){
+  return `<svg viewBox="0 0 24 24"><path d="M3 7l4 4 5-7 5 7 4-4v13H3z"></path></svg>`;
+}
+
 function render(){
   const wrap = $("plans");
   wrap.innerHTML = "";
 
   const user = getUser();
   const cur = String(user.plan || "free").toLowerCase();
-
   $("curPlanPill").textContent = planPillText(cur);
 
   PLANS.forEach(p=>{
     const el = document.createElement("div");
-    el.className = "plan" + (p.reco ? " reco" : "") + (selected === p.key ? " selected" : "");
+    el.className = `plan ${p.css}` + (p.reco ? " reco" : "") + (selected === p.key ? " selected" : "");
 
+    // chips
     const chips = (p.chips||[]).map((x,i)=>{
-      const cls = (p.key==="plus" && i===0) ? "chip gold" : (p.key==="pro" && i===0 ? "chip green" : "chip");
+      const cls = "chip " + p.css;
       return `<span class="${cls}">${x}</span>`;
     }).join("");
 
+    // features + astro
     const feats = (p.features||[]).map(x=>`<div class="li"><div class="b">✓</div><div class="t">${x}</div></div>`).join("");
     const astro = (p.astro||[]).map(x=>`<div class="li"><div class="b">✶</div><div class="t">${x}</div></div>`).join("");
 
-    const currentBadge = (cur === p.key)
-      ? `<div style="
-            position:absolute; left:12px; top:12px;
-            padding:6px 10px;
-            border-radius:999px;
-            border:1px solid rgba(190,242,100,.25);
-            background: rgba(190,242,100,.10);
-            color: rgba(190,242,100,.95);
-            font-weight: 1000;
-            font-size: 10px;
-            letter-spacing:.6px;
-          ">MEVCUT PLAN</div>`
-      : "";
+    // badges (no overlap)
+    const leftBadge = (cur === p.key) ? `<div class="badge current">MEVCUT PLAN</div>` : `<div style="width:1px;height:1px;opacity:0"></div>`;
+    const rightBadge = (p.reco) ? `<div class="badge reco">ÖNERİLEN</div>` : `<div style="width:1px;height:1px;opacity:0"></div>`;
+
+    // bottom action
+    let bottomRight = "";
+    if(cur === p.key){
+      if(cur === "pro"){
+        bottomRight = `<div class="status-pill">${iconCrown()} EN ÜST PLAN</div>`;
+      }else{
+        bottomRight = `<div class="status-pill">${iconCheck()} AKTİF</div>`;
+      }
+    }else{
+      bottomRight = `<button class="upgrade-btn ${p.css}" data-up="${p.key}">${iconUp()} YÜKSELT</button>`;
+    }
 
     el.innerHTML = `
-      ${currentBadge}
+      <div class="badge-wrap">
+        ${leftBadge}
+        ${rightBadge}
+      </div>
+
       <div class="plan-head">
         <div>
           <div class="plan-name">${p.name}</div>
@@ -171,19 +189,34 @@ function render(){
       <div class="sub" style="margin-top:10px; color:rgba(255,255,255,.60); font-size:11px;">
         ${p.key==="free" ? "FREE süresizdir." : "Abone olunca 30 gün iptal yok; iptal etmezsen otomatik yenilenir."}
       </div>
+
+      <div class="plan-bottom">
+        <div class="status-pill">${p.key==="free" ? "🟠" : (p.key==="plus" ? "🟢" : "🔴")} ${p.name}</div>
+        ${bottomRight}
+      </div>
     `;
 
-    el.addEventListener("click", ()=>{
+    // select by click (but ignore clicking the upgrade button)
+    el.addEventListener("click", (ev)=>{
+      const btn = ev.target?.closest?.("button[data-up]");
+      if(btn) return;
       selected = p.key;
       render();
     });
 
-    wrap.appendChild(el);
-
-    // current plan border a bit warmer
-    if(cur === p.key){
-      el.style.borderColor = "rgba(255,179,0,.28)";
+    // upgrade button
+    const upBtn = el.querySelector("button[data-up]");
+    if(upBtn){
+      upBtn.addEventListener("click", (ev)=>{
+        ev.stopPropagation();
+        selected = upBtn.getAttribute("data-up");
+        render();
+        // scroll to CTA
+        try{ $("btnBuy").scrollIntoView({ behavior:"smooth", block:"center" }); }catch{}
+      });
     }
+
+    wrap.appendChild(el);
   });
 }
 
@@ -211,7 +244,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
   const cur = String(getUser().plan || "free").toLowerCase();
   selected = (cur === "free") ? "plus" : cur;
-
   render();
 
   $("btnBuy")?.addEventListener("click", ()=>{
