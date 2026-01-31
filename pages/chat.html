@@ -19,8 +19,6 @@
       --dockH: 68px;
       --gapH: 6px;
     }
-
-    /* Footer frame içinde */
     .footer-container{
       position: fixed !important;
       left: 50% !important;
@@ -31,8 +29,6 @@
       background: rgba(0,0,0,.92);
       border-top: 1px solid rgba(255,255,255,.06);
     }
-
-    /* Alt bar */
     .assistant-bar{
       position: fixed !important;
       left: 50% !important;
@@ -43,10 +39,9 @@
       height: var(--assistH) !important;
       padding-top: 6px !important;
       padding-bottom: 6px !important;
-      pointer-events: none; /* chat scroll'u yemesin */
+      pointer-events: none;
     }
     .assistant-bar .assistant-item{ pointer-events:auto; }
-
     .assistant-item .lbl{
       display:block !important;
       font-size: 8px !important;
@@ -56,8 +51,6 @@
       opacity: .85;
       white-space: nowrap;
     }
-
-    /* Input dock */
     .input-dock{
       position: fixed !important;
       left: 50% !important;
@@ -67,7 +60,7 @@
       z-index: 2600 !important;
       padding: 0 10px 6px !important;
       background: transparent !important;
-      pointer-events: none; /* chat scroll'u yemesin */
+      pointer-events: none;
     }
     .input-dock .dock-inner{
       pointer-events:auto;
@@ -81,8 +74,6 @@
       overflow:hidden !important;
       max-height:120px !important;
     }
-
-    /* ✅ KRİTİK FIX: Scroll artık #chat üzerinde (JS bunu bekliyor) */
     #chat.chat-area{
       position: absolute !important;
       left: 0; right: 0;
@@ -95,25 +86,16 @@
       overscroll-behavior: contain !important;
       touch-action: pan-y !important;
 
-      scrollbar-width: none !important; /* firefox hide */
+      scrollbar-width: none !important;
       display:flex;
       flex-direction:column;
-
-      /* ❌ justify-content:flex-end;  (scroll drag bug yapıyordu) */
-
       gap: 10px;
       min-height: 0 !important;
       min-width: 0 !important;
     }
-    #chat.chat-area::-webkit-scrollbar{ display:none !important; } /* webkit hide */
+    #chat.chat-area::-webkit-scrollbar{ display:none !important; }
+    #chat.chat-area::before{ content:""; flex: 1 0 auto; }
 
-    /* ✅ Az mesaj varken bile içerik altta dursun (WhatsApp hissi) */
-    #chat.chat-area::before{
-      content:"";
-      flex: 1 0 auto;
-    }
-
-    /* + menü */
     .plus-sheet{
       position: fixed;
       left: 50%;
@@ -133,7 +115,6 @@
       backdrop-filter: blur(10px);
     }
     .plus-sheet.show{ display:flex; }
-
     .plus-action{
       flex:1;
       display:flex;
@@ -170,8 +151,6 @@
       stroke-linejoin: round;
       opacity: .95;
     }
-
-    /* Mikrofon dinliyor efekti */
     #micBtn.listening{
       background: rgba(190,242,100,.16) !important;
       border: 1px solid rgba(190,242,100,.35) !important;
@@ -265,7 +244,6 @@
     </div>
   </div>
 
-  <!-- ✅ CHAT (scroll burada, JS de burayı kullanıyor) -->
   <div class="chat-area" id="chat"></div>
 
   <div class="input-dock">
@@ -316,8 +294,9 @@
 
 </div>
 
-<script type="module" src="/js/main.js"></script>
-<script type="module" src="/js/chat_page.js"></script>
+<!-- ✅ cache kırmak için v=2 -->
+<script type="module" src="/js/main.js?v=2"></script>
+<script type="module" src="/js/chat_page.js?v=2"></script>
 <script src="/js/layout-common.js?v=1"></script>
 
 <script>
