@@ -22,7 +22,6 @@
       --pistachio:#bef264;
       --red:#ff5252;
     }
-
     html,body{ background:#000 !important; }
     .mobile-frame{ background:#000 !important; }
 
@@ -127,6 +126,29 @@
       color:#fff;
       box-shadow:none;
     }
+
+    /* ✅ Hazır paket butonları */
+    .preset-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top: 10px;
+    }
+    .preset{
+      padding: 10px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color: rgba(255,255,255,.90);
+      font-weight: 1000;
+      font-size: 12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .preset:active{ transform: translateY(1px); }
+    .preset.gold{ border-color: rgba(255,179,0,.18); background: rgba(255,179,0,.08); color: rgba(255,179,0,.95); }
+    .preset.green{ border-color: rgba(190,242,100,.18); background: rgba(190,242,100,.08); color: rgba(190,242,100,.95); }
+    .preset.blue{ border-color: rgba(0,194,255,.18); background: rgba(0,194,255,.08); color: rgba(0,194,255,.95); }
 
     /* Çoklu saat chip’leri */
     .time-chips{
@@ -276,7 +298,6 @@
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
-
       <div class="profile-shortcut-wrap" id="profileShortcutMount">
         <div class="profile-shortcut-btn" id="profileShortcutBtn" onclick="location.href='/pages/profil.html'">
           <div class="profile-shortcut-ico" id="profileShortcutIco">👤</div>
@@ -309,7 +330,7 @@
         <div class="ico">⏰</div>
         <div>
           <div class="ttl">Hatırlatıcı</div>
-          <div class="sub">İlaç saati gibi <b>çoklu saat</b> ekleyebilirsin. (Motor sonra gerçek bildirim olur.)</div>
+          <div class="sub">Tek tek uğraşma: hazır paket seç, biter 🙂</div>
         </div>
       </div>
 
@@ -321,6 +342,13 @@
         <input class="inp" id="date" type="date" />
         <input class="inp" id="timeAdd" type="time" />
         <button class="btn secondary" id="btnAddTime">Saat Ekle</button>
+      </div>
+
+      <div class="preset-row">
+        <button class="preset gold" id="preset3">☀️🍽️🌙 3 Doz</button>
+        <button class="preset green" id="preset2">🌤️🌙 2 Doz</button>
+        <button class="preset blue" id="preset4">⏱️ 4 Doz</button>
+        <button class="preset" id="presetClear">Temizle</button>
       </div>
 
       <div class="time-chips" id="timeChips"></div>
@@ -375,6 +403,6 @@
 
 <script type="module" src="/js/layout-common.js?v=1"></script>
 <script type="module" src="/js/menu_history_ui.js?v=2"></script>
-<script type="module" src="/js/hatirlatici_page.js?v=3"></script>
+<script type="module" src="/js/hatirlatici_page.js?v=4"></script>
 </body>
 </html>
