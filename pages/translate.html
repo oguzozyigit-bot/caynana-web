@@ -124,13 +124,13 @@
       position:relative;
     }
 
-    /* ✅ Ben tarafı (istersen burayı senin son renk ayarınla bırak) */
+    /* Ben tarafı (bunu senin son seçtiğin renkle değiştirebilirsin) */
     .side.meTint{
       background:
-        radial-gradient(980px 420px at 40% 12%, rgba(160, 35, 55, .30), transparent 68%),
-        radial-gradient(820px 360px at 80% 18%, rgba(120, 20, 40, .22), transparent 70%),
-        radial-gradient(760px 320px at 20% 70%, rgba(255, 179, 0, .06), transparent 72%),
-        rgba(0,0,0,.12);
+        radial-gradient(900px 420px at 30% 12%, rgba(120, 20, 35, .85), transparent 68%),
+        radial-gradient(700px 360px at 80% 18%, rgba(90, 15, 30, .65), transparent 70%),
+        radial-gradient(600px 320px at 40% 75%, rgba(70, 10, 25, .45), transparent 72%),
+        linear-gradient(180deg, rgba(60, 10, 20, .55), rgba(0,0,0,.15));
     }
 
     .side.top{ transform: rotate(180deg); }
@@ -165,13 +165,11 @@
     }
     .dd-btn .caret{ opacity:.75; font-size: 12px; }
 
-    /* ✅ Dropdown taşma + scroll fix */
+    /* ✅ Dropdown scroll + scrollbar tamamen gizli + sağ boşluk yok */
     .dd-menu{
       position:absolute;
       top: calc(100% + 8px);
       left: 0;
-      right: auto;
-
       width: clamp(220px, 78vw, 320px);
       max-width: calc(100vw - 28px);
 
@@ -183,14 +181,23 @@
       display:none;
       z-index: 999;
 
-      /* ✅ asıl fix */
       max-height: 320px;
       overflow-y: auto;
+      overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
+
+      /* ✅ scrollbar-gutter boşluk/çizgi kaldır */
+      scrollbar-gutter: auto;
     }
     .dd.open .dd-menu{ display:block; }
 
-    /* ✅ search area sticky */
+    /* ✅ scrollbar tamamen gizli (webkit + firefox + ms) */
+    .dd-menu{ scrollbar-width: none; -ms-overflow-style: none; }
+    .dd-menu::-webkit-scrollbar{ width:0; height:0; }
+    .dd-menu::-webkit-scrollbar-thumb{ background: transparent; }
+    .dd-menu::-webkit-scrollbar-track{ background: transparent; }
+
+    /* ✅ search sticky */
     .dd-search-wrap{
       position: sticky;
       top: 0;
@@ -221,13 +228,22 @@
       font-size: 14px;
       border-bottom: 1px solid rgba(255,255,255,.08);
       letter-spacing: .1px;
-      text-shadow: 0 1px 0 rgba(0,0,0,.35);
       user-select:none;
     }
     .dd-item:last-child{ border-bottom:none; }
     .dd-item:hover{ background: rgba(255,255,255,.06); }
     .dd-item:active{ background: rgba(255,179,0,.12); }
     .dd-item.hidden{ display:none; }
+    .dd-sep{
+      padding: 10px 14px;
+      font-size: 11px;
+      font-weight: 1000;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.55);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.18);
+    }
 
     .btnIcon{
       width: 48px;
@@ -240,7 +256,6 @@
       justify-content:center;
       cursor:pointer;
       flex: 0 0 48px;
-      transition: opacity .15s ease, transform .1s ease;
     }
     .btnIcon svg{
       width: 22px; height:22px;
@@ -265,7 +280,12 @@
       display:flex;
       flex-direction:column;
       gap: 10px;
+
+      /* ✅ content scrollbar gizle */
+      scrollbar-width:none;
+      -ms-overflow-style:none;
     }
+    .content::-webkit-scrollbar{ width:0; height:0; }
 
     .bubble{
       max-width: 92%;
@@ -282,7 +302,6 @@
     .bubble.me{ align-self:flex-end; border-right: 4px solid var(--pist); text-align:right; }
     .bubble.them{ align-self:flex-start; border-left: 4px solid var(--gold); }
 
-    /* Minimal marka */
     .brandBottom, .brandTop{
       position:absolute;
       left: 50%;
@@ -339,7 +358,7 @@
       <section class="side top" id="sideTop">
         <div class="bar">
           <div class="dd" id="ddTop">
-            <div class="dd-btn" id="ddTopBtn"><span id="ddTopTxt">English</span><span class="caret">▾</span></div>
+            <div class="dd-btn" id="ddTopBtn"><span id="ddTopTxt">—</span><span class="caret">▾</span></div>
             <div class="dd-menu" id="ddTopMenu"></div>
           </div>
 
@@ -377,7 +396,7 @@
       <section class="side meTint" id="sideBottom">
         <div class="bar">
           <div class="dd" id="ddBot">
-            <div class="dd-btn" id="ddBotBtn"><span id="ddBotTxt">Türkçe</span><span class="caret">▾</span></div>
+            <div class="dd-btn" id="ddBotBtn"><span id="ddBotTxt">—</span><span class="caret">▾</span></div>
             <div class="dd-menu" id="ddBotMenu"></div>
           </div>
 
@@ -411,6 +430,6 @@
   </div>
 
   <div class="toast" id="toast">—</div>
-  <script type="module" src="/js/translate_page.js?v=6"></script>
+  <script type="module" src="/js/translate_page.js?v=7"></script>
 </body>
 </html>
