@@ -10,7 +10,6 @@
   <style>
     :root{
       --text: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.62);
 
       --gold:#ffb300;
       --pist:#bef264;
@@ -94,7 +93,6 @@
       z-index:-1;
       opacity:.65;
     }
-
     .wave svg path{
       stroke-dasharray: 12 14;
       animation: waveFlow 2.2s linear infinite;
@@ -108,9 +106,7 @@
       animation-duration: .85s;
       opacity: 1;
     }
-    .frame.listening .wave .glow{
-      opacity: 1;
-    }
+    .frame.listening .wave .glow{ opacity: 1; }
 
     .side{
       border-radius: 28px;
@@ -128,46 +124,29 @@
       position:relative;
     }
 
-    /* ✅ Ben tarafı: pastel bal/vanilya (açık sarı değil, yormaz) */
+    /* ✅ Ben tarafı: mat pastel sarı (göz almayan) */
     .side.meTint{
       background:
-        radial-gradient(900px 360px at 50% 8%, rgba(255,205,120,.14), transparent 62%),
-        radial-gradient(900px 360px at 20% 18%, rgba(255,180,90,.10), transparent 62%),
-        radial-gradient(900px 360px at 100% 0%, rgba(190,242,100,.05), transparent 62%),
+        radial-gradient(900px 360px at 50% 8%, rgba(255,208,120,.16), transparent 62%),
+        radial-gradient(900px 360px at 15% 20%, rgba(255,190,95,.12), transparent 62%),
         rgba(0,0,0,.12);
     }
 
+    /* ÜST TARAF: komple ters */
     .side.top{ transform: rotate(180deg); }
 
     .bar{
       display:flex;
       align-items:center;
-      gap: 10px;
+      justify-content:flex-end; /* ✅ Ben/Karşı yok, sağa hizalı */
+      gap: 8px;
       padding: 12px 12px;
       border-bottom: 1px solid var(--border2);
       background: rgba(0,0,0,.22);
     }
 
-    .who{
-      font-size: 12px;
-      font-weight: 1000;
-      letter-spacing: .2px;
-      color:#fff;
-      white-space:nowrap;
-      min-width: 52px;
-    }
-
-    .lang{
-      flex:1;
-      min-width: 0;
-      display:flex;
-      gap: 8px;
-      align-items:center;
-      justify-content:flex-end;
-    }
-
-    /* Custom dropdown */
-    .dd{ position: relative; width: 160px; max-width: 180px; }
+    /* Dropdown */
+    .dd{ position: relative; width: 180px; max-width: 220px; }
     .dd-btn{
       width:100%;
       padding: 10px 12px;
@@ -188,9 +167,9 @@
     .dd-menu{
       position:absolute;
       top: calc(100% + 8px);
-      right: 0;
-      width: 220px;
-      max-width: 70vw;
+      right: 0; /* ✅ açılır menü seçen tarafa doğru */
+      width: 240px;
+      max-width: 78vw;
       border-radius: 18px;
       border: 1px solid rgba(255,255,255,.12);
       background: rgba(12,12,14,.96);
@@ -203,9 +182,6 @@
     .dd.open .dd-menu{ display:block; }
     .dd-item{
       padding: 12px 12px;
-      display:flex;
-      align-items:center;
-      justify-content:flex-start; /* ✅ TR/EN gibi kod yok */
       cursor:pointer;
       color: rgba(255,255,255,.90);
       font-weight: 950;
@@ -268,28 +244,7 @@
     .bubble.me{ align-self:flex-end; border-right: 4px solid var(--pist); text-align:right; }
     .bubble.them{ align-self:flex-start; border-left: 4px solid var(--gold); }
 
-    .label{
-      font-size: 11px;
-      font-weight: 1000;
-      color: rgba(255,255,255,.65);
-      letter-spacing: .2px;
-      margin-bottom: 6px;
-    }
-
-    .status{
-      position:absolute;
-      right: 12px;
-      bottom: 12px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.28);
-      color: rgba(255,255,255,.80);
-      font-size: 11px;
-      font-weight: 1000;
-      backdrop-filter: blur(10px);
-    }
-
+    /* Minimal marka */
     .brandBottom, .brandTop{
       position:absolute;
       left: 50%;
@@ -346,37 +301,30 @@
 
       <section class="side top" id="sideTop">
         <div class="bar">
-          <div class="who">Karşı</div>
-          <div class="lang">
-
-            <div class="dd" id="ddTop">
-              <div class="dd-btn" id="ddTopBtn"><span id="ddTopTxt">English</span><span class="caret">▾</span></div>
-              <div class="dd-menu" id="ddTopMenu"></div>
-            </div>
-
-            <!-- Hoparlör (toggle mute) -->
-            <button class="btnIcon" id="topSpeak" aria-label="Ses">
-              <svg viewBox="0 0 24 24">
-                <path d="M11 5L6 9H3v6h3l5 4z"></path>
-                <path d="M15 9a4 4 0 0 1 0 6"></path>
-                <path d="M17.5 6.5a7 7 0 0 1 0 11"></path>
-              </svg>
-            </button>
-
-            <button class="btnIcon" id="topMic" aria-label="Mikrofon">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                <line x1="12" y1="19" x2="12" y2="23"></line>
-                <line x1="8" y1="23" x2="16" y2="23"></line>
-              </svg>
-            </button>
-
+          <div class="dd" id="ddTop">
+            <div class="dd-btn" id="ddTopBtn"><span id="ddTopTxt">English</span><span class="caret">▾</span></div>
+            <div class="dd-menu" id="ddTopMenu"></div>
           </div>
+
+          <button class="btnIcon" id="topSpeak" aria-label="Ses">
+            <svg viewBox="0 0 24 24">
+              <path d="M11 5L6 9H3v6h3l5 4z"></path>
+              <path d="M15 9a4 4 0 0 1 0 6"></path>
+              <path d="M17.5 6.5a7 7 0 0 1 0 11"></path>
+            </svg>
+          </button>
+
+          <button class="btnIcon" id="topMic" aria-label="Mikrofon">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          </button>
         </div>
 
         <div class="content" id="topBody"></div>
-        <div class="status" id="topStatus">Hazır</div>
       </section>
 
       <div class="wave" aria-hidden="true">
@@ -391,37 +339,30 @@
 
       <section class="side meTint" id="sideBottom">
         <div class="bar">
-          <div class="who">Ben</div>
-          <div class="lang">
-
-            <div class="dd" id="ddBot">
-              <div class="dd-btn" id="ddBotBtn"><span id="ddBotTxt">Türkçe</span><span class="caret">▾</span></div>
-              <div class="dd-menu" id="ddBotMenu"></div>
-            </div>
-
-            <!-- Hoparlör (toggle mute) -->
-            <button class="btnIcon" id="botSpeak" aria-label="Ses">
-              <svg viewBox="0 0 24 24">
-                <path d="M11 5L6 9H3v6h3l5 4z"></path>
-                <path d="M15 9a4 4 0 0 1 0 6"></path>
-                <path d="M17.5 6.5a7 7 0 0 1 0 11"></path>
-              </svg>
-            </button>
-
-            <button class="btnIcon" id="botMic" aria-label="Mikrofon">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                <line x1="12" y1="19" x2="12" y2="23"></line>
-                <line x1="8" y1="23" x2="16" y2="23"></line>
-              </svg>
-            </button>
-
+          <div class="dd" id="ddBot">
+            <div class="dd-btn" id="ddBotBtn"><span id="ddBotTxt">Türkçe</span><span class="caret">▾</span></div>
+            <div class="dd-menu" id="ddBotMenu"></div>
           </div>
+
+          <button class="btnIcon" id="botSpeak" aria-label="Ses">
+            <svg viewBox="0 0 24 24">
+              <path d="M11 5L6 9H3v6h3l5 4z"></path>
+              <path d="M15 9a4 4 0 0 1 0 6"></path>
+              <path d="M17.5 6.5a7 7 0 0 1 0 11"></path>
+            </svg>
+          </button>
+
+          <button class="btnIcon" id="botMic" aria-label="Mikrofon">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          </button>
         </div>
 
         <div class="content" id="botBody"></div>
-        <div class="status" id="botStatus">Hazır</div>
       </section>
 
     </div>
@@ -430,7 +371,6 @@
       <div class="bn">CaynanaAI</div>
       <div class="sl" id="sloganBot">—</div>
     </div>
-
   </div>
 
   <div class="toast" id="toast">—</div>
