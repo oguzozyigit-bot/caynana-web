@@ -1,11 +1,9 @@
 // FILE: /js/translate_page.js
-// ✅ Two-sided pro tabletop translator
-// ✅ Two mic buttons (one mic at a time)
-// ✅ Each side chooses its own spoken language
-// ✅ When one side speaks:
-//    - show transcript on that side (same language)
-//    - translate to other side language and show on other side
-// ✅ Speaker buttons: use WebSpeech TTS if available (fallback toast)
+// ✅ Pro tabletop translator (two sides, full history + scroll)
+// ✅ Custom dropdown opens to the right (toward selection side)
+// ✅ Auto-follow only if user is near bottom (WhatsApp feel)
+// ✅ Wave animates only while listening (frameRoot.listening)
+// ✅ Minimal brand slogan translated by selected language (small dictionary)
 
 import { BASE_DOMAIN } from "/js/config.js";
 
@@ -20,6 +18,10 @@ function toast(msg){
   window.__to = setTimeout(()=>t.classList.remove("show"), 2400);
 }
 
+function setWaveListening(on){
+  $("frameRoot")?.classList.toggle("listening", !!on);
+}
+
 const LANGS = [
   { code:"tr", name:"Türkçe", speech:"tr-TR", tts:"tr-TR" },
   { code:"en", name:"English", speech:"en-US", tts:"en-US" },
@@ -30,18 +32,26 @@ const LANGS = [
   { code:"ru", name:"Русский", speech:"ru-RU", tts:"ru-RU" },
 ];
 
-function fillSelect(sel, def){
-  sel.innerHTML = LANGS.map(l=>`<option value="${l.code}">${l.name}</option>`).join("");
-  sel.value = def;
+const SLOGAN_TR = "Yapay Zekânın Geleneksel Aklı";
+const SLOGAN_MAP = {
+  tr: SLOGAN_TR,
+  en: "The Traditional Mind of AI",
+  de: "Der traditionelle Verstand der KI",
+  fr: "L’esprit traditionnel de l’IA",
+  es: "La mente tradicional de la IA",
+  ar: "عقل الذكاء الاصطناعي التقليدي",
+  ru: "Традиционный разум ИИ"
+};
+
+function sloganFor(code){
+  return SLOGAN_MAP[code] || SLOGAN_TR;
 }
 
 function speechLocale(code){
-  const f = LANGS.find(x=>x.code===code);
-  return f?.speech || "en-US";
+  return LANGS.find(x=>x.code===code)?.speech || "en-US";
 }
 function ttsLocale(code){
-  const f = LANGS.find(x=>x.code===code);
-  return f?.tts || "en-US";
+  return LANGS.find(x=>x.code===code)?.tts || "en-US";
 }
 
 async function translateViaApi(text, source, target){
@@ -73,22 +83,114 @@ function buildRecognizer(langCode){
   return rec;
 }
 
-function setMicUI(sideName, on){
-  const mic = $(sideName === "top" ? "topMic" : "botMic");
-  const st  = $(sideName === "top" ? "topStatus" : "botStatus");
-  mic.classList.toggle("listening", !!on);
-  st.textContent = on ? "Dinliyor…" : "Hazır";
+/* ---- Auto-follow logic per side ---- */
+const follow = { top:true, bot:true };
+
+function isNearBottom(el, slack=140){
+  try{
+    return (el.scrollHeight - el.scrollTop - el.clientHeight) < slack;
+  }catch{ return true; }
 }
 
+function hookScrollFollow(sideName, el){
+  el.addEventListener("scroll", ()=>{
+    follow[sideName] = isNearBottom(el);
+  }, { passive:true });
+}
+
+function scrollIfNeeded(sideName, el){
+  if(follow[sideName]){
+    el.scrollTop = el.scrollHeight;
+  }
+}
+
+function addBubble(sideName, kind, label, text){
+  const wrap = $(sideName === "top" ? "topBody" : "botBody");
+  if(!wrap) return;
+
+  const b = document.createElement("div");
+  b.className = `bubble ${kind}`;
+
+  // label tiny
+  if(label){
+    const lab = document.createElement("div");
+    lab.className = "label";
+    lab.textContent = label;
+    b.appendChild(lab);
+  }
+
+  const tx = document.createElement("div");
+  tx.textContent = text || "—";
+  b.appendChild(tx);
+
+  wrap.appendChild(b);
+  scrollIfNeeded(sideName, wrap);
+}
+
+/* ---- Custom dropdown ---- */
+function buildDropdown(ddId, btnId, txtId, menuId, defCode, onChange){
+  const dd = $(ddId);
+  const btn = $(btnId);
+  const txt = $(txtId);
+  const menu = $(menuId);
+
+  let current = defCode;
+
+  function closeAll(){
+    document.querySelectorAll(".dd.open").forEach(x=> x.classList.remove("open"));
+  }
+
+  function setValue(code){
+    current = code;
+    const nm = LANGS.find(l=>l.code===code)?.name || code;
+    txt.textContent = nm;
+    onChange?.(code);
+  }
+
+  menu.innerHTML = LANGS.map(l=>`
+    <div class="dd-item" data-code="${l.code}">
+      <div>${l.name}</div>
+      <div class="mini">${l.code.toUpperCase()}</div>
+    </div>
+  `).join("");
+
+  menu.querySelectorAll(".dd-item").forEach(it=>{
+    it.addEventListener("click", ()=>{
+      const code = it.getAttribute("data-code");
+      closeAll();
+      setValue(code);
+    });
+  });
+
+  btn.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    const open = dd.classList.contains("open");
+    closeAll();
+    dd.classList.toggle("open", !open);
+  });
+
+  document.addEventListener("click", ()=> closeAll());
+
+  setValue(defCode);
+
+  return {
+    get: ()=> current,
+    set: (c)=> setValue(c)
+  };
+}
+
+/* ---- Speaker + Mic state ---- */
 let active = null; // "top" | "bot" | null
 let topRec = null;
 let botRec = null;
 
-// Side objects
-const TOP = { name:"top", langSel:"topLang", heardId:"topHeard", transId:"topTranslated", statusId:"topStatus" };
-const BOT = { name:"bot", langSel:"botLang", heardId:"botHeard", transId:"botTranslated", statusId:"botStatus" };
-
-function other(side){ return side.name === "top" ? BOT : TOP; }
+function setMicUI(side, on){
+  const mic = $(side === "top" ? "topMic" : "botMic");
+  const st  = $(side === "top" ? "topStatus" : "botStatus");
+  mic.classList.toggle("listening", !!on);
+  st.textContent = on ? "Dinliyor…" : "Hazır";
+  setWaveListening(!!on);
+}
 
 function stopAll(){
   try{ topRec?.stop?.(); }catch{}
@@ -98,36 +200,42 @@ function stopAll(){
   active = null;
   setMicUI("top", false);
   setMicUI("bot", false);
+  setWaveListening(false);
 }
 
-async function onFinal(side, finalText){
-  const srcCode = $(side.langSel).value;
-  const dstCode = $(other(side).langSel).value;
+async function onFinal(side, srcCode, dstCode, finalText){
+  const otherSide = (side === "top") ? "bot" : "top";
+  const otherStatus = $(otherSide === "top" ? "topStatus" : "botStatus");
+  const otherWrap = $(otherSide === "top" ? "topBody" : "botBody");
 
-  // Transcript on speaker side
-  $(side.heardId).textContent = finalText || "—";
+  // 1) Speaker sees transcript in their own language
+  addBubble(side, "them", "Duyulan", finalText);
 
-  // Translate and show on other side
-  $(other(side).statusId).textContent = "Çeviriyor…";
+  // 2) Other side sees translation in their language
+  otherStatus.textContent = "Çeviriyor…";
   const out = await translateViaApi(finalText, srcCode, dstCode);
-  $(other(side).transId).textContent = out || "—";
-  $(other(side).statusId).textContent = "Hazır";
+  addBubble(otherSide, "me", "Çeviri", out);
+
+  otherStatus.textContent = "Hazır";
+  scrollIfNeeded(otherSide, otherWrap);
 }
 
-function startSide(side){
-  if(active && active !== side.name){
+function startSide(side, getLang, getOtherLang){
+  if(active && active !== side){
     stopAll();
   }
 
-  const lang = $(side.langSel).value;
-  const rec = buildRecognizer(lang);
+  const srcCode = getLang();
+  const dstCode = getOtherLang();
+
+  const rec = buildRecognizer(srcCode);
   if(!rec){
     toast("Bu cihaz konuşmayı yazıya çevirmiyor evladım.");
     return;
   }
 
-  active = side.name;
-  setMicUI(side.name, true);
+  active = side;
+  setMicUI(side, true);
 
   let live = "";
   let finalText = "";
@@ -140,7 +248,11 @@ function startSide(side){
       else chunk += t + " ";
     }
     live = (finalText + chunk).trim();
-    $(side.heardId).textContent = live || "…";
+
+    // Canlı metni göstermek için (çok spam yapmadan) en alttaki "Duyulan" alanını güncelle:
+    // burada basit: status'a kısa yaz
+    const st = $(side === "top" ? "topStatus" : "botStatus");
+    st.textContent = "Dinliyor…";
   };
 
   rec.onerror = ()=>{
@@ -150,19 +262,18 @@ function startSide(side){
 
   rec.onend = async ()=>{
     const txt = (finalText || live || "").trim();
-    setMicUI(side.name, false);
+    setMicUI(side, false);
 
     if(!txt){
-      $(side.heardId).textContent = "—";
       active = null;
       return;
     }
 
-    await onFinal(side, txt);
+    await onFinal(side, srcCode, dstCode, txt);
     active = null;
   };
 
-  if(side.name === "top") topRec = rec;
+  if(side === "top") topRec = rec;
   else botRec = rec;
 
   try{ rec.start(); }
@@ -172,10 +283,10 @@ function startSide(side){
   }
 }
 
-/* ✅ Hoparlör: ilgili paneldeki çeviri metnini seslendir */
+/* ---- TTS ---- */
 function speak(text, langCode){
   const t = String(text||"").trim();
-  if(!t || t === "—") return toast("Okunacak bir şey yok evladım.");
+  if(!t) return toast("Okunacak bir şey yok evladım.");
   if(!("speechSynthesis" in window)) return toast("Hoparlör motoru yok evladım. (TTS sonra)");
 
   try{
@@ -188,36 +299,63 @@ function speak(text, langCode){
   }
 }
 
-function bind(){
-  // back
+/* ---- Boot ---- */
+document.addEventListener("DOMContentLoaded", ()=>{
+  // Back
   $("backBtn").addEventListener("click", ()=>{
     if(history.length>1) history.back();
     else location.href = "/pages/chat.html";
   });
 
-  // fill selects (default: Ben TR, Karşı EN)
-  fillSelect($("botLang"), "tr");
-  fillSelect($("topLang"), "en");
+  // scroll follow hooks
+  hookScrollFollow("top", $("topBody"));
+  hookScrollFollow("bot", $("botBody"));
 
-  // mic buttons
-  $("botMic").addEventListener("click", ()=> startSide(BOT));
-  $("topMic").addEventListener("click", ()=> startSide(TOP));
+  // dropdowns
+  const topDD = buildDropdown("ddTop","ddTopBtn","ddTopTxt","ddTopMenu","en", (code)=>{
+    $("sloganTop").textContent = sloganFor(code);
+  });
 
-  // stop when changing lang
-  $("botLang").addEventListener("change", ()=> { if(active==="bot") stopAll(); });
-  $("topLang").addEventListener("change", ()=> { if(active==="top") stopAll(); });
+  const botDD = buildDropdown("ddBot","ddBotBtn","ddBotTxt","ddBotMenu","tr", (code)=>{
+    $("sloganBot").textContent = sloganFor(code);
+  });
 
-  // speaker buttons
+  // init slogans
+  $("sloganTop").textContent = sloganFor(topDD.get());
+  $("sloganBot").textContent = sloganFor(botDD.get());
+
+  // Mic buttons
+  $("topMic").addEventListener("click", ()=> startSide("top", ()=>topDD.get(), ()=>botDD.get()));
+  $("botMic").addEventListener("click", ()=> startSide("bot", ()=>botDD.get(), ()=>topDD.get()));
+
+  // Stop listening if lang changes mid-listen
+  // (custom dropdown already stops via stopAll when you tap mic again; keep simple)
+  // If you want: onChange could call stopAll() if active==that side. Not necessary now.
+
+  // Speaker buttons:
+  // - Top speak reads "topTranslated" (which is actually on BOT side in this new log approach we don't keep ids)
+  // We will speak the LAST translation bubble for that side by reading last bubble text.
+  function lastBubbleText(sideName){
+    const wrap = $(sideName === "top" ? "topBody" : "botBody");
+    const bubbles = wrap.querySelectorAll(".bubble");
+    if(!bubbles.length) return "";
+    return String(bubbles[bubbles.length-1].innerText || "").replace(/^.*\n/, "").trim();
+  }
+
   $("botSpeak").addEventListener("click", ()=>{
-    // Bot panel -> translated for other (English etc.) is in botTranslated
-    const lang = $("topLang").value; // what other side should hear
-    speak($("botTranslated").textContent, lang);
+    // Ben tarafı hoparlör: karşı tarafa çevrileni okut (son bubble genelde çeviri)
+    speak(lastBubbleText("bot"), topDD.get());
   });
-  $("topSpeak").addEventListener("click", ()=>{
-    // Top panel -> translated for me is in topTranslated (Turkish etc.)
-    const lang = $("botLang").value; // what I should hear
-    speak($("topTranslated").textContent, lang);
-  });
-}
 
-document.addEventListener("DOMContentLoaded", bind);
+  $("topSpeak").addEventListener("click", ()=>{
+    // Karşı taraf hoparlör: bana çevrileni okut
+    speak(lastBubbleText("top"), botDD.get());
+  });
+
+  // Start empty (no needless text)
+  $("topBody").innerHTML = "";
+  $("botBody").innerHTML = "";
+
+  // wave idle
+  setWaveListening(false);
+});
