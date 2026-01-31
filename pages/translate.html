@@ -27,6 +27,7 @@
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     html,body{ margin:0; padding:0; width:100%; height:100dvh; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
 
+    /* ✅ iFLYTEK benzeri zemin (siyah değil) */
     body{
       background:
         radial-gradient(900px 520px at 50% 18%, rgba(40,120,255,.14), transparent 62%),
@@ -47,11 +48,12 @@
       overflow:hidden;
     }
 
+    /* Back */
     .back{
       position:absolute;
       top: 12px;
       left: 12px;
-      z-index: 60;
+      z-index: 80;
       width: 46px;
       height: 46px;
       border-radius: 16px;
@@ -69,14 +71,16 @@
     }
     .back:active{ transform: translateY(1px); }
 
+    /* Split layout */
     .split{
       position:absolute;
       inset: 0;
       display:grid;
       grid-template-rows: 1fr auto 1fr;
-      padding: 70px 12px 12px;
+      padding: 70px 12px 54px; /* alt marka için yer */
     }
 
+    /* Wave divider */
     .wave{
       height: 28px;
       position: relative;
@@ -95,6 +99,25 @@
         radial-gradient(240px 40px at 60% 50%, rgba(40,120,255,.10), transparent 70%);
       pointer-events:none;
       z-index:-1;
+      opacity:.65;
+    }
+
+    /* ✅ Wave: dinleme sırasında pro pulse */
+    .wave svg path{
+      stroke-dasharray: 12 14;
+      animation: waveFlow 2.2s linear infinite;
+      opacity: .95;
+    }
+    @keyframes waveFlow{
+      0%{ stroke-dashoffset: 0; }
+      100%{ stroke-dashoffset: -120; }
+    }
+    .frame.listening .wave svg path{
+      animation-duration: .85s;
+      opacity: 1;
+    }
+    .frame.listening .wave .glow{
+      opacity: 1;
     }
 
     .side{
@@ -113,11 +136,12 @@
       position:relative;
     }
 
-    /* ✅ Ben tarafına hafif tatlı sarı tint */
+    /* ✅ Ben tarafı: tatlı karamel/sarı tint (göz almayan) */
     .side.meTint{
       background:
-        radial-gradient(820px 260px at 0% 10%, rgba(255,179,0,.12), transparent 62%),
-        radial-gradient(820px 260px at 100% 0%, rgba(190,242,100,.05), transparent 62%),
+        radial-gradient(900px 340px at 50% 10%, rgba(255,186,110,.16), transparent 62%),
+        radial-gradient(900px 340px at 15% 10%, rgba(255,179,0,.10), transparent 62%),
+        radial-gradient(900px 340px at 100% 0%, rgba(190,242,100,.05), transparent 62%),
         rgba(0,0,0,.12);
     }
 
@@ -139,7 +163,7 @@
       letter-spacing: .2px;
       color:#fff;
       white-space:nowrap;
-      min-width: 54px;
+      min-width: 52px;
     }
 
     .lang{
@@ -151,21 +175,63 @@
       justify-content:flex-end;
     }
 
-    select{
-      max-width: 200px;
-      width: 100%;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
-      color:#fff;
+    /* ✅ Kibar dropdown (custom) */
+    .dd{
+      position: relative;
+      width: 160px;
+      max-width: 180px;
+    }
+    .dd-btn{
+      width:100%;
       padding: 10px 12px;
       border-radius: 16px;
-      font-size: 13px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color:#fff;
       font-weight: 1000;
-      outline:none;
-      appearance: none;
-      -webkit-appearance: none;
+      font-size: 13px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      cursor:pointer;
+      user-select:none;
     }
-    select option{ background:#111 !important; color:#fff !important; }
+    .dd-btn .caret{
+      opacity:.75;
+      font-size: 12px;
+    }
+    .dd-menu{
+      position:absolute;
+      top: calc(100% + 8px);
+      right: 0;                /* ✅ dili seçen tarafa doğru aç */
+      width: 220px;
+      max-width: 70vw;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(12,12,14,.96);
+      box-shadow: 0 30px 80px rgba(0,0,0,.65);
+      backdrop-filter: blur(12px);
+      overflow:hidden;
+      display:none;
+      z-index: 200;
+    }
+    .dd.open .dd-menu{ display:block; }
+    .dd-item{
+      padding: 12px 12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      cursor:pointer;
+      color: rgba(255,255,255,.90);
+      font-weight: 950;
+      font-size: 13px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .dd-item:last-child{ border-bottom:none; }
+    .dd-item:active{ background: rgba(255,255,255,.06); }
+    .dd-item .mini{ color: rgba(255,255,255,.55); font-weight: 900; font-size: 11px; }
 
     .btnIcon{
       width: 48px;
@@ -186,7 +252,6 @@
       opacity:.92;
     }
     .btnIcon:active{ transform: translateY(1px); }
-
     .btnIcon.listening{
       border-color: rgba(190,242,100,.35);
       background: rgba(190,242,100,.12);
@@ -197,13 +262,14 @@
       flex: 1 1 auto;
       min-height:0;
       padding: 12px;
-      overflow:auto;
+      overflow:auto; /* ✅ scroll */
       -webkit-overflow-scrolling: touch;
       display:flex;
       flex-direction:column;
       gap: 10px;
     }
 
+    /* ✅ Chat baloncuk stili */
     .bubble{
       max-width: 92%;
       padding: 11px 13px;
@@ -241,6 +307,38 @@
       backdrop-filter: blur(10px);
     }
 
+    /* ✅ Minimal markalar (iki taraf yönüne göre) */
+    .brandBottom, .brandTop{
+      position:absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap: 2px;
+      pointer-events:none;
+      opacity:.85;
+      z-index: 40;
+    }
+    .brandBottom{
+      bottom: 10px;
+    }
+    .brandTop{
+      top: 10px;
+      transform: translateX(-50%) rotate(180deg); /* karşı taraf okur */
+    }
+    .bn{
+      font-weight: 1000;
+      letter-spacing:.3px;
+      font-size: 12px;
+      color: rgba(255,255,255,.88);
+    }
+    .sl{
+      font-weight: 900;
+      font-size: 10px;
+      color: rgba(255,255,255,.60);
+    }
+
     .toast{
       position: fixed;
       left: 50%;
@@ -267,8 +365,14 @@
 </head>
 
 <body>
-  <div class="frame">
+  <div class="frame" id="frameRoot">
     <button class="back" id="backBtn" aria-label="Geri">←</button>
+
+    <!-- ✅ minimal marka (karşı taraf) -->
+    <div class="brandTop">
+      <div class="bn">CaynanaAI</div>
+      <div class="sl" id="sloganTop">—</div>
+    </div>
 
     <div class="split">
 
@@ -277,9 +381,12 @@
         <div class="bar">
           <div class="who">Karşı</div>
           <div class="lang">
-            <select id="topLang"></select>
 
-            <!-- Hoparlör -->
+            <div class="dd" id="ddTop">
+              <div class="dd-btn" id="ddTopBtn"><span id="ddTopTxt">English</span><span class="caret">▾</span></div>
+              <div class="dd-menu" id="ddTopMenu"></div>
+            </div>
+
             <button class="btnIcon" id="topSpeak" aria-label="Hoparlör">
               <svg viewBox="0 0 24 24">
                 <path d="M11 5L6 9H3v6h3l5 4z"></path>
@@ -288,7 +395,6 @@
               </svg>
             </button>
 
-            <!-- Mikrofon -->
             <button class="btnIcon" id="topMic" aria-label="Karşı mikrofon">
               <svg viewBox="0 0 24 24">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -297,23 +403,11 @@
                 <line x1="8" y1="23" x2="16" y2="23"></line>
               </svg>
             </button>
+
           </div>
         </div>
 
-        <div class="content" id="topBody">
-          <!-- Karşı konuştuğunda: kendi dili burada -->
-          <div class="bubble them">
-            <div class="label">Duyulan</div>
-            <div id="topHeard">—</div>
-          </div>
-
-          <!-- Bize çeviri burada -->
-          <div class="bubble me">
-            <div class="label">Sana</div>
-            <div id="topTranslated">—</div>
-          </div>
-        </div>
-
+        <div class="content" id="topBody"></div>
         <div class="status" id="topStatus">Hazır</div>
       </section>
 
@@ -332,9 +426,12 @@
         <div class="bar">
           <div class="who">Ben</div>
           <div class="lang">
-            <select id="botLang"></select>
 
-            <!-- Hoparlör -->
+            <div class="dd" id="ddBot">
+              <div class="dd-btn" id="ddBotBtn"><span id="ddBotTxt">Türkçe</span><span class="caret">▾</span></div>
+              <div class="dd-menu" id="ddBotMenu"></div>
+            </div>
+
             <button class="btnIcon" id="botSpeak" aria-label="Hoparlör">
               <svg viewBox="0 0 24 24">
                 <path d="M11 5L6 9H3v6h3l5 4z"></path>
@@ -343,7 +440,6 @@
               </svg>
             </button>
 
-            <!-- Mikrofon -->
             <button class="btnIcon" id="botMic" aria-label="Ben mikrofon">
               <svg viewBox="0 0 24 24">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
@@ -352,31 +448,26 @@
                 <line x1="8" y1="23" x2="16" y2="23"></line>
               </svg>
             </button>
+
           </div>
         </div>
 
-        <div class="content" id="botBody">
-          <!-- Ben konuştuğumda: TR burada -->
-          <div class="bubble me">
-            <div class="label">Duyulan</div>
-            <div id="botHeard">—</div>
-          </div>
-
-          <!-- Karşı tarafa çeviri burada -->
-          <div class="bubble them">
-            <div class="label">Karşı</div>
-            <div id="botTranslated">—</div>
-          </div>
-        </div>
-
+        <div class="content" id="botBody"></div>
         <div class="status" id="botStatus">Hazır</div>
       </section>
 
     </div>
+
+    <!-- ✅ minimal marka (ben) -->
+    <div class="brandBottom">
+      <div class="bn">CaynanaAI</div>
+      <div class="sl" id="sloganBot">Yapay Zekânın Geleneksel Aklı</div>
+    </div>
+
   </div>
 
   <div class="toast" id="toast">—</div>
 
-  <script type="module" src="/js/translate_page.js?v=3"></script>
+  <script type="module" src="/js/translate_page.js?v=4"></script>
 </body>
 </html>
