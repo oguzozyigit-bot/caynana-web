@@ -19,11 +19,12 @@
       --gapH: 6px;
       color-scheme: dark;
 
-      --tarot-bg: rgba(20,20,20,.85);
-      --tarot-br: rgba(255,255,255,.12);
-      --tarot-gold: #ffb300;
-      --tarot-green: #bef264;
-      --tarot-red: #ff5252;
+      --gold:#ffb300;
+      --pistachio:#bef264;
+      --red:#ff5252;
+
+      --cardBr: rgba(255,255,255,.14);
+      --glass: rgba(20,20,20,.90);
     }
 
     .footer-container{
@@ -71,7 +72,9 @@
     }
 
     .card{
-      background: linear-gradient(145deg, rgba(30,30,30,0.9), rgba(10,10,10,0.95));
+      background: radial-gradient(1000px 260px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
+                  radial-gradient(1000px 260px at 100% 0%, rgba(190,242,100,.10), transparent 60%),
+                  rgba(12,12,12,.92);
       border: 1px solid rgba(255,255,255,.10);
       border-radius: 22px;
       padding: 18px;
@@ -108,7 +111,7 @@
     .seg.active{
       border-color: rgba(190,242,100,.35);
       background: rgba(190,242,100,.10);
-      color: var(--tarot-green);
+      color: var(--pistachio);
     }
 
     .btn-row{ display:flex; gap:10px; margin-top: 12px; }
@@ -120,7 +123,7 @@
       font-weight: 1000;
       font-size: 14px;
       cursor:pointer;
-      background: var(--tarot-green);
+      background: var(--pistachio);
       color:#111;
       box-shadow: 0 12px 26px rgba(190,242,100,.18);
     }
@@ -131,22 +134,22 @@
       box-shadow:none;
     }
 
-    /* ===== Deck showcase (güzel desteler) ===== */
+    /* ✅ RENKLİ DESTE SHOWCASE */
     .deck-showcase{
       margin-top: 14px;
       display:flex;
-      align-items:stretch;
-      justify-content:space-between;
       gap: 12px;
+      align-items:stretch;
     }
     .deck-box{
       flex: 1;
       border-radius: 20px;
       border: 1px solid rgba(255,255,255,.10);
       background:
-        radial-gradient(900px 280px at 0% 0%, rgba(255,179,0,.10), transparent 60%),
-        radial-gradient(900px 280px at 100% 0%, rgba(190,242,100,.10), transparent 60%),
-        rgba(14,14,14,.70);
+        radial-gradient(700px 220px at 0% 0%, rgba(255,82,82,.14), transparent 60%),
+        radial-gradient(700px 220px at 100% 0%, rgba(66,133,244,.14), transparent 60%),
+        radial-gradient(700px 220px at 50% 110%, rgba(190,242,100,.12), transparent 65%),
+        rgba(10,10,10,.92);
       box-shadow: 0 18px 45px rgba(0,0,0,.45);
       padding: 12px;
       display:flex;
@@ -165,22 +168,15 @@
       inset:0;
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,.14);
-      background:
-        radial-gradient(180px 120px at 10% 0%, rgba(190,242,100,.10), transparent 65%),
-        radial-gradient(180px 120px at 100% 0%, rgba(255,179,0,.10), transparent 65%),
-        rgba(25,25,25,.85);
+      background: rgba(0,0,0,.35);
       box-shadow: 0 16px 34px rgba(0,0,0,.40);
       overflow:hidden;
     }
-    .deck-stack .c:nth-child(1){ transform: translate(8px, -6px) rotate(2deg); opacity:.55; }
-    .deck-stack .c:nth-child(2){ transform: translate(4px, -3px) rotate(1deg); opacity:.75; }
+    .deck-stack .c:nth-child(1){ transform: translate(8px, -6px) rotate(3deg); opacity:.40; }
+    .deck-stack .c:nth-child(2){ transform: translate(4px, -3px) rotate(1.5deg); opacity:.70; }
     .deck-stack .c:nth-child(3){ transform: translate(0, 0) rotate(0deg); opacity:1; }
 
-    .deck-back-art{
-      position:absolute;
-      inset:0;
-      opacity:.92;
-    }
+    .deck-back-art{ position:absolute; inset:0; }
     .deck-back-art svg{ width:100%; height:100%; display:block; }
 
     .deck-meta{ flex:1; min-width:0; }
@@ -198,7 +194,7 @@
       flex-shrink:0;
     }
 
-    /* ===== Card grid with FLIP ===== */
+    /* ✅ RENKLİ KART GRID + FLIP */
     .grid{
       margin-top: 14px;
       display:grid;
@@ -229,36 +225,24 @@
       box-shadow: 0 16px 34px rgba(0,0,0,.40);
     }
 
+    /* Sırt: çok renkli */
     .back{
-      background:
-        radial-gradient(180px 120px at 10% 0%, rgba(190,242,100,.10), transparent 65%),
-        radial-gradient(180px 120px at 100% 0%, rgba(255,179,0,.10), transparent 65%),
-        rgba(25,25,25,.85);
       cursor:pointer;
       user-select:none;
+      background: rgba(0,0,0,.35);
     }
-    .back::before{
-      content:"✶";
-      position:absolute;
-      left: 10px; top: 8px;
-      opacity: .35;
-      color: rgba(255,255,255,.9);
-      font-weight: 1000;
+    .back .backsvg{
+      position:absolute; inset:0;
     }
-    .back::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background: linear-gradient(120deg, transparent 35%, rgba(255,255,255,.06) 52%, transparent 70%);
-      opacity: .6;
-    }
+    .back .backsvg svg{ width:100%; height:100%; display:block; }
 
     .front{
       transform: rotateY(180deg);
       background:
-        radial-gradient(220px 160px at 50% 0%, rgba(255,179,0,.10), transparent 60%),
-        radial-gradient(220px 160px at 50% 100%, rgba(190,242,100,.08), transparent 60%),
-        rgba(18,18,18,.92);
+        radial-gradient(220px 160px at 50% 0%, rgba(255,179,0,.16), transparent 60%),
+        radial-gradient(240px 180px at 0% 100%, rgba(66,133,244,.14), transparent 65%),
+        radial-gradient(240px 180px at 100% 110%, rgba(255,82,82,.14), transparent 65%),
+        rgba(10,10,10,.92);
       display:flex;
       flex-direction:column;
       padding: 10px;
@@ -267,15 +251,15 @@
     .front .frame{
       flex:1;
       border-radius: 12px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.20);
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
       display:flex;
       align-items:center;
       justify-content:center;
       position:relative;
       overflow:hidden;
     }
-    .front .frame svg{ width:82%; height:82%; opacity:.92; }
+    .front .frame svg{ width:92%; height:92%; display:block; }
 
     .front .title{
       font-weight: 1000;
@@ -298,22 +282,22 @@
     .tag{
       padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
     }
     .tag.rev{
-      border-color: rgba(255,82,82,.25);
-      background: rgba(255,82,82,.10);
+      border-color: rgba(255,82,82,.30);
+      background: rgba(255,82,82,.14);
       color: rgba(255,82,82,.95);
     }
 
-    .flip.disabled .back{ cursor:not-allowed; opacity:.40; }
-    .flip.selected .back{ outline:2px solid rgba(190,242,100,.35); }
+    .flip.disabled{ opacity:.45; }
+    .flip.disabled .back{ cursor:not-allowed; }
 
     /* Picked */
     .picked{ margin-top: 12px; display:flex; gap: 10px; flex-wrap:wrap; }
     .picked-card{
-      width: 110px;
+      width: 120px;
       border-radius: 16px;
       border: 1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
@@ -324,7 +308,7 @@
     .picked-tag{ margin-top:8px; display:inline-flex; padding:5px 8px; border-radius:999px; font-size:10px; font-weight:1000; border:1px solid rgba(255,255,255,.10); color: rgba(255,255,255,.75); background: rgba(255,255,255,.04); }
     .picked-tag.rev{ border-color: rgba(255,82,82,.25); background: rgba(255,82,82,.10); color: rgba(255,82,82,.95); }
 
-    /* Thinking overlay */
+    /* Thinking */
     .thinking-overlay{
       position: fixed;
       inset:0;
@@ -401,7 +385,7 @@
 <body>
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ÜST BAR -->
+  <!-- ÜST BAR (aynı) -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -441,7 +425,7 @@
     </div>
   </div>
 
-  <!-- HAMBURGER MENÜ -->
+  <!-- HAMBURGER (aynı) -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
@@ -478,7 +462,7 @@
         <div class="ico">🃏</div>
         <div>
           <div class="ttl">Tarot</div>
-          <div class="sub">Açılım seç → Karıştır → Kart seç. Kartlar <b>çevirilerek</b> görünür.</div>
+          <div class="sub">Açılım seç → Karıştır → Kart seç. Kartlar <b>renkli</b> ve <b>çevirilerek</b> görünür.</div>
         </div>
       </div>
 
@@ -491,47 +475,13 @@
       <div class="deck-showcase">
         <div class="deck-box">
           <div class="deck-stack" aria-hidden="true">
-            <div class="c">
-              <div class="deck-back-art">
-                <svg viewBox="0 0 100 140">
-                  <defs>
-                    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                      <stop offset="0" stop-color="rgba(190,242,100,.35)"/>
-                      <stop offset="1" stop-color="rgba(255,179,0,.30)"/>
-                    </linearGradient>
-                  </defs>
-                  <rect x="8" y="10" width="84" height="120" rx="14" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
-                  <circle cx="50" cy="70" r="26" fill="url(#g1)" opacity=".7"/>
-                  <path d="M50 40 L56 60 L78 60 L60 73 L66 94 L50 82 L34 94 L40 73 L22 60 L44 60 Z"
-                        fill="rgba(255,255,255,.18)"/>
-                </svg>
-              </div>
-            </div>
-            <div class="c">
-              <div class="deck-back-art">
-                <svg viewBox="0 0 100 140">
-                  <rect x="10" y="12" width="80" height="116" rx="14" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="2"/>
-                  <path d="M18 26 C40 10, 60 10, 82 26" stroke="rgba(255,255,255,.12)" fill="none" stroke-width="2"/>
-                  <path d="M18 114 C40 130, 60 130, 82 114" stroke="rgba(255,255,255,.12)" fill="none" stroke-width="2"/>
-                  <circle cx="50" cy="70" r="14" stroke="rgba(255,255,255,.14)" fill="none" stroke-width="2"/>
-                </svg>
-              </div>
-            </div>
-            <div class="c">
-              <div class="deck-back-art">
-                <svg viewBox="0 0 100 140">
-                  <rect x="8" y="10" width="84" height="120" rx="14" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
-                  <path d="M50 24 L62 48 L88 52 L68 70 L72 96 L50 84 L28 96 L32 70 L12 52 L38 48 Z"
-                        fill="rgba(255,179,0,.18)"/>
-                  <path d="M50 32 L58 50 L78 52 L62 64 L66 82 L50 72 L34 82 L38 64 L22 52 L42 50 Z"
-                        fill="rgba(190,242,100,.14)"/>
-                </svg>
-              </div>
-            </div>
+            <div class="c"><div class="deck-back-art" id="deckBack1"></div></div>
+            <div class="c"><div class="deck-back-art" id="deckBack2"></div></div>
+            <div class="c"><div class="deck-back-art" id="deckBack3"></div></div>
           </div>
 
           <div class="deck-meta">
-            <div class="deck-name">Kaynana Destesi</div>
+            <div class="deck-name">Renkli Kaynana Destesi</div>
             <div class="deck-sub" id="needTxt">Seçilecek: 1 kart</div>
           </div>
           <div class="pill" id="statePill">Hazır</div>
@@ -543,13 +493,11 @@
         <button class="btn secondary" id="btnReset">Sıfırla</button>
       </div>
 
-      <div class="sub" style="margin-top:10px;">Kartlara dokun ve seç. (Düz/Ters gelebilir.)</div>
+      <div class="sub" style="margin-top:10px;">Kartlara dokun. Düz/Ters gelebilir.</div>
 
       <div class="grid" id="grid"></div>
 
-      <div class="sub" style="margin-top:12px;font-weight:1000;color:rgba(255,255,255,.85);">
-        Seçtiklerin:
-      </div>
+      <div class="sub" style="margin-top:12px;font-weight:1000;color:rgba(255,255,255,.85);">Seçtiklerin:</div>
       <div class="picked" id="picked"></div>
 
       <div class="result" id="resultBox"></div>
@@ -561,7 +509,7 @@
   <div class="thinking-overlay" id="thinking">
     <div class="think-card">
       <div class="think-title">Kaynana düşünüyor… 🃏</div>
-      <div class="think-sub">Kartlar konuşuyor evladım… Biraz sessiz ol da duyayım.</div>
+      <div class="think-sub">Kartlar renkli ama mesele “anlam” evladım…</div>
       <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
       <div class="think-sub" style="margin-top:10px;">Şimdi uzun uzun anlatacağım…</div>
     </div>
@@ -585,6 +533,6 @@
 
 <script type="module" src="/js/layout-common.js?v=1"></script>
 <script type="module" src="/js/menu_history_ui.js?v=1"></script>
-<script type="module" src="/js/tarot_page.js?v=2"></script>
+<script type="module" src="/js/tarot_page.js?v=3"></script>
 </body>
 </html>
