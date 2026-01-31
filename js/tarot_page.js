@@ -1,8 +1,8 @@
 // FILE: /js/tarot_page.js
 // 78 cards, 3-column vertical grid
-// ✅ Back design: Navy + white frame + red "C" monogram
-// ✅ Daily limit: 1/3/5 spreads each once per day
-// ✅ After reading: hide deck + kaynana joke "fal dakika başı değişmez, yarın gel"
+// ✅ Back: pastel purple + white frame + smaller centered red C + white outline/shadow
+// ✅ Daily limit: each spread once/day
+// ✅ After reading: hide deck + kaynana joke
 
 import { initMenuHistoryUI } from "/js/menu_history_ui.js";
 import { STORAGE_KEY } from "/js/config.js";
@@ -75,42 +75,47 @@ function buildDeck(){
 }
 const FULL_DECK = buildDeck();
 
-// ---------- Back SVG (NAVY + WHITE FRAME + RED C) ----------
+// ---------- Back SVG (Pastel Purple) ----------
 function backSVG(seed){
+  // Pastel purple base
   return `
   <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <linearGradient id="nv" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0" stop-color="#0b1430" stop-opacity="1"/>
-        <stop offset="1" stop-color="#111b3d" stop-opacity="1"/>
+      <linearGradient id="pp" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#6d5ba6" stop-opacity="1"/>
+        <stop offset="1" stop-color="#4a3a86" stop-opacity="1"/>
       </linearGradient>
       <radialGradient id="shine" cx="50%" cy="35%" r="70%">
-        <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>
+        <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
         <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
       </radialGradient>
     </defs>
 
-    <rect x="0" y="0" width="100" height="140" rx="16" fill="url(#nv)"/>
-    <rect x="6" y="8" width="88" height="124" rx="14" fill="rgba(0,0,0,.18)"/>
-    <rect x="10" y="12" width="80" height="116" rx="12" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>
-    <rect x="14" y="16" width="72" height="108" rx="10" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="2"/>
-    <circle cx="50" cy="64" r="34" fill="url(#shine)"/>
+    <rect x="0" y="0" width="100" height="140" rx="16" fill="url(#pp)"/>
+    <circle cx="50" cy="62" r="34" fill="url(#shine)"/>
 
-    <!-- Red C monogram -->
-    <path d="M66 90c-6 7-13 11-22 11-16 0-29-13-29-29s13-29 29-29c9 0 16 4 22 11"
-          fill="none" stroke="#ff2d2d" stroke-width="7" stroke-linecap="round" opacity="0.92"/>
+    <!-- White frame -->
+    <rect x="8" y="10" width="84" height="120" rx="14"
+          fill="rgba(0,0,0,.10)" stroke="rgba(255,255,255,.55)" stroke-width="2"/>
+    <rect x="12" y="14" width="76" height="112" rx="12"
+          fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2"/>
 
-    <path d="M66 90c-6 7-13 11-22 11-16 0-29-13-29-29s13-29 29-29c9 0 16 4 22 11"
-          fill="none" stroke="rgba(255,255,255,.14)" stroke-width="2" stroke-linecap="round"/>
+    <!-- C monogram: smaller, centered -->
+    <!-- White shadow/outline behind -->
+    <path d="M62 86c-5 6-11 9-18 9-13 0-23-10-23-23s10-23 23-23c7 0 13 3 18 9"
+          fill="none" stroke="rgba(255,255,255,.70)" stroke-width="10" stroke-linecap="round" opacity="0.85"/>
+    <!-- Red C on top -->
+    <path d="M62 86c-5 6-11 9-18 9-13 0-23-10-23-23s10-23 23-23c7 0 13 3 18 9"
+          fill="none" stroke="#ff2d2d" stroke-width="6.5" stroke-linecap="round" opacity="0.95"/>
 
-    <text x="50" y="124" text-anchor="middle"
+    <text x="50" y="126" text-anchor="middle"
           font-family="system-ui, -apple-system, Segoe UI, Arial"
           font-size="9" font-weight="900"
-          fill="rgba(255,255,255,.70)">Caynana Tarot</text>
+          fill="rgba(255,255,255,.75)">Caynana Tarot</text>
   </svg>`;
 }
 
-// ---------- Face SVG (stronger contrast) ----------
+// ---------- Face SVG (keep strong) ----------
 function faceSVG(card, rev){
   const accent = card.suit?.accent || "#ffb300";
   const sym = card.type === "major" ? "✶" : (card.suit?.sym || "✶");
@@ -200,8 +205,7 @@ function makeResultText(){
   state.picked.forEach(p=>{
     lines.push(`<br>• <b>${p.posLabel}:</b> ${p.card.name} (${p.rev ? "ters" : "düz"})`);
   });
-  lines.push(`<br><br><b>Kaynana hükmü:</b>`);
-  lines.push(`Fal dakika başı değişmez evladım. Bugünlük bu kadar. Yarın gel, yine bakarız.`);
+  lines.push(`<br><br><b>Kaynana hükmü:</b> Fal dakika başı değişmez evladım. Bugünlük bu kadar. <b>Yarın gel</b>.`);
   lines.push(`<br><br><b>Not:</b> Günde bir kere bakıyorum. Ben de insanım, gözüm yoruluyor 🙂`);
   return lines.join("");
 }
@@ -211,7 +215,7 @@ async function runReadingAndLock(){
   await sleep(6500);
   showThinking(false);
 
-  // kartları gizle (3 ekran kartları kaldır)
+  // kartları gizle
   $("deckGrid").style.display = "none";
 
   // sonucu göster
@@ -219,14 +223,13 @@ async function runReadingAndLock(){
   box.innerHTML = makeResultText();
   box.classList.add("show");
 
-  // günlük limit işaretle
+  // limit
   markUsedToday(state.need);
 
   toast("Bugünlük bitti evladım. Yarın gel 🙂");
 }
 
 function resetUIOnly(){
-  // UI temizle ama günlük kilidi aşamaz
   state.ready = false;
   state.used = new Set();
   state.picked = [];
@@ -235,10 +238,8 @@ function resetUIOnly(){
   $("resultBox").classList.remove("show");
   $("resultBox").innerHTML = "";
 
-  // kartları geri getir
   $("deckGrid").style.display = "grid";
 
-  // flip reset
   document.querySelectorAll(".flip").forEach(el=>{
     el.classList.remove("flipped");
     el.classList.remove("disabled");
@@ -247,7 +248,7 @@ function resetUIOnly(){
   toast("Sıfırlandı (UI). Ama günlük limit geçmez evladım.");
 }
 
-// ---------- Build Grid 78 ----------
+// ---------- Build Grid ----------
 function buildDeckGrid(){
   const grid = $("deckGrid");
   grid.innerHTML = "";
@@ -280,12 +281,10 @@ function buildDeckGrid(){
 
 // ---------- Pick ----------
 function onPick(flipEl, card){
-  // günlük limit kontrol (kart seçimine başlamadan)
   if(isUsedToday(state.need)){
     toast("Evladım bugün bu açılıma zaten baktık. Fal dakika başı değişmez. Yarın gel.");
     return;
   }
-
   if(!state.ready){
     toast("Önce karıştır evladım.");
     return;
@@ -330,8 +329,6 @@ function bindSpreads(){
       document.querySelectorAll("#spreads .seg").forEach(x=>x.classList.remove("active"));
       seg.classList.add("active");
       state.need = parseInt(seg.getAttribute("data-n"),10);
-
-      // yeni açılım seçince UI reset (ama limit kontrolü devam)
       resetUIOnly();
     });
   });
@@ -368,9 +365,4 @@ document.addEventListener("DOMContentLoaded", ()=>{
   renderPicked();
   bindSpreads();
   bindButtons();
-
-  // açılım başında günlük limit uyarısı (gösterme)
-  if(isUsedToday(state.need)){
-    toast("Bugün tek karta baktınsa, yarın gel evladım 🙂");
-  }
 });
