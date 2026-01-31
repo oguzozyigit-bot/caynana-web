@@ -26,7 +26,7 @@ function showPreview(file){
   box.style.display = "block";
 }
 
-async function fileToBase64(file){
+async function fileToDataUrl(file){
   return new Promise((resolve,reject)=>{
     const fr = new FileReader();
     fr.onload = ()=> resolve(String(fr.result||""));
@@ -35,14 +35,14 @@ async function fileToBase64(file){
   });
 }
 
-async function callOcr(base64DataUrl){
+async function callOcr(dataUrl){
   const base = apiBase();
   if(!base) throw new Error("BASE_DOMAIN missing");
 
   const r = await fetch(`${base}/api/ocr`,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ image: base64DataUrl })
+    body: JSON.stringify({ image: dataUrl })
   });
 
   const txt = await r.text().catch(()=> "");
@@ -52,15 +52,28 @@ async function callOcr(base64DataUrl){
   return String(data.text || "").trim();
 }
 
-async function callTranslate(text, toLang){
+async function callTranslateToTR(text){
   const base = apiBase();
+
+  // ✅ from_lang YOK → otomatik dil algılama
   const r = await fetch(`${base}/api/translate`,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ text, to_lang: toLang })
+    body: JSON.stringify({ text, to_lang: "tr" })
   });
-  const data = await r.json().catch(()=> ({}));
+
+  const txt = await r.text().catch(()=> "");
+  if(!r.ok) throw new Error(txt || `Translate HTTP ${r.status}`);
+
+  const data = JSON.parse(txt || "{}");
   return String(data.translated || "").trim() || text;
+}
+
+function setBusy(on){
+  const btn = $("btnRun");
+  if(!btn) return;
+  btn.disabled = !!on;
+  btn.textContent = on ? "Çeviriyorum..." : "Türkçeye Çevir";
 }
 
 async function run(){
@@ -69,52 +82,51 @@ async function run(){
     return;
   }
 
-  $("rawText").textContent = "Okuyorum…";
-  $("translatedText").textContent = "—";
+  setBusy(true);
+  $("translatedText").textContent = "Okuyorum...";
 
   try{
-    const dataUrl = await fileToBase64(currentFile);
+    const dataUrl = await fileToDataUrl(currentFile);
 
-    // OCR
+    // 1) OCR
     const raw = await callOcr(dataUrl);
-    $("rawText").textContent = raw || "Metin bulunamadı.";
-
-    // Translate
-    const toLang = $("toLang").value || "en";
-    if(raw){
-      $("translatedText").textContent = "Çeviriyorum…";
-      const tr = await callTranslate(raw, toLang);
-      $("translatedText").textContent = tr || "—";
-    }else{
-      $("translatedText").textContent = "—";
+    if(!raw){
+      $("translatedText").textContent = "Metin bulamadım evladım. Daha net çek.";
+      toast("Metin bulunamadı");
+      setBusy(false);
+      return;
     }
 
+    // 2) Translate to Turkish (auto detect)
+    $("translatedText").textContent = "Türkçeye çeviriyorum...";
+    const tr = await callTranslateToTR(raw);
+
+    $("translatedText").textContent = tr || "—";
     toast("Tamamdır.");
+
   }catch(e){
     console.warn(e);
-    toast("OCR çalışmadı. Vision API açık mı? (Render loga bak)");
-    $("rawText").textContent = "—";
-    $("translatedText").textContent = "—";
+    $("translatedText").textContent = "Çalışmadı evladım. Vision API açık mı? (Render log'a bak)";
+    toast("OCR/Çeviri hata");
+  }finally{
+    setBusy(false);
   }
+}
+
+function onPick(file){
+  if(!file) return;
+  currentFile = file;
+  showPreview(file);
+  $("btnRun").disabled = false;
+  $("translatedText").textContent = "Hazırım. ‘Türkçeye Çevir’e bas.";
 }
 
 document.addEventListener("DOMContentLoaded", ()=>{
   $("btnCamera").addEventListener("click", ()=> $("fileCamera").click());
   $("btnGallery").addEventListener("click", ()=> $("fileGallery").click());
 
-  $("fileCamera").addEventListener("change", (e)=>{
-    const f = e.target.files?.[0];
-    if(!f) return;
-    currentFile = f;
-    showPreview(f);
-  });
-
-  $("fileGallery").addEventListener("change", (e)=>{
-    const f = e.target.files?.[0];
-    if(!f) return;
-    currentFile = f;
-    showPreview(f);
-  });
+  $("fileCamera").addEventListener("change", (e)=> onPick(e.target.files?.[0]));
+  $("fileGallery").addEventListener("change", (e)=> onPick(e.target.files?.[0]));
 
   $("btnRun").addEventListener("click", run);
 });
