@@ -1,5 +1,6 @@
 // FILE: /js/tarot_page.js
 // FULL DECK (78) + hidden horizontal scroll + flip reveal + colorful original SVG art
+// ✅ NEW: shuffle animation -> auto left-right scroll for ~5s
 
 import { initMenuHistoryUI } from "/js/menu_history_ui.js";
 import { STORAGE_KEY } from "/js/config.js";
@@ -86,7 +87,6 @@ function buildDeck(){
       name: nm,
       suit: null,
       rank: null,
-      sym: "🃏",
       seed: `major:${idx}:${nm}`
     });
   });
@@ -100,13 +100,12 @@ function buildDeck(){
         name: `${s.name} - ${r.name}`,
         suit: s,
         rank: r,
-        sym: s.sym,
         seed: `minor:${s.key}:${r.key}`
       });
     });
   });
 
-  return deck; // 78
+  return deck;
 }
 
 const FULL_DECK = buildDeck();
@@ -156,11 +155,9 @@ function deckBackSVG(seed){
 function faceSVG(card, rev){
   const p = pickPalette(card.seed);
   const suitAccent = card.suit?.accent || p.a;
-  const title = card.type === "major" ? card.name : card.name;
   const sym = card.type === "major" ? "✶" : (card.suit?.sym || "✶");
   const rankSym = card.rank?.sym || "✶";
 
-  // “ters” görseli: iç frame’i 180 döndürürüz
   const rot = rev ? `transform="rotate(180 60 60)"` : "";
 
   return `
@@ -203,8 +200,8 @@ function faceSVG(card, rev){
 const state = {
   need: 1,
   ready: false,
-  used: new Set(),   // selected card ids
-  picked: []         // {card, rev, posLabel}
+  used: new Set(),
+  picked: []
 };
 
 function setPill(text, good=true){
@@ -241,17 +238,17 @@ function renderPicked(){
 
 function makeLongReading(){
   const lines = [];
-  lines.push(`<b>Evladım…</b> tam deste seçtin, iyi. Şimdi kartların diliyle konuşacağım.`);
+  lines.push(`<b>Evladım…</b> tam deste kaydırıp seçtin. Güzel. Şimdi yorum:`);
   lines.push(`<br><br><b>Seçtiklerin:</b>`);
   state.picked.forEach(p=>{
     lines.push(`<br>• <b>${p.posLabel}:</b> ${p.card.name} (${p.rev?"ters":"düz"})`);
   });
-  lines.push(`<br><br><b>Kaynana yorumu:</b>`);
+  lines.push(`<br><br><b>Kaynana özeti:</b>`);
   const revCount = state.picked.filter(x=>x.rev).length;
   lines.push(revCount >= Math.ceil(state.need/2)
     ? `Ters çok. “Düzelt, toparla, plan yap” diyor.`
-    : `Genel enerji iyi. “Devam et” diyor ama şımarmak yok 🙂`);
-  lines.push(`<br><br><b>Son söz:</b> Neyse halin çıksın falın… Hadi bakalım.`);
+    : `Enerji iyi. “Devam et” diyor ama şımarmak yok 🙂`);
+  lines.push(`<br><br><b>Son söz:</b> Neyse halin çıksın falın…`);
   return lines.join("");
 }
 
@@ -264,7 +261,7 @@ async function runReading(){
   box.classList.add("show");
 }
 
-// --------- BUILD STRIP (78) ----------
+// --------- BUILD STRIP ----------
 function buildDeckStrip(){
   const strip = $("deckStrip");
   strip.innerHTML = "";
@@ -310,11 +307,9 @@ function onPick(flipEl, card){
   const posLabel = POS[state.need][state.picked.length] || `Kart ${state.picked.length+1}`;
   const rev = Math.random() < 0.38;
 
-  // state
   state.used.add(card.id);
   state.picked.push({ card, rev, posLabel });
 
-  // flip reveal
   const art = flipEl.querySelector("[data-art]");
   const title = flipEl.querySelector("[data-title]");
   const pos = flipEl.querySelector("[data-pos]");
@@ -333,9 +328,58 @@ function onPick(flipEl, card){
 
   if(state.picked.length === state.need){
     setPill("Okunuyor…", true);
-    // diğerlerini disable hissi (tam kilitleme yok; ama tıklanamaz çünkü state.need doldu)
     runReading();
   }
+}
+
+// --------- SHUFFLE ANIMATION (NEW) ----------
+let __shuffling = false;
+
+async function animateShuffle(){
+  const strip = $("deckStrip");
+  if(!strip) return;
+  if(__shuffling) return;
+
+  __shuffling = true;
+
+  const start = strip.scrollLeft;
+  const max = strip.scrollWidth - strip.clientWidth;
+
+  // küçük bir “karışıyor” hissi: sağa/sola dalga
+  const t0 = performance.now();
+  const duration = 5200; // ~5s
+  const amplitude = Math.max(40, Math.min(160, strip.clientWidth * 0.25));
+
+  // hedef: orta bölgeye yaklaş
+  const baseTarget = Math.min(max, Math.max(0, start + amplitude));
+
+  function easeInOut(t){
+    return t<0.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2;
+  }
+
+  while(true){
+    const now = performance.now();
+    const dt = now - t0;
+    const p = Math.min(1, dt / duration);
+
+    // sinüs dalga + ease
+    const wave = Math.sin(p * Math.PI * 6); // 3 tam salınım
+    const e = easeInOut(p);
+
+    let x = baseTarget + wave * amplitude;
+    x = Math.max(0, Math.min(max, x));
+
+    strip.scrollLeft = x;
+
+    if(p >= 1) break;
+    await sleep(16);
+  }
+
+  // final: biraz “random settle”
+  const settle = Math.max(0, Math.min(max, baseTarget + (Math.random()*2-1)*amplitude*0.35));
+  strip.scrollLeft = settle;
+
+  __shuffling = false;
 }
 
 // --------- CONTROLS ----------
@@ -349,11 +393,12 @@ function resetAll(){
   renderNeed();
   renderPicked();
 
-  // stripte flipleri geri al
+  // flipleri geri al
   document.querySelectorAll(".flip").forEach(el=>{
     el.classList.remove("flipped");
     el.classList.remove("disabled");
   });
+
   toast("Sıfırlandı evladım.");
 }
 
@@ -369,11 +414,18 @@ function bindSpreads(){
 }
 
 function bindButtons(){
-  $("btnShuffle").addEventListener("click", ()=>{
+  $("btnShuffle").addEventListener("click", async ()=>{
+    // reset selection but keep deck
     state.ready = true;
+    setPill("Karışıyor…", true);
+
+    toast("Karıştırıyorum evladım…");
+    await animateShuffle();
+
     setPill("Karıştı", true);
-    toast("Karıştırdım evladım. Kaydır, seç.");
+    toast("Karıştı. Kaydır, seç.");
   });
+
   $("btnReset").addEventListener("click", resetAll);
 }
 
