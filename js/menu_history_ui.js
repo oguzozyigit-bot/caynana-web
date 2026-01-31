@@ -1,6 +1,9 @@
 // FILE: /js/menu_history_ui.js
 // ✅ Menüler her init'te sıfırlanır (tekrar yok)
-// ✅ Hatırlatıcı menüde HER ZAMAN görünür (⏰)
+// ✅ Hatırlatıcı her zaman görünür
+// ✅ Takım butonu her zaman görünür:
+//    - takım yoksa: "Takım Bildirimleri"
+//    - takım varsa: takım adı (örn Beşiktaş)
 // ✅ Chat’e dokunmaz
 
 import { ChatStore } from "./chat_store.js";
@@ -56,6 +59,27 @@ function addMenuItem(root, ico, label, href){
   root.appendChild(div);
 }
 
+/* ✅ Takım adını toleranslı oku:
+   - user.team (ideal)
+   - user.meta.team / profile_v2.team gibi alternatifler (bazı sürümlerde)
+*/
+function readTeamName(){
+  try{
+    const u = getProfile();
+    const t1 = String(u.team || "").trim();
+    const t2 = String(u.takim || "").trim();
+    const t3 = String(u.favorite_team || "").trim();
+    if(t1 || t2 || t3) return (t1 || t2 || t3);
+
+    // profil meta v2 (senin profil sayfan local meta da yazıyor olabilir)
+    const meta = JSON.parse(localStorage.getItem("caynana_profile_v2") || "{}");
+    const mt = String(meta.team || meta.takim || "").trim();
+    return mt || "";
+  }catch{
+    return "";
+  }
+}
+
 function renderMenusFresh(){
   const asistan = $("menuAsistan");
   const astro   = $("menuAstro");
@@ -67,9 +91,9 @@ function renderMenusFresh(){
 
   const p = getProfile();
   const gender = String(p.gender || p.cinsiyet || "").toLowerCase().trim();
-  const team   = String(p.team || "").trim();
   const isFemale = ["kadın","kadin","female","woman","f"].includes(gender);
 
+  /* ---- ASİSTAN ---- */
   if(asistan){
     addMenuItem(asistan, "💬", "Sohbet", "/pages/chat.html");
     addMenuItem(asistan, "🛍️", "Alışveriş", "/pages/alisveris.html");
@@ -78,18 +102,18 @@ function renderMenusFresh(){
     addMenuItem(asistan, "🥗", "Diyet", "/pages/diyet.html");
     addMenuItem(asistan, "❤️", "Sağlık", "/pages/health.html");
 
-    // ✅ Hatırlatıcı her zaman görünür
     addMenuItem(asistan, "⏰", "Hatırlatıcı", "/pages/hatirlatici.html");
 
     if(isFemale){
       addMenuItem(asistan, "🩸", "Regl Takip", "/pages/regl.html");
     }
 
-    if(team){
-      addMenuItem(asistan, "⚽", team, "/pages/clup.html");
-    }
+    // ✅ HER ZAMAN VAR: takım yoksa "Takım Bildirimleri", varsa takım adı
+    const teamName = readTeamName();
+    addMenuItem(asistan, "⚽", (teamName || "Takım Bildirimleri"), "/pages/clup.html");
   }
 
+  /* ---- ASTRO ---- */
   if(astro){
     addMenuItem(astro, "☕", "Kahve Falı", "/pages/fal.html");
     addMenuItem(astro, "🃏", "Tarot", "/pages/tarot.html");
@@ -97,6 +121,7 @@ function renderMenusFresh(){
     addMenuItem(astro, "♈", "Günlük Burç", "/pages/astro.html");
   }
 
+  /* ---- KURUMSAL ---- */
   if(kur){
     addMenuItem(kur, "⭐", "Üyelik", "/pages/membership.html");
     addMenuItem(kur, "ℹ️", "Hakkımızda", "/pages/hakkimizda.html");
@@ -179,7 +204,7 @@ export function initMenuHistoryUI(){
       try{ ChatStore.init(); }catch{}
       paintProfileShortcut();
       renderHistory();
-      renderMenusFresh();
+      renderMenusFresh(); // ✅ team değişebilir
     });
   }
 }
