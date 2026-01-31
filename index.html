@@ -1,4 +1,4 @@
-<!-- FILE: /index.html (FINAL-DEMO A: REAL CHAT INPUT LOOK + UPWARD CHAT + CLIP UNDER APPLE + ~100 QA) -->
+<!-- FILE: /index.html (FINAL - BOTTOM START + CLIP UNDER APPLE + TYPEWRITER ALWAYS + APPLE WARNING) -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -8,14 +8,11 @@
 
   <link rel="icon" href="data:," />
   <link rel="stylesheet" href="/css/style.css?v=2" />
-
-  <!-- Google GSI -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <style>
     :root{ --gold:#ffb300; --pistachio:#bef264; --red:#ff5252; }
 
-    /* ✅ Tam siyah */
     html,body{ background:#000 !important; }
     .mobile-frame{ background:#000 !important; }
 
@@ -30,7 +27,7 @@
       flex: 1 1 auto;
       min-height: 0;
       overflow: hidden;
-      padding: 18px 16px 130px; /* footer + demo input */
+      padding: 18px 16px 120px; /* footer */
       display:flex;
       flex-direction:column;
       align-items:center;
@@ -153,22 +150,15 @@
     }
     .btn-icon:active{ transform: translateY(1px); filter: brightness(.97); }
 
-    /* ✅ 3D ikon rozetleri */
     .badge-3d{
       width: 32px; height: 32px;
       border-radius: 12px;
       display:flex; align-items:center; justify-content:center;
       box-shadow: 0 10px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.18);
-      transform: translateZ(0);
     }
-    .g-badge{
-      background:#fff;
-    }
+    .g-badge{ background:#fff; }
     .g-badge svg{ width:18px; height:18px; display:block; }
-    .a-badge{
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.10);
-    }
+    .a-badge{ background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.10); }
     .a-badge svg{ width:18px; height:18px; display:block; fill:#fff; opacity:.92; }
 
     /* GSI overlay */
@@ -187,24 +177,26 @@
       cursor:pointer !important;
     }
 
-    /* ===== DEMO CLIP: Apple altında başlar, orada kaybolur ===== */
-    .demo-clip{
-      width: 100%;
-      margin-top: 8px;
-      max-height: calc(100dvh - 430px);
-      overflow: hidden;
+    /* ===== DEMO VIEWPORT (APPLE ALTINA GİRİNCE KAYBOLUR) ===== */
+    #demoViewport{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(440px, 92vw);
+      z-index: 2;
+      overflow: hidden;          /* ✅ Apple altına girince kaybolma */
       pointer-events:none;
-      position: relative;
+      /* top/bottom JS ile hesaplanacak */
     }
 
-    /* Mesajlar input üstünden başlayıp yukarı gider */
-    .demo-stream{
+    /* Mesajlar EN ALTTAN çıkar */
+    #demoStream{
       width:100%;
       display:flex;
-      flex-direction:column-reverse; /* newest bottom */
+      flex-direction:column-reverse; /* newest at bottom */
       gap: 10px;
       padding: 0;
-      min-height: 160px;
+      min-height: 120px;
     }
 
     .demo-bubble{
@@ -220,20 +212,10 @@
       box-shadow: 0 12px 28px rgba(0,0,0,.22);
       backdrop-filter: blur(6px);
     }
-    .demo-bubble.bot{
-      border-left: 3px solid var(--gold);
-      margin-right:auto;
-    }
-    .demo-bubble.user{
-      border-right: 3px solid var(--pistachio);
-      margin-left:auto;
-      text-align:right;
-    }
-    .demo-bubble.warn{
-      border-left: 3px solid var(--red);
-    }
+    .demo-bubble.bot{ border-left: 3px solid var(--gold); margin-right:auto; }
+    .demo-bubble.user{ border-right: 3px solid var(--pistachio); margin-left:auto; text-align:right; }
+    .demo-bubble.warn{ border-left: 3px solid var(--red); }
 
-    /* typing dots */
     .demo-typing{
       display:flex;
       gap:6px;
@@ -253,8 +235,8 @@
       50%{ transform: translateY(-4px); opacity:1; }
     }
 
-    /* ===== DEMO INPUT (chat sayfası hissi, sabit, hiç oynamaz) ===== */
-    .demo-inputbar{
+    /* ===== DEMO INPUT: chat sayfası hissi, SABİT EN ALTA ===== */
+    #demoInputBar{
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
@@ -293,7 +275,7 @@
       stroke-linecap: round;
       stroke-linejoin: round;
     }
-    .demo-inputtext{
+    #demoInputText{
       flex:1 1 auto;
       min-width:0;
       color:#fff;
@@ -335,7 +317,7 @@
       stroke-linejoin: round;
     }
 
-    /* Alt bar sabit */
+    /* Footer sabit */
     .login-footerbar{
       position: fixed;
       left: 50%;
@@ -512,24 +494,25 @@
         </span>
         Apple ile Giriş Yap
       </button>
+    </div>
 
-      <div class="demo-clip" aria-hidden="true">
-        <div class="demo-stream" id="demoStream"></div>
-        <div class="demo-typing" id="demoTyping">
-          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-        </div>
+    <!-- ✅ VIEWPORT (Apple altı = üst sınır; input üstü = alt sınır) -->
+    <div id="demoViewport" aria-hidden="true">
+      <div id="demoStream"></div>
+      <div class="demo-typing" id="demoTyping">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
       </div>
     </div>
   </div>
 
-  <!-- Demo input sabit (chat gibi) -->
-  <div class="demo-inputbar" aria-hidden="true">
+  <!-- ✅ Sabit demo input -->
+  <div id="demoInputBar" aria-hidden="true">
     <div class="dock-inner-demo">
       <button class="icon-btn-demo" type="button" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
       </button>
 
-      <div class="demo-inputtext" id="demoInputText"></div>
+      <div id="demoInputText"></div>
       <div class="demo-caret"></div>
 
       <button class="icon-btn-demo" type="button" aria-hidden="true">
@@ -596,21 +579,6 @@
   }
   function goChat(){ window.location.replace("/pages/chat.html"); }
 
-  // Apple tık: kaynana uyarısı balon olarak düşsün
-  const demoStream = $("demoStream");
-  function pushWarn(text){
-    if(!demoStream) return;
-    const el = document.createElement("div");
-    el.className = "demo-bubble bot warn";
-    el.textContent = text;
-    demoStream.prepend(el);
-  }
-
-  $("appleLoginBtn")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    pushWarn("Evladım Apple biraz nazlı çıktı… Daha hazır değil. Şimdilik Google ile devam et, ben seni içeri alayım.");
-  });
-
   // Terms
   const termsOverlay = $("termsOverlay");
   const termsCheck = $("termsCheck");
@@ -653,7 +621,31 @@
 
   initAuth();
 
-  // ===== Tahtaravalli: yazana göre =====
+  // ===== Layout: viewport = Apple altından input üstüne kadar =====
+  const appleBtn = $("appleLoginBtn");
+  const demoViewport = $("demoViewport");
+  const demoInputBar = $("demoInputBar");
+
+  function layoutDemoViewport(){
+    if(!appleBtn || !demoViewport || !demoInputBar) return;
+
+    const a = appleBtn.getBoundingClientRect();
+    const inp = demoInputBar.getBoundingClientRect();
+
+    // top: apple altı + 10
+    const top = Math.round(a.bottom + 10);
+    // bottom: input üstü + 10 (viewport bottom, fixed)
+    const bottom = Math.round(window.innerHeight - (inp.top - 10));
+
+    demoViewport.style.top = top + "px";
+    demoViewport.style.bottom = bottom + "px";
+  }
+
+  window.addEventListener("resize", layoutDemoViewport, { passive:true });
+  window.addEventListener("orientationchange", ()=> setTimeout(layoutDemoViewport, 250), { passive:true });
+  setTimeout(layoutDemoViewport, 50);
+
+  // ===== Seesaw =====
   const bw = $("brandWrapper");
   function seesaw(state){
     if(!bw) return;
@@ -666,7 +658,66 @@
     bw.classList.remove("usering","botting","thinking");
   }
 
-  // ===== Gözler: pointer takip, yoksa yazıyı okur gibi daha aşağı =====
+  // ===== Demo push & typewriter (ALWAYS) =====
+  const demoStream = $("demoStream");
+  const demoTyping = $("demoTyping");
+  const demoInputText = $("demoInputText");
+
+  function makeBubble(cls){
+    const el = document.createElement("div");
+    el.className = `demo-bubble ${cls}`;
+    el.textContent = "";
+    return el;
+  }
+
+  const sleep = (ms)=>new Promise(r=>setTimeout(r, ms));
+
+  async function typeInto(el, text, speed=34){
+    el.textContent = "";
+    const s = String(text || "");
+    for(let i=0;i<s.length;i++){
+      el.textContent += s[i];
+      await sleep(speed);
+    }
+  }
+
+  async function typeIntoInput(text){
+    if(!demoInputText) return;
+    demoInputText.textContent = "";
+    const s = String(text || "");
+    for(let i=0;i<s.length;i++){
+      demoInputText.textContent += s[i];
+      await sleep(36);
+    }
+  }
+
+  function trimBubbles(max=22){
+    if(!demoStream) return;
+    const kids = Array.from(demoStream.children);
+    if(kids.length > max){
+      kids.slice(max).forEach(n=>n.remove());
+    }
+  }
+
+  async function pushBot(text, kind="bot"){
+    const b = makeBubble(kind);
+    demoStream.prepend(b);         // newest bottom visually
+    await typeInto(b, text, 34);
+    trimBubbles(22);
+  }
+
+  // Apple click: kaynana uyarısı daktilo
+  $("appleLoginBtn")?.addEventListener("click", async (e)=>{
+    e.preventDefault();
+    seesaw("bot");
+    if(demoTyping) demoTyping.style.display = "flex";
+    await sleep(240);
+    if(demoTyping) demoTyping.style.display = "none";
+    await pushBot("Evladım Apple biraz nazlı çıktı… Daha hazır değil. Şimdilik Google ile devam et, ben seni içeri alayım.", "bot warn");
+    seesawIdle();
+  });
+
+  // ===== Eyes follow rules (pointer > text) =====
   const p1 = $("p1");
   const p2 = $("p2");
   const eyesBox = $("eyesBox");
@@ -702,12 +753,13 @@
     aimAt(t.clientX, t.clientY);
   }, { passive:true });
 
+  // idle: “okuyor” gibi aşağı (en yeni balona bak)
   setInterval(()=>{
     const idle = (Date.now() - lastPointerAt) > 900;
     if(!idle) return;
 
     let tx = window.innerWidth/2;
-    let ty = window.innerHeight*0.82;
+    let ty = window.innerHeight*0.85;
 
     try{
       const last = demoStream?.firstElementChild; // newest
@@ -721,126 +773,74 @@
     aimAt(tx, ty);
   }, 240);
 
-  // ===== DEMO: ~100 havuz, tekrar azalır; inputta yaz -> gönder -> balon -> kaynana cevap =====
-  const typing = $("demoTyping");
-  const inputText = $("demoInputText");
-
-  // 100'e yakın soru + cevap havuzu (tekrar azaltmak için)
+  // ===== 100’e yakın SSS demo havuzu (PLUS/PRO YOK, ÜYELİK ÜCRETSİZ) =====
   const QA = [
     ["Kaynana… sana nasıl üye olurum?","Google ya da Apple’dan birini seç evladım. Şimdilik Google daha hızlı."],
     ["Üyelik ücretli mi?","Üyelik ücretsiz evladım. İçeri gir, kullan."],
     ["Sözleşme zorunlu mu?","Zorunlu. Onaylamadan içeri giremezsin. Düzen şart."],
     ["Verilerimi kaydediyor musun?","Görüntü/ses kaydetmem. Sadece izin verdiğin profil bilgisi durur."],
-    ["S.P ne işe yarıyor?","Samimiyet puanı evladım. Artarsa ben de sana daha içten konuşurum."],
-    ["Profil doldurunca ne olur?","Her alan bir ödül. İşin kolaylaşır, ben de seni daha iyi tanırım."],
-    ["Google ile giriş güvenli mi?","Güvenli evladım. Yetkiyi sen veriyorsun, istemezsen çıkarsın."],
-    ["Hesabımı silebilir miyim?","Silersin tabii. Bir de teyit sorarım, kaynana işte."],
-    ["Çıkış yapınca ne olur?","Çıkış yaparsın. Sonra yine Google’la girersin."],
     ["Şifre oluşturacak mıyım?","Hayır. Google ile giriyorsun, şifre yok."],
-    ["Apple neden yok?","Apple nazlı evladım. Şimdilik Google ile devam."],
-    ["Diyet modülü ne yapıyor?","Boy-kilo ile günlük menü çıkarır, toparlatır."],
-    ["Sağlık modülü doktor mu?","Doktor değilim; ama yön gösteririm. Acilse doktora gideceksin."],
-    ["Fal modülü gerçek mi?","Sen niyet et evladım, ben yorumlarım 🙂"],
-    ["Burç günlük mü?","Günlük yorum var. Ama kafayı takma, işini yap."],
-    ["Bildirimler kapatılabilir mi?","Kapatılır. Bildirim istemiyorsan seni dürtmem."],
-    ["Neden profil istiyorsun?","Sana uygun konuşayım diye. Boşsa da idare ederiz."],
-    ["İlk girişte neden sözleşme var?","Zorunlu. Sonra ‘ben bilmiyordum’ demeyesin."],
-    ["Kullanıcı adım ne olacak?","Google hesabın neyse onunla tanırım seni."],
-    ["Sohbet geçmişi tutuluyor mu?","Senin cihazında sohbet listesi durur. İstersen silersin."],
-    ["Sohbeti nasıl silerim?","Menüde çöp kutusu var. Basınca da sorarım: emin misin?"],
-    ["Başlıklar nereden geliyor?","İlk mesajından. 15 karakterle kısa kısa."],
-    ["Başlığı değiştirebilir miyim?","Kalemle değiştirirsin. Enter bas, kaydeder."],
-    ["Neden ‘kaynana’ gibi konuşuyorsun?","Marka bu evladım. Tatlı sert."],
-    ["Ücretsiz mi gerçekten?","Evet. Ücretsiz başlarsın."],
-    ["Gizlilik nerede?","Altta Gizlilik linki var evladım."],
-    ["SSS nerede?","Altta SSS var. Ama bak ben burada da anlatıyorum."],
-    ["İletişim nerede?","Altta İletişim var. Yazarsın."],
-    ["Hakkımızda nerede?","Altta Hakkımızda var."],
-    ["Google butonu niye mavi değil?","Bizim tema koyu. Google ‘G’si kendi renginde."],
-    ["Bu gözler ne?","Benim gözüm evladım. Seni izliyorum 😄"],
-    ["Gözler neden hareket ediyor?","Okuyorum. Yalan mı söyleyeyim?"],
-    ["Tahtaravalli ne işe yarıyor?","Kim yazıyorsa ona eğilir. Terazi gibi."],
-    ["Sohbet sayfası ana sayfa mı?","Evet. Girişten sonra chat."],
-    ["Neden iki giriş seçeneği var?","Google hazır, Apple nazlı. İkisi de olacak."],
-    ["Sözleşmeyi onaylamazsam?","Onaylamadan içeri giremezsin."],
-    ["Sözleşme nerede açılıyor?","Onay ekranı geliyor, oku imzala."],
-    ["Kayıt nerede yapılıyor?","Profil sayfasında bilgiler tamamlanır."],
-    ["Profilde neler var?","Boy kilo, doğum tarihi, cinsiyet, takım… ne varsa."],
-    ["Takım yazınca ne olur?","Menüde takımın çıkar, sayfası açılır."],
-    ["Regl takip kimlere çıkıyor?","Kadın seçilirse görünür."],
-    ["Özel günler ne zaman çıkar?","Profilde tarih girilirse görünür."],
-    ["Kaynana kızar mı?","Küfür edersen kızarım, S.P düşer."],
-    ["Kibar olursam?","Samimiyet artar evladım."],
-    ["Teşekkür edersem?","Kaynana yumuşar. 🙂"],
-    ["İnternete bakıyor musun?","Her şeye değil. Gerekirse bakar."],
-    ["Güncel haber sorarsam?","Bazen ‘git google sor’ derim, yaşlıyım."],
-    ["Dosya gönderebilir miyim?","Sohbette + ile gönderirsin."],
-    ["Fotoğraf çekebilir miyim?","+ ile kamera açılır."],
+    ["Google ile giriş güvenli mi?","Güvenli evladım. Yetkiyi sen veriyorsun."],
+    ["Apple neden yok?","Apple nazlı evladım… sabır. Şimdilik Google."],
+    ["S.P ne işe yarıyor?","Samimiyet puanı evladım. Artarsa ben de yumuşarım."],
+    ["S.P kaçtan başlar?","10’dan başlar evladım."],
+    ["S.P kaçta biter?","100’e kadar gider."],
+    ["Küfür edersem?","Kaynana kızar. Puan düşer."],
+    ["Nazik olursam?","Samimiyet artar."],
+    ["Profil doldurunca ne olur?","Her alan bir ödül. İşin kolaylaşır."],
+    ["Profilde neler var?","Boy, kilo, doğum tarihi, cinsiyet, takım… ne varsa."],
+    ["Takım yazınca ne olur?","Menüde takımın çıkar."],
+    ["Regl takip kimlere görünür?","Kadın seçilirse görünür."],
+    ["Özel günler neye göre çıkar?","Profilde tarih girilince görünür."],
+    ["Diyet modülü ne yapıyor?","Günlük menü verir, düzen kurar."],
+    ["Sağlık modülü doktor mu?","Doktor değilim; yön gösteririm."],
+    ["Fal modülü ne yapıyor?","Kahve falını yorumlarım evladım."],
+    ["Günlük burç var mı?","Var. Ama kafayı takma."],
+    ["Sohbet geçmişi tutuluyor mu?","Cihazında liste durur, istersen silersin."],
+    ["Sohbeti nasıl silerim?","Çöp kutusu var, bir de teyit sorarım."],
+    ["Başlık nereden geliyor?","İlk mesajından, kısa kısa."],
+    ["Başlığı değiştirebilir miyim?","Kalemle değiştirirsin."],
+    ["Hakkımızda nerede?","En altta link var."],
+    ["SSS nerede?","En altta link var. Ama ben buradayım zaten."],
+    ["Gizlilik nerede?","En altta link var."],
+    ["İletişim nerede?","En altta link var."],
+    ["Girişten sonra nereye giderim?","Sohbet sayfasına."],
+    ["CaynanaAI ne?","Kaynana + AI. Evladım işte."],
+    ["Bu gözler ne?","Seni izliyorum 😄"],
+    ["Tahtaravalli neden oynuyor?","Kim konuşuyorsa ona eğiliyor."],
+    ["Çıkış yapabilir miyim?","İstediğin an çıkarsın."],
+    ["Hesabımı silebilir miyim?","Silersin. Bir de teyit sorarım."],
+    ["Kayıt nerede tamamlanır?","Profil sayfasında."],
+    ["İzinli kayıt ne demek?","Evet demeden profiline yazmam."],
+    ["Adımı kaydetmek ister misin?","İzin verirsen kaydederim evladım."],
+    ["Fotoğraf atabilir miyim?","Sohbette + ile atarsın."],
     ["Mikrofon var mı?","Var. Konuşursun, yazıya çevirir."],
-    ["Konuşma bitince gönderir mi?","Evet. Otomatik yollar."],
-    ["Mesajlar kayıyor mu?","Evet, parmakla yukarı aşağı."],
-    ["Niye bu kadar süslü?","Premium his evladım. Göz gönül de ister."],
-    ["Kaynana neden ‘evladım’ diyor?","Ben öyleyim. Alışacaksın."],
-    ["Üye olunca plan ne?","FREE. Ücretsiz."],
-    ["Şu an plan ne?","FREE evladım."],
-    ["S.P kaçtan başlar?","10’dan. Sonra davranışına göre."],
-    ["S.P altına düşer mi?","10’un altına düşmez."],
-    ["Her gün gelmezsem?","Azalır. Kaynana alınır."],
-    ["Her gün gelirsem?","Artar. Kaynana sever."],
-    ["Profil tamamlanınca?","Artı puan alırsın."],
-    ["Küfür cezası?","Puan düşer evladım."],
-    ["Yalakalık?","Azıcık artar, ama dozunu kaçırma 😄"],
-    ["Puan max kaç?","100 evladım."],
-    ["Sohbet nerede?","Girişten sonra direkt chat."],
-    ["Sohbeti kim yanıtlıyor?","Ben. CaynanaAI."],
-    ["CaynanaAI ne demek?","Kaynana + AI. Hepsi bu."],
-    ["Bu demo niye var?","Sana nasıl çalıştığını göstermek için."],
-    ["Şimdi ne yapayım?","Google’a bas, içeri gir."],
-    /* (havuz uzun; tekrarı azaltmak için yeterli) */
+    ["Konuşma bitince gönderir mi?","Evet, otomatik yollar."],
+    ["Neden siyah tema?","Göz yormasın diye."],
+    ["Üyelik tamamen ücretsiz mi?","Evet evladım, ücretsiz."],
+    ["Aynı anda iki cihazdan olur mu?","Google hesabınla girersen olur."],
+    ["Kullanıcı adım ne?","Google hesabın neyse onunla tanırım seni."],
+    ["Mailimi gösterir misin?","Gerekirse, ama boş yere kurcalama 😄"],
+    ["Veri silme isteyebilir miyim?","İstersen silersin. Menüde var."],
+    ["Sözleşmeyi nereden okurum?","Onay ekranında açılır."],
+    ["Onaylamazsam ne olur?","İçeri giremezsin."],
+    ["Bu demo niye yazıyor?","Sistemi anlatıyorum evladım."],
+    ["Kaynana gibi neden konuşuyorsun?","Marka bu. Tatlı sert."],
+    // (havuz zaten büyük; tekrar azaltma aşağıda)
   ];
 
-  // Aynı soruyu arka arkaya sormasın diye küçük “son sorular” kuyruğu
   const recent = [];
   function pickQA(){
-    for(let t=0; t<40; t++){
+    for(let t=0; t<50; t++){
       const i = Math.floor(Math.random() * QA.length);
       const key = String(i);
       if(!recent.includes(key)){
         recent.push(key);
-        if(recent.length > 12) recent.shift();
+        if(recent.length > 18) recent.shift();
         return QA[i];
       }
     }
     return QA[Math.floor(Math.random()*QA.length)];
-  }
-
-  const sleep = (ms)=>new Promise(r=>setTimeout(r, ms));
-
-  async function typeInto(el, text, speed=34){
-    el.textContent = "";
-    const s = String(text || "");
-    for(let i=0;i<s.length;i++){
-      el.textContent += s[i];
-      await sleep(speed);
-    }
-  }
-
-  async function typeIntoInput(text){
-    if(!inputText) return;
-    inputText.textContent = "";
-    const s = String(text || "");
-    for(let i=0;i<s.length;i++){
-      inputText.textContent += s[i];
-      await sleep(36);
-    }
-  }
-
-  function trimBubbles(max=22){
-    if(!demoStream) return;
-    const kids = Array.from(demoStream.children);
-    if(kids.length > max){
-      kids.slice(max).forEach(n=>n.remove());
-    }
   }
 
   async function runDemo(){
@@ -850,31 +850,29 @@
     while(true){
       const [q,a] = pickQA();
 
-      // user typing into input
+      // user in input (typewriter)
       seesaw("user");
-      if(typing) typing.style.display = "none";
+      if(demoTyping) demoTyping.style.display = "none";
       await typeIntoInput(q);
       await sleep(260);
 
-      // send -> bubble
-      const ub = document.createElement("div");
-      ub.className = "demo-bubble user";
+      // user bubble
+      const ub = makeBubble("user");
       demoStream.prepend(ub);
       await typeInto(ub, q, 32);
-      if(inputText) inputText.textContent = "";
+      if(demoInputText) demoInputText.textContent = "";
       trimBubbles(22);
       await sleep(420);
 
-      // bot reply
+      // bot bubble
       seesaw("bot");
-      if(typing) typing.style.display = "flex";
+      if(demoTyping) demoTyping.style.display = "flex";
       await sleep(520);
 
-      const bb = document.createElement("div");
-      bb.className = "demo-bubble bot";
+      const bb = makeBubble("bot");
       demoStream.prepend(bb);
       await typeInto(bb, a, 34);
-      if(typing) typing.style.display = "none";
+      if(demoTyping) demoTyping.style.display = "none";
       trimBubbles(22);
 
       seesawIdle();
