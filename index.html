@@ -1,4 +1,4 @@
-<!-- FILE: /index.html (FINAL FROM SCRATCH - APPLE WARNING WORKS + CLIP UNDER APPLE GUARANTEED) -->
+<!-- FILE: /index.html (FULL - FINAL FIX: APPLE CLICK WORKS + POPUP + DEMO ONE-BY-ONE + CLIP UNDER APPLE) -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -13,6 +13,7 @@
   <style>
     :root{ --gold:#ffb300; --pistachio:#bef264; --red:#ff5252; }
 
+    /* ✅ Tam siyah zemin */
     html,body{ background:#000 !important; }
     .mobile-frame{ background:#000 !important; }
 
@@ -20,13 +21,11 @@
     .topbar{ position: sticky; top:0; z-index:3000; background: rgba(0,0,0,.92) !important; border-bottom:1px solid rgba(255,255,255,.06); }
     .topbar .left-controls, .topbar .right-controls{ width:80px; }
     .topbar .brand-wrapper{ margin:0 auto; text-align:center; }
-    .brand-name{ font-weight: 1000; }
-    .slogan{ opacity:.75; }
 
     /* Stage */
     .login-stage{
       position: relative;
-      min-height: calc(100dvh - 0px);
+      min-height: 100dvh;
       overflow: hidden;
       padding: 16px 14px 120px; /* footer + demo input */
       display:flex;
@@ -38,7 +37,6 @@
 
     /* ===== GÖZLER (zeminsiz) ===== */
     #eyesBox{
-      position: relative;
       width: 200px;
       height: 86px;
       display:flex;
@@ -148,6 +146,10 @@
     .a-badge{ background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.10); }
     .a-badge svg{ width:18px; height:18px; display:block; fill:#fff; opacity:.92; }
 
+    /* Apple kesin tıklansın */
+    #appleLoginBtn{ position: relative; z-index: 9999 !important; pointer-events: auto !important; }
+
+    /* Google GSI overlay */
     .google-wrap{ position: relative; width: 100%; height: 56px; }
     #googleBtnWrap{
       position:absolute; inset:0;
@@ -158,18 +160,17 @@
     }
     #googleBtnWrap iframe{ width:100% !important; height:100% !important; pointer-events:auto !important; cursor:pointer !important; }
 
-    /* ===== Demo viewport (CLIP) ===== */
+    /* ===== DEMO VIEWPORT (CLIP UNDER APPLE) ===== */
     #demoViewport{
       position: fixed;
       left: 50%;
       transform: translateX(-50%);
       width: min(440px, 92vw);
       z-index: 2;
-      overflow: hidden;     /* ✅ Apple altına girince kaybolur */
-      pointer-events:none;
-      /* top/bottom JS ile verilecek */
+      overflow: hidden;     /* ✅ apple altına girince kaybolur */
+      pointer-events:none !important;
+      /* top/bottom JS */
     }
-
     #demoStream{
       width:100%;
       display:flex;
@@ -178,7 +179,6 @@
       padding: 0;
       min-height: 120px;
     }
-
     .demo-bubble{
       max-width: 88%;
       padding: 10px 12px;
@@ -215,7 +215,7 @@
       50%{ transform: translateY(-4px); opacity:1; }
     }
 
-    /* ===== Demo input sabit (chat gibi) ===== */
+    /* ===== DEMO INPUT: sabit (chat gibi) ===== */
     #demoInputBar{
       position: fixed;
       left: 50%;
@@ -332,7 +332,7 @@
       color: rgba(255,255,255,.55);
     }
 
-    /* Terms overlay (aynı) */
+    /* Terms overlay */
     .full-overlay{
       position: fixed; inset: 0;
       background: rgba(0,0,0,.92);
@@ -397,6 +397,30 @@
       opacity:.65;
     }
     #termsAcceptBtn.enabled{ opacity:1; }
+
+    /* ✅ TOAST POPUP (epop) */
+    .cyn-toast{
+      position: fixed;
+      left: 50%;
+      top: 132px;
+      transform: translateX(-50%);
+      z-index: 999999;
+      max-width: min(440px, calc(100vw - 24px));
+      background: rgba(20,20,20,.94);
+      border: 1px solid rgba(255,255,255,.14);
+      border-left: 3px solid var(--gold);
+      color: rgba(255,255,255,.92);
+      padding: 10px 12px;
+      border-radius: 16px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+      font-weight: 900;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity .18s ease, transform .18s ease;
+      pointer-events: none;
+    }
+    .cyn-toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 
@@ -406,7 +430,6 @@
   <!-- ÜST BAR -->
   <div class="topbar">
     <div class="left-controls"></div>
-
     <div class="brand-wrapper idle" id="brandWrapper">
       <div class="logo-area">
         <svg class="seesaw-svg" viewBox="0 0 40 20" aria-hidden="true">
@@ -421,13 +444,12 @@
       </div>
       <div class="slogan">Yapay Zekanın Geleneksel Aklı</div>
     </div>
-
     <div class="right-controls"></div>
   </div>
 
   <!-- STAGE -->
   <div class="login-stage">
-    <div id="eyesBox" aria-hidden="true" class="kaynana-eyes">
+    <div id="eyesBox" aria-hidden="true">
       <div class="eye-wrap">
         <div class="brow"></div>
         <div class="lashes"><span></span><span></span><span></span></div>
@@ -467,7 +489,7 @@
       </button>
     </div>
 
-    <!-- VIEWPORT: top=apple altı, bottom=input üstü -->
+    <!-- Viewport: clip under apple -->
     <div id="demoViewport" aria-hidden="true">
       <div id="demoStream"></div>
       <div id="demoTyping">
@@ -476,7 +498,7 @@
     </div>
   </div>
 
-  <!-- Sabit demo input -->
+  <!-- Demo input bar -->
   <div id="demoInputBar" aria-hidden="true">
     <div class="dock-inner-demo">
       <button class="icon-btn-demo" type="button" aria-hidden="true">
@@ -506,6 +528,7 @@
     </div>
     <div class="login-brand">@CaynanaAI By Ozyigit’s 2026</div>
   </div>
+
 </div>
 
 <!-- Terms -->
@@ -533,6 +556,7 @@
 
   const $ = (id) => document.getElementById(id);
   const sleep = (ms)=>new Promise(r=>setTimeout(r, ms));
+
   function safeJson(s, fb={}){ try{ return JSON.parse(s||""); }catch{ return fb; } }
   function termsKey(email=""){ return `caynana_terms_accepted_at::${String(email||"").toLowerCase().trim()}`; }
   function hasUser(){ const u = safeJson(localStorage.getItem(STORAGE_KEY), {}); return !!(u && u.email && u.isSessionActive); }
@@ -544,7 +568,20 @@
   }
   function goChat(){ window.location.replace("/pages/chat.html"); }
 
-  // Terms overlay wiring
+  // ✅ Toast popup
+  function showToast(msg){
+    const el = document.createElement("div");
+    el.className = "cyn-toast";
+    el.textContent = msg;
+    document.body.appendChild(el);
+    requestAnimationFrame(()=> el.classList.add("show"));
+    setTimeout(()=>{
+      el.classList.remove("show");
+      setTimeout(()=>{ try{ el.remove(); }catch{} }, 220);
+    }, 2400);
+  }
+
+  // Terms wiring
   const termsOverlay = $("termsOverlay");
   const termsCheck = $("termsCheck");
   const termsAcceptBtn = $("termsAcceptBtn");
@@ -577,7 +614,7 @@
 
   initAuth();
 
-  // ===== Elements =====
+  // Elements
   const appleBtn = $("appleLoginBtn");
   const demoViewport = $("demoViewport");
   const demoInputBar = $("demoInputBar");
@@ -585,27 +622,20 @@
   const demoTyping = $("demoTyping");
   const demoInputText = $("demoInputText");
 
-  // ===== Hard layout: TOP = Apple altı, BOTTOM = input üstü =====
+  // Layout viewport: top=apple bottom=input
   function layoutDemoViewportHard(){
     if(!appleBtn || !demoViewport || !demoInputBar) return;
-
-    const apply = () => {
+    const apply = ()=>{
       const a = appleBtn.getBoundingClientRect();
       const inp = demoInputBar.getBoundingClientRect();
-
       const topPx = Math.max(0, Math.round(a.bottom + 8));
       const bottomPx = Math.max(0, Math.round(window.innerHeight - (inp.top - 8)));
-
       demoViewport.style.top = topPx + "px";
       demoViewport.style.bottom = bottomPx + "px";
-
       const h = window.innerHeight - topPx - bottomPx;
-      if(h < 140){
-        demoViewport.style.bottom = Math.max(0, bottomPx - 60) + "px";
-      }
+      if(h < 140) demoViewport.style.bottom = Math.max(0, bottomPx - 60) + "px";
     };
-
-    requestAnimationFrame(() => requestAnimationFrame(apply));
+    requestAnimationFrame(()=>requestAnimationFrame(apply));
   }
   layoutDemoViewportHard();
   window.addEventListener("resize", layoutDemoViewportHard, { passive:true });
@@ -613,20 +643,17 @@
   setTimeout(layoutDemoViewportHard, 350);
   setTimeout(layoutDemoViewportHard, 900);
 
-  // ===== Seesaw =====
+  // Seesaw
   const bw = $("brandWrapper");
   function seesaw(state){
     if(!bw) return;
     bw.classList.remove("usering","botting","thinking");
     if(state === "user") bw.classList.add("usering");
-    if(state === "bot") bw.classList.add("botting","thinking");
+    if(state === "bot")  bw.classList.add("botting","thinking");
   }
-  function seesawIdle(){
-    if(!bw) return;
-    bw.classList.remove("usering","botting","thinking");
-  }
+  function seesawIdle(){ if(!bw) return; bw.classList.remove("usering","botting","thinking"); }
 
-  // ===== Typewriter helpers =====
+  // Typewriter
   function makeBubble(cls){
     const el = document.createElement("div");
     el.className = `demo-bubble ${cls}`;
@@ -653,29 +680,29 @@
   function trimBubbles(max=22){
     if(!demoStream) return;
     const kids = Array.from(demoStream.children);
-    if(kids.length > max){
-      kids.slice(max).forEach(n=>n.remove());
-    }
+    if(kids.length > max) kids.slice(max).forEach(n=>n.remove());
   }
 
-  // ===== Apple click: ALWAYS show warning in chat (typewriter) =====
+  // Apple click: popup + (isteğe bağlı) chat’e warn bubble da ekleyelim
   appleBtn?.addEventListener("click", async (e)=>{
     e.preventDefault();
-    layoutDemoViewportHard(); // ölçümleri tazele
+    showToast("Apple biraz nazlı çıktı evladım… Şimdilik Google’la devam et. 🙂");
+    layoutDemoViewportHard();
 
+    // chat’e de daktilo ile düşsün
     seesaw("bot");
     if(demoTyping) demoTyping.style.display = "flex";
-    await sleep(240);
+    await sleep(220);
     if(demoTyping) demoTyping.style.display = "none";
 
     const warn = makeBubble("bot warn");
     demoStream.prepend(warn);
-    await typeInto(warn, "Evladım Apple biraz nazlı çıktı… Daha hazır değil. Şimdilik Google ile devam et, ben seni içeri alayım.", 34);
+    await typeInto(warn, "Evladım Apple daha hazır değil… Biraz sabır. Şimdilik Google ile devam et, ben seni içeri alayım.", 34);
     trimBubbles(22);
     seesawIdle();
   });
 
-  // ===== Eyes follow (pointer > newest message; idle looks lower) =====
+  // Eyes follow rules
   const p1 = $("p1");
   const p2 = $("p2");
   const eyesBox = $("eyesBox");
@@ -698,13 +725,12 @@
     const dy = (clientY - cy) / 65;
     setPupil(dx, dy);
   }
-
-  window.addEventListener("mousemove", (e)=>{ lastPointerAt = Date.now(); aimAt(e.clientX, e.clientY); }, { passive:true });
-  window.addEventListener("touchmove", (e)=>{
+  window.addEventListener("mousemove",(e)=>{ lastPointerAt = Date.now(); aimAt(e.clientX,e.clientY); }, { passive:true });
+  window.addEventListener("touchmove",(e)=>{
     const t = e.touches && e.touches[0];
     if(!t) return;
     lastPointerAt = Date.now();
-    aimAt(t.clientX, t.clientY);
+    aimAt(t.clientX,t.clientY);
   }, { passive:true });
 
   setInterval(()=>{
@@ -712,77 +738,79 @@
     if(!idle) return;
 
     let tx = window.innerWidth/2;
-    let ty = window.innerHeight*0.86; // daha aşağı baksın
+    let ty = window.innerHeight*0.86;
 
     try{
-      const last = demoStream?.firstElementChild; // newest
-      const r = last?.getBoundingClientRect?.();
+      const newest = demoStream?.firstElementChild; // newest
+      const r = newest?.getBoundingClientRect?.();
       if(r){
         tx = r.left + r.width/2;
         ty = r.top + r.height/2;
       }
     }catch{}
+
     aimAt(tx, ty);
   }, 240);
 
-  // ===== Demo loop (membership is free; no pro/plus) =====
+  // Demo loop (tek tek)
   const QA = [
-    ["Kaynana… sana nasıl üye olurum?","Google ya da Apple’dan birini seç evladım. Şimdilik Google daha hızlı."],
+    ["Kaynana… sana nasıl üye olurum?","Google ile giriş yap evladım. Üyelik ücretsiz."],
     ["Üyelik ücretli mi?","Üyelik ücretsiz evladım. İçeri gir, kullan."],
-    ["Sözleşme zorunlu mu?","Zorunlu. Onaylamadan içeri giremezsin. Düzen şart."],
-    ["Verilerimi kaydediyor musun?","Görüntü/ses kaydetmem. Sadece izin verdiğin profil bilgisi durur."],
+    ["Sözleşme zorunlu mu?","Zorunlu. Onaylamadan içeri giremezsin."],
+    ["Verilerimi kaydediyor musun?","Görüntü/ses kaydetmem. İzin verdiğin profil bilgisi durur."],
     ["Şifre oluşturacak mıyım?","Hayır. Google ile giriyorsun, şifre yok."],
-    ["S.P ne işe yarıyor?","Samimiyet puanı evladım. Artarsa ben de yumuşarım."],
+    ["S.P ne işe yarıyor?","Samimiyet puanı evladım. Artarsa ben de daha içten konuşurum."],
     ["Profilde neler var?","Boy, kilo, doğum tarihi, cinsiyet, takım… ne varsa."],
-    ["Profil neden isteniyor?","Sana uygun konuşayım diye evladım. Boşsa da idare ederiz."],
-    ["Hesabımı silebilir miyim?","Silersin. Bir de teyit sorarım, kaynana işte."],
-    ["Gizlilik nerede?","En altta Gizlilik linki var."],
-    ["SSS nerede?","En altta SSS var, ama ben burada da anlatıyorum."],
+    ["Profil neden isteniyor?","Sana uygun konuşayım diye. Boşsa da idare ederiz."],
+    ["Hesabımı silebilir miyim?","Silersin tabii. Bir de teyit sorarım."],
+    ["Diyet modülü ne yapıyor?","Günlük menü verir, düzen kurar."],
+    ["Sağlık modülü doktor mu?","Doktor değilim; yön gösteririm. Acilse doktora gidersin."],
+    ["Gizlilik nerede?","En altta Gizlilik linki var evladım."],
+    ["SSS nerede?","En altta SSS var, ama ben de buradayım."],
     ["İletişim nerede?","En altta İletişim var."],
-    ["Hakkımızda nerede?","En altta Hakkımızda var."],
-    ["Girişten sonra nereye giderim?","Sohbet sayfasına evladım."],
-    ["Google ile giriş güvenli mi?","Güvenli. Yetkiyi sen veriyorsun."],
-    ["Apple ne zaman gelir?","Nazlı evladım… gelir ama sabır."]
   ];
 
   const recent = [];
   function pickQA(){
     for(let t=0;t<40;t++){
       const i = Math.floor(Math.random()*QA.length);
-      const key = String(i);
-      if(!recent.includes(key)){
-        recent.push(key);
-        if(recent.length>10) recent.shift();
+      const k = String(i);
+      if(!recent.includes(k)){
+        recent.push(k);
+        if(recent.length>8) recent.shift();
         return QA[i];
       }
     }
     return QA[Math.floor(Math.random()*QA.length)];
   }
 
-  async function runDemo(){
+  async function demoLoop(){
     if(!demoStream) return;
     demoStream.innerHTML = "";
 
     while(true){
-      layoutDemoViewportHard(); // sürekli güncel
+      layoutDemoViewportHard();
 
       const [q,a] = pickQA();
 
+      // user input typing
       seesaw("user");
       if(demoTyping) demoTyping.style.display = "none";
       await typeIntoInput(q);
-      await sleep(260);
+      await sleep(220);
 
+      // user bubble
       const ub = makeBubble("user");
       demoStream.prepend(ub);
       await typeInto(ub, q, 32);
       if(demoInputText) demoInputText.textContent = "";
       trimBubbles(22);
-      await sleep(420);
+      await sleep(360);
 
+      // bot bubble
       seesaw("bot");
       if(demoTyping) demoTyping.style.display = "flex";
-      await sleep(520);
+      await sleep(420);
       if(demoTyping) demoTyping.style.display = "none";
 
       const bb = makeBubble("bot");
@@ -791,11 +819,11 @@
       trimBubbles(22);
 
       seesawIdle();
-      await sleep(900);
+      await sleep(820);
     }
   }
 
-  runDemo();
+  demoLoop();
 </script>
 </body>
 </html>
