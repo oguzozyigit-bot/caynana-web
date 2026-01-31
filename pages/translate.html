@@ -5,7 +5,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Tercüman</title>
-
   <link rel="icon" href="data:," />
 
   <style>
@@ -18,7 +17,6 @@
       --red:#ff5252;
 
       --glass: rgba(255,255,255,.05);
-      --glass2: rgba(255,255,255,.03);
       --border: rgba(255,255,255,.10);
       --border2: rgba(255,255,255,.06);
 
@@ -29,7 +27,6 @@
     *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     html,body{ margin:0; padding:0; width:100%; height:100dvh; overflow:hidden; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
 
-    /* ✅ iFLYTEK benzeri zemin: siyah değil, koyu degrade + glow */
     body{
       background:
         radial-gradient(900px 520px at 50% 18%, rgba(40,120,255,.14), transparent 62%),
@@ -50,7 +47,6 @@
       overflow:hidden;
     }
 
-    /* Back */
     .back{
       position:absolute;
       top: 12px;
@@ -73,21 +69,18 @@
     }
     .back:active{ transform: translateY(1px); }
 
-    /* Split */
     .split{
       position:absolute;
       inset: 0;
       display:grid;
-      grid-template-rows: 1fr auto 1fr; /* top + wave + bottom */
-      gap: 0;
+      grid-template-rows: 1fr auto 1fr;
       padding: 70px 12px 12px;
     }
 
-    /* ✅ Wave divider */
     .wave{
       height: 28px;
       position: relative;
-      margin: 8px 0;
+      margin: 10px 0;
       opacity: .92;
       pointer-events:none;
       filter: drop-shadow(0 10px 22px rgba(0,0,0,.45));
@@ -120,10 +113,16 @@
       position:relative;
     }
 
-    /* ✅ ÜST TARAF: komple 180° dönsün */
-    .side.top{
-      transform: rotate(180deg);
+    /* ✅ Ben tarafına hafif tatlı sarı tint */
+    .side.meTint{
+      background:
+        radial-gradient(820px 260px at 0% 10%, rgba(255,179,0,.12), transparent 62%),
+        radial-gradient(820px 260px at 100% 0%, rgba(190,242,100,.05), transparent 62%),
+        rgba(0,0,0,.12);
     }
+
+    /* ÜST TARAF: komple ters */
+    .side.top{ transform: rotate(180deg); }
 
     .bar{
       display:flex;
@@ -140,6 +139,7 @@
       letter-spacing: .2px;
       color:#fff;
       white-space:nowrap;
+      min-width: 54px;
     }
 
     .lang{
@@ -152,7 +152,7 @@
     }
 
     select{
-      max-width: 220px;
+      max-width: 200px;
       width: 100%;
       background: rgba(255,255,255,.06);
       border: 1px solid rgba(255,255,255,.12);
@@ -167,7 +167,7 @@
     }
     select option{ background:#111 !important; color:#fff !important; }
 
-    .mic{
+    .btnIcon{
       width: 48px;
       height: 48px;
       border-radius: 18px;
@@ -179,26 +179,31 @@
       cursor:pointer;
       flex: 0 0 48px;
     }
-    .mic svg{ width: 22px; height:22px; stroke:#fff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.92; }
-    .mic.listening{
+    .btnIcon svg{
+      width: 22px; height:22px;
+      stroke:#fff; fill:none;
+      stroke-width:2; stroke-linecap:round; stroke-linejoin:round;
+      opacity:.92;
+    }
+    .btnIcon:active{ transform: translateY(1px); }
+
+    .btnIcon.listening{
       border-color: rgba(190,242,100,.35);
       background: rgba(190,242,100,.12);
       box-shadow: 0 0 22px rgba(190,242,100,.18);
     }
-    .mic:active{ transform: translateY(1px); }
 
     .content{
       flex: 1 1 auto;
       min-height:0;
       padding: 12px;
-      overflow:auto;                 /* ✅ scroll açık */
+      overflow:auto;
       -webkit-overflow-scrolling: touch;
       display:flex;
       flex-direction:column;
       gap: 10px;
     }
 
-    /* ✅ Chat baloncuk stili */
     .bubble{
       max-width: 92%;
       padding: 11px 13px;
@@ -213,13 +218,6 @@
     }
     .bubble.me{ align-self:flex-end; border-right: 4px solid var(--pist); text-align:right; }
     .bubble.them{ align-self:flex-start; border-left: 4px solid var(--gold); }
-    .bubble.hint{
-      align-self:center;
-      opacity:.85;
-      background: rgba(255,255,255,.03);
-      max-width: 98%;
-      text-align:center;
-    }
 
     .label{
       font-size: 11px;
@@ -274,13 +272,24 @@
 
     <div class="split">
 
-      <!-- TOP (Karşı taraf, komple ters) -->
+      <!-- TOP (Karşı taraf, ters) -->
       <section class="side top" id="sideTop">
         <div class="bar">
-          <div class="who">Karşı Taraf</div>
+          <div class="who">Karşı</div>
           <div class="lang">
             <select id="topLang"></select>
-            <button class="mic" id="topMic" aria-label="Karşı taraf mikrofon">
+
+            <!-- Hoparlör -->
+            <button class="btnIcon" id="topSpeak" aria-label="Hoparlör">
+              <svg viewBox="0 0 24 24">
+                <path d="M11 5L6 9H3v6h3l5 4z"></path>
+                <path d="M15 9a4 4 0 0 1 0 6"></path>
+                <path d="M17.5 6.5a7 7 0 0 1 0 11"></path>
+              </svg>
+            </button>
+
+            <!-- Mikrofon -->
+            <button class="btnIcon" id="topMic" aria-label="Karşı mikrofon">
               <svg viewBox="0 0 24 24">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
@@ -292,15 +301,15 @@
         </div>
 
         <div class="content" id="topBody">
-          <div class="bubble hint">Mikrofona bas → konuş → anında çeviri.</div>
-
+          <!-- Karşı konuştuğunda: kendi dili burada -->
           <div class="bubble them">
             <div class="label">Duyulan</div>
             <div id="topHeard">—</div>
           </div>
 
+          <!-- Bize çeviri burada -->
           <div class="bubble me">
-            <div class="label">Sana Çeviri</div>
+            <div class="label">Sana</div>
             <div id="topTranslated">—</div>
           </div>
         </div>
@@ -308,7 +317,6 @@
         <div class="status" id="topStatus">Hazır</div>
       </section>
 
-      <!-- ✅ Wave divider -->
       <div class="wave" aria-hidden="true">
         <div class="glow"></div>
         <svg viewBox="0 0 1000 80" preserveAspectRatio="none">
@@ -320,12 +328,23 @@
       </div>
 
       <!-- BOTTOM (Ben) -->
-      <section class="side" id="sideBottom">
+      <section class="side meTint" id="sideBottom">
         <div class="bar">
           <div class="who">Ben</div>
           <div class="lang">
             <select id="botLang"></select>
-            <button class="mic" id="botMic" aria-label="Benim mikrofon">
+
+            <!-- Hoparlör -->
+            <button class="btnIcon" id="botSpeak" aria-label="Hoparlör">
+              <svg viewBox="0 0 24 24">
+                <path d="M11 5L6 9H3v6h3l5 4z"></path>
+                <path d="M15 9a4 4 0 0 1 0 6"></path>
+                <path d="M17.5 6.5a7 7 0 0 1 0 11"></path>
+              </svg>
+            </button>
+
+            <!-- Mikrofon -->
+            <button class="btnIcon" id="botMic" aria-label="Ben mikrofon">
               <svg viewBox="0 0 24 24">
                 <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
                 <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
@@ -337,15 +356,15 @@
         </div>
 
         <div class="content" id="botBody">
-          <div class="bubble hint">Mikrofona bas → konuş → anında çeviri.</div>
-
+          <!-- Ben konuştuğumda: TR burada -->
           <div class="bubble me">
             <div class="label">Duyulan</div>
             <div id="botHeard">—</div>
           </div>
 
+          <!-- Karşı tarafa çeviri burada -->
           <div class="bubble them">
-            <div class="label">Karşı Tarafa Çeviri</div>
+            <div class="label">Karşı</div>
             <div id="botTranslated">—</div>
           </div>
         </div>
@@ -358,6 +377,6 @@
 
   <div class="toast" id="toast">—</div>
 
-  <script type="module" src="/js/translate_page.js?v=2"></script>
+  <script type="module" src="/js/translate_page.js?v=3"></script>
 </body>
 </html>
