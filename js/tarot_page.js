@@ -1,5 +1,5 @@
 // FILE: /js/tarot_page.js
-// FINAL-DESIGN: beautiful deck + flip reveal + custom SVG “tarot-like” art (copyright-safe)
+// COLORFUL ORIGINAL TAROT: flip + vibrant backs + vibrant fronts (motor later)
 
 import { initMenuHistoryUI } from "/js/menu_history_ui.js";
 import { STORAGE_KEY } from "/js/config.js";
@@ -33,25 +33,32 @@ const POS = {
   5:["Durum","Engel","Tavsiye","Dış Etki","Sonuç"]
 };
 
-// ✅ “Tarot hissi” veren ama telifli kopya olmayan özgün kart yüzleri
+// Renk paletleri (kartlara çeşit)
+const PALETTES = [
+  { a:"#ff3d71", b:"#6c5ce7", c:"#00d2d3" },
+  { a:"#ffb300", b:"#00c2ff", c:"#bef264" },
+  { a:"#ff5252", b:"#ffd86f", c:"#9b5cff" },
+  { a:"#00d084", b:"#00a3ff", c:"#ff5fd7" },
+  { a:"#ff7a00", b:"#ff3d71", c:"#00d2d3" },
+];
+
+// Orijinal kart listesi (kısa ama yeterli; istersen 22’ye çıkarırız)
 const CARDS = [
-  { key:"fool",    n:"Deli (0)",       sym:"🪶", tone:["başlangıç","cesaret","risk"], u:"Yeni sayfa açılıyor. Cesaret et.", r:"Dağınıklık ve acele. Ayağını yere bas." },
-  { key:"mag",     n:"Büyücü (I)",     sym:"✨", tone:["niyet","beceri","fırsat"], u:"Elindeki imkanlar yeter. Başlat.", r:"Planı netleştir. Kandırılma." },
-  { key:"priest",  n:"Başrahibe (II)", sym:"🌙", tone:["sezgi","sır","sabır"], u:"İç sesini dinle. Sabır.", r:"Kuruntuya kapılma. Kanıt ara." },
-  { key:"emp",     n:"İmparator (IV)", sym:"🛡️", tone:["düzen","sınır","otorite"], u:"Düzen kur. Sınır koy.", r:"Kontrolcülük ve inat." },
-  { key:"love",    n:"Aşıklar (VI)",   sym:"💞", tone:["seçim","uyum","bağ"], u:"Bir seçim var. Netleş.", r:"Kararsızlık." },
-  { key:"chariot", n:"Savaş Arabası",  sym:"🏁", tone:["irade","hız","zafer"], u:"Disiplinle kazanırsın.", r:"Hırsın gözünü kör etmesin." },
-  { key:"strength",n:"Güç",            sym:"🦁", tone:["sabır","özdenetim"], u:"Yumuşak güç kazanır.", r:"Öfke ve kontrol kaybı." },
-  { key:"hermit",  n:"Ermiş",          sym:"🏮", tone:["içgörü","sakinlik"], u:"Geri çekil, netleş.", r:"Kopma, yalnızlaşma." },
-  { key:"wheel",   n:"Kader Çarkı",    sym:"🎡", tone:["dönüm","şans"], u:"Dönüm noktası.", r:"Aynı hatayı tekrar etme." },
-  { key:"justice", n:"Adalet",         sym:"⚖️", tone:["denge","hak"], u:"Hak yerini bulur.", r:"Dengesizlik." },
-  { key:"hang",    n:"Asılan Adam",    sym:"🪢", tone:["bekleme","bakış"], u:"Farklı açıdan bak.", r:"Kurban psikolojisi." },
-  { key:"death",   n:"Dönüşüm",        sym:"🦋", tone:["bitış","yenilenme"], u:"Kapanış hayırlı.", r:"Değişimden kaçma." },
-  { key:"tower",   n:"Kule",           sym:"🏛️", tone:["sarsıntı","gerçek"], u:"Gerçek ortaya çıkar.", r:"Direnme, ders çıkar." },
-  { key:"star",    n:"Yıldız",         sym:"⭐", tone:["umut","ilham"], u:"Ferahlık geliyor.", r:"Umudu erteleme." },
-  { key:"moon",    n:"Ay",             sym:"🌫️", tone:["belirsizlik"], u:"Net değil, acele etme.", r:"Yanılsama." },
-  { key:"sun",     n:"Güneş",          sym:"☀️", tone:["başarı","açıklık"], u:"Aydınlık ve rahatlama.", r:"Ego şişmesi." },
-  { key:"world",   n:"Dünya",          sym:"🌍", tone:["tamamlama"], u:"Emek karşılığı.", r:"Bitirmeden bırakma." }
+  { key:"fool",    n:"Deli (0)",       sym:"🪶", u:"Yeni sayfa açılıyor. Cesaret et.", r:"Dağınıklık. Ayağını yere bas." },
+  { key:"mag",     n:"Büyücü (I)",     sym:"✨", u:"Elindeki imkanlar yeter. Başlat.", r:"Planı netleştir. Kandırılma." },
+  { key:"priest",  n:"Başrahibe (II)", sym:"🌙", u:"İç sesini dinle. Sabır.", r:"Kuruntuya kapılma. Kanıt ara." },
+  { key:"emp",     n:"İmparator (IV)", sym:"🛡️", u:"Düzen kur. Sınır koy.", r:"Kontrolcülük ve inat." },
+  { key:"love",    n:"Aşıklar (VI)",   sym:"💞", u:"Bir seçim var. Netleş.", r:"Kararsızlık." },
+  { key:"chariot", n:"Savaş Arabası",  sym:"🏁", u:"Disiplinle kazanırsın.", r:"Hırsın gözünü kör etmesin." },
+  { key:"strength",n:"Güç",            sym:"🦁", u:"Yumuşak güç kazanır.", r:"Öfke ve kontrol kaybı." },
+  { key:"hermit",  n:"Ermiş",          sym:"🏮", u:"Geri çekil, netleş.", r:"Kopma, yalnızlaşma." },
+  { key:"wheel",   n:"Kader Çarkı",    sym:"🎡", u:"Dönüm noktası.", r:"Aynı hatayı tekrar etme." },
+  { key:"justice", n:"Adalet",         sym:"⚖️", u:"Hak yerini bulur.", r:"Dengesizlik." },
+  { key:"tower",   n:"Kule",           sym:"🏛️", u:"Gerçek ortaya çıkar.", r:"Direnme, ders çıkar." },
+  { key:"star",    n:"Yıldız",         sym:"⭐", u:"Ferahlık geliyor.", r:"Umudu erteleme." },
+  { key:"sun",     n:"Güneş",          sym:"☀️", u:"Aydınlık ve rahatlama.", r:"Ego şişmesi." },
+  { key:"moon",    n:"Ay",             sym:"🌫️", u:"Net değil, acele etme.", r:"Yanılsama." },
+  { key:"world",   n:"Dünya",          sym:"🌍", u:"Emek karşılığı.", r:"Bitirmeden bırakma." },
 ];
 
 function pickUniqueCard(used){
@@ -65,67 +72,99 @@ function pickUniqueCard(used){
   return CARDS[Math.floor(Math.random()*CARDS.length)];
 }
 
-/* ===== SVG ART (özgün) ===== */
-function svgArt(cardKey){
-  // Her kart key’ine göre farklı ama basit “ikonik” çizim:
-  const base = (inner) => `
-    <svg viewBox="0 0 100 120">
-      <defs>
-        <linearGradient id="gl" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="rgba(255,179,0,.22)"/>
-          <stop offset="1" stop-color="rgba(190,242,100,.18)"/>
-        </linearGradient>
-      </defs>
-      <rect x="10" y="10" width="80" height="100" rx="14" fill="rgba(0,0,0,.15)" stroke="rgba(255,255,255,.14)" stroke-width="2"/>
-      <circle cx="50" cy="60" r="26" fill="url(#gl)" opacity=".65"/>
-      ${inner}
-      <path d="M18 22h64" stroke="rgba(255,255,255,.10)" stroke-width="2" stroke-linecap="round"/>
-      <path d="M18 98h64" stroke="rgba(255,255,255,.10)" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-  `;
-
-  const map = {
-    fool: base(`<path d="M50 34c10 0 18 8 18 18s-8 18-18 18-18-8-18-18 8-18 18-18z" fill="rgba(255,255,255,.10)"/>
-               <path d="M38 76c8 6 16 6 24 0" stroke="rgba(255,255,255,.18)" stroke-width="3" stroke-linecap="round"/>`),
-    mag: base(`<path d="M30 78h40" stroke="rgba(255,255,255,.18)" stroke-width="3" stroke-linecap="round"/>
-              <path d="M50 30v56" stroke="rgba(255,255,255,.12)" stroke-width="3" stroke-linecap="round"/>
-              <path d="M38 40h24" stroke="rgba(190,242,100,.35)" stroke-width="3" stroke-linecap="round"/>`),
-    priest: base(`<path d="M50 30c10 6 16 16 16 30s-6 24-16 30c-10-6-16-16-16-30s6-24 16-30z" fill="rgba(255,255,255,.10)"/>
-                 <path d="M36 60h28" stroke="rgba(255,179,0,.25)" stroke-width="3" stroke-linecap="round"/>`),
-    emp: base(`<rect x="36" y="34" width="28" height="52" rx="10" fill="rgba(255,255,255,.10)"/>
-              <path d="M36 54h28" stroke="rgba(255,255,255,.16)" stroke-width="3"/>`),
-    love: base(`<path d="M50 84c18-10 28-22 18-34-6-8-16-4-18 2-2-6-12-10-18-2-10 12 0 24 18 34z" fill="rgba(190,242,100,.18)"/>`),
-    chariot: base(`<path d="M30 74h40l-6 14H36z" fill="rgba(255,255,255,.10)"/>
-                  <circle cx="38" cy="92" r="6" fill="rgba(255,179,0,.20)"/>
-                  <circle cx="62" cy="92" r="6" fill="rgba(190,242,100,.18)"/>`),
-    strength: base(`<path d="M38 78c0-12 6-20 12-20s12 8 12 20" stroke="rgba(255,255,255,.16)" stroke-width="4" fill="none" stroke-linecap="round"/>
-                   <path d="M44 52c8 6 16 6 24 0" stroke="rgba(255,179,0,.22)" stroke-width="3" stroke-linecap="round"/>`),
-    hermit: base(`<path d="M50 26v66" stroke="rgba(255,255,255,.14)" stroke-width="3" stroke-linecap="round"/>
-                 <circle cx="50" cy="40" r="10" fill="rgba(190,242,100,.14)"/>`),
-    wheel: base(`<circle cx="50" cy="60" r="22" stroke="rgba(255,255,255,.18)" stroke-width="3" fill="none"/>
-                <path d="M50 38v44M28 60h44M35 45l30 30M65 45L35 75" stroke="rgba(255,179,0,.20)" stroke-width="2" stroke-linecap="round"/>`),
-    justice: base(`<path d="M50 30v62" stroke="rgba(255,255,255,.14)" stroke-width="3" stroke-linecap="round"/>
-                  <path d="M30 46h40" stroke="rgba(255,255,255,.18)" stroke-width="3" stroke-linecap="round"/>
-                  <path d="M36 46l-8 16h16zM64 46l-8 16h16z" fill="rgba(190,242,100,.14)"/>`),
-    hang: base(`<path d="M50 28v18" stroke="rgba(255,255,255,.14)" stroke-width="3" stroke-linecap="round"/>
-               <path d="M50 46c10 0 14 8 14 16s-4 16-14 16-14-8-14-16 4-16 14-16z" fill="rgba(255,255,255,.10)"/>`),
-    death: base(`<path d="M36 86c8-10 20-10 28 0" stroke="rgba(190,242,100,.22)" stroke-width="4" stroke-linecap="round"/>
-               <path d="M50 34c10 8 16 18 16 26S60 82 50 90c-10-8-16-18-16-30s6-18 16-26z" fill="rgba(255,255,255,.08)"/>`),
-    tower: base(`<rect x="42" y="28" width="16" height="70" rx="6" fill="rgba(255,255,255,.10)"/>
-               <path d="M34 50l32 18" stroke="rgba(255,82,82,.22)" stroke-width="3" stroke-linecap="round"/>`),
-    star: base(`<path d="M50 28l6 18h18l-14 10 6 18-16-12-16 12 6-18-14-10h18z" fill="rgba(255,179,0,.18)"/>`),
-    moon: base(`<path d="M58 34c-10 2-16 12-14 22 2 12 14 20 26 16-8 8-22 8-32-2-12-12-8-32 6-36 6-2 10-2 14 0z" fill="rgba(255,255,255,.10)"/>`),
-    sun: base(`<circle cx="50" cy="60" r="18" fill="rgba(255,179,0,.22)"/>
-              <path d="M50 30v10M50 80v10M20 60h10M70 60h10M30 40l7 7M63 73l7 7M30 80l7-7M63 47l7-7"
-                    stroke="rgba(255,255,255,.14)" stroke-width="2" stroke-linecap="round"/>`),
-    world: base(`<circle cx="50" cy="60" r="22" fill="rgba(190,242,100,.12)" stroke="rgba(255,255,255,.16)" stroke-width="2"/>
-                <path d="M28 60h44M50 38c7 7 7 37 0 44M50 38c-7 7-7 37 0 44" stroke="rgba(255,255,255,.14)" stroke-width="2"/>`)
-  };
-
-  return map[cardKey] || map.fool;
+function pickPalette(seedStr){
+  // deterministic-ish
+  let h = 0;
+  for(let i=0;i<seedStr.length;i++) h = (h*31 + seedStr.charCodeAt(i)) >>> 0;
+  return PALETTES[h % PALETTES.length];
 }
 
-/* ===== State ===== */
+// ✅ Kart sırtı: çok renkli premium desen (SVG)
+function deckBackSVG(seed="kaynana"){
+  const p = pickPalette(seed);
+  return `
+  <svg viewBox="0 0 100 140" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="${p.a}" stop-opacity="0.35"/>
+        <stop offset="0.55" stop-color="${p.b}" stop-opacity="0.28"/>
+        <stop offset="1" stop-color="${p.c}" stop-opacity="0.25"/>
+      </linearGradient>
+      <radialGradient id="glow" cx="50%" cy="35%" r="70%">
+        <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>
+        <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+      <pattern id="stars" width="20" height="20" patternUnits="userSpaceOnUse">
+        <circle cx="4" cy="6" r="1" fill="rgba(255,255,255,.25)"/>
+        <circle cx="16" cy="14" r="1" fill="rgba(255,255,255,.18)"/>
+        <circle cx="12" cy="4" r="0.8" fill="rgba(255,255,255,.16)"/>
+      </pattern>
+    </defs>
+
+    <rect x="0" y="0" width="100" height="140" rx="16" fill="rgba(0,0,0,.75)"/>
+    <rect x="6" y="8" width="88" height="124" rx="14" fill="url(#bg)"/>
+    <rect x="6" y="8" width="88" height="124" rx="14" fill="url(#stars)" opacity="0.55"/>
+
+    <circle cx="50" cy="70" r="28" fill="url(#glow)"/>
+    <path d="M50 28 L58 52 L84 56 L64 72 L70 98 L50 86 L30 98 L36 72 L16 56 L42 52 Z"
+          fill="rgba(255,255,255,.10)"/>
+    <path d="M50 38 L56 54 L74 56 L60 66 L64 84 L50 74 L36 84 L40 66 L26 56 L44 54 Z"
+          fill="rgba(0,0,0,.25)"/>
+
+    <rect x="10" y="14" width="80" height="112" rx="12"
+          fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2"/>
+    <rect x="14" y="18" width="72" height="104" rx="10"
+          fill="none" stroke="rgba(255,255,255,.10)" stroke-width="2"/>
+
+    <text x="50" y="125" text-anchor="middle"
+          font-family="system-ui, -apple-system, Segoe UI, Arial"
+          font-size="9" font-weight="900"
+          fill="rgba(255,255,255,.55)">Caynana Tarot</text>
+  </svg>`;
+}
+
+// ✅ Kart yüzü: çok renkli simge illüstrasyonu (SVG)
+function faceSVG(card){
+  const p = pickPalette(card.key);
+  const sym = card.sym || "✶";
+
+  return `
+  <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="fbg" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="${p.a}" stop-opacity="0.28"/>
+        <stop offset="0.55" stop-color="${p.b}" stop-opacity="0.22"/>
+        <stop offset="1" stop-color="${p.c}" stop-opacity="0.20"/>
+      </linearGradient>
+      <radialGradient id="orb" cx="50%" cy="45%" r="60%">
+        <stop offset="0" stop-color="#ffffff" stop-opacity="0.14"/>
+        <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <rect x="10" y="10" width="100" height="100" rx="18"
+          fill="rgba(0,0,0,.35)" stroke="rgba(255,255,255,.16)" stroke-width="2"/>
+    <rect x="14" y="14" width="92" height="92" rx="16" fill="url(#fbg)"/>
+    <circle cx="60" cy="58" r="34" fill="url(#orb)"/>
+
+    <!-- orbit lines -->
+    <path d="M24 60 C40 34, 80 34, 96 60" stroke="rgba(255,255,255,.18)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M24 60 C40 86, 80 86, 96 60" stroke="rgba(255,255,255,.12)" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+    <!-- center symbol -->
+    <text x="60" y="72" text-anchor="middle"
+          font-family="Apple Color Emoji, Segoe UI Emoji, system-ui"
+          font-size="38">${sym}</text>
+
+    <!-- top mini marks -->
+    <circle cx="30" cy="30" r="3" fill="rgba(255,255,255,.25)"/>
+    <circle cx="90" cy="30" r="3" fill="rgba(255,255,255,.18)"/>
+    <circle cx="30" cy="90" r="3" fill="rgba(255,255,255,.18)"/>
+    <circle cx="90" cy="90" r="3" fill="rgba(255,255,255,.25)"/>
+  </svg>`;
+}
+
+// ===== State =====
 const state = {
   need: 1,
   ready: false,
@@ -146,31 +185,8 @@ function setPill(text, good=true){
   p.style.color       = good ? "rgba(190,242,100,.95)" : "rgba(255,82,82,.95)";
 }
 
-function buildGrid(){
-  const grid = $("grid");
-  grid.innerHTML = "";
-  for(let i=0;i<16;i++){
-    const wrap = document.createElement("div");
-    wrap.className = "flip";
-    wrap.dataset.slot = String(i);
-
-    wrap.innerHTML = `
-      <div class="inner">
-        <div class="face back"></div>
-        <div class="face front">
-          <div class="frame" data-art></div>
-          <div class="title" data-title>—</div>
-          <div class="meta">
-            <span class="tag" data-pos>—</span>
-            <span class="tag" data-rev>—</span>
-          </div>
-        </div>
-      </div>
-    `;
-
-    wrap.querySelector(".back").addEventListener("click", ()=> onPick(wrap));
-    grid.appendChild(wrap);
-  }
+function showThinking(on){
+  $("thinking").classList.toggle("show", !!on);
 }
 
 function renderPicked(){
@@ -188,13 +204,9 @@ function renderPicked(){
   });
 }
 
-function showThinking(on){
-  $("thinking").classList.toggle("show", !!on);
-}
-
 function makeLongReading(){
   const lines = [];
-  lines.push(`<b>Evladım…</b> açılımın tamam. Şimdi “kaynana gibi” net konuşacağım.`);
+  lines.push(`<b>Evladım…</b> kartlar renkli ama ben daha renkliyim. 🙂`);
   lines.push(`<br><br><b>Kartların:</b>`);
   state.picked.forEach(p=>{
     const txt = p.rev ? p.card.r : p.card.u;
@@ -203,7 +215,7 @@ function makeLongReading(){
   lines.push(`<br><br><b>Özet:</b>`);
   const revCount = state.picked.filter(x=>x.rev).length;
   lines.push(revCount >= Math.ceil(state.need/2)
-    ? `Ters enerji fazla. Yani “inat etme, düzelt” diyor. Plan + sabır şart.`
+    ? `Ters enerji fazla. “İnat etme, düzelt” diyor. Plan + sabır şart.`
     : `Enerji iyi. Doğru adımı atarsan işin açılır. Şımarmak yok 🙂`);
   lines.push(`<br><br><b>Kaynana tavsiyesi:</b> Bugün tek hedef seç. Bitir. Sonra diğerine geç.`);
   lines.push(`<br><br><b>Kapanış:</b> Neyse halin çıksın falın… ama ben sende toparlanma görüyorum.`);
@@ -212,15 +224,13 @@ function makeLongReading(){
 
 async function runReading(){
   showThinking(true);
-  await sleep(7000);
+  await sleep(6500);
   showThinking(false);
-
   const box = $("resultBox");
   box.innerHTML = makeLongReading();
   box.classList.add("show");
 }
 
-/* ===== Actions ===== */
 function resetAll(){
   state.ready = false;
   state.used = new Set();
@@ -254,13 +264,43 @@ function bindButtons(){
   $("btnReset").addEventListener("click", resetAll);
 }
 
+function buildGrid(){
+  const grid = $("grid");
+  grid.innerHTML = "";
+
+  for(let i=0;i<16;i++){
+    const wrap = document.createElement("div");
+    wrap.className = "flip";
+    wrap.dataset.slot = String(i);
+
+    wrap.innerHTML = `
+      <div class="inner">
+        <div class="face back">
+          <div class="backsvg">${deckBackSVG("slot:"+i)}</div>
+        </div>
+        <div class="face front">
+          <div class="frame" data-art></div>
+          <div class="title" data-title>—</div>
+          <div class="meta">
+            <span class="tag" data-pos>—</span>
+            <span class="tag" data-rev>—</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    wrap.querySelector(".back").addEventListener("click", ()=> onPick(wrap));
+    grid.appendChild(wrap);
+  }
+}
+
 function flipReveal(wrap, card, rev, posLabel){
   const art = wrap.querySelector("[data-art]");
   const title = wrap.querySelector("[data-title]");
   const pos = wrap.querySelector("[data-pos]");
   const revEl = wrap.querySelector("[data-rev]");
 
-  art.innerHTML = svgArt(card.key);
+  art.innerHTML = faceSVG(card);
   title.textContent = card.n;
   pos.textContent = posLabel;
   revEl.textContent = rev ? "TERS" : "DÜZ";
@@ -281,21 +321,17 @@ function onPick(wrap){
   if(wrap.classList.contains("flipped")) return;
 
   const card = pickUniqueCard(state.used);
-  const rev = Math.random() < 0.35;
+  const rev = Math.random() < 0.38;
   const posLabel = POS[state.need][state.picked.length] || `Kart ${state.picked.length+1}`;
 
   state.picked.push({ card, rev, posLabel });
 
-  // flip + reveal
   flipReveal(wrap, card, rev, posLabel);
   wrap.classList.add("disabled");
-  wrap.classList.add("selected");
-
   renderPicked();
 
   if(state.picked.length === state.need){
     setPill("Okunuyor…", true);
-    // kalan kartları disable
     document.querySelectorAll(".flip").forEach(el=>{
       if(!el.classList.contains("flipped")) el.classList.add("disabled");
     });
@@ -303,7 +339,6 @@ function onPick(wrap){
   }
 }
 
-/* ===== Boot ===== */
 document.addEventListener("DOMContentLoaded", ()=>{
   const token = (localStorage.getItem("google_id_token") || "").trim();
   if(!token){ location.href="/index.html"; return; }
@@ -319,6 +354,12 @@ document.addEventListener("DOMContentLoaded", ()=>{
   syncTopUI();
   renderNeed();
   setPill("Hazır", true);
+
+  // deck stack art
+  const b1 = $("deckBack1"), b2 = $("deckBack2"), b3 = $("deckBack3");
+  if(b1) b1.innerHTML = deckBackSVG("stack1");
+  if(b2) b2.innerHTML = deckBackSVG("stack2");
+  if(b3) b3.innerHTML = deckBackSVG("stack3");
 
   buildGrid();
   bindSpreads();
