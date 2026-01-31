@@ -97,7 +97,13 @@ function renderMenusFresh(){
   if(asistan){
     addMenuItem(asistan, "💬", "Sohbet", "/pages/chat.html");
     addMenuItem(asistan, "🛍️", "Alışveriş", "/pages/alisveris.html");
+
+    // ✅ TERCÜMAN
     addMenuItem(asistan, "🌍", "Tercüman", "/pages/translate.html");
+
+    // ✅ İSTEDİĞİN: Tercüman'ın hemen altına
+    addMenuItem(asistan, "📷", "Fotoğraftan Çeviri", "/pages/ocr_translate.html");
+
     addMenuItem(asistan, "🗣️", "Dedikodu Kazanı", "/pages/gossip.html");
     addMenuItem(asistan, "🥗", "Diyet", "/pages/diyet.html");
     addMenuItem(asistan, "❤️", "Sağlık", "/pages/health.html");
