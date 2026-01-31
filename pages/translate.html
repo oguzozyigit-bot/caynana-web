@@ -124,31 +124,15 @@
       position:relative;
     }
 
-    /* ✅ Ben tarafı: mat bordo */
+    /* ✅ Ben tarafı (istersen burayı senin son renk ayarınla bırak) */
     .side.meTint{
-  background:
-    radial-gradient(
-      900px 420px at 30% 12%,
-      rgba(120, 20, 35, .85),
-      transparent 68%
-    ),
-    radial-gradient(
-      700px 360px at 80% 18%,
-      rgba(90, 15, 30, .65),
-      transparent 70%
-    ),
-    radial-gradient(
-      600px 320px at 40% 75%,
-      rgba(70, 10, 25, .45),
-      transparent 72%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(60, 10, 20, .55),
-      rgba(0,0,0,.15)
-    );
-}
-    /* ÜST TARAF: komple ters */
+      background:
+        radial-gradient(980px 420px at 40% 12%, rgba(160, 35, 55, .30), transparent 68%),
+        radial-gradient(820px 360px at 80% 18%, rgba(120, 20, 40, .22), transparent 70%),
+        radial-gradient(760px 320px at 20% 70%, rgba(255, 179, 0, .06), transparent 72%),
+        rgba(0,0,0,.12);
+    }
+
     .side.top{ transform: rotate(180deg); }
 
     .bar{
@@ -162,7 +146,7 @@
     }
 
     /* Dropdown */
-    .dd{ position: relative; width: 190px; max-width: 230px; }
+    .dd{ position: relative; width: 200px; max-width: 240px; }
     .dd-btn{
       width:100%;
       padding: 10px 12px;
@@ -181,14 +165,14 @@
     }
     .dd-btn .caret{ opacity:.75; font-size: 12px; }
 
-    /* ✅ Dropdown taşma fix: sola aç + clamp */
+    /* ✅ Dropdown taşma + scroll fix */
     .dd-menu{
       position:absolute;
       top: calc(100% + 8px);
       left: 0;
       right: auto;
 
-      width: clamp(200px, 78vw, 300px);
+      width: clamp(220px, 78vw, 320px);
       max-width: calc(100vw - 28px);
 
       border-radius: 18px;
@@ -196,11 +180,38 @@
       background: rgba(20,20,24,.98);
       box-shadow: 0 34px 90px rgba(0,0,0,.70);
       backdrop-filter: blur(14px);
-      overflow:hidden;
       display:none;
       z-index: 999;
+
+      /* ✅ asıl fix */
+      max-height: 320px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .dd.open .dd-menu{ display:block; }
+
+    /* ✅ search area sticky */
+    .dd-search-wrap{
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      padding: 10px;
+      background: rgba(20,20,24,.98);
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    .dd-search{
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.92);
+      font-weight: 900;
+      font-size: 13px;
+      padding: 10px 12px;
+      outline: none;
+    }
+    .dd-search::placeholder{ color: rgba(255,255,255,.55); font-weight: 800; }
+    .dd-search:focus{ border-color: rgba(255,179,0,.55); }
 
     .dd-item{
       padding: 13px 14px;
@@ -211,10 +222,12 @@
       border-bottom: 1px solid rgba(255,255,255,.08);
       letter-spacing: .1px;
       text-shadow: 0 1px 0 rgba(0,0,0,.35);
+      user-select:none;
     }
     .dd-item:last-child{ border-bottom:none; }
     .dd-item:hover{ background: rgba(255,255,255,.06); }
     .dd-item:active{ background: rgba(255,179,0,.12); }
+    .dd-item.hidden{ display:none; }
 
     .btnIcon{
       width: 48px;
@@ -398,6 +411,6 @@
   </div>
 
   <div class="toast" id="toast">—</div>
-  <script type="module" src="/js/translate_page.js?v=5"></script>
+  <script type="module" src="/js/translate_page.js?v=6"></script>
 </body>
 </html>
