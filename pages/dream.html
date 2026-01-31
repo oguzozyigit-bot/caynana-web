@@ -92,7 +92,6 @@
     .ttl{ font-weight:1000; color:#fff; font-size:16px; }
     .sub{ margin-top:6px; color: rgba(255,255,255,.70); font-size: 13px; line-height: 1.35; font-weight: 800; }
 
-    /* Big mic */
     .mic-zone{
       margin-top: 14px;
       display:flex;
@@ -100,6 +99,7 @@
       gap: 12px;
       align-items:center;
     }
+
     .mic-btn{
       width: 92px;
       height: 92px;
@@ -152,7 +152,6 @@
     }
     .hint b{ color:#fff; }
 
-    /* Transcript box */
     .transcript{
       margin-top: 14px;
       border-radius: 18px;
@@ -166,9 +165,30 @@
       font-size: 13px;
       white-space: pre-wrap;
       word-break: break-word;
+      max-height: 260px;
+      overflow:auto;
     }
 
-    /* Result */
+    .btn-row{ display:flex; gap:10px; margin-top: 12px; }
+    .btn{
+      flex:1;
+      border:none;
+      border-radius: 18px;
+      padding: 14px 14px;
+      font-weight: 1000;
+      font-size: 14px;
+      cursor:pointer;
+      background: var(--pistachio);
+      color:#111;
+      box-shadow: 0 12px 26px rgba(190,242,100,.18);
+    }
+    .btn.secondary{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color:#fff;
+      box-shadow:none;
+    }
+
     .result{
       display:none;
       margin-top: 14px;
@@ -183,7 +203,6 @@
     }
     .result.show{ display:block; }
 
-    /* Thinking overlay */
     .thinking-overlay{
       position: fixed;
       inset:0;
@@ -218,26 +237,6 @@
       50%{ transform: translateY(-5px); opacity:1; }
     }
 
-    .btn-row{ display:flex; gap:10px; margin-top: 12px; }
-    .btn{
-      flex:1;
-      border:none;
-      border-radius: 18px;
-      padding: 14px 14px;
-      font-weight: 1000;
-      font-size: 14px;
-      cursor:pointer;
-      background: var(--pistachio);
-      color:#111;
-      box-shadow: 0 12px 26px rgba(190,242,100,.18);
-    }
-    .btn.secondary{
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
-      color:#fff;
-      box-shadow:none;
-    }
-
     .toast{
       position: fixed;
       left: 50%;
@@ -266,7 +265,7 @@
 <body>
 <div class="mobile-frame" id="mobileFrame">
 
-  <!-- ÜST BAR (aynı) -->
+  <!-- ÜST BAR -->
   <div class="topbar">
     <div class="left-controls">
       <button class="hamb-btn" id="hambBtn">☰</button>
@@ -306,7 +305,7 @@
     </div>
   </div>
 
-  <!-- HAMBURGER (aynı) -->
+  <!-- HAMBURGER -->
   <div class="menu-overlay" id="menuOverlay">
     <div class="menu-sidebar">
       <button class="new-chat-btn" id="newChatBtn"><span>+</span> YENİ SOHBET BAŞLAT</button>
@@ -343,7 +342,7 @@
         <div class="ico">👁️</div>
         <div>
           <div class="ttl">Rüya Tabiri</div>
-          <div class="sub">Günde 1 kez. “Bitti” demeden bitmez evladım 🙂</div>
+          <div class="sub">Günde 1 kez. Anlat → bitince <b>Bitti</b>’ye bas.</div>
         </div>
       </div>
 
@@ -358,8 +357,8 @@
         </button>
 
         <div class="hint" id="hintTxt">
-          <b>Rüyanı bana anlat evladım.</b> Seni dinliyorum. <br>
-          “<b>bitti</b>” diyene kadar açık kalır. Sen bitmeden ben bitmem 🙂
+          <b>Rüyanı bana anlat evladım.</b> Mikrofonu açtım mı dinlerim. <br>
+          Bitince <b>Bitti</b> butonuna bas, tabir edeyim.
         </div>
       </div>
 
@@ -367,7 +366,7 @@
 
       <div class="btn-row">
         <button class="btn secondary" id="btnClear">Temizle</button>
-        <button class="btn" id="btnForceEnd">“Bitti” (Zorla)</button>
+        <button class="btn" id="btnDone">Bitti</button>
       </div>
 
       <div class="result" id="resultBox"></div>
@@ -403,6 +402,6 @@
 
 <script type="module" src="/js/layout-common.js?v=1"></script>
 <script type="module" src="/js/menu_history_ui.js?v=1"></script>
-<script type="module" src="/js/dream_page.js?v=1"></script>
+<script type="module" src="/js/dream_page.js?v=2"></script>
 </body>
 </html>
