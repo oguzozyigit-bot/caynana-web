@@ -4,7 +4,7 @@
 // ✅ History click: ChatStore.setCurrent(id) + chat.html’e gider
 // ✅ Delete/Rename: UI anında güncellenir
 // ✅ Profil: isim + resim garanti görünür
-// ✅ NEW: Özel Günler (conditional) icon + link
+// ✅ FIX: Menü tekrarlarını bitirir -> menuAsistan/menuAstro/menuKurumsal her init'te sıfırlanır
 
 import { ChatStore } from "./chat_store.js";
 
@@ -27,7 +27,7 @@ function confirmDelete(){
 }
 
 /* =========================================================
-   PROFİL OKU + PROFİL KISAYOLUNU BOYA (İSİM/RESİM)
+   PROFİL OKU + PROFİL KISAYOLUNU BOYA
    ========================================================= */
 function getProfile(){
   try{
@@ -60,16 +60,10 @@ function paintProfileShortcut(){
 }
 
 /* =========================================================
-   MENÜYE EKSİKSE EKLE
+   MENÜ ITEM
    ========================================================= */
-function hasMenuItem(root, href){
-  if(!root) return false;
-  return Array.from(root.querySelectorAll(".menu-action"))
-    .some(el => (el.getAttribute("data-href") || "") === href);
-}
-
 function addMenuItem(root, ico, label, href){
-  if(!root || hasMenuItem(root, href)) return;
+  if(!root) return;
 
   const div = document.createElement("div");
   div.className = "menu-action";
@@ -88,9 +82,6 @@ function addMenuItem(root, ico, label, href){
 
 /* =========================================================
    ÖZEL GÜNLER KOŞULU
-   - Eş doğum günü / evlilik yıldönümü / nişan yıldönümü /
-     çocuk doğum günleri vs. herhangi biri doluysa göster
-   - Profil anahtarları farklı olabilir; olabildiğince toleranslı
    ========================================================= */
 function hasAnySpecialDay(p){
   const keys = [
@@ -106,23 +97,25 @@ function hasAnySpecialDay(p){
     if(typeof v === "string" && v.trim()) return true;
     if(v && typeof v === "object" && Object.keys(v).length) return true;
   }
-
-  // childNames varsa ama doğum tarihi yoksa yine de göstermeyelim (kural: tarih doluysa göster)
   return false;
 }
 
 /* =========================================================
-   FALLBACK + DİNAMİK MENÜLER
+   ✅ FIX: MENÜLERİ SIFIRLA + YENİDEN DOLDUR
    ========================================================= */
-function renderFallbackMenus(){
+function renderMenusFresh(){
   const asistan = $("menuAsistan");
   const astro   = $("menuAstro");
   const kur     = $("menuKurumsal");
 
+  // ✅ KRİTİK: eski statik/legacy satırları da dahil, komple temizle
+  if(asistan) asistan.innerHTML = "";
+  if(astro) astro.innerHTML = "";
+  if(kur) kur.innerHTML = "";
+
   const p = getProfile();
   const gender = String(p.gender || p.cinsiyet || "").toLowerCase().trim();
   const team   = String(p.team || "").trim();
-
   const isFemale = ["kadın","kadin","female","woman","f"].includes(gender);
 
   /* ---- ASİSTAN ---- */
@@ -134,17 +127,14 @@ function renderFallbackMenus(){
     addMenuItem(asistan, "🥗", "Diyet", "/pages/diyet.html");
     addMenuItem(asistan, "❤️", "Sağlık", "/pages/health.html");
 
-    // ✅ Regl (sadece kadın)
     if(isFemale){
       addMenuItem(asistan, "🩸", "Regl Takip", "/pages/regl.html");
     }
 
-    // ✅ Özel Günler (koşullu)
     if(hasAnySpecialDay(p)){
       addMenuItem(asistan, "🎉", "Özel Günler", "/pages/specialdays.html");
     }
 
-    // ✅ Takım (profilde varsa, adıyla)
     if(team){
       addMenuItem(asistan, "⚽", team, "/pages/clup.html");
     }
@@ -196,10 +186,8 @@ function renderHistory(){
       if(act) return;
 
       ChatStore.setCurrent(c.id);
-
       const overlay = $("menuOverlay");
       if(overlay) overlay.classList.remove("open");
-
       location.href = "/pages/chat.html";
     });
 
@@ -224,7 +212,7 @@ function renderHistory(){
 }
 
 /* =========================================================
-   INIT
+   INIT (tek listener)
    ========================================================= */
 function getUIState(){
   if(!window.__CAYNANA_MENU_UI__) window.__CAYNANA_MENU_UI__ = { bound:false };
@@ -235,7 +223,10 @@ export function initMenuHistoryUI(){
   try { ChatStore.init(); } catch {}
 
   paintProfileShortcut();
-  renderFallbackMenus();
+
+  // ✅ FIX: her init'te menüyü sıfırla ve yeniden çiz
+  renderMenusFresh();
+
   renderHistory();
 
   const btn = $("newChatBtn");
@@ -256,6 +247,8 @@ export function initMenuHistoryUI(){
       try { ChatStore.init(); } catch {}
       paintProfileShortcut();
       renderHistory();
+      // menüler de güncel kalsın (team/gender/specialdays değişebilir)
+      renderMenusFresh();
     });
   }
 }
