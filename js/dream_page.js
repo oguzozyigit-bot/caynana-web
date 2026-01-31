@@ -1,7 +1,8 @@
 // FILE: /js/dream_page.js
-// Speech-to-text (continuous) until user says "bitti"
-// Typewriter transcript + daily limit (once/day)
-// Design-first: final interpretation is demo text for now.
+// Continuous STT until user presses "Bitti"
+// ✅ No interim spam on screen (only final chunks) -> less "saçmalama"
+// ✅ Typewriter transcript
+// ✅ Daily limit (once/day)
 
 import { initMenuHistoryUI } from "/js/menu_history_ui.js";
 import { STORAGE_KEY } from "/js/config.js";
@@ -48,106 +49,68 @@ function showThinking(on){
 
 const state = {
   listening: false,
-  finalText: "",
-  buffer: "",          // transcript buffer
-  typing: false,
-  rec: null
+  buffer: "",
+  rec: null,
+  restarting: false
 };
 
 function setMicUI(on){
   const b = $("micBtn");
   if(!b) return;
   b.classList.toggle("listening", !!on);
+
   $("hintTxt").innerHTML = on
-    ? `<b>Seni dinliyorum evladım…</b> “bitti” deyince duracağım. Sen bitmeden ben bitmem 🙂`
-    : `<b>Rüyanı bana anlat evladım.</b> Seni dinliyorum. <br> “<b>bitti</b>” diyene kadar açık kalır. Sen bitmeden ben bitmem 🙂`;
+    ? `<b>Seni dinliyorum evladım…</b> Bitince <b>Bitti</b>’ye bas, tabir edeyim.`
+    : `<b>Rüyanı bana anlat evladım.</b> Mikrofonu aç, konuş. Bitince <b>Bitti</b>’ye bas.`;
 }
 
 async function typewriterAppend(text){
-  // transcript'e daktilo
   const box = $("transcript");
   if(!box) return;
 
   const s = String(text||"");
   if(!s.trim()) return;
 
-  // ilk boşsa —
   if(box.textContent.trim() === "—") box.textContent = "";
-
-  state.typing = true;
 
   for(let i=0;i<s.length;i++){
     box.textContent += s[i];
-    // auto scroll
     box.scrollTop = box.scrollHeight;
-    await sleep(18); // okunabilir yavaşlık
+    await sleep(18);
   }
-
-  state.typing = false;
-}
-
-function normalizeTR(s){
-  return String(s||"").toLowerCase()
-    .replaceAll("ı","i").replaceAll("İ","i")
-    .replaceAll("ş","s").replaceAll("ğ","g").replaceAll("ç","c").replaceAll("ö","o").replaceAll("ü","u");
-}
-
-function containsBitti(text){
-  // "bitti" kelimesini yakala (yaklaşık)
-  const t = normalizeTR(text);
-  return /\bbitti\b/.test(t);
 }
 
 function stopListening(){
+  state.listening = false;
+  state.restarting = false;
   try{ state.rec?.stop?.(); }catch{}
   state.rec = null;
-  state.listening = false;
   setMicUI(false);
 }
 
-async function runInterpretation(){
-  // günlük limit
-  if(isUsedToday()){
-    toast("Evladım bugün rüya tabirini yaptık. Rüya da fal da dakika başı değişmez… Yarın gel 🙂");
-    return;
-  }
-
-  const txt = String(state.buffer||"").trim();
-  if(!txt){
-    toast("Evladım rüya yoksa tabir de yok. Bir daha dene 🙂");
-    return;
-  }
-
-  markUsed();
-  showThinking(true);
-  await sleep(6500);
-  showThinking(false);
-
-  const box = $("resultBox");
-  box.innerHTML = `
-    <b>Evladım…</b> rüyanda geçen detaylar “zihninin yükünü” gösteriyor. <br><br>
-    <b>1)</b> Son günlerde kafanı kurcalayan bir mesele var; rüyada sembolleşmiş. <br>
-    <b>2)</b> Korku/kaçış hissi gördüysem: ertelediğin iş var. “Yarın yaparım” deme. <br>
-    <b>3)</b> Eğer su/deniz/yağmur geçtiyse: ferahlama geliyor, ama önce içini dökmen lazım. <br><br>
-    <b>Kaynana hükmü:</b> Rüya tabiri dakika başı değişmez evladım 😄 Bugünlük bu kadar. Yarın yine gel, yine bakarız.
-  `;
-  box.classList.add("show");
-  toast("Tabir bitti evladım. Yarın gel 🙂");
+function ensureSpeechSupport(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) return null;
+  return SR;
 }
 
 function startListening(){
   if(isUsedToday()){
-    toast("Evladım bugün rüya tabiri hakkın doldu. Yarın gel 🙂");
+    toast("Evladım bugün rüya tabirini yaptık. Yarın gel 🙂");
     return;
   }
 
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const SR = ensureSpeechSupport();
   if(!SR){
-    toast("Tarayıcı bu cihazda konuşmayı yazıya çevirmiyor evladım.");
+    toast("Bu cihazda konuşmayı yazıya çevirme yok evladım. (Tarayıcı desteklemiyor)");
     return;
   }
 
-  // güvenlik: önce kapat
+  // reset result view
+  $("resultBox").classList.remove("show");
+  $("resultBox").innerHTML = "";
+
+  // stop existing
   stopListening();
 
   const rec = new SR();
@@ -156,49 +119,78 @@ function startListening(){
   setMicUI(true);
 
   rec.lang = "tr-TR";
-  rec.interimResults = true;
+  rec.interimResults = false;   // ✅ interim yok (saçmalama azalır)
   rec.continuous = true;
 
   rec.onresult = async (e)=>{
-    let finalChunk = "";
-    let interimChunk = "";
-
+    // sadece final gelir
+    let chunk = "";
     for(let i=e.resultIndex; i<e.results.length; i++){
       const res = e.results[i];
       const t = res?.[0]?.transcript || "";
-      if(res.isFinal) finalChunk += t + " ";
-      else interimChunk += t + " ";
+      chunk += t + " ";
     }
+    chunk = chunk.trim();
+    if(!chunk) return;
 
-    // interim'i ekrana basmayalım (zıplar). final gelince daktilo bas.
-    if(finalChunk.trim()){
-      state.buffer += finalChunk;
-      await typewriterAppend(finalChunk);
-
-      // "bitti" yakala
-      if(containsBitti(finalChunk)){
-        stopListening();
-        // "bitti" kelimesini buffer'dan temizle
-        state.buffer = state.buffer.replace(/bitti/gi, "").trim();
-        toast("Tamam evladım. ‘Bitti’ dediysen bitti 🙂");
-        await runInterpretation();
-      }
-    }
+    // buffer + daktilo
+    state.buffer += (state.buffer ? " " : "") + chunk;
+    await typewriterAppend(chunk + " ");
   };
 
-  rec.onerror = (err)=>{
-    // bazen "no-speech" olur; kaynana gibi tatlı sert uyar
-    toast("Evladım ses gelmedi. Mikrofona konuş da duyayım.");
+  rec.onerror = ()=>{
+    // no-speech / network / aborted gibi
+    // “saçmalıyor” hissi vermesin diye kısa toast
+    toast("Evladım bir durdu. Devam et, ben yeniden açarım.");
   };
 
   rec.onend = ()=>{
-    // kullanıcı bitirmediyse tekrar başlat (kaynana şakası)
+    // kullanıcı dinleme modundaysa otomatik yeniden başlat
     if(state.listening){
-      try{ rec.start(); }catch{}
+      if(state.restarting) return;
+      state.restarting = true;
+      setTimeout(()=>{
+        state.restarting = false;
+        try{ rec.start(); }catch{}
+      }, 180);
     }
   };
 
-  try{ rec.start(); }catch(e){ toast("Mikrofon açılamadı evladım."); stopListening(); }
+  try{ rec.start(); }catch(e){
+    toast("Mikrofon açılamadı evladım. HTTPS ve izin lazım.");
+    stopListening();
+  }
+}
+
+async function runInterpretation(){
+  if(isUsedToday()){
+    toast("Evladım bugün rüya tabiri hakkın doldu. Yarın gel 🙂");
+    return;
+  }
+
+  const txt = String(state.buffer||"").trim();
+  if(!txt){
+    toast("Evladım rüya yoksa tabir de yok. Bir şey anlat 🙂");
+    return;
+  }
+
+  markUsed();
+
+  showThinking(true);
+  await sleep(6500);
+  showThinking(false);
+
+  const box = $("resultBox");
+  box.innerHTML = `
+    <b>Evladım…</b> rüyandaki semboller “kafanın doluluğunu” anlatıyor. <br><br>
+    <b>1)</b> Kaçma/kovalanma gördüysen: ertelediğin iş var. <br>
+    <b>2)</b> Su/yağmur geçtiyse: ferahlama geliyor ama önce içini dökmen lazım. <br>
+    <b>3)</b> Düşme/merdiven varsa: hedefin var; ama adım adım git. <br><br>
+    <b>Kaynana hükmü:</b> Rüya tabiri dakika başı değişmez evladım 😄 Bugünlük bu kadar. <b>Yarın gel</b>.
+  `;
+  box.classList.add("show");
+
+  toast("Tabir bitti evladım. Yarın gel 🙂");
 }
 
 function clearAll(){
@@ -226,24 +218,19 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
   $("micBtn")?.addEventListener("click", ()=>{
     if(state.listening){
-      toast("Evladım ‘bitti’ demeden kapatmam dedim ama… hadi tamam 🙂");
+      // toggle off
+      toast("Tamam evladım, kapattım. Bitince ‘Bitti’ basarsın.");
       stopListening();
-      return;
+    }else{
+      startListening();
     }
-    $("resultBox").classList.remove("show");
-    $("resultBox").innerHTML = "";
-    startListening();
   });
 
   $("btnClear")?.addEventListener("click", clearAll);
 
-  $("btnForceEnd")?.addEventListener("click", async ()=>{
-    if(!state.listening){
-      toast("Dinlemiyorum ki evladım. Mikrofona bas önce 🙂");
-      return;
-    }
-    stopListening();
-    toast("‘Bitti’ dedin sayıyorum evladım 🙂");
+  $("btnDone")?.addEventListener("click", async ()=>{
+    if(state.listening) stopListening();
+    toast("Tamam evladım. Tabiri yapıyorum…");
     await runInterpretation();
   });
 
