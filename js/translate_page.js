@@ -5,6 +5,7 @@
 // ✅ History log + scroll + auto-follow if near bottom
 // ✅ Wave animates only while listening
 // ✅ Slogan translated by selected language
+// ✅ FIX: /api/translate payload -> {text, from_lang, to_lang}
 
 import { BASE_DOMAIN } from "/js/config.js";
 
@@ -41,28 +42,55 @@ const SLOGAN_MAP = {
   fr: "L’esprit traditionnel de l’IA",
   es: "La mente tradicional de la IA",
   ar: "عقل الذكاء الاصطناعي التقليدي",
-  ru: "Традиционный разум ИИ"
+  ru: "Традиционный разум İİ"
 };
 function sloganFor(code){ return SLOGAN_MAP[code] || SLOGAN_TR; }
 function speechLocale(code){ return LANGS.find(x=>x.code===code)?.speech || "en-US"; }
 function ttsLocale(code){ return LANGS.find(x=>x.code===code)?.tts || "en-US"; }
 
-async function translateViaApi(text, source, target){
-  const base = (BASE_DOMAIN || "").replace(/\/+$/,"");
-  if(!base) return text; // ✅ no [TR] prefix, no tags
+function apiBase(){
+  return String(BASE_DOMAIN || "").replace(/\/+$/,"");
+}
+
+/**
+ * ✅ BACKEND UYUMLU TRANSLATE
+ * POST { text, from_lang, to_lang }
+ * Response { ok:true, translated:"...", detected_source:"tr" }
+ */
+async function translateViaApi(text, fromLang, toLang){
+  const base = apiBase();
+  if(!base) return text;
+
+  const payload = {
+    text: String(text || ""),
+    from_lang: (fromLang ? String(fromLang) : None),
+    to_lang: String(toLang || "en")
+  };
+
+  // JS'de None yok; null kullan
+  payload.from_lang = fromLang ? String(fromLang) : null;
 
   try{
     const r = await fetch(`${base}/api/translate`,{
       method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ text, source, target })
+      headers:{
+        "Content-Type":"application/json",
+        "accept":"application/json"
+      },
+      body: JSON.stringify(payload)
     });
-    if(!r.ok) throw new Error("api");
-    const data = await r.json();
-    const out = String(data?.text || data?.translation || data?.translated || "").trim();
+
+    if(!r.ok){
+      const errTxt = await r.text().catch(()=> "");
+      throw new Error(`translate_http_${r.status} ${errTxt}`);
+    }
+
+    const data = await r.json().catch(()=> ({}));
+    const out = String(data?.translated || "").trim();  // ✅ doğru alan
     return out || text;
-  }catch{
-    return text; // ✅ no prefix
+  }catch(e){
+    console.warn("translateViaApi failed:", e);
+    return text;
   }
 }
 
@@ -192,7 +220,7 @@ async function onFinal(side, srcCode, dstCode, finalText){
   // Speaker transcript on their side
   addBubble(side, "them", finalText);
 
-  // Translation on other side
+  // Translation on other side (✅ artık çalışır)
   const out = await translateViaApi(finalText, srcCode, dstCode);
   addBubble(otherSide, "me", out);
 
