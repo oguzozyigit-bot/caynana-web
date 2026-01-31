@@ -12,7 +12,9 @@
 import { BASE_DOMAIN, STORAGE_KEY, GOOGLE_CLIENT_ID } from "./config.js";
 import { initAuth, logout, acceptTerms } from "./auth.js";
 import { initNotif } from "./notif.js";
-import { initMenuHistoryUI } from "./menu_history_ui.js";
+
+// ✅ CACHE FIX: menü dosyasını cache kırarak yükle
+import { initMenuHistoryUI } from "./menu_history_ui.js?v=2";
 
 window.CAYNANA_GOOGLE_CLIENT_ID = GOOGLE_CLIENT_ID;
 window.CAYNANA_API_BASE = BASE_DOMAIN;
@@ -209,6 +211,5 @@ document.addEventListener("DOMContentLoaded", () => {
     if(e.key === STORAGE_KEY) refreshBars();
   });
 
-  // ok kullanılmıyor ama akış dursun diye bıraktım
   void ok;
 });
