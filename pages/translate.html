@@ -124,15 +124,16 @@
       position:relative;
     }
 
-    /* ✅ Ben tarafı: mat pastel sarı tint (daha net oturan) */
+    /* ✅ Ben tarafı: mat bordo */
     .side.meTint{
       background:
-        radial-gradient(1000px 420px at 50% 10%, rgba(255,210,120,.18), transparent 66%),
-        radial-gradient(900px 380px at 30% 20%, rgba(255,195,95,.12), transparent 66%),
-        radial-gradient(700px 320px at 80% 20%, rgba(255,179,0,.08), transparent 70%),
+        radial-gradient(980px 420px at 40% 12%, rgba(160, 35, 55, .30), transparent 68%),
+        radial-gradient(820px 360px at 80% 18%, rgba(120, 20, 40, .22), transparent 70%),
+        radial-gradient(760px 320px at 20% 70%, rgba(255, 179, 0, .06), transparent 72%),
         rgba(0,0,0,.12);
     }
 
+    /* ÜST TARAF: komple ters */
     .side.top{ transform: rotate(180deg); }
 
     .bar{
@@ -165,13 +166,16 @@
     }
     .dd-btn .caret{ opacity:.75; font-size: 12px; }
 
-    /* ✅ Diller okunur olsun */
+    /* ✅ Dropdown taşma fix: sola aç + clamp */
     .dd-menu{
       position:absolute;
       top: calc(100% + 8px);
-      right: 0;
-      width: 260px;
-      max-width: 86vw;
+      left: 0;
+      right: auto;
+
+      width: clamp(200px, 78vw, 300px);
+      max-width: calc(100vw - 28px);
+
       border-radius: 18px;
       border: 1px solid rgba(255,255,255,.16);
       background: rgba(20,20,24,.98);
@@ -191,6 +195,7 @@
       font-size: 14px;
       border-bottom: 1px solid rgba(255,255,255,.08);
       letter-spacing: .1px;
+      text-shadow: 0 1px 0 rgba(0,0,0,.35);
     }
     .dd-item:last-child{ border-bottom:none; }
     .dd-item:hover{ background: rgba(255,255,255,.06); }
@@ -249,6 +254,7 @@
     .bubble.me{ align-self:flex-end; border-right: 4px solid var(--pist); text-align:right; }
     .bubble.them{ align-self:flex-start; border-left: 4px solid var(--gold); }
 
+    /* Minimal marka */
     .brandBottom, .brandTop{
       position:absolute;
       left: 50%;
@@ -333,7 +339,6 @@
       <div class="wave" aria-hidden="true">
         <div class="glow"></div>
         <svg viewBox="0 0 1000 80" preserveAspectRatio="none">
-          <!-- ✅ daha kalın çizgi -->
           <path d="M0,45 C80,15 160,75 240,45 C320,15 400,75 480,45 C560,15 640,75 720,45 C800,15 880,75 960,45 C980,40 990,36 1000,35"
                 fill="none" stroke="rgba(255,255,255,.16)" stroke-width="8" stroke-linecap="round"/>
           <path d="M0,45 C80,15 160,75 240,45 C320,15 400,75 480,45 C560,15 640,75 720,45 C800,15 880,75 960,45 C980,40 990,36 1000,35"
