@@ -64,7 +64,7 @@
       position:relative;
     }
 
-    /* ÜST: Öğrenci B (ters) */
+    /* TOP: Student B rotated */
     .top{
       background:
         radial-gradient(900px 360px at 20% 0%, rgba(40,120,255,.22), transparent 62%),
@@ -72,7 +72,7 @@
       transform: rotate(180deg);
     }
 
-    /* ALT: Öğrenci A (düz, sana bakan) */
+    /* BOTTOM: Student A (near) */
     .bottom{
       background:
         radial-gradient(900px 360px at 20% 0%, rgba(120,20,35,.72), transparent 64%),
@@ -90,12 +90,9 @@
     .name{opacity:.95; font-weight:1000}
     .score{opacity:.85; font-weight:1000}
 
-    .progressWrap{
-      padding: 10px 12px 0;
-    }
+    .progressWrap{ padding: 10px 12px 0; }
     .progress{
-      height:8px;
-      border-radius:999px;
+      height:8px;border-radius:999px;
       background: rgba(255,255,255,.08);
       border: 1px solid rgba(255,255,255,.10);
       overflow:hidden;
@@ -118,6 +115,7 @@
 
     .body{padding:16px;display:flex;flex-direction:column;gap:10px}
     .word{font-size:30px;font-weight:1000;letter-spacing:.2px}
+
     .meaning{
       font-weight:950;
       font-size:14px;
@@ -135,6 +133,7 @@
       border:1px solid rgba(255,255,255,.10);
       opacity:.9;
     }
+
     .hint{opacity:.82;font-weight:900;font-size:12px;line-height:1.35}
 
     .btnrow{
@@ -164,7 +163,7 @@
     .btn:active{transform:translateY(1px)}
     .btn[disabled]{opacity:.55;cursor:not-allowed;transform:none}
 
-    /* Orta dalga */
+    /* Middle wave */
     .wave{
       border-radius:22px;
       border:1px solid rgba(255,255,255,.12);
@@ -191,7 +190,6 @@
       background: rgba(255,255,255,.22);
       transform-origin:center;
     }
-
     .wave.teaching .barw{
       background: rgba(190,242,100,.75);
       box-shadow: 0 0 18px rgba(190,242,100,.18);
@@ -208,17 +206,15 @@
       background: rgba(190,242,100,.55);
       animation: w 560ms ease-in-out infinite;
     }
-
     @keyframes w{
       0%{ height:10px; opacity:.55 }
       45%{ height:34px; opacity:1 }
       100%{ height:12px; opacity:.65 }
     }
 
-    /* ✅ Paneli kaplayan OK/X overlay (sadece o taraf) */
+    /* Full panel OK/X overlay */
     .panel-overlay{
-      position:absolute;
-      inset:0;
+      position:absolute; inset:0;
       display:none;
       align-items:center;
       justify-content:center;
@@ -235,11 +231,7 @@
     .panel-overlay.bad{
       background: radial-gradient(900px 520px at 50% 30%, rgba(255,82,82,.40), rgba(0,0,0,.82));
     }
-    .panel-overlay .big{
-      font-size:92px;
-      line-height:1;
-      text-shadow: 0 20px 80px rgba(0,0,0,.65);
-    }
+    .panel-overlay .big{ font-size:92px; line-height:1; text-shadow:0 20px 80px rgba(0,0,0,.65); }
     .panel-overlay .sub{
       margin-top:14px;
       font-size:14px;
@@ -250,13 +242,12 @@
       border:1px solid rgba(255,255,255,.12);
       background: rgba(0,0,0,.28);
       box-shadow: 0 18px 50px rgba(0,0,0,.45);
-      max-width: 80%;
+      max-width:80%;
     }
 
     /* Final modal */
     .modal{
-      position:absolute;
-      inset:0;
+      position:absolute; inset:0;
       display:none;
       align-items:center;
       justify-content:center;
@@ -273,11 +264,7 @@
       box-shadow: 0 30px 90px rgba(0,0,0,.7);
       padding: 14px;
     }
-    .card .h{
-      font-weight:1000;
-      font-size:14px;
-      margin-bottom:10px;
-    }
+    .card .h{ font-weight:1000; font-size:14px; margin-bottom:10px; }
     .card .line{
       display:flex;justify-content:space-between;align-items:center;
       padding:10px 12px;border-radius:16px;
@@ -312,26 +299,25 @@
   <div class="pill" id="langPill">🆚 Duo Practice</div>
 
   <div class="grid">
-
-    <!-- ÜST: Öğrenci B (ters) -->
+    <!-- TOP: Student B (rotated) -->
     <section class="pane top" id="paneB">
       <div class="bar">
-        <div class="name" id="nameB">Öğrenci B (Student B)</div>
+        <div class="name" id="nameB">Student B</div>
         <div class="score" id="scoreB">Set: 0</div>
       </div>
 
       <div class="progressWrap">
         <div class="progress"><div id="fillB"></div></div>
-        <div class="pmeta"><span id="corrB">Doğru: 0/20</span><span id="turnB">—</span></div>
+        <div class="pmeta"><span id="corrB">Correct: 0/20</span><span id="turnB">—</span></div>
       </div>
 
       <div class="body">
         <div class="word" id="wordB">—</div>
-        <div class="meaning"><span class="tag">Türkçe</span> <span id="meaningB">—</span></div>
-        <div class="hint" id="hintB">Sıra sende değil.</div>
+        <div class="meaning"><span class="tag">Turkish</span> <span id="meaningB">—</span></div>
+        <div class="hint" id="hintB">Not your turn.</div>
       </div>
       <div class="btnrow">
-        <button class="btn primary" id="micB">Söyle</button>
+        <button class="btn primary" id="micB">Speak</button>
       </div>
 
       <div class="panel-overlay" id="overlayB">
@@ -342,34 +328,34 @@
       </div>
     </section>
 
-    <!-- ORTA: Ses dalgası -->
+    <!-- Middle wave -->
     <div class="wave" id="waveBox">
-      <div class="label" id="waveLabel">Öğretmen okuyor…</div>
+      <div class="label" id="waveLabel">Teacher is reading…</div>
       <div class="bars" aria-hidden="true">
         <div class="barw"></div><div class="barw"></div><div class="barw"></div><div class="barw"></div>
         <div class="barw"></div><div class="barw"></div><div class="barw"></div>
       </div>
     </div>
 
-    <!-- ALT: Öğrenci A (düz) -->
+    <!-- Bottom: Student A (near) -->
     <section class="pane bottom" id="paneA">
       <div class="bar">
-        <div class="name" id="nameA">Öğrenci A (Student A)</div>
+        <div class="name" id="nameA">Student A</div>
         <div class="score" id="scoreA">Set: 0</div>
       </div>
 
       <div class="progressWrap">
         <div class="progress"><div id="fillA"></div></div>
-        <div class="pmeta"><span id="corrA">Doğru: 0/20</span><span id="turnA">—</span></div>
+        <div class="pmeta"><span id="corrA">Correct: 0/20</span><span id="turnA">—</span></div>
       </div>
 
       <div class="body">
         <div class="word" id="wordA">—</div>
-        <div class="meaning"><span class="tag">Türkçe</span> <span id="meaningA">—</span></div>
-        <div class="hint" id="hintA">Sıran sende. Tek hak.</div>
+        <div class="meaning"><span class="tag">Turkish</span> <span id="meaningA">—</span></div>
+        <div class="hint" id="hintA">Your turn. One try.</div>
       </div>
       <div class="btnrow">
-        <button class="btn primary" id="micA">Söyle</button>
+        <button class="btn primary" id="micA">Speak</button>
       </div>
 
       <div class="panel-overlay" id="overlayA">
@@ -379,15 +365,14 @@
         </div>
       </div>
     </section>
-
   </div>
 
   <!-- Final modal -->
   <div class="modal" id="finalModal">
     <div class="card">
-      <div class="h">20 kelime bitti. Yeni aşamaya geçilsin mi?</div>
-      <div class="line"><span>Öğrenci A</span><span id="finalA">Set: 0</span></div>
-      <div class="line"><span>Öğrenci B</span><span id="finalB">Set: 0</span></div>
+      <div class="h">20 words done. Go to the next stage?</div>
+      <div class="line"><span>Student A</span><span id="finalA">Set: 0</span></div>
+      <div class="line"><span>Student B</span><span id="finalB">Set: 0</span></div>
       <div class="btns">
         <button class="primary" id="yesBtn">Yes</button>
         <button id="noBtn">No</button>
@@ -398,7 +383,7 @@
 
 <script>
 /* =========================
-   CONFIG + WORD BANK
+   Language + Word bank
    ========================= */
 function getLang(){
   const u = new URL(location.href);
@@ -409,6 +394,7 @@ const lang = getLang();
 
 const LOCALES = { en:"en-US", de:"de-DE", fr:"fr-FR", it:"it-IT" };
 const LANG_LABEL = { en:"🇬🇧 Duo Practice", de:"🇩🇪 Duo Practice", fr:"🇫🇷 Duo Practice", it:"🇮🇹 Duo Practice" };
+document.getElementById("langPill").textContent = LANG_LABEL[lang] || "🆚 Duo Practice";
 
 const WORDS = {
   en: [
@@ -437,10 +423,8 @@ const WORDS = {
   ],
 };
 
-document.getElementById("langPill").textContent = LANG_LABEL[lang] || "🆚 Duo Practice";
-
 /* =========================
-   UTIL
+   Helpers
    ========================= */
 function norm(s){
   return String(s||"").toLowerCase().trim().replace(/[’']/g,"'").replace(/[.,!?;:]/g,"").replace(/\s+/g," ");
@@ -463,7 +447,7 @@ function similarity(a,b){
 }
 
 /* =========================
-   WAVE
+   Wave + Buttons
    ========================= */
 function setWaveMode(mode){
   const w = document.getElementById("waveBox");
@@ -479,7 +463,7 @@ function setButtonsEnabled(enabled){
 }
 
 /* =========================
-   SFX (MP3 with fallback beep)
+   SFX (MP3 + fallback beep)
    ========================= */
 let okAudio=null, badAudio=null;
 try{
@@ -525,15 +509,13 @@ async function sfxBAD(){
   }
   beepBad();
 }
-
-// unlock
 document.addEventListener("pointerdown", ()=>{
   try{ okAudio && okAudio.play().then(()=>{okAudio.pause();okAudio.currentTime=0}).catch(()=>{}); }catch{}
   try{ badAudio && badAudio.play().then(()=>{badAudio.pause();badAudio.currentTime=0}).catch(()=>{}); }catch{}
 },{once:true});
 
 /* =========================
-   OVERLAY per side
+   Overlays
    ========================= */
 function showOverlay(side, ok, msg){
   const ov = document.getElementById(side==="A" ? "overlayA" : "overlayB");
@@ -548,8 +530,19 @@ function showOverlay(side, ok, msg){
   ov.__t=setTimeout(()=>ov.classList.remove("show"), 2000);
 }
 
+function funnyWrong(){
+  const pool = [
+    "Oops… not quite 😄",
+    "Nope. Try next time!",
+    "Teacher says: absolutely not 😅",
+    "That pronunciation took a vacation 🧳",
+    "Close… but still wrong."
+  ];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
 /* =========================
-   SPEECH
+   Speech
    ========================= */
 function makeRec(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -577,9 +570,8 @@ function teacherSpeak(text){
 }
 
 /* =========================
-   GAME STATE
+   Game State
    ========================= */
-const pool = (WORDS[lang] || WORDS.en).slice();
 function shuffle(a){
   for(let i=a.length-1;i>0;i--){
     const j=Math.floor(Math.random()*(i+1));
@@ -587,37 +579,37 @@ function shuffle(a){
   }
   return a;
 }
+const pool = (WORDS[lang] || WORDS.en).slice();
 let stageWords = shuffle(pool).slice(0,20);
 let wordIndex = 0;
 
-let turn = "A"; // A starts (near)
+let turn = "A"; // A starts
 let busy = false;
 
-let correctA = 0, correctB = 0;      // correct count in this 20-word game
-let setA = 0, setB = 0;              // winner set score (1/0/0)
-let stageNo = 1;
+let correctA = 0, correctB = 0;
+let setA = 0, setB = 0;
 
 function updateBars(){
   document.getElementById("fillA").style.width = `${(correctA/20)*100}%`;
   document.getElementById("fillB").style.width = `${(correctB/20)*100}%`;
-  document.getElementById("corrA").textContent = `Doğru: ${correctA}/20`;
-  document.getElementById("corrB").textContent = `Doğru: ${correctB}/20`;
+  document.getElementById("corrA").textContent = `Correct: ${correctA}/20`;
+  document.getElementById("corrB").textContent = `Correct: ${correctB}/20`;
 
   document.getElementById("scoreA").textContent = `Set: ${setA}`;
   document.getElementById("scoreB").textContent = `Set: ${setB}`;
 
-  document.getElementById("turnA").textContent = (turn==="A") ? "Sıra sende" : "—";
-  document.getElementById("turnB").textContent = (turn==="B") ? "Sıra sende" : "—";
+  document.getElementById("turnA").textContent = (turn==="A") ? "Your turn" : "—";
+  document.getElementById("turnB").textContent = (turn==="B") ? "Your turn" : "—";
 }
 
 function setHints(){
   document.getElementById("hintA").textContent = (turn==="A")
-    ? `Sıran sende. Tek hak. (${wordIndex+1}/20)`
-    : "Sıra karşı tarafta.";
+    ? `Your turn. One try. (${wordIndex+1}/20)`
+    : "Opponent's turn.";
 
   document.getElementById("hintB").textContent = (turn==="B")
-    ? `Sıran sende. Tek hak. (${wordIndex+1}/20)`
-    : "Sıra karşı tarafta.";
+    ? `Your turn. One try. (${wordIndex+1}/20)`
+    : "Opponent's turn.";
 }
 
 function renderWord(){
@@ -628,36 +620,23 @@ function renderWord(){
   document.getElementById("meaningB").textContent = w.tr;
 }
 
-async function teacherPhase(){
+async function teacherPhase(labelAfter){
   setButtonsEnabled(false);
-  setWaveLabel("Öğretmen okuyor…");
+  setWaveLabel("Teacher is reading…");
   setWaveMode("teaching");
   await teacherSpeak(stageWords[wordIndex].t);
   setWaveMode(null);
-  setWaveLabel(turn==="A" ? "Sıra Öğrenci A" : "Sıra Öğrenci B");
+  setWaveLabel(labelAfter || (turn==="A" ? "Student A turn" : "Student B turn"));
   setButtonsEnabled(true);
 }
 
-function funnyWrong(){
-  const pool = [
-    "Wrong 😅",
-    "Nope! 🚫",
-    "That was… creative 😄",
-    "Teacher says: try harder 👀",
-    "Almost… but not today!"
-  ];
-  return pool[Math.floor(Math.random()*pool.length)];
-}
-
 async function endGame(){
-  // decide set (winner)
   if(correctA > correctB){ setA = 1; setB = 0; }
   else if(correctB > correctA){ setA = 0; setB = 1; }
   else { setA = 0; setB = 0; }
 
   updateBars();
 
-  // show modal
   document.getElementById("finalA").textContent = `Set: ${setA}`;
   document.getElementById("finalB").textContent = `Set: ${setB}`;
   document.getElementById("finalModal").classList.add("show");
@@ -669,136 +648,154 @@ async function nextWord(){
     await endGame();
     return;
   }
-  // next word, A starts again (sen istersen sırayı devam ettirebiliriz)
   turn = "A";
   updateBars();
   setHints();
   renderWord();
-  await teacherPhase();
+  await teacherPhase("Student A turn");
 }
 
 async function handleResult(player, ok){
-  // show overlay 2s and wait
+  // lock everything
+  setButtonsEnabled(false);
+  busy = true;
+
   if(ok){
     await sfxOK();
-    showOverlay(player, true, "Nice! ✅");
+    showOverlay(player, true, "Great! ✅");
     if(player==="A") correctA++; else correctB++;
   }else{
     await sfxBAD();
     showOverlay(player, false, funnyWrong());
   }
-
   updateBars();
 
-  // wait 2s before any move
+  // keep overlay visible 2 seconds
   await new Promise(r=>setTimeout(r, 2000));
 
-  // rule:
-  // - if correct => next word immediately
-  // - if wrong AND player was A => teacher repeats once, then B attempts same word
-  // - if wrong AND player was B => next word
+  // rules:
+  // ok -> next word
+  // A wrong -> teacher repeats once -> B attempts same word
+  // B wrong -> next word
   if(ok){
+    busy = false;
     await nextWord();
-  }else{
-    if(player === "A"){
-      // teacher repeats once before B
-      turn = "B";
-      setHints();
-      setWaveLabel("Öğretmen tekrar okuyor…");
-      setWaveMode("teaching");
-      await teacherSpeak(stageWords[wordIndex].t);
-      setWaveMode(null);
-      setWaveLabel("Sıra Öğrenci B");
-      updateBars();
-      setButtonsEnabled(true);
-    }else{
-      // B wrong -> next word
-      await nextWord();
-    }
+    return;
   }
+
+  if(player === "A"){
+    // teacher repeats once before B
+    turn = "B";
+    updateBars();
+    setHints();
+    busy = false;
+    await teacherPhase("Student B turn");
+  }else{
+    busy = false;
+    await nextWord();
+  }
+}
+
+function cleanupListening(){
+  setWaveMode(null);
+  setWaveLabel(turn==="A" ? "Student A turn" : "Student B turn");
+  setButtonsEnabled(true);
+  busy = false;
 }
 
 function listenFor(player){
   if(busy) return;
   if(player !== turn){
-    toast("Sıra sende değil.");
+    toast("Not your turn.");
     return;
   }
 
   const rec = makeRec();
   if(!rec){
-    alert("Bu cihaz konuşmayı yazıya çevirmiyor.");
+    alert("Speech recognition not available on this device.");
     return;
   }
 
   busy = true;
   setButtonsEnabled(false);
-  setWaveLabel("Dinliyorum…");
+  setWaveLabel("Listening…");
   setWaveMode("listening");
 
+  const expected = stageWords[wordIndex].t;
+
+  // WATCHDOG: if nothing happens in 6s -> treat as wrong and move on safely
+  const watchdog = setTimeout(async ()=>{
+    try{ rec.abort && rec.abort(); }catch{}
+    cleanupListening();
+    await handleResult(player, false);
+  }, 6000);
+
+  let handled = false;
+
   rec.onresult = async (e)=>{
+    if(handled) return;
+    handled = true;
+    clearTimeout(watchdog);
+
     const said = e.results?.[0]?.[0]?.transcript || "";
-    const expected = stageWords[wordIndex].t;
     const sc = similarity(expected, said);
     const ok = sc >= 0.92;
 
+    // stop wave immediately
     setWaveMode(null);
-    setWaveLabel("—");
-    busy = false;
 
-    // restore buttons depending on next state inside handleResult
-    setButtonsEnabled(true);
+    // ensure recorder stops
+    try{ rec.stop && rec.stop(); }catch{}
 
     await handleResult(player, ok);
   };
 
   rec.onerror = async ()=>{
-    setWaveMode(null);
-    setWaveLabel("—");
-    busy = false;
-    setButtonsEnabled(true);
+    if(handled) return;
+    handled = true;
+    clearTimeout(watchdog);
+    cleanupListening();
+    await handleResult(player, false);
+  };
+
+  rec.onend = async ()=>{
+    // if ended without result -> fallback wrong (prevents stuck "Listening…")
+    if(handled) return;
+    handled = true;
+    clearTimeout(watchdog);
+    cleanupListening();
     await handleResult(player, false);
   };
 
   try{ rec.start(); }
   catch{
-    setWaveMode(null);
-    setWaveLabel("—");
-    busy = false;
-    setButtonsEnabled(true);
-    toast("Mikrofon açılamadı.");
+    clearTimeout(watchdog);
+    cleanupListening();
+    handleResult(player, false);
   }
 }
 
-/* =========================
-   Modal actions
-   ========================= */
+/* Modal actions */
 document.getElementById("yesBtn").addEventListener("click", async ()=>{
   document.getElementById("finalModal").classList.remove("show");
 
-  // new stage
-  stageNo++;
-  // reshuffle & new 20
+  // new stage: reshuffle 20
   stageWords = shuffle((WORDS[lang]||WORDS.en).slice()).slice(0,20);
   wordIndex = 0;
   correctA = 0; correctB = 0;
-  // keep set scores as last set; if you want cumulative, say and I'll change
-  // For now set scores stay as last match result.
   turn = "A";
   updateBars();
   setHints();
   renderWord();
-  await teacherPhase();
+  await teacherPhase("Student A turn");
 });
 
 document.getElementById("noBtn").addEventListener("click", ()=>{
   document.getElementById("finalModal").classList.remove("show");
-  alert("Tamam evladım. Duo Practice bitti 😄");
+  alert("Alright. Duo practice finished 😄");
 });
 
-/* =========================
-   Boot
-   ========================= */
+/* Boot */
 document.getElementById("backBtn").addEventListener("click", ()=>{
   if(history.length>1) history.back();
   else location.href="/pages/chat.html";
@@ -810,7 +807,7 @@ document.getElementById("micB").addEventListener("click", ()=> listenFor("B"));
 updateBars();
 setHints();
 renderWord();
-teacherPhase();
+teacherPhase("Student A turn");
 </script>
 
 </body>
