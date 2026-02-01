@@ -1,13 +1,38 @@
 // FILE: /js/teacher_duo.js
 // Duo Practice: 10 tur, sırayla tek hak, doğruysa puan.
-// 180° görünüm: alt panel rotate edildi.
+// Alt panel 180° (HTML rotate).
+// Lang from URL: ?lang=en|de|fr|it (kelimeleri o dile göre çeker)
 
 const $ = (id)=>document.getElementById(id);
-const LOCALE = "en-US";
 
-const WORDS = ["apple","water","bread","menu","price","yes","no","hello","goodbye","thank you","please","help","toilet","the bill","hot","cold","today"];
+function toast(msg){
+  const t = $("toast");
+  if(!t) return;
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(window.__to);
+  window.__to = setTimeout(()=>t.classList.remove("show"), 1600);
+}
+
+function getLang(){
+  const u = new URL(location.href);
+  const q = (u.searchParams.get("lang") || "en").toLowerCase().trim();
+  return ["en","de","fr","it"].includes(q) ? q : "en";
+}
+const lang = getLang();
+
+const LOCALES = { en:"en-US", de:"de-DE", fr:"fr-FR", it:"it-IT" };
+const LANG_LABEL = { en:"🇬🇧 Duo Practice", de:"🇩🇪 Duo Practice", fr:"🇫🇷 Duo Practice", it:"🇮🇹 Duo Practice" };
+
+const WORDS = {
+  en: ["apple","water","bread","menu","price","yes","no","hello","goodbye","thank you","please","help","toilet","the bill","hot","cold","today","excuse me","very good","i don't understand"],
+  de: ["apfel","wasser","brot","speisekarte","preis","ja","nein","hallo","tschüss","danke","bitte","hilfe","toilette","die rechnung","heiß","kalt","heute","entschuldigung","sehr gut","ich verstehe nicht"],
+  fr: ["pomme","eau","pain","menu","prix","oui","non","bonjour","au revoir","merci","s'il vous plaît","aide","toilettes","l'addition","chaud","froid","aujourd'hui","excusez-moi","très bien","je ne comprends pas"],
+  it: ["mela","acqua","pane","menu","prezzo","sì","no","ciao","arrivederci","grazie","per favore","aiuto","bagno","il conto","caldo","freddo","oggi","scusi","molto bene","non capisco"],
+};
 
 function norm(s){ return String(s||"").toLowerCase().trim().replace(/[.,!?;:]/g,"").replace(/\s+/g," "); }
+
 function similarity(a,b){
   a=norm(a); b=norm(b);
   if(a===b) return 1;
@@ -21,11 +46,12 @@ function similarity(a,b){
   }
   return 1-dp[m][n]/Math.max(m,n);
 }
+
 function makeRec(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR) return null;
   const r = new SR();
-  r.lang = LOCALE;
+  r.lang = LOCALES[lang] || "en-US";
   r.interimResults = false;
   r.continuous = false;
   return r;
@@ -35,9 +61,11 @@ let turn = "A";
 let scoreA = 0, scoreB = 0;
 let round = 0;
 let curWord = "";
+let busy = false;
 
 function pickWord(){
-  curWord = WORDS[Math.floor(Math.random()*WORDS.length)];
+  const arr = WORDS[lang] || WORDS.en;
+  curWord = arr[Math.floor(Math.random()*arr.length)];
   $("wordA").textContent = curWord;
   $("wordB").textContent = curWord;
 }
@@ -52,12 +80,27 @@ function updateScores(){
   $("scoreB").textContent = String(scoreB);
 }
 
+function endMatch(){
+  const winner =
+    scoreA===scoreB ? "Berabere 😄" :
+    (scoreA>scoreB ? "Oyuncu A kazandı 🏆" : "Oyuncu B kazandı 🏆");
+
+  alert(`Bitti evladım!\nSkor A:${scoreA}  B:${scoreB}\n${winner}`);
+
+  round = 0;
+  scoreA = 0;
+  scoreB = 0;
+  turn = "A";
+  pickWord();
+  setHints();
+  updateScores();
+}
+
 function nextTurn(){
   round++;
   if(round >= 10){
-    const winner = scoreA===scoreB ? "Berabere" : (scoreA>scoreB ? "Oyuncu A kazandı" : "Oyuncu B kazandı");
-    alert(`Bitti evladım 😄\nSkor A:${scoreA} B:${scoreB}\n${winner}`);
-    round = 0; scoreA=0; scoreB=0;
+    endMatch();
+    return;
   }
   turn = (turn==="A") ? "B" : "A";
   pickWord();
@@ -66,10 +109,13 @@ function nextTurn(){
 }
 
 function listenFor(player){
-  if(player !== turn) return;
+  if(busy) return;
+  if(player !== turn) { toast("Sıra sende değil."); return; }
 
   const rec = makeRec();
   if(!rec){ alert("Bu cihaz konuşmayı yazıya çevirmiyor."); return; }
+
+  busy = true;
 
   rec.onresult = (e)=>{
     const said = e.results?.[0]?.[0]?.transcript || "";
@@ -78,17 +124,35 @@ function listenFor(player){
 
     if(ok){
       if(player==="A") scoreA++; else scoreB++;
+      toast("Doğru ✅");
+    }else{
+      toast("Yanlış ❌");
     }
+
     updateScores();
+    busy = false;
     nextTurn();
   };
 
-  rec.onerror = ()=> nextTurn();
-  try{ rec.start(); } catch { nextTurn(); }
+  rec.onerror = ()=>{
+    busy = false;
+    nextTurn();
+  };
+
+  try{ rec.start(); }
+  catch{
+    busy = false;
+    nextTurn();
+  }
 }
 
 document.addEventListener("DOMContentLoaded", ()=>{
-  $("backBtn").addEventListener("click", ()=> history.length>1 ? history.back() : location.href="/pages/chat.html");
+  $("langPill").textContent = LANG_LABEL[lang] || "Duo Practice";
+
+  $("backBtn").addEventListener("click", ()=>{
+    if(history.length>1) history.back();
+    else location.href="/pages/chat.html";
+  });
 
   pickWord();
   setHints();
