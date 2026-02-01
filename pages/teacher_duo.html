@@ -64,7 +64,6 @@
       position:relative;
     }
 
-    /* TOP: Student B rotated */
     .top{
       background:
         radial-gradient(900px 360px at 20% 0%, rgba(40,120,255,.22), transparent 62%),
@@ -72,7 +71,6 @@
       transform: rotate(180deg);
     }
 
-    /* BOTTOM: Student A (near) */
     .bottom{
       background:
         radial-gradient(900px 360px at 20% 0%, rgba(120,20,35,.72), transparent 64%),
@@ -163,7 +161,6 @@
     .btn:active{transform:translateY(1px)}
     .btn[disabled]{opacity:.55;cursor:not-allowed;transform:none}
 
-    /* Middle wave */
     .wave{
       border-radius:22px;
       border:1px solid rgba(255,255,255,.12);
@@ -212,7 +209,6 @@
       100%{ height:12px; opacity:.65 }
     }
 
-    /* Full panel OK/X overlay */
     .panel-overlay{
       position:absolute; inset:0;
       display:none;
@@ -245,7 +241,6 @@
       max-width:80%;
     }
 
-    /* Final modal */
     .modal{
       position:absolute; inset:0;
       display:none;
@@ -299,7 +294,6 @@
   <div class="pill" id="langPill">🆚 Duo Practice</div>
 
   <div class="grid">
-    <!-- TOP: Student B (rotated) -->
     <section class="pane top" id="paneB">
       <div class="bar">
         <div class="name" id="nameB">Student B</div>
@@ -328,7 +322,6 @@
       </div>
     </section>
 
-    <!-- Middle wave -->
     <div class="wave" id="waveBox">
       <div class="label" id="waveLabel">Teacher is reading…</div>
       <div class="bars" aria-hidden="true">
@@ -337,7 +330,6 @@
       </div>
     </div>
 
-    <!-- Bottom: Student A (near) -->
     <section class="pane bottom" id="paneA">
       <div class="bar">
         <div class="name" id="nameA">Student A</div>
@@ -367,7 +359,6 @@
     </section>
   </div>
 
-  <!-- Final modal -->
   <div class="modal" id="finalModal">
     <div class="card">
       <div class="h">20 words done. Go to the next stage?</div>
@@ -382,16 +373,13 @@
 </div>
 
 <script>
-/* =========================
-   Language + Word bank
-   ========================= */
+/* ==== language + data ==== */
 function getLang(){
   const u = new URL(location.href);
   const q = (u.searchParams.get("lang") || "en").toLowerCase().trim();
   return ["en","de","fr","it"].includes(q) ? q : "en";
 }
 const lang = getLang();
-
 const LOCALES = { en:"en-US", de:"de-DE", fr:"fr-FR", it:"it-IT" };
 const LANG_LABEL = { en:"🇬🇧 Duo Practice", de:"🇩🇪 Duo Practice", fr:"🇫🇷 Duo Practice", it:"🇮🇹 Duo Practice" };
 document.getElementById("langPill").textContent = LANG_LABEL[lang] || "🆚 Duo Practice";
@@ -423,9 +411,14 @@ const WORDS = {
   ],
 };
 
-/* =========================
-   Helpers
-   ========================= */
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
 function norm(s){
   return String(s||"").toLowerCase().trim().replace(/[’']/g,"'").replace(/[.,!?;:]/g,"").replace(/\s+/g," ");
 }
@@ -446,9 +439,7 @@ function similarity(a,b){
   return 1-dp[m][n]/Math.max(m,n);
 }
 
-/* =========================
-   Wave + Buttons
-   ========================= */
+/* wave */
 function setWaveMode(mode){
   const w = document.getElementById("waveBox");
   w.classList.remove("teaching","listening");
@@ -462,27 +453,23 @@ function setButtonsEnabled(enabled){
   document.getElementById("micB").disabled = !enabled;
 }
 
-/* =========================
-   SFX (MP3 + fallback beep)
-   ========================= */
+/* sfx */
 let okAudio=null, badAudio=null;
 try{
-  okAudio = new Audio("/assets/sfx/ok.mp3");
-  badAudio = new Audio("/assets/sfx/bad.mp3");
+  okAudio=new Audio("/assets/sfx/ok.mp3");
+  badAudio=new Audio("/assets/sfx/bad.mp3");
   okAudio.preload="auto"; badAudio.preload="auto";
   okAudio.volume=.9; badAudio.volume=.9;
 }catch{}
-
 let __ctx=null;
 function ensureCtx(){
   const AC = window.AudioContext || window.webkitAudioContext;
   if(!AC) return null;
-  if(!__ctx) __ctx = new AC();
+  if(!__ctx) __ctx=new AC();
   return __ctx;
 }
 function playTone(freq, durMs, type="sine", gain=0.06){
-  const ctx = ensureCtx();
-  if(!ctx) return;
+  const ctx=ensureCtx(); if(!ctx) return;
   try{
     if(ctx.state==="suspended") ctx.resume().catch(()=>{});
     const o=ctx.createOscillator();
@@ -497,26 +484,14 @@ function playTone(freq, durMs, type="sine", gain=0.06){
 function beepOk(){ playTone(880,90,"sine",0.07); setTimeout(()=>playTone(1320,120,"sine",0.06),110); }
 function beepBad(){ playTone(180,120,"square",0.05); setTimeout(()=>playTone(140,140,"square",0.05),140); }
 
-async function sfxOK(){
-  if(okAudio){
-    try{ okAudio.currentTime=0; await okAudio.play(); return; }catch{}
-  }
-  beepOk();
-}
-async function sfxBAD(){
-  if(badAudio){
-    try{ badAudio.currentTime=0; await badAudio.play(); return; }catch{}
-  }
-  beepBad();
-}
+async function sfxOK(){ if(okAudio){ try{ okAudio.currentTime=0; await okAudio.play(); return;}catch{} } beepOk(); }
+async function sfxBAD(){ if(badAudio){ try{ badAudio.currentTime=0; await badAudio.play(); return;}catch{} } beepBad(); }
 document.addEventListener("pointerdown", ()=>{
   try{ okAudio && okAudio.play().then(()=>{okAudio.pause();okAudio.currentTime=0}).catch(()=>{}); }catch{}
   try{ badAudio && badAudio.play().then(()=>{badAudio.pause();badAudio.currentTime=0}).catch(()=>{}); }catch{}
 },{once:true});
 
-/* =========================
-   Overlays
-   ========================= */
+/* overlay */
 function showOverlay(side, ok, msg){
   const ov = document.getElementById(side==="A" ? "overlayA" : "overlayB");
   const ico = document.getElementById(side==="A" ? "overlayIcoA" : "overlayIcoB");
@@ -529,28 +504,25 @@ function showOverlay(side, ok, msg){
   clearTimeout(ov.__t);
   ov.__t=setTimeout(()=>ov.classList.remove("show"), 2000);
 }
-
 function funnyWrong(){
-  const pool = [
-    "Oops… not quite 😄",
-    "Nope. Try next time!",
-    "Teacher says: absolutely not 😅",
-    "That pronunciation took a vacation 🧳",
-    "Close… but still wrong."
+  const pool=[
+    "Wrong 😅",
+    "Nope! 🚫",
+    "Teacher says: try again 👀",
+    "Almost… but not quite!",
+    "That was creative 😄"
   ];
   return pool[Math.floor(Math.random()*pool.length)];
 }
 
-/* =========================
-   Speech
-   ========================= */
+/* speech */
 function makeRec(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if(!SR) return null;
   const r = new SR();
   r.lang = LOCALES[lang] || "en-US";
-  r.interimResults = false;
-  r.continuous = false;
+  r.interimResults=false;
+  r.continuous=false;
   return r;
 }
 function teacherSpeak(text){
@@ -558,7 +530,7 @@ function teacherSpeak(text){
     if(!("speechSynthesis" in window)){ resolve(false); return; }
     try{
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(String(text||""));
+      const u=new SpeechSynthesisUtterance(String(text||""));
       u.lang = LOCALES[lang] || "en-US";
       u.rate = 0.95;
       u.pitch = 1.0;
@@ -569,25 +541,16 @@ function teacherSpeak(text){
   });
 }
 
-/* =========================
-   Game State
-   ========================= */
-function shuffle(a){
-  for(let i=a.length-1;i>0;i--){
-    const j=Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
-}
-const pool = (WORDS[lang] || WORDS.en).slice();
+/* game */
+const pool = (WORDS[lang]||WORDS.en).slice();
 let stageWords = shuffle(pool).slice(0,20);
-let wordIndex = 0;
+let wordIndex=0;
 
-let turn = "A"; // A starts
-let busy = false;
+let turn="A"; // ✅ winner keeps serve, starts A
+let busy=false;
 
-let correctA = 0, correctB = 0;
-let setA = 0, setB = 0;
+let correctA=0, correctB=0;
+let setA=0, setB=0;
 
 function updateBars(){
   document.getElementById("fillA").style.width = `${(correctA/20)*100}%`;
@@ -606,7 +569,6 @@ function setHints(){
   document.getElementById("hintA").textContent = (turn==="A")
     ? `Your turn. One try. (${wordIndex+1}/20)`
     : "Opponent's turn.";
-
   document.getElementById("hintB").textContent = (turn==="B")
     ? `Your turn. One try. (${wordIndex+1}/20)`
     : "Opponent's turn.";
@@ -631,9 +593,9 @@ async function teacherPhase(labelAfter){
 }
 
 async function endGame(){
-  if(correctA > correctB){ setA = 1; setB = 0; }
-  else if(correctB > correctA){ setA = 0; setB = 1; }
-  else { setA = 0; setB = 0; }
+  if(correctA > correctB){ setA=1; setB=0; }
+  else if(correctB > correctA){ setA=0; setB=1; }
+  else { setA=0; setB=0; }
 
   updateBars();
 
@@ -648,103 +610,91 @@ async function nextWord(){
     await endGame();
     return;
   }
-  turn = "A";
+  // ✅ turn DOES NOT reset. Winner keeps serve.
   updateBars();
   setHints();
   renderWord();
-  await teacherPhase("Student A turn");
+  await teacherPhase(turn==="A" ? "Student A turn" : "Student B turn");
 }
 
 async function handleResult(player, ok){
-  // lock everything
   setButtonsEnabled(false);
-  busy = true;
+  busy=true;
 
   if(ok){
     await sfxOK();
-    showOverlay(player, true, "Great! ✅");
+    showOverlay(player,true,"Correct ✅");
     if(player==="A") correctA++; else correctB++;
   }else{
     await sfxBAD();
-    showOverlay(player, false, funnyWrong());
+    showOverlay(player,false, funnyWrong());
   }
+
   updateBars();
 
-  // keep overlay visible 2 seconds
-  await new Promise(r=>setTimeout(r, 2000));
+  await new Promise(r=>setTimeout(r,2000));
 
-  // rules:
-  // ok -> next word
-  // A wrong -> teacher repeats once -> B attempts same word
-  // B wrong -> next word
+  // ✅ RULE:
+  // If correct -> same player continues (turn unchanged) -> next word
+  // If wrong   -> switch turn -> teacher repeats once -> other player attempts same word (no word change yet)
   if(ok){
-    busy = false;
+    busy=false;
     await nextWord();
     return;
   }
 
-  if(player === "A"){
-    // teacher repeats once before B
-    turn = "B";
-    updateBars();
-    setHints();
-    busy = false;
-    await teacherPhase("Student B turn");
-  }else{
-    busy = false;
-    await nextWord();
-  }
+  // wrong => switch turn
+  turn = (player==="A") ? "B" : "A";
+  updateBars();
+  setHints();
+  busy=false;
+
+  // teacher repeats once, then other player tries SAME WORD
+  await teacherPhase(turn==="A" ? "Student A turn" : "Student B turn");
 }
 
 function cleanupListening(){
   setWaveMode(null);
   setWaveLabel(turn==="A" ? "Student A turn" : "Student B turn");
   setButtonsEnabled(true);
-  busy = false;
+  busy=false;
 }
 
 function listenFor(player){
   if(busy) return;
   if(player !== turn){
-    toast("Not your turn.");
+    // no toast spam
     return;
   }
 
   const rec = makeRec();
-  if(!rec){
-    alert("Speech recognition not available on this device.");
-    return;
-  }
+  if(!rec){ alert("Speech recognition not available on this device."); return; }
 
-  busy = true;
+  busy=true;
   setButtonsEnabled(false);
   setWaveLabel("Listening…");
   setWaveMode("listening");
 
   const expected = stageWords[wordIndex].t;
 
-  // WATCHDOG: if nothing happens in 6s -> treat as wrong and move on safely
+  // watchdog
   const watchdog = setTimeout(async ()=>{
     try{ rec.abort && rec.abort(); }catch{}
     cleanupListening();
-    await handleResult(player, false);
+    await handleResult(player,false);
   }, 6000);
 
-  let handled = false;
+  let handled=false;
 
   rec.onresult = async (e)=>{
     if(handled) return;
-    handled = true;
+    handled=true;
     clearTimeout(watchdog);
 
     const said = e.results?.[0]?.[0]?.transcript || "";
-    const sc = similarity(expected, said);
-    const ok = sc >= 0.92;
+    const ok = similarity(expected, said) >= 0.92;
 
-    // stop wave immediately
     setWaveMode(null);
-
-    // ensure recorder stops
     try{ rec.stop && rec.stop(); }catch{}
 
     await handleResult(player, ok);
@@ -752,38 +702,37 @@ function listenFor(player){
 
   rec.onerror = async ()=>{
     if(handled) return;
-    handled = true;
+    handled=true;
     clearTimeout(watchdog);
     cleanupListening();
-    await handleResult(player, false);
+    await handleResult(player,false);
   };
 
   rec.onend = async ()=>{
-    // if ended without result -> fallback wrong (prevents stuck "Listening…")
     if(handled) return;
-    handled = true;
+    handled=true;
     clearTimeout(watchdog);
     cleanupListening();
-    await handleResult(player, false);
+    await handleResult(player,false);
   };
 
   try{ rec.start(); }
   catch{
     clearTimeout(watchdog);
     cleanupListening();
-    handleResult(player, false);
+    handleResult(player,false);
   }
 }
 
-/* Modal actions */
+/* modal buttons */
 document.getElementById("yesBtn").addEventListener("click", async ()=>{
   document.getElementById("finalModal").classList.remove("show");
 
-  // new stage: reshuffle 20
+  // new stage
   stageWords = shuffle((WORDS[lang]||WORDS.en).slice()).slice(0,20);
-  wordIndex = 0;
-  correctA = 0; correctB = 0;
-  turn = "A";
+  wordIndex=0;
+  correctA=0; correctB=0;
+  turn="A"; // new stage serve A
   updateBars();
   setHints();
   renderWord();
@@ -795,7 +744,7 @@ document.getElementById("noBtn").addEventListener("click", ()=>{
   alert("Alright. Duo practice finished 😄");
 });
 
-/* Boot */
+/* boot */
 document.getElementById("backBtn").addEventListener("click", ()=>{
   if(history.length>1) history.back();
   else location.href="/pages/chat.html";
