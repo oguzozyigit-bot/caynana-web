@@ -71,6 +71,7 @@
         rgba(0,0,0,.18);
       transform: rotate(180deg);
     }
+
     .bottom{
       background:
         radial-gradient(900px 360px at 20% 0%, rgba(120,20,35,.72), transparent 64%),
@@ -240,6 +241,7 @@
       max-width:80%;
     }
 
+    /* Modal (final + language) */
     .modal{
       position:absolute; inset:0;
       display:none;
@@ -248,6 +250,7 @@
       z-index:60;
       background: rgba(0,0,0,.55);
       backdrop-filter: blur(6px);
+      padding: 14px;
     }
     .modal.show{display:flex}
     .card{
@@ -284,13 +287,26 @@
       color:#fff;
     }
     .card button:active{transform:translateY(1px)}
+
+    .lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .lang-btn{
+      padding:12px 12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      font-weight:1000;
+      text-align:center;
+      cursor:pointer;
+      user-select:none;
+    }
+    .lang-btn:active{transform:translateY(1px)}
   </style>
 </head>
 
 <body>
 <div class="wrap">
   <button class="back" id="backBtn">←</button>
-  <div class="pill" id="langPill">🆚 Duo Practice</div>
+  <div class="pill" id="langPill">🌍 Language</div>
 
   <div class="grid">
     <section class="pane top" id="paneB">
@@ -358,6 +374,7 @@
     </section>
   </div>
 
+  <!-- Final modal -->
   <div class="modal" id="finalModal">
     <div class="card">
       <div class="h">20 words done. Go to the next stage?</div>
@@ -369,19 +386,55 @@
       </div>
     </div>
   </div>
+
+  <!-- Language modal -->
+  <div class="modal" id="langModal">
+    <div class="card">
+      <div class="h">Select language</div>
+      <div class="lang-grid">
+        <div class="lang-btn" data-lang="en">🇬🇧 English</div>
+        <div class="lang-btn" data-lang="de">🇩🇪 Deutsch</div>
+        <div class="lang-btn" data-lang="fr">🇫🇷 Français</div>
+        <div class="lang-btn" data-lang="it">🇮🇹 Italiano</div>
+      </div>
+      <div style="height:10px"></div>
+      <div class="btns">
+        <button class="primary" id="closeLang">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
-/* ========= language picker (optional) ========= */
+/* ========= language ========= */
 function getLang(){
   const u = new URL(location.href);
   const q = (u.searchParams.get("lang") || "en").toLowerCase().trim();
   return ["en","de","fr","it"].includes(q) ? q : "en";
 }
-const lang = getLang();
+let lang = getLang();
 const LOCALES = { en:"en-US", de:"de-DE", fr:"fr-FR", it:"it-IT" };
 const LANG_LABEL = { en:"🇬🇧 Duo Practice", de:"🇩🇪 Duo Practice", fr:"🇫🇷 Duo Practice", it:"🇮🇹 Duo Practice" };
-document.getElementById("langPill").textContent = LANG_LABEL[lang] || "🆚 Duo Practice";
+
+function setLangPill(){
+  document.getElementById("langPill").textContent = (LANG_LABEL[lang] || "🌍 Language");
+}
+setLangPill();
+
+/* ========= show language modal ========= */
+const langModal = document.getElementById("langModal");
+document.getElementById("langPill").addEventListener("click", ()=> langModal.classList.add("show"));
+document.getElementById("closeLang").addEventListener("click", ()=> langModal.classList.remove("show"));
+langModal.addEventListener("click", (e)=>{ if(e.target === langModal) langModal.classList.remove("show"); });
+
+langModal.querySelectorAll("[data-lang]").forEach(el=>{
+  el.addEventListener("click", ()=>{
+    const l = el.getAttribute("data-lang");
+    const url = new URL(location.href);
+    url.searchParams.set("lang", l);
+    location.href = url.toString(); // reload with lang
+  });
+});
 
 /* ========= big pool ========= */
 const WORDS_BASE_EN = [
@@ -399,7 +452,7 @@ const WORDS_BASE_EN = [
   ["where","nerede"],["when","ne zaman"],["why","neden"],["how","nasıl"],["what","ne"],["who","kim"],
   ["I want","istiyorum"],["I need","ihtiyacım var"],["I like","seviyorum"],["I don’t like","sevmiyorum"],
   ["I am hungry","acım"],["I am thirsty","susadım"],["I am tired","yorgunum"],["I am lost","kayboldum"],
-  ["check please","hesap lütfen"],["no problem","sorun değil"],["sorry","özür dilerim"],
+  ["check please","hesap lütfen"],["sorry","özür dilerim"],
 ];
 
 function buildBigPool(){
@@ -428,7 +481,6 @@ function buildBigPool(){
   return dedup;
 }
 const BIG_POOL = buildBigPool();
-
 const RECENT_MAX = 80;
 const recent = [];
 function pickUniqueWord(){
@@ -464,7 +516,7 @@ function similarity(a,b){
   return 1-dp[m][n]/Math.max(m,n);
 }
 
-/* ========= wave ========= */
+/* ========= wave + buttons ========= */
 function setWaveMode(mode){
   const w=document.getElementById("waveBox");
   w.classList.remove("teaching","listening");
@@ -567,34 +619,28 @@ function teacherSpeak(text){
 let stageWords = Array.from({length:20}, ()=> pickUniqueWord());
 let wordIndex=0;
 
-let turn="A"; // serve holder
+let turn="A";
 let busy=false;
 
 let correctA=0, correctB=0;
 let setA=0, setB=0;
 
-let attemptsOnWord = 0; // counts attempts for current word (max 2)
+let attemptsOnWord=0;
 
 function updateBars(){
   document.getElementById("fillA").style.width = `${(correctA/20)*100}%`;
   document.getElementById("fillB").style.width = `${(correctB/20)*100}%`;
   document.getElementById("corrA").textContent = `Correct: ${correctA}/20`;
   document.getElementById("corrB").textContent = `Correct: ${correctB}/20`;
-
   document.getElementById("scoreA").textContent = `Set: ${setA}`;
   document.getElementById("scoreB").textContent = `Set: ${setB}`;
-
   document.getElementById("turnA").textContent = (turn==="A") ? "Your turn" : "—";
   document.getElementById("turnB").textContent = (turn==="B") ? "Your turn" : "—";
 }
 
 function setHints(){
-  document.getElementById("hintA").textContent = (turn==="A")
-    ? `Your turn. One try. (${wordIndex+1}/20)`
-    : "Opponent's turn.";
-  document.getElementById("hintB").textContent = (turn==="B")
-    ? `Your turn. One try. (${wordIndex+1}/20)`
-    : "Opponent's turn.";
+  document.getElementById("hintA").textContent = (turn==="A") ? `Your turn. One try. (${wordIndex+1}/20)` : "Opponent's turn.";
+  document.getElementById("hintB").textContent = (turn==="B") ? `Your turn. One try. (${wordIndex+1}/20)` : "Opponent's turn.";
 }
 
 function renderWord(){
@@ -628,11 +674,13 @@ async function endGame(){
 
 async function nextWord(){
   wordIndex++;
-  attemptsOnWord = 0;
+  attemptsOnWord=0;
+
   if(wordIndex >= 20){
     await endGame();
     return;
   }
+
   updateBars();
   setHints();
   renderWord();
@@ -652,10 +700,11 @@ async function handleAttempt(player, ok){
 
     // correct keeps serve
     turn = player;
-    updateBars();
 
+    updateBars();
     await new Promise(r=>setTimeout(r,2000));
     busy=false;
+
     await nextWord();
     return;
   }
@@ -664,11 +713,12 @@ async function handleAttempt(player, ok){
   await sfxBAD();
   showOverlay(player,false, funnyWrong());
 
+  updateBars();
   await new Promise(r=>setTimeout(r,2000));
 
-  // if this was second wrong (both failed) => NEW WORD (NO extra teacher repeat for old word)
+  // If second miss (both missed) => go next word immediately (NO extra teacher repeat)
   if(attemptsOnWord >= 2){
-    // wrong loses serve -> switch to other for next word
+    // serve goes to the OTHER
     turn = (player==="A") ? "B" : "A";
     updateBars();
     busy=false;
@@ -676,7 +726,7 @@ async function handleAttempt(player, ok){
     return;
   }
 
-  // first wrong only => switch turn and teacher repeats ONCE for the other player
+  // first miss => switch turn, teacher repeats once for other player
   turn = (player==="A") ? "B" : "A";
   updateBars();
   setHints();
@@ -793,10 +843,20 @@ document.getElementById("backBtn").addEventListener("click", ()=>{
 document.getElementById("micA").addEventListener("click", ()=> listenFor("A"));
 document.getElementById("micB").addEventListener("click", ()=> listenFor("B"));
 
+// First load
 updateBars();
 setHints();
 renderWord();
 teacherPhase("Student A turn", false);
+
+// OPTIONAL: first-time language popup (open once)
+try{
+  const k="caynana_duo_lang_prompted";
+  if(!localStorage.getItem(k)){
+    localStorage.setItem(k,"1");
+    document.getElementById("langModal").classList.add("show");
+  }
+}catch{}
 </script>
 
 </body>
