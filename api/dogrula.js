@@ -123,18 +123,45 @@ function productMatchScore(item, identity) {
   return score;
 }
 
-async function serper(url, body) {
+function sanitizeFreeQuery(query = '') {
+  return String(query)
+    .replace(/["'`()[\]{}]/g, ' ')
+    .replace(/\b(?:OR|AND|NOT)\b/gi, ' ')
+    .replace(/(?:site|inurl|intitle|filetype):\S+/gi, ' ')
+    .replace(/[+*~^]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 180);
+}
+
+async function serper(url, body, allowRetry = true) {
   const key = cleanKey();
   if (!key) throw new Error('SERPER_API_KEY eksik.');
+
+  const safeBody = { ...body, q: sanitizeFreeQuery(body.q) };
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'X-API-KEY': key, 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(safeBody)
   });
+
   const raw = await response.text();
   let payload = {};
   try { payload = raw ? JSON.parse(raw) : {}; } catch {}
-  if (!response.ok) throw new Error(`Serper ${response.status}: ${payload.message || payload.error || raw.slice(0, 180)}`);
+
+  if (!response.ok) {
+    const message = String(payload.message || payload.error || raw.slice(0, 180));
+    if (response.status === 400 && allowRetry && /query pattern not allowed/i.test(message)) {
+      const simpler = sanitizeFreeQuery(safeBody.q)
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 8)
+        .join(' ');
+      return serper(url, { ...safeBody, q: simpler, num: Math.min(Number(safeBody.num) || 10, 10) }, false);
+    }
+    throw new Error(`Serper ${response.status}: ${message}`);
+  }
+
   return payload;
 }
 
@@ -160,7 +187,8 @@ async function enrichAlternativeImages(alternatives) {
   return Promise.all(alternatives.slice(0, 6).map(async (item) => {
     if (item.image) return item;
     try {
-      const payload = await serper(SERPER_IMAGES, { q: item.title, gl: 'tr', hl: 'tr', num: 3 });
+      const imageQuery = sanitizeFreeQuery(item.title).split(/\s+/).slice(0, 7).join(' ');
+      const payload = await serper(SERPER_IMAGES, { q: imageQuery, gl: 'tr', hl: 'tr', num: 3 });
       const first = (payload.images || []).find((image) => image.imageUrl || image.thumbnailUrl);
       return { ...item, image: first ? (first.imageUrl || first.thumbnailUrl) : '' };
     } catch {
@@ -181,22 +209,23 @@ module.exports = async function handler(req, res) {
     const type = classify(input, identity);
     const query = type === 'product' ? identity.canonical : (isUrl(input) ? identity.title : input);
 
+    const productBase = [identity.brand, identity.model, identity.category].filter(Boolean).join(' ').trim();
     const searches = type === 'product'
       ? [
-          `"${identity.brand}" "${identity.model}" ${identity.category} fiyat satın al`.replace(/""/g, '').trim(),
-          `"${identity.brand}" "${identity.model}" yorum inceleme şikayet`.replace(/""/g, '').trim(),
-          `${identity.category || query} ${identity.brand || ''} benzer alternatif ürünler`.trim()
-        ]
+          `${productBase} fiyat satın al`,
+          `${productBase} yorum inceleme şikayet`,
+          `${identity.category || productBase} benzer alternatif ürün`
+        ].map(sanitizeFreeQuery)
       : type === 'news'
-        ? [query, `${query} resmi açıklama`, `${query} doğru mu`]
-        : [query, `${query} yorum`, `${query} doğrulama`];
+        ? [query, `${query} resmi açıklama`, `${query} doğru mu`].map(sanitizeFreeQuery)
+        : [query, `${query} yorum`, `${query} doğrulama`].map(sanitizeFreeQuery);
 
     const [pricePayload, reviewPayload, alternativePayload, imagePayload] = await Promise.all([
-      serper(SERPER_SEARCH, { q: searches[0], gl: 'tr', hl: 'tr', num: 30 }),
-      serper(SERPER_SEARCH, { q: searches[1], gl: 'tr', hl: 'tr', num: 18 }),
-      serper(SERPER_SEARCH, { q: searches[2], gl: 'tr', hl: 'tr', num: 20 }),
+      serper(SERPER_SEARCH, { q: searches[0], gl: 'tr', hl: 'tr', num: 20 }),
+      serper(SERPER_SEARCH, { q: searches[1], gl: 'tr', hl: 'tr', num: 12 }),
+      serper(SERPER_SEARCH, { q: searches[2], gl: 'tr', hl: 'tr', num: 12 }),
       type === 'product'
-        ? serper(SERPER_IMAGES, { q: `${identity.brand} ${identity.model} ${identity.category}`.trim(), gl: 'tr', hl: 'tr', num: 14 })
+        ? serper(SERPER_IMAGES, { q: sanitizeFreeQuery(productBase), gl: 'tr', hl: 'tr', num: 10 })
         : Promise.resolve({ images: [] })
     ]);
 
