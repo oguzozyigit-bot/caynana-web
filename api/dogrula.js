@@ -13,6 +13,18 @@ const CATEGORY_WORDS = [
   'vantilatör','telefon','televizyon','laptop','bilgisayar','tablet','kulaklık','süpürge','kahve makinesi',
   'klima','buzdolabı','çamaşır makinesi','bulaşık makinesi','fırın','airfryer','matkap','ayakkabı','çanta','saat'
 ];
+const CATEGORY_BRANDS = {
+  'vantilatör':['Raks','Arzum','Fakir','Philips','Xiaomi','Rowenta'],
+  'telefon':['Samsung','Xiaomi','Apple','Honor','Oppo','Realme'],
+  'televizyon':['Samsung','LG','Philips','TCL','Vestel','Sony'],
+  'laptop':['Lenovo','Asus','HP','Acer','Dell','Monster'],
+  'bilgisayar':['Lenovo','Asus','HP','Acer','Dell','Monster'],
+  'tablet':['Samsung','Apple','Xiaomi','Lenovo','Huawei'],
+  'kulaklık':['JBL','Sony','Samsung','Apple','Anker','Xiaomi'],
+  'süpürge':['Philips','Arzum','Fakir','Bosch','Dyson','Rowenta'],
+  'kahve makinesi':['Arzum','Philips','Fakir','Karaca','Delonghi','Bosch'],
+  'airfryer':['Philips','Tefal','Xiaomi','Karaca','Arzum','Fakir']
+};
 
 function send(res,status,body){res.statusCode=status;res.setHeader('Content-Type','application/json; charset=utf-8');res.setHeader('Cache-Control','no-store');res.end(JSON.stringify(body));}
 function cleanKey(){return String(process.env.SERPER_API_KEY||'').trim().replace(/^["']|["']$/g,'');}
@@ -60,6 +72,19 @@ async function serper(url,body,allowRetry=true){const key=cleanKey();if(!key)thr
 function normalize(item){const link=item.link||item.productLink||'';const hostname=host(link);const text=`${item.title||''} ${item.snippet||''} ${item.price||''}`;return{title:item.title||'',link,source:item.source||hostname,hostname,snippet:item.snippet||'',image:item.imageUrl||item.thumbnailUrl||item.thumbnail||'',price:item.price||'',priceValue:parsePrice(`${item.price||''} ${text}`),rating:item.rating||null,ratingCount:item.ratingCount||item.reviews||null}}
 function guessBrand(title=''){return normalizeBrand(String(title).split(/\s+/)[0]||'')}
 async function enrichAlternativeImages(alternatives){return Promise.all(alternatives.slice(0,8).map(async item=>{if(item.image)return item;try{const q=sanitizeFreeQuery(item.title).split(/\s+/).slice(0,7).join(' ');const p=await serper(SERPER_IMAGES,{q,gl:'tr',hl:'tr',num:3});const first=(p.images||[]).find(x=>x.imageUrl||x.thumbnailUrl);return{...item,image:first?(first.imageUrl||first.thumbnailUrl):''}}catch{return item}}))}
+async function fallbackAlternatives(identity,currentBrand){
+  const brands=(CATEGORY_BRANDS[identity.category]||['Raks','Arzum','Fakir','Philips','Xiaomi','Bosch'])
+    .filter(b=>normalizeBrand(b)!==currentBrand&&!BLOCKED_ALT_BRANDS.includes(normalizeBrand(b))).slice(0,6);
+  const payloads=await Promise.all(brands.map(b=>serper(SERPER_SEARCH,{q:`${b} ${identity.category||'ürün'} satın al`,gl:'tr',hl:'tr',num:6}).catch(()=>({}))));
+  const seen=new Set();const out=[];
+  for(let i=0;i<payloads.length;i++){
+    const items=[...(payloads[i].shopping||[]),...(payloads[i].organic||[])].map(normalize)
+      .filter(x=>x.link&&!isBlocked(x.hostname)&&isDirectRetailer(x.hostname));
+    const pick=items.find(x=>{const b=guessBrand(x.title);return b&&b!==currentBrand&&!BLOCKED_ALT_BRANDS.includes(b)&&!seen.has(b)});
+    if(pick){seen.add(guessBrand(pick.title));out.push(pick)}
+  }
+  return enrichAlternativeImages(out.slice(0,6));
+}
 
 module.exports=async function handler(req,res){
   if(req.method!=='POST')return send(res,405,{error:'Yalnızca POST desteklenir.'});
@@ -85,6 +110,11 @@ module.exports=async function handler(req,res){
       .filter(item=>{const brand=guessBrand(item.title);if(!brand||brand===currentBrand||BLOCKED_ALT_BRANDS.includes(brand)||seenAltBrands.has(brand))return false;seenAltBrands.add(brand);return true})
       .filter((item,i,a)=>a.findIndex(o=>o.link===item.link)===i).slice(0,8);
     alternatives=await enrichAlternativeImages(alternatives);
+    if(alternatives.length<4&&type==='product'){
+      const fallback=await fallbackAlternatives(identity,currentBrand);
+      for(const item of fallback){const b=guessBrand(item.title);if(!b||seenAltBrands.has(b)||BLOCKED_ALT_BRANDS.includes(b))continue;seenAltBrands.add(b);alternatives.push(item)}
+      alternatives=alternatives.slice(0,8);
+    }
     const images=(imagePayload.images||[]).map(item=>({image:item.imageUrl||item.thumbnailUrl||'',thumbnail:item.thumbnailUrl||item.imageUrl||'',title:item.title||query,source:item.source||host(item.link||''),link:item.link||''})).filter(item=>item.image).slice(0,10);
     const sources=[...reviews,...alternatives].filter((item,i,a)=>item.link&&a.findIndex(o=>o.link===item.link)===i).slice(0,20);
     const sinboPolicy=isSinbo(identity.brand)?{active:true,level:'high',title:'Satın alma önerilmez',message:'Caynana marka politikası gereği Sinbo ürünlerinde güçlü bir risk uyarısı gösterir. Güncel tüketici şikâyetleri, servis erişimi ve garanti koşulları ayrıntılı incelenmeden satın alma önerisi verilmez.'}:{active:false};
