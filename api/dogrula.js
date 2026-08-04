@@ -40,15 +40,40 @@ function hostname(link='') {
 }
 
 async function serperSearch(q, num=10) {
-  const key = process.env.SERPER_API_KEY;
-  if (!key) throw new Error('SERPER_API_KEY eksik.');
+  const key = String(process.env.SERPER_API_KEY || '').trim().replace(/^['"]|['"]$/g, '');
+  if (!key) throw new Error('SERPER_API_KEY eksik. Vercel Environment Variables içinde Production için tanımlayın ve yeniden deploy edin.');
+
   const r = await fetch(SERPER_URL, {
     method: 'POST',
-    headers: { 'X-API-KEY': key, 'Content-Type': 'application/json' },
+    headers: {
+      'X-API-KEY': key,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
     body: JSON.stringify({ q, gl: 'tr', hl: 'tr', num })
   });
-  if (!r.ok) throw new Error(`Serper ${r.status} yanıtı verdi.`);
-  return r.json();
+
+  const raw = await r.text();
+  let payload = null;
+  try { payload = raw ? JSON.parse(raw) : null; } catch { payload = null; }
+
+  if (!r.ok) {
+    const serviceMessage = payload && (payload.message || payload.error || payload.detail)
+      ? String(payload.message || payload.error || payload.detail)
+      : raw.slice(0, 240);
+    if (r.status === 403) {
+      throw new Error(`Serper anahtarı reddedildi (403). ${serviceMessage || 'Anahtarın Serper hesabındaki API Key olduğundan, kredinin bulunduğundan ve Vercel Production ortamına eklendiğinden emin olun.'}`);
+    }
+    if (r.status === 401) {
+      throw new Error(`Serper kimlik doğrulaması başarısız (401). ${serviceMessage || 'API anahtarını kontrol edin.'}`);
+    }
+    if (r.status === 429) {
+      throw new Error(`Serper kullanım limiti aşıldı (429). ${serviceMessage || 'Kredi veya kota durumunu kontrol edin.'}`);
+    }
+    throw new Error(`Serper ${r.status} yanıtı verdi. ${serviceMessage}`.trim());
+  }
+
+  return payload || {};
 }
 
 module.exports = async function handler(req, res) {
@@ -72,9 +97,9 @@ module.exports = async function handler(req, res) {
     for (const payload of payloads) {
       for (const item of [...(payload.shopping || []), ...(payload.organic || [])]) {
         const link = item.link || item.productLink || '';
-        const key = link || `${item.title}|${item.price}`;
-        if (!key || seen.has(key)) continue;
-        seen.add(key);
+        const dedupeKey = link || `${item.title}|${item.price}`;
+        if (!dedupeKey || seen.has(dedupeKey)) continue;
+        seen.add(dedupeKey);
         const text = `${item.title || ''} ${item.snippet || ''} ${item.price || ''}`;
         results.push({
           title: item.title || '',
