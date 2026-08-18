@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit
 class CallKeepAliveService : Service() {
     companion object {
         const val CHANNEL = "telefon_call_service"
+        const val CALL_CHANNEL = "telefon_call_incoming"
         const val NOTIFICATION_ID = 501
     }
 
@@ -33,6 +34,12 @@ class CallKeepAliveService : Service() {
         val nm = getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(
             NotificationChannel(CHANNEL, "Telefon Call", NotificationManager.IMPORTANCE_LOW)
+        )
+        nm.createNotificationChannel(
+            NotificationChannel(CALL_CHANNEL, "Gelen Aramalar", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "Telefon Call gelen aramaları"
+                lockscreenVisibility = android.app.Notification.VISIBILITY_PUBLIC
+            }
         )
 
         val open = PendingIntent.getActivity(
@@ -58,17 +65,12 @@ class CallKeepAliveService : Service() {
         streamCall?.cancel()
         val own = PhoneIdentity.ensureNumber(this)
         val topic = "caynana-call-$own"
-        val request = Request.Builder()
-            .url("https://ntfy.sh/$topic/json")
-            .get()
-            .build()
+        val request = Request.Builder().url("https://ntfy.sh/$topic/json").get().build()
 
         streamCall = client.newCall(request)
         streamCall?.enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
-                if (!call.isCanceled()) {
-                    android.os.Handler(mainLooper).postDelayed({ connectSignalStream() }, 2500)
-                }
+                if (!call.isCanceled()) android.os.Handler(mainLooper).postDelayed({ connectSignalStream() }, 2500)
             }
 
             override fun onResponse(call: Call, response: Response) {
@@ -79,9 +81,7 @@ class CallKeepAliveService : Service() {
                         handleSignalLine(line)
                     }
                 }
-                if (!call.isCanceled()) {
-                    android.os.Handler(mainLooper).postDelayed({ connectSignalStream() }, 1500)
-                }
+                if (!call.isCanceled()) android.os.Handler(mainLooper).postDelayed({ connectSignalStream() }, 1500)
             }
         })
     }
@@ -90,21 +90,43 @@ class CallKeepAliveService : Service() {
         try {
             val envelope = JSONObject(line)
             if (envelope.optString("event") != "message") return
-            val raw = envelope.optString("message")
-            val payload = JSONObject(raw)
+            val payload = JSONObject(envelope.optString("message"))
             if (payload.optString("type") != "call") return
             val from = payload.optString("from")
             val kind = payload.optString("kind", "voice")
             if (!Regex("^0500\\d{7}$").matches(from)) return
-
-            val incoming = Intent(this, IncomingCallActivity::class.java).apply {
-                putExtra("from", from)
-                putExtra("kind", kind)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            }
-            startActivity(incoming)
+            showIncomingCall(from, kind)
         } catch (_: Exception) {
         }
+    }
+
+    private fun showIncomingCall(from: String, kind: String) {
+        val incomingIntent = Intent(this, IncomingCallActivity::class.java).apply {
+            putExtra("from", from)
+            putExtra("kind", kind)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        }
+        val fullScreen = PendingIntent.getActivity(
+            this,
+            from.hashCode(),
+            incomingIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(this, CALL_CHANNEL)
+            .setSmallIcon(android.R.drawable.sym_call_incoming)
+            .setContentTitle(if (kind == "video") "Görüntülü arama" else "Gelen arama")
+            .setContentText(from)
+            .setCategory(NotificationCompat.CATEGORY_CALL)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setAutoCancel(true)
+            .setFullScreenIntent(fullScreen, true)
+            .setContentIntent(fullScreen)
+            .build()
+
+        getSystemService(NotificationManager::class.java)
+            .notify((from + kind).hashCode(), notification)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
