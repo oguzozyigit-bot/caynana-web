@@ -105,6 +105,7 @@
   function showIncoming(call){incomingCall=call;const remote=(call.metadata&&call.metadata.from)||String(call.peer||'').replace(/^pm-/,'');showStatus('GELEN ARAMA',remote,'<button id="voiceAnswer">CEVAPLA</button><button id="voiceReject">REDDET</button>','Cevapladığında mikrofon açılır.');document.getElementById('voiceReject').onclick=()=>{try{call.close()}catch(e){}cleanup(false)};document.getElementById('voiceAnswer').onclick=async()=>{try{showStatus('BAĞLANIYOR',remote,'<button id="voiceHang">İPTAL</button>','Mikrofon açılıyor…');document.getElementById('voiceHang').onclick=()=>cleanup(true);localStream=await getMic();call.answer(localStream);bindCall(call,remote);}catch(e){try{call.close()}catch(_){}showStatus('MİKROFON AÇILAMADI',remote,'<button id="voiceHang">KAPAT</button>','Mikrofon izni verilmedi.');document.getElementById('voiceHang').onclick=()=>cleanup(false);}};}
   function init(){if(!window.Peer)return;peer=new Peer(peerId(ownNumber),{debug:1});peer.on('open',()=>{const own=document.getElementById('ownNumber');if(own&&!own.textContent.includes('ÇEVRİMİÇİ'))own.textContent+=' · ÇEVRİMİÇİ';installHistoryButton();});peer.on('call',showIncoming);peer.on('error',err=>{if(err&&err.type==='peer-unavailable'&&activeCall){const remote=number().textContent;showStatus('ULAŞILAMIYOR',remote,'<button id="voiceHang">KAPAT</button>','Bu numara şu anda çevrimdışı olabilir.');document.getElementById('voiceHang').onclick=()=>cleanup(true);}});}
   function loadPeer(){if(window.Peer){init();return;}const s=document.createElement('script');s.src='https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js';s.onload=init;s.onerror=()=>{const own=document.getElementById('ownNumber');if(own)own.textContent+=' · SES BAĞLANTISI YÜKLENEMEDİ';installHistoryButton();};document.head.appendChild(s);}
+  function loadVideo(){if(document.getElementById('videoCallScript'))return;const s=document.createElement('script');s.id='videoCallScript';s.src='video-call.js';document.body.appendChild(s);}
 
   document.addEventListener('click',e=>{
     const app=e.target.closest&&e.target.closest('.app');
@@ -113,5 +114,5 @@
     if(!b)return;const num=document.getElementById('num');const target=num?num.textContent.replace(/\D/g,''):'';if(target.length===11&&target.startsWith('0601'))setTimeout(()=>startOutgoing(target),0);
   },true);
 
-  setTimeout(installHistoryButton,300);window.addEventListener('beforeunload',()=>{cleanup(true);if(peer&&!peer.destroyed)peer.destroy();});loadPeer();
+  setTimeout(installHistoryButton,300);window.addEventListener('beforeunload',()=>{cleanup(true);if(peer&&!peer.destroyed)peer.destroy();});loadPeer();loadVideo();
 })();
