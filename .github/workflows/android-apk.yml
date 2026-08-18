@@ -7,6 +7,9 @@ on:
       - 'android/**'
       - '.github/workflows/android-apk.yml'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,3 +29,12 @@ jobs:
         with:
           name: TelefonCall-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+      - name: Publish APK into website
+        run: |
+          cp android/app/build/outputs/apk/debug/app-debug.apk payphone/TelefonCall.apk
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add payphone/TelefonCall.apk
+          git diff --cached --quiet && exit 0
+          git commit -m "Publish latest Telefon Call APK"
+          git push
