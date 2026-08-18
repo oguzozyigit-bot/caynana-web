@@ -3,6 +3,7 @@ package ai.caynana.telefoncall
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
@@ -22,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        PhoneIdentity.ensureNumber(this)
+        val number = PhoneIdentity.ensureNumber(this)
         startForegroundService(Intent(this, CallKeepAliveService::class.java))
 
         web = WebView(this)
@@ -39,7 +40,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         requestNeededPermissions()
-        web.loadUrl("https://www.caynana.ai/payphone/app.html?native=android")
+        val url = "https://www.caynana.ai/payphone/app.html?native=android&number=" + Uri.encode(number)
+        web.loadUrl(url)
     }
 
     private fun requestNeededPermissions() {
