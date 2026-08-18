@@ -1,7 +1,7 @@
-const CACHE='telefon-call-v4';
+const CACHE='telefon-call-v5';
 const CORE=['/payphone/collection.html','/payphone/call.js','/payphone/apps-engine.js','/payphone/manifest.webmanifest'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).catch(()=>{}));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()]));});
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy)).catch(()=>{});return r}).catch(()=>caches.match(e.request)));});
+self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;const u=new URL(e.request.url);if(u.pathname.toLowerCase().endsWith('.apk')){e.respondWith(fetch(e.request,{cache:'no-store'}));return;}e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy)).catch(()=>{});return r}).catch(()=>caches.match(e.request)));});
 self.addEventListener('push',e=>{let data={};try{data=e.data?e.data.json():{}}catch(_){data={title:'Gelen arama',body:e.data?e.data.text():'0500 numarasından arama'}}const title=data.title||'Gelen arama';const opts={body:data.body||'0500 numarasından arama',tag:data.tag||'telefon-call',renotify:true,requireInteraction:true,data:{url:data.url||'/payphone/app.html?incoming=1'}};e.waitUntil(self.registration.showNotification(title,opts));});
 self.addEventListener('notificationclick',e=>{e.notification.close();const url=(e.notification.data&&e.notification.data.url)||'/payphone/app.html?incoming=1';e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{for(const c of list){if('focus'in c){c.navigate(url);return c.focus();}}return clients.openWindow(url);}));});
