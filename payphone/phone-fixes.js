@@ -8,6 +8,15 @@ function fixBlackBerri(){
     if(y.startsWith('2001') && /BlackBerri\s+Plus\s+01/i.test(label)) card.classList.add('bb2001fix');
   });
 }
+function fix2026Samsunq(){
+  const y=($('#yearLabel')?.textContent||'').trim();
+  if(!y.startsWith('2026'))return;
+  const names=['Samsunq S26','Samsunq S26 Plus','Samsunq S26 Ultra','Samsunq Fold 26','Samsunq Flip 26'];
+  document.querySelectorAll('.phoneCard').forEach((card,i)=>{const l=card.querySelector('.label');if(l&&names[i])l.textContent=names[i]});
+  document.querySelectorAll('#models button').forEach((b,i)=>{if(names[i])b.textContent=names[i]});
+  const active=[...document.querySelectorAll('#models button')].findIndex(b=>b.classList.contains('active'));
+  const title=$('#modelName');if(title&&names[Math.max(0,active)])title.textContent=names[Math.max(0,active)];
+}
 const css=document.createElement('style');
 css.textContent=`
 .phoneCard.bb2001fix .device{width:104px!important;height:126px!important;border-radius:14px!important;background:linear-gradient(145deg,#30373b,#15191c)!important;border:3px solid #0c0f11!important;box-shadow:inset 0 0 0 2px #4b555b,0 8px 14px #3455!important}
@@ -55,6 +64,6 @@ function openUniqueGame(){
   },90);
 }
 document.addEventListener('click',e=>{const b=e.target.closest?.('.app[data-unique-game]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();openUniqueGame()},true);
-new MutationObserver(()=>{fixBlackBerri();enhanceGameButton()}).observe(document.body,{subtree:true,childList:true,characterData:true});
-setTimeout(()=>{fixBlackBerri();enhanceGameButton()},200);
+new MutationObserver(()=>{fixBlackBerri();fix2026Samsunq();enhanceGameButton()}).observe(document.body,{subtree:true,childList:true,characterData:true});
+setTimeout(()=>{fixBlackBerri();fix2026Samsunq();enhanceGameButton()},200);
 })();
