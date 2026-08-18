@@ -2,6 +2,7 @@ name: Build Telefon Call APK
 
 on:
   push:
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -29,6 +30,7 @@ jobs:
           name: TelefonCall-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
       - name: Publish APK into website
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           cp android/app/build/outputs/apk/debug/app-debug.apk payphone/TelefonCall.apk
           git config user.name "github-actions[bot]"
