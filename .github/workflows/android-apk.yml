@@ -1,11 +1,8 @@
 name: Build Telefon Call APK
 
 on:
-  workflow_dispatch:
   push:
-    paths:
-      - 'android/**'
-      - '.github/workflows/android-apk.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -15,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -35,6 +34,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add payphone/TelefonCall.apk
-          git diff --cached --quiet && exit 0
+          if git diff --cached --quiet; then
+            echo "APK already current"
+            exit 0
+          fi
           git commit -m "Publish latest Telefon Call APK"
           git push
