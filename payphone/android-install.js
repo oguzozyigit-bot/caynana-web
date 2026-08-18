@@ -1,5 +1,5 @@
 (()=>{
-  const APK_URL='/payphone/TelefonCall.apk?v=1.0.1';
+  const APK_URL='/payphone/TelefonCall.apk?v=secure-20260818-2';
   function inject(){
     const install=document.getElementById('setInstall');
     if(!install||document.getElementById('setAndroidApk'))return;
