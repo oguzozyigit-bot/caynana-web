@@ -36,4 +36,4 @@ window.addEventListener('beforeunload',()=>{cleanup(true);if(peer&&!peer.destroy
 load();setTimeout(()=>{installTopButtons();installDial()},400);
 })();
 (()=>{if(document.querySelector('script[data-app-engine]'))return;const s=document.createElement('script');s.src='apps-engine.js?v=4';s.dataset.appEngine='1';document.head.appendChild(s)})();
-(()=>{if(document.querySelector('script[data-phone-fixes]'))return;const s=document.createElement('script');s.src='phone-fixes.js?v=1';s.dataset.phoneFixes='1';document.head.appendChild(s)})();
+(()=>{if(document.querySelector('script[data-phone-fixes]'))return;const s=document.createElement('script');s.src='phone-fixes.js?v=2';s.dataset.phoneFixes='1';document.head.appendChild(s)})();
