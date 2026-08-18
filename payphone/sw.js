@@ -1,4 +1,4 @@
-const CACHE='telefon-call-v3';
+const CACHE='telefon-call-v4';
 const CORE=['/payphone/collection.html','/payphone/call.js','/payphone/apps-engine.js','/payphone/manifest.webmanifest'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).catch(()=>{}));self.skipWaiting();});
 self.addEventListener('activate',e=>{e.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()]));});
