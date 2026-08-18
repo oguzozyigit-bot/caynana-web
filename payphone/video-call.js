@@ -1,0 +1,42 @@
+(()=>{
+  const ownNumber=localStorage.getItem('phoneMuseumOwnNumber');
+  if(!ownNumber)return;
+  let peer=null,activeCall=null,localStream=null,remoteVideo=null,localVideo=null,facing='user';
+  const peerId=n=>'pmv-'+String(n||'').replace(/\D/g,'');
+  const fmt=n=>{n=String(n||'').replace(/\D/g,'');return n.length===11?n.slice(0,4)+' '+n.slice(4,7)+' '+n.slice(7,9)+' '+n.slice(9,11):n};
+
+  const style=document.createElement('style');
+  style.textContent=`
+  #videoCallLayer{position:fixed;inset:0;z-index:10020;background:#071117f2;display:none;align-items:center;justify-content:center;padding:12px;font-family:Arial,sans-serif}
+  #videoCallLayer.on{display:flex}.videoCard{width:min(430px,96vw);background:#111d24;color:#fff;border-radius:24px;padding:14px;box-shadow:0 18px 50px #0009;text-align:center}
+  .videoStage{position:relative;width:100%;aspect-ratio:3/4;max-height:68vh;background:#000;border-radius:18px;overflow:hidden;margin:10px 0}.videoStage video{width:100%;height:100%;object-fit:cover;background:#000}.videoLocal{position:absolute!important;right:10px!important;top:10px!important;width:30%!important;height:26%!important;border-radius:12px!important;border:2px solid #fff!important;z-index:2;object-fit:cover!important;transform:scaleX(-1)}
+  .videoTitle{font-size:12px;font-weight:900;opacity:.75;letter-spacing:.6px}.videoNum{font:900 22px monospace;margin:5px 0}.videoBtns{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.videoBtns button,#videoDialBtn{border:0;border-radius:14px;padding:12px 14px;font-weight:900;color:#fff;background:#263847}.videoAccept{background:#198754!important}.videoReject,.videoHang{background:#bd3030!important}.videoCam{background:#365d78!important}#videoDialBtn{background:#365d78;margin-left:6px}
+  `;
+  document.head.appendChild(style);
+
+  const layer=document.createElement('div');layer.id='videoCallLayer';
+  layer.innerHTML='<div class="videoCard"><div id="videoState" class="videoTitle">GÖRÜNTÜLÜ ARAMA</div><div id="videoNum" class="videoNum"></div><div id="videoBody"></div><div id="videoBtns" class="videoBtns"></div></div>';
+  document.body.appendChild(layer);
+  const state=()=>document.getElementById('videoState'),num=()=>document.getElementById('videoNum'),body=()=>document.getElementById('videoBody'),btns=()=>document.getElementById('videoBtns');
+
+  function stopMedia(){if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}if(remoteVideo){remoteVideo.srcObject=null;remoteVideo=null}if(localVideo){localVideo.srcObject=null;localVideo=null}}
+  function closeUI(){layer.classList.remove('on');body().innerHTML='';btns().innerHTML=''}
+  function cleanup(close=true){if(close&&activeCall){try{activeCall.close()}catch(e){}}activeCall=null;stopMedia();closeUI()}
+  function show(label,n,html='',buttons=''){layer.classList.add('on');state().textContent=label;num().textContent=fmt(n);body().innerHTML=html;btns().innerHTML=buttons}
+  async function getMedia(face='user'){if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('Kamera desteklenmiyor');return navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:{facingMode:face}})}
+  function renderLive(remote,n){
+    show('GÖRÜNTÜLÜ GÖRÜŞME',n,'<div class="videoStage"><video id="remoteV" autoplay playsinline></video><video id="localV" class="videoLocal" autoplay muted playsinline></video></div>','<button class="videoCam" id="switchCam">KAMERA ÇEVİR</button><button class="videoHang" id="videoHang">KAPAT</button>');
+    remoteVideo=document.getElementById('remoteV');localVideo=document.getElementById('localV');remoteVideo.srcObject=remote;localVideo.srcObject=localStream;remoteVideo.play().catch(()=>{});localVideo.play().catch(()=>{});
+    document.getElementById('videoHang').onclick=()=>cleanup(true);
+    document.getElementById('switchCam').onclick=async()=>{try{facing=facing==='user'?'environment':'user';const ns=await getMedia(facing);const nt=ns.getVideoTracks()[0];const sender=activeCall&&activeCall.peerConnection&&activeCall.peerConnection.getSenders().find(s=>s.track&&s.track.kind==='video');if(sender)await sender.replaceTrack(nt);const old=localStream;localStream=ns;if(localVideo)localVideo.srcObject=localStream;if(old)old.getTracks().forEach(t=>t.stop())}catch(e){}};
+  }
+  function bind(call,n){activeCall=call;call.on('stream',s=>renderLive(s,n));call.on('close',()=>cleanup(false));call.on('error',()=>{show('GÖRÜNTÜLÜ ÇAĞRI HATASI',n,'<p>Bağlantı kurulamadı.</p>','<button class="videoHang" id="videoHang">KAPAT</button>');document.getElementById('videoHang').onclick=()=>cleanup(false)})}
+  async function outgoing(target){target=String(target||'').replace(/\D/g,'');if(target.length!==11||!target.startsWith('0601'))return;if(target===ownNumber){show('KENDİ NUMARAN',target,'<p>Kendi numaranı görüntülü arayamazsın.</p>','<button class="videoHang" id="videoHang">KAPAT</button>');document.getElementById('videoHang').onclick=()=>cleanup(false);return}if(!peer||peer.destroyed||peer.disconnected){show('HAT HAZIR DEĞİL',target,'<p>Görüntülü arama servisi hazır değil.</p>','<button class="videoHang" id="videoHang">KAPAT</button>');document.getElementById('videoHang').onclick=()=>cleanup(false);return}
+    try{show('KAMERA İZNİ',target,'<p>Kamera ve mikrofon izni gerekiyor.</p>','<button class="videoHang" id="videoHang">İPTAL</button>');document.getElementById('videoHang').onclick=()=>cleanup(false);localStream=await getMedia(facing);show('GÖRÜNTÜLÜ ARANIYOR',target,'<p>Karşı tarafın uygulaması açık olmalı.</p>','<button class="videoHang" id="videoHang">KAPAT</button>');document.getElementById('videoHang').onclick=()=>cleanup(true);const c=peer.call(peerId(target),localStream,{metadata:{from:ownNumber,video:true}});bind(c,target)}catch(e){show('KAMERA AÇILAMADI',target,'<p>'+(e&&e.message?e.message:'Kamera izni verilmedi.')+'</p>','<button class="videoHang" id="videoHang">KAPAT</button>');document.getElementById('videoHang').onclick=()=>cleanup(false)}}
+  function incoming(call){const remote=(call.metadata&&call.metadata.from)||String(call.peer||'').replace(/^pmv-/,'');show('GELEN GÖRÜNTÜLÜ ARAMA',remote,'<p>📹 Görüntülü arama</p>','<button class="videoAccept" id="videoAccept">CEVAPLA</button><button class="videoReject" id="videoReject">REDDET</button>');document.getElementById('videoReject').onclick=()=>{try{call.close()}catch(e){}cleanup(false)};document.getElementById('videoAccept').onclick=async()=>{try{show('BAĞLANIYOR',remote,'<p>Kamera açılıyor…</p>','<button class="videoHang" id="videoHang">İPTAL</button>');document.getElementById('videoHang').onclick=()=>cleanup(true);localStream=await getMedia(facing);call.answer(localStream);bind(call,remote)}catch(e){try{call.close()}catch(_){}show('KAMERA AÇILAMADI',remote,'<p>Kamera veya mikrofon izni verilmedi.</p>','<button class="videoHang" id="videoHang">KAPAT</button>');document.getElementById('videoHang').onclick=()=>cleanup(false)}}}
+  function init(){if(!window.Peer)return;peer=new Peer(peerId(ownNumber),{debug:1});peer.on('call',incoming);peer.on('error',err=>{if(err&&err.type==='peer-unavailable'&&activeCall){const n=num().textContent;show('ULAŞILAMIYOR',n,'<p>Bu numara görüntülü arama için çevrimdışı olabilir.</p>','<button class="videoHang" id="videoHang">KAPAT</button>');document.getElementById('videoHang').onclick=()=>cleanup(true)}})}
+  function addVideoButton(){const call=document.getElementById('callBtn');if(!call||document.getElementById('videoDialBtn'))return;const b=document.createElement('button');b.id='videoDialBtn';b.textContent='📹 VİDEO ARA';b.onclick=e=>{e.preventDefault();e.stopPropagation();const n=document.getElementById('num');const target=n?n.textContent.replace(/\D/g,''):'';outgoing(target)};call.insertAdjacentElement('afterend',b)}
+  const obs=new MutationObserver(()=>addVideoButton());obs.observe(document.body,{childList:true,subtree:true});
+  function load(){if(window.Peer){init();return}const t=setInterval(()=>{if(window.Peer){clearInterval(t);init()}},150);setTimeout(()=>clearInterval(t),10000)}
+  window.addEventListener('beforeunload',()=>{cleanup(true);if(peer&&!peer.destroyed)peer.destroy()});load();setTimeout(addVideoButton,400);
+})();
