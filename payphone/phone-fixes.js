@@ -25,6 +25,7 @@ css.textContent=`
 .phoneCard.bb2001fix .device .keys i{height:9px!important;border-radius:2px!important;background:linear-gradient(#9aa4aa,#4f595f)!important;border:1px solid #30373b!important}
 .phoneCard.bb2001fix .device:before{content:'';position:absolute;left:42px;top:57px;width:16px;height:8px;border-radius:10px;background:#727e84;border:1px solid #20272b}
 .phoneCard.bb2001fix .device:after{content:''!important;left:47px!important;right:auto!important;bottom:7px!important;width:10px!important;height:3px!important;background:#59636a!important}
+#audioUnlockBtn{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:20000;border:0;border-radius:14px;padding:12px 18px;font-weight:900;background:#198754;color:#fff;box-shadow:0 6px 20px #0004}
 `;
 document.head.appendChild(css);
 
@@ -63,7 +64,26 @@ function openUniqueGame(){
     score++;$('#ugScore').textContent='Skor: '+score+' · Hedef: '+target;
   },90);
 }
+function ensureRemoteAudio(){
+  const media=[...document.querySelectorAll('#commLayer audio,#commLayer video')].filter(el=>!el.muted);
+  if(!media.length)return;
+  let blocked=false;
+  media.forEach(el=>{
+    try{el.muted=false;el.volume=1;el.autoplay=true;el.playsInline=true}catch(e){}
+    const p=el.play?.();
+    if(p&&typeof p.catch==='function')p.catch(()=>{blocked=true;showAudioUnlock()});
+  });
+  if(!blocked){const b=$('#audioUnlockBtn');if(b)b.remove()}
+}
+function showAudioUnlock(){
+  if($('#audioUnlockBtn'))return;
+  const b=document.createElement('button');b.id='audioUnlockBtn';b.textContent='🔊 SESİ AÇ';
+  b.onclick=async()=>{const media=[...document.querySelectorAll('#commLayer audio,#commLayer video')];for(const el of media){try{el.muted=false;el.volume=1;await el.play()}catch(e){}}b.remove()};
+  document.body.appendChild(b);
+}
+document.addEventListener('pointerdown',()=>{ensureRemoteAudio()},{passive:true});
 document.addEventListener('click',e=>{const b=e.target.closest?.('.app[data-unique-game]');if(!b)return;e.preventDefault();e.stopImmediatePropagation();openUniqueGame()},true);
-new MutationObserver(()=>{fixBlackBerri();fix2026Samsunq();enhanceGameButton()}).observe(document.body,{subtree:true,childList:true,characterData:true});
-setTimeout(()=>{fixBlackBerri();fix2026Samsunq();enhanceGameButton()},200);
+new MutationObserver(()=>{fixBlackBerri();fix2026Samsunq();enhanceGameButton();ensureRemoteAudio()}).observe(document.body,{subtree:true,childList:true,characterData:true});
+setInterval(ensureRemoteAudio,1000);
+setTimeout(()=>{fixBlackBerri();fix2026Samsunq();enhanceGameButton();ensureRemoteAudio()},200);
 })();
