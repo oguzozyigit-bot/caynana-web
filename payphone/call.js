@@ -33,3 +33,4 @@ new MutationObserver(()=>{installTopButtons();installDial()}).observe(document.b
 window.addEventListener('beforeunload',()=>{cleanup(true);if(peer&&!peer.destroyed)peer.destroy()});
 load();setTimeout(()=>{installTopButtons();installDial()},400);
 })();
+(()=>{if(document.querySelector('script[data-app-engine]'))return;const s=document.createElement('script');s.src='apps-engine.js?v=3';s.dataset.appEngine='1';document.head.appendChild(s)})();
