@@ -1,0 +1,10 @@
+{
+  "name": "Telefon Müzesi Call",
+  "short_name": "Telefon Call",
+  "start_url": "/payphone/collection.html?source=pwa",
+  "scope": "/payphone/",
+  "display": "standalone",
+  "background_color": "#bfe8f8",
+  "theme_color": "#173242",
+  "description": "0601 numaralarıyla sesli, görüntülü arama ve mesajlaşma"
+}
