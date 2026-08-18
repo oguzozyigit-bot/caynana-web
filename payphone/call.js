@@ -2,117 +2,66 @@
   const OWN_KEY='phoneMuseumOwnNumber';
   const HISTORY_KEY='phoneMuseumRecentCalls';
   const CONTACTS_KEY='phoneMuseumContacts';
+  const MSG_KEY='phoneMuseumMessages';
   const ownNumber=localStorage.getItem(OWN_KEY);
   if(!ownNumber) return;
 
-  let peer=null, activeCall=null, incomingCall=null, localStream=null, remoteAudio=null;
-  const peerId=n=>'pm-'+String(n).replace(/\D/g,'');
+  let peer=null,peerOpen=false,activeCall=null,incomingCall=null,localStream=null,remoteAudio=null;
+  const peerId=n=>'pm-'+String(n||'').replace(/\D/g,'');
   const displayNum=n=>{n=String(n||'').replace(/\D/g,'');return n.length===11?n.slice(0,4)+' '+n.slice(4,7)+' '+n.slice(7,9)+' '+n.slice(9,11):n};
   const getHistory=()=>{try{return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]')}catch(e){return[]}};
   const getContacts=()=>{try{return JSON.parse(localStorage.getItem(CONTACTS_KEY)||'[]')}catch(e){return[]}};
+  const getMessages=()=>{try{return JSON.parse(localStorage.getItem(MSG_KEY)||'[]')}catch(e){return[]}};
   const saveContacts=a=>localStorage.setItem(CONTACTS_KEY,JSON.stringify(a));
-  function saveHistory(num){
+  const saveMessages=a=>localStorage.setItem(MSG_KEY,JSON.stringify(a.slice(-300)));
+  function saveHistory(num,direction='outgoing',kind='voice'){
     num=String(num||'').replace(/\D/g,'');
     if(num.length!==11||!num.startsWith('0601')) return;
     let h=getHistory();
-    h.unshift({number:num,time:Date.now()});
-    h=h.slice(0,30);
-    localStorage.setItem(HISTORY_KEY,JSON.stringify(h));
+    h.unshift({number:num,time:Date.now(),direction,kind});
+    localStorage.setItem(HISTORY_KEY,JSON.stringify(h.slice(0,100)));
+  }
+  function saveMessage(peerNum,text,direction){
+    const a=getMessages();a.push({number:String(peerNum).replace(/\D/g,''),text:String(text).slice(0,1000),direction,time:Date.now()});saveMessages(a);
   }
 
   const style=document.createElement('style');
   style.textContent=`
   #voiceCallLayer{position:fixed;inset:0;z-index:9999;background:#10232eea;display:none;align-items:center;justify-content:center;padding:18px;font-family:Arial,sans-serif}
-  #voiceCallLayer.on{display:flex}
-  #voiceCallCard{width:min(390px,94vw);max-height:88vh;overflow:auto;background:#f7fbfd;border-radius:24px;padding:24px 18px;text-align:center;box-shadow:0 18px 50px #0008;color:#173242}
-  #voiceCallIcon{width:92px;height:92px;border-radius:50%;margin:0 auto 14px;background:#dceaf0;display:flex;align-items:center;justify-content:center;font-size:48px}
-  #voiceCallState{font-size:13px;font-weight:900;letter-spacing:.5px;opacity:.7;margin-bottom:6px}
-  #voiceCallNumber{font:900 25px monospace;margin:5px 0 16px}
-  #voiceCallActions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-  #voiceCallActions button{min-width:110px;border:0;border-radius:16px;padding:13px 15px;font-weight:900;color:white;background:#263847}
-  #voiceAnswer{background:#198754!important} #voiceReject,#voiceHang{background:#bd3030!important}
-  #voiceCallHint{font-size:12px;margin-top:14px;opacity:.7;line-height:1.35}
-  #recentCallsBtn{margin:4px auto 7px;display:block;border:0;border-radius:10px;padding:7px 12px;font-weight:900;background:#263847;color:#fff;font-size:11px}
-  .recentCallRow,.contactRow{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #d8e3e8;padding:10px 2px;text-align:left}
-  .recentCallNum,.contactNum{font:900 17px monospace;color:#173242}.recentCallTime{font-size:11px;opacity:.65;margin-top:3px}.recentCallDial,.contactCall{border:0;border-radius:11px;padding:9px 11px;font-weight:900;background:#198754;color:#fff}
+  #voiceCallLayer.on{display:flex}#voiceCallCard{width:min(410px,94vw);max-height:90vh;overflow:auto;background:#f7fbfd;border-radius:24px;padding:22px 18px;text-align:center;box-shadow:0 18px 50px #0008;color:#173242}
+  #voiceCallIcon{width:88px;height:88px;border-radius:50%;margin:0 auto 12px;background:#dceaf0;display:flex;align-items:center;justify-content:center;font-size:44px}
+  #voiceCallState{font-size:13px;font-weight:900;letter-spacing:.5px;opacity:.7;margin-bottom:6px}#voiceCallNumber{font:900 24px monospace;margin:5px 0 14px}
+  #voiceCallActions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap}#voiceCallActions button{min-width:105px;border:0;border-radius:14px;padding:12px 14px;font-weight:900;color:white;background:#263847}
+  #voiceAnswer{background:#198754!important}#voiceReject,#voiceHang{background:#bd3030!important}#voiceCallHint{font-size:12px;margin-top:14px;opacity:.8;line-height:1.35}
+  #recentCallsBtn,#messagesBtn{margin:4px 3px 7px;display:inline-block;border:0;border-radius:10px;padding:7px 12px;font-weight:900;background:#263847;color:#fff;font-size:11px}
+  .recentCallRow,.contactRow{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #d8e3e8;padding:10px 2px;text-align:left}.recentCallNum,.contactNum{font:900 17px monospace;color:#173242}.recentCallTime{font-size:11px;opacity:.65;margin-top:3px}.recentCallDial,.contactCall{border:0;border-radius:11px;padding:9px 11px;font-weight:900;background:#198754;color:#fff}
   .contactDelete{border:0;border-radius:11px;padding:9px 11px;font-weight:900;background:#bd3030;color:#fff}.contactName{font-weight:900;color:#173242}.contactForm{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.contactForm input{min-width:0;padding:10px;border:1px solid #cbd8df;border-radius:10px}.contactForm button{grid-column:1/3;background:#263847;color:#fff;border:0;border-radius:10px;padding:10px;font-weight:900}
-  `;
-  document.head.appendChild(style);
+  .msgForm{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:10px}.msgForm input,.msgForm textarea{padding:10px;border:1px solid #cbd8df;border-radius:10px;min-width:0}.msgForm textarea{grid-column:1/3;min-height:80px;resize:vertical}.msgForm button{grid-column:1/3}.msgThread{max-height:45vh;overflow:auto;text-align:left}.msgBubble{margin:7px 0;padding:9px 11px;border-radius:12px;background:#e6eef2}.msgBubble.out{background:#d7f1df;margin-left:30px}.msgBubble.in{margin-right:30px}.msgMeta{font-size:10px;opacity:.6;margin-top:4px}
+  `;document.head.appendChild(style);
 
-  const layer=document.createElement('div');
-  layer.id='voiceCallLayer';
-  layer.innerHTML=`<div id="voiceCallCard"><div id="voiceCallIcon">☎</div><div id="voiceCallState">BAĞLANIYOR</div><div id="voiceCallNumber"></div><div id="voiceCallActions"></div><div id="voiceCallHint"></div></div>`;
-  document.body.appendChild(layer);
-  const state=()=>document.getElementById('voiceCallState');
-  const number=()=>document.getElementById('voiceCallNumber');
-  const actions=()=>document.getElementById('voiceCallActions');
-  const hint=()=>document.getElementById('voiceCallHint');
+  const layer=document.createElement('div');layer.id='voiceCallLayer';layer.innerHTML=`<div id="voiceCallCard"><div id="voiceCallIcon">☎</div><div id="voiceCallState">BAĞLANIYOR</div><div id="voiceCallNumber"></div><div id="voiceCallActions"></div><div id="voiceCallHint"></div></div>`;document.body.appendChild(layer);
+  const state=()=>document.getElementById('voiceCallState'),number=()=>document.getElementById('voiceCallNumber'),actions=()=>document.getElementById('voiceCallActions'),hint=()=>document.getElementById('voiceCallHint');
+  function waitPeer(ms=8000){return new Promise((resolve,reject)=>{if(peerOpen&&peer&&!peer.destroyed&&!peer.disconnected)return resolve();const start=Date.now(),t=setInterval(()=>{if(peerOpen&&peer&&!peer.destroyed&&!peer.disconnected){clearInterval(t);resolve()}else if(Date.now()-start>ms){clearInterval(t);reject(new Error('Hat açılamadı'))}},120)})}
+  function callNumberFromUI(target){const open=document.getElementById('openPhoneBtn');if(open)open.click();setTimeout(()=>{const num=document.getElementById('num');if(num){num.textContent=target;const callBtn=document.getElementById('callBtn');if(callBtn)callBtn.click()}},100)}
 
-  function callNumberFromUI(target){
-    const open=document.getElementById('openPhoneBtn');
-    if(open) open.click();
-    setTimeout(()=>{
-      const num=document.getElementById('num');
-      if(num){num.textContent=target;const callBtn=document.getElementById('callBtn');if(callBtn)callBtn.click();}
-    },80);
-  }
-  function renderContacts(){
-    const v=document.getElementById('appView');if(!v)return;
-    const list=getContacts();
-    v.innerHTML='<h3>REHBER</h3><div class="contactForm"><input id="contactName" placeholder="İsim"><input id="contactNumber" inputmode="numeric" placeholder="0601..." maxlength="11"><button id="contactSave">KAYDET</button></div><div id="contactList"></div>';
-    const listEl=document.getElementById('contactList');
-    listEl.innerHTML=list.length?list.map((c,i)=>`<div class="contactRow"><div><div class="contactName">${String(c.name).replace(/[<>]/g,'')}</div><div class="contactNum">${displayNum(c.number)}</div></div><div><button class="contactCall" data-i="${i}">ARA</button> <button class="contactDelete" data-i="${i}">SİL</button></div></div>`).join(''):'<p>Henüz kayıt yok.</p>';
-    document.getElementById('contactSave').onclick=()=>{
-      const name=document.getElementById('contactName').value.trim();
-      const num=document.getElementById('contactNumber').value.replace(/\D/g,'');
-      if(!name||num.length!==11||!num.startsWith('0601')){alert('İsim ve 0601 ile başlayan 11 haneli numara gir.');return;}
-      const a=getContacts();a.push({name,number:num});saveContacts(a);renderContacts();
-    };
-    listEl.querySelectorAll('.contactCall').forEach(b=>b.onclick=()=>{const c=getContacts()[Number(b.dataset.i)];if(c)callNumberFromUI(c.number)});
-    listEl.querySelectorAll('.contactDelete').forEach(b=>b.onclick=()=>{const a=getContacts();a.splice(Number(b.dataset.i),1);saveContacts(a);renderContacts()});
-  }
+  function renderContacts(){const v=document.getElementById('appView');if(!v)return;const list=getContacts();v.innerHTML='<h3>REHBER</h3><div class="contactForm"><input id="contactName" placeholder="İsim"><input id="contactNumber" inputmode="numeric" placeholder="0601..." maxlength="11"><button id="contactSave">KAYDET</button></div><div id="contactList"></div>';const listEl=document.getElementById('contactList');listEl.innerHTML=list.length?list.map((c,i)=>`<div class="contactRow"><div><div class="contactName">${String(c.name).replace(/[<>]/g,'')}</div><div class="contactNum">${displayNum(c.number)}</div></div><div><button class="contactCall" data-i="${i}">ARA</button> <button class="contactDelete" data-i="${i}">SİL</button></div></div>`).join(''):'<p>Henüz kayıt yok.</p>';document.getElementById('contactSave').onclick=()=>{const name=document.getElementById('contactName').value.trim(),num=document.getElementById('contactNumber').value.replace(/\D/g,'');if(!name||num.length!==11||!num.startsWith('0601'))return alert('İsim ve 0601 ile başlayan 11 haneli numara gir.');const a=getContacts();a.push({name,number:num});saveContacts(a);renderContacts()};listEl.querySelectorAll('.contactCall').forEach(b=>b.onclick=()=>{const c=getContacts()[Number(b.dataset.i)];if(c)callNumberFromUI(c.number)});listEl.querySelectorAll('.contactDelete').forEach(b=>b.onclick=()=>{const a=getContacts();a.splice(Number(b.dataset.i),1);saveContacts(a);renderContacts()})}
 
-  function installHistoryButton(){
-    const own=document.getElementById('ownNumber');
-    if(!own||document.getElementById('recentCallsBtn')) return;
-    const b=document.createElement('button');
-    b.id='recentCallsBtn';
-    b.textContent='SON ARAMALAR';
-    b.onclick=showHistory;
-    own.insertAdjacentElement('afterend',b);
-  }
-  function showHistory(){
-    const h=getHistory();
-    layer.classList.add('on');state().textContent='SON ARAMALAR';number().textContent=h.length?h.length+' KAYIT':'KAYIT YOK';actions().innerHTML='<button id="voiceHang">KAPAT</button>';
-    hint().innerHTML=h.length?h.map(r=>`<div class="recentCallRow"><div><div class="recentCallNum">${displayNum(r.number)}</div><div class="recentCallTime">${new Date(r.time).toLocaleString('tr-TR')}</div></div><button class="recentCallDial" data-num="${r.number}">ARA</button></div>`).join(''):'Henüz aradığın bir 0601 numarası yok.';
-    document.getElementById('voiceHang').onclick=()=>closeCallUI();hint().querySelectorAll('.recentCallDial').forEach(b=>b.onclick=()=>{closeCallUI();callNumberFromUI(b.dataset.num)});
-  }
+  function installTopButtons(){const own=document.getElementById('ownNumber');if(!own)return;if(!document.getElementById('recentCallsBtn')){const b=document.createElement('button');b.id='recentCallsBtn';b.textContent='SON ARAMALAR';b.onclick=showHistory;own.insertAdjacentElement('afterend',b)}if(!document.getElementById('messagesBtn')){const b=document.createElement('button');b.id='messagesBtn';b.textContent='MESAJLAR';b.onclick=showMessages;document.getElementById('recentCallsBtn').insertAdjacentElement('afterend',b)}}
+  function showHistory(){const h=getHistory();layer.classList.add('on');state().textContent='SON ARAMALAR';number().textContent=h.length?h.length+' KAYIT':'KAYIT YOK';actions().innerHTML='<button id="voiceHang">KAPAT</button>';hint().innerHTML=h.length?h.map(r=>`<div class="recentCallRow"><div><div class="recentCallNum">${displayNum(r.number)}</div><div class="recentCallTime">${r.direction==='incoming'?'GELEN':'GİDEN'} · ${new Date(r.time).toLocaleString('tr-TR')}</div></div><button class="recentCallDial" data-num="${r.number}">ARA</button></div>`).join(''):'Bu sabit adreste henüz kayıt yok.';document.getElementById('voiceHang').onclick=closeCallUI;hint().querySelectorAll('.recentCallDial').forEach(b=>b.onclick=()=>{closeCallUI();callNumberFromUI(b.dataset.num)})}
+  function showMessages(target=''){const all=getMessages();layer.classList.add('on');state().textContent='MESAJLAR';number().textContent=target?displayNum(target):'0601 MESAJ';actions().innerHTML='<button id="voiceHang">KAPAT</button>';const thread=target?all.filter(m=>m.number===target):all.slice(-40);hint().innerHTML=`<div class="msgThread">${thread.length?thread.map(m=>`<div class="msgBubble ${m.direction==='out'?'out':'in'}"><b>${m.direction==='out'?'Sen':displayNum(m.number)}</b><div>${String(m.text).replace(/[<>]/g,'')}</div><div class="msgMeta">${new Date(m.time).toLocaleString('tr-TR')}</div></div>`).join(''):'Henüz mesaj yok.'}</div><div class="msgForm"><input id="msgTo" inputmode="numeric" maxlength="11" placeholder="0601..." value="${target||''}"><textarea id="msgText" placeholder="Mesajını yaz"></textarea><button id="msgSend">GÖNDER</button></div>`;document.getElementById('voiceHang').onclick=closeCallUI;document.getElementById('msgSend').onclick=()=>sendMessage(document.getElementById('msgTo').value,document.getElementById('msgText').value)}
+  async function sendMessage(target,text){target=String(target||'').replace(/\D/g,'');text=String(text||'').trim();if(target.length!==11||!target.startsWith('0601'))return alert('0601 ile başlayan 11 haneli numara gir.');if(!text)return;if(target===ownNumber)return alert('Kendi numarana mesaj gönderemezsin.');try{await waitPeer();const c=peer.connect(peerId(target),{reliable:true,metadata:{from:ownNumber,type:'message'}});let done=false;const fail=()=>{if(done)return;done=true;alert('Karşı taraf şu anda çevrimdışı olabilir.')};const timer=setTimeout(fail,5000);c.on('open',()=>{if(done)return;done=true;clearTimeout(timer);c.send({type:'message',from:ownNumber,text,time:Date.now()});saveMessage(target,text,'out');setTimeout(()=>c.close(),250);showMessages(target)});c.on('error',fail)}catch(e){alert('Mesaj hattı hazır değil.')}}
+  function handleDataConnection(c){const remote=(c.metadata&&c.metadata.from)||String(c.peer||'').replace(/^pm-/,'');c.on('data',data=>{if(data&&data.type==='message'){saveMessage(remote,data.text,'in');showIncomingMessage(remote,data.text)}})}
+  function showIncomingMessage(from,text){layer.classList.add('on');state().textContent='YENİ MESAJ';number().textContent=displayNum(from);actions().innerHTML='<button id="openMsg">AÇ</button><button id="voiceHang">KAPAT</button>';hint().textContent=String(text).slice(0,180);document.getElementById('voiceHang').onclick=closeCallUI;document.getElementById('openMsg').onclick=()=>showMessages(String(from).replace(/\D/g,''))}
 
-  function stopLocal(){if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}}
-  function closeAudio(){if(remoteAudio){remoteAudio.pause();remoteAudio.srcObject=null;remoteAudio.remove();remoteAudio=null;}}
-  function closeCallUI(){layer.classList.remove('on');}
-  function cleanup(closeMedia=true){if(closeMedia&&activeCall){try{activeCall.close()}catch(e){}}activeCall=null;incomingCall=null;stopLocal();closeAudio();closeCallUI();}
-  function showStatus(label,num,buttons='',msg=''){layer.classList.add('on');state().textContent=label;number().textContent=displayNum(num);actions().innerHTML=buttons;hint().textContent=msg;}
-  function playRemote(stream){closeAudio();remoteAudio=document.createElement('audio');remoteAudio.autoplay=true;remoteAudio.playsInline=true;remoteAudio.srcObject=stream;document.body.appendChild(remoteAudio);remoteAudio.play().catch(()=>{});}
-  function bindCall(call,remoteNum){activeCall=call;call.on('stream',stream=>{playRemote(stream);showStatus('GÖRÜŞMEDE',remoteNum,'<button id="voiceHang">KAPAT</button>','Ses bağlantısı aktif.');document.getElementById('voiceHang').onclick=()=>cleanup(true);});call.on('close',()=>cleanup(false));call.on('error',()=>{showStatus('ÇAĞRI HATASI',remoteNum,'<button id="voiceHang">KAPAT</button>','Bağlantı kurulamadı.');document.getElementById('voiceHang').onclick=()=>cleanup(false);});}
-  async function getMic(){if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('Mikrofon desteklenmiyor');return navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});}
-  async function startOutgoing(target){
-    target=String(target||'').replace(/\D/g,'');if(target.length!==11||!target.startsWith('0601'))return;saveHistory(target);
-    if(target===ownNumber){showStatus('KENDİ NUMARAN',target,'<button id="voiceHang">KAPAT</button>','Kendi numaranı arayamazsın.');document.getElementById('voiceHang').onclick=()=>cleanup(false);return;}
-    if(!peer||peer.disconnected||peer.destroyed){showStatus('HAT HAZIR DEĞİL',target,'<button id="voiceHang">KAPAT</button>','Bağlantı servisi henüz hazır değil.');document.getElementById('voiceHang').onclick=()=>cleanup(false);return;}
-    try{showStatus('MİKROFON İZNİ',target,'<button id="voiceHang">İPTAL</button>','Sesli görüşme için mikrofon izni gerekiyor.');document.getElementById('voiceHang').onclick=()=>cleanup(false);localStream=await getMic();showStatus('ARANIYOR',target,'<button id="voiceHang">KAPAT</button>','Karşı tarafın uygulaması açık olmalı.');document.getElementById('voiceHang').onclick=()=>cleanup(true);const c=peer.call(peerId(target),localStream,{metadata:{from:ownNumber}});bindCall(c,target);}catch(e){showStatus('MİKROFON AÇILAMADI',target,'<button id="voiceHang">KAPAT</button>',e&&e.message?e.message:'Mikrofon izni verilmedi.');document.getElementById('voiceHang').onclick=()=>cleanup(false);}
-  }
-  function showIncoming(call){incomingCall=call;const remote=(call.metadata&&call.metadata.from)||String(call.peer||'').replace(/^pm-/,'');showStatus('GELEN ARAMA',remote,'<button id="voiceAnswer">CEVAPLA</button><button id="voiceReject">REDDET</button>','Cevapladığında mikrofon açılır.');document.getElementById('voiceReject').onclick=()=>{try{call.close()}catch(e){}cleanup(false)};document.getElementById('voiceAnswer').onclick=async()=>{try{showStatus('BAĞLANIYOR',remote,'<button id="voiceHang">İPTAL</button>','Mikrofon açılıyor…');document.getElementById('voiceHang').onclick=()=>cleanup(true);localStream=await getMic();call.answer(localStream);bindCall(call,remote);}catch(e){try{call.close()}catch(_){}showStatus('MİKROFON AÇILAMADI',remote,'<button id="voiceHang">KAPAT</button>','Mikrofon izni verilmedi.');document.getElementById('voiceHang').onclick=()=>cleanup(false);}};}
-  function init(){if(!window.Peer)return;peer=new Peer(peerId(ownNumber),{debug:1});peer.on('open',()=>{const own=document.getElementById('ownNumber');if(own&&!own.textContent.includes('ÇEVRİMİÇİ'))own.textContent+=' · ÇEVRİMİÇİ';installHistoryButton();});peer.on('call',showIncoming);peer.on('error',err=>{if(err&&err.type==='peer-unavailable'&&activeCall){const remote=number().textContent;showStatus('ULAŞILAMIYOR',remote,'<button id="voiceHang">KAPAT</button>','Bu numara şu anda çevrimdışı olabilir.');document.getElementById('voiceHang').onclick=()=>cleanup(true);}});}
-  function loadPeer(){if(window.Peer){init();return;}const s=document.createElement('script');s.src='https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js';s.onload=init;s.onerror=()=>{const own=document.getElementById('ownNumber');if(own)own.textContent+=' · SES BAĞLANTISI YÜKLENEMEDİ';installHistoryButton();};document.head.appendChild(s);}
-  function loadVideo(){if(document.getElementById('videoCallScript'))return;const s=document.createElement('script');s.id='videoCallScript';s.src='video-call.js';document.body.appendChild(s);}
-
-  document.addEventListener('click',e=>{
-    const app=e.target.closest&&e.target.closest('.app');
-    if(app&&app.textContent.includes('Rehber')) setTimeout(renderContacts,0);
-    const b=e.target.closest&&e.target.closest('#callBtn');
-    if(!b)return;const num=document.getElementById('num');const target=num?num.textContent.replace(/\D/g,''):'';if(target.length===11&&target.startsWith('0601'))setTimeout(()=>startOutgoing(target),0);
-  },true);
-
-  setTimeout(installHistoryButton,300);window.addEventListener('beforeunload',()=>{cleanup(true);if(peer&&!peer.destroyed)peer.destroy();});loadPeer();loadVideo();
+  function stopLocal(){if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null}}function closeAudio(){if(remoteAudio){remoteAudio.pause();remoteAudio.srcObject=null;remoteAudio.remove();remoteAudio=null}}function closeCallUI(){layer.classList.remove('on')}function cleanup(closeMedia=true){if(closeMedia&&activeCall){try{activeCall.close()}catch(e){}}activeCall=null;incomingCall=null;stopLocal();closeAudio();closeCallUI()}function showStatus(label,num,buttons='',msg=''){layer.classList.add('on');state().textContent=label;number().textContent=displayNum(num);actions().innerHTML=buttons;hint().textContent=msg}
+  function playRemote(stream){closeAudio();remoteAudio=document.createElement('audio');remoteAudio.autoplay=true;remoteAudio.playsInline=true;remoteAudio.srcObject=stream;document.body.appendChild(remoteAudio);remoteAudio.play().catch(()=>{})}
+  function bindCall(call,remoteNum){activeCall=call;call.on('stream',stream=>{playRemote(stream);showStatus('GÖRÜŞMEDE',remoteNum,'<button id="voiceHang">KAPAT</button>','Ses bağlantısı aktif.');document.getElementById('voiceHang').onclick=()=>cleanup(true)});call.on('close',()=>cleanup(false));call.on('error',()=>{showStatus('ÇAĞRI HATASI',remoteNum,'<button id="voiceHang">KAPAT</button>','Bağlantı kurulamadı.');document.getElementById('voiceHang').onclick=()=>cleanup(false)})}
+  async function getMic(){if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('Mikrofon desteklenmiyor');return navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false})}
+  async function startOutgoing(target){target=String(target||'').replace(/\D/g,'');if(target.length!==11||!target.startsWith('0601'))return;saveHistory(target,'outgoing','voice');if(target===ownNumber){showStatus('KENDİ NUMARAN',target,'<button id="voiceHang">KAPAT</button>','Kendi numaranı arayamazsın.');document.getElementById('voiceHang').onclick=()=>cleanup(false);return}try{showStatus('HAT BAĞLANIYOR',target,'<button id="voiceHang">İPTAL</button>','Bağlantı hazırlanıyor…');document.getElementById('voiceHang').onclick=()=>cleanup(false);await waitPeer();showStatus('MİKROFON İZNİ',target,'<button id="voiceHang">İPTAL</button>','Sesli görüşme için mikrofon izni gerekiyor.');localStream=await getMic();showStatus('ARANIYOR',target,'<button id="voiceHang">KAPAT</button>','Karşı tarafın uygulaması açık olmalı.');document.getElementById('voiceHang').onclick=()=>cleanup(true);const c=peer.call(peerId(target),localStream,{metadata:{from:ownNumber,type:'voice'}});bindCall(c,target)}catch(e){showStatus('ARAMA BAŞLAMADI',target,'<button id="voiceHang">KAPAT</button>',e&&e.message?e.message:'Bağlantı kurulamadı.');document.getElementById('voiceHang').onclick=()=>cleanup(false)}}
+  function showIncoming(call){incomingCall=call;const remote=(call.metadata&&call.metadata.from)||String(call.peer||'').replace(/^pm-/,'');saveHistory(remote,'incoming','voice');showStatus('GELEN ARAMA',remote,'<button id="voiceAnswer">CEVAPLA</button><button id="voiceReject">REDDET</button>','Cevapladığında mikrofon açılır.');document.getElementById('voiceReject').onclick=()=>{try{call.close()}catch(e){}cleanup(false)};document.getElementById('voiceAnswer').onclick=async()=>{try{showStatus('BAĞLANIYOR',remote,'<button id="voiceHang">İPTAL</button>','Mikrofon açılıyor…');document.getElementById('voiceHang').onclick=()=>cleanup(true);localStream=await getMic();call.answer(localStream);bindCall(call,remote)}catch(e){try{call.close()}catch(_){}showStatus('MİKROFON AÇILAMADI',remote,'<button id="voiceHang">KAPAT</button>','Mikrofon izni verilmedi.');document.getElementById('voiceHang').onclick=()=>cleanup(false)}}}
+  function init(){if(!window.Peer)return;peerOpen=false;peer=new Peer(peerId(ownNumber),{debug:1});peer.on('open',()=>{peerOpen=true;const own=document.getElementById('ownNumber');if(own&&!own.textContent.includes('ÇEVRİMİÇİ'))own.textContent+=' · ÇEVRİMİÇİ';installTopButtons()});peer.on('disconnected',()=>{peerOpen=false;try{peer.reconnect()}catch(e){}});peer.on('close',()=>peerOpen=false);peer.on('call',showIncoming);peer.on('connection',handleDataConnection);peer.on('error',err=>{if(err&&err.type==='peer-unavailable'&&activeCall){const remote=number().textContent;showStatus('ULAŞILAMIYOR',remote,'<button id="voiceHang">KAPAT</button>','Bu numara şu anda çevrimdışı olabilir.');document.getElementById('voiceHang').onclick=()=>cleanup(true)}})}
+  function loadPeer(){if(window.Peer){init();return}const s=document.createElement('script');s.src='https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js';s.onload=init;s.onerror=()=>{const own=document.getElementById('ownNumber');if(own)own.textContent+=' · BAĞLANTI YÜKLENEMEDİ';installTopButtons()};document.head.appendChild(s)}
+  function loadVideo(){if(document.getElementById('videoCallScript'))return;const s=document.createElement('script');s.id='videoCallScript';s.src='video-call.js';document.body.appendChild(s)}
+  document.addEventListener('click',e=>{const app=e.target.closest&&e.target.closest('.app');if(app&&app.textContent.includes('Rehber'))setTimeout(renderContacts,0);if(app&&app.textContent.includes('Mesajlar'))setTimeout(()=>showMessages(),0);const b=e.target.closest&&e.target.closest('#callBtn');if(!b)return;const num=document.getElementById('num'),target=num?num.textContent.replace(/\D/g,''):'';if(target.length===11&&target.startsWith('0601'))setTimeout(()=>startOutgoing(target),0)},true);
+  setTimeout(installTopButtons,300);window.addEventListener('beforeunload',()=>{cleanup(true);if(peer&&!peer.destroyed)peer.destroy()});loadPeer();loadVideo();
 })();
