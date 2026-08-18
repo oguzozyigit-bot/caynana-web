@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.webkit.PermissionRequest
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,6 +16,7 @@ import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
     private lateinit var web: WebView
+    private val trustedHost = "www.caynana.ai"
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -29,13 +31,41 @@ class MainActivity : AppCompatActivity() {
         web = WebView(this)
         setContentView(web)
 
+        WebView.setWebContentsDebuggingEnabled(false)
         web.settings.javaScriptEnabled = true
         web.settings.domStorageEnabled = true
         web.settings.mediaPlaybackRequiresUserGesture = false
-        web.webViewClient = WebViewClient()
+        web.settings.allowFileAccess = false
+        web.settings.allowContentAccess = false
+        web.settings.javaScriptCanOpenWindowsAutomatically = false
+        web.settings.setSupportMultipleWindows(false)
+        web.settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
+
+        web.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                val uri = request?.url ?: return true
+                val trusted = uri.scheme == "https" && uri.host == trustedHost
+                return if (trusted) false else {
+                    try { startActivity(Intent(Intent.ACTION_VIEW, uri)) } catch (_: Exception) { }
+                    true
+                }
+            }
+        }
+
         web.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest) {
-                runOnUiThread { request.grant(request.resources) }
+                runOnUiThread {
+                    val origin = request.origin
+                    val trusted = origin.scheme == "https" && origin.host == trustedHost
+                    if (!trusted) {
+                        request.deny()
+                        return@runOnUiThread
+                    }
+                    val allowed = request.resources.filter {
+                        it == PermissionRequest.RESOURCE_AUDIO_CAPTURE || it == PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                    }.toTypedArray()
+                    if (allowed.isNotEmpty()) request.grant(allowed) else request.deny()
+                }
             }
         }
 
