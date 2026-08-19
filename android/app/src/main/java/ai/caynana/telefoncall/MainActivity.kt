@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Prevent screenshots and most screen-recording capture of sensitive app content.
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
 
         val number = PhoneIdentity.ensureNumber(this)
@@ -65,17 +64,21 @@ class MainActivity : AppCompatActivity() {
 
         web.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                val uri = request?.url ?: return true
-                val trusted = uri.scheme == "https" && uri.host == trustedHost
-                return if (trusted) false else {
-                    // Never render untrusted origins inside the privileged WebView.
-                    try { startActivity(Intent(Intent.ACTION_VIEW, uri)) } catch (_: Exception) { }
-                    true
+                val req = request ?: return true
+                val uri = req.url
+
+                // Links loaded by the in-app Browser's iframe stay inside that blank browser area.
+                // They never launch Chrome/the system browser automatically.
+                if (!req.isForMainFrame) {
+                    return uri.scheme != "https"
                 }
+
+                // The privileged top-level app itself may only navigate on our own HTTPS origin.
+                val trusted = uri.scheme == "https" && uri.host == trustedHost
+                return !trusted
             }
 
             override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
-                // Fail closed. Never bypass invalid, expired or mismatched TLS certificates.
                 handler?.cancel()
             }
         }
