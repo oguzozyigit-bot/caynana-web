@@ -15,6 +15,7 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:debuggable="false"
         android:label="Telefon Call"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
 
