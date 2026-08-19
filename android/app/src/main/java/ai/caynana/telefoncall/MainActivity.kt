@@ -4,10 +4,15 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.net.http.SslError
 import android.os.Bundle
+import android.view.WindowManager
+import android.webkit.CookieManager
 import android.webkit.PermissionRequest
+import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.result.contract.ActivityResultContracts
@@ -25,6 +30,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Prevent screenshots and most screen-recording capture of sensitive app content.
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+
         val number = PhoneIdentity.ensureNumber(this)
         startForegroundService(Intent(this, CallKeepAliveService::class.java))
 
@@ -32,23 +40,43 @@ class MainActivity : AppCompatActivity() {
         setContentView(web)
 
         WebView.setWebContentsDebuggingEnabled(false)
-        web.settings.javaScriptEnabled = true
-        web.settings.domStorageEnabled = true
-        web.settings.mediaPlaybackRequiresUserGesture = false
-        web.settings.allowFileAccess = false
-        web.settings.allowContentAccess = false
-        web.settings.javaScriptCanOpenWindowsAutomatically = false
-        web.settings.setSupportMultipleWindows(false)
-        web.settings.mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_NEVER_ALLOW
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            WebView.startSafeBrowsing(this, null)
+        }
+
+        web.settings.apply {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            mediaPlaybackRequiresUserGesture = false
+            allowFileAccess = false
+            allowContentAccess = false
+            javaScriptCanOpenWindowsAutomatically = false
+            setSupportMultipleWindows(false)
+            mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
+            cacheMode = WebSettings.LOAD_NO_CACHE
+            databaseEnabled = false
+            setGeolocationEnabled(false)
+        }
+
+        CookieManager.getInstance().apply {
+            setAcceptCookie(true)
+            setAcceptThirdPartyCookies(web, false)
+        }
 
         web.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
                 val uri = request?.url ?: return true
                 val trusted = uri.scheme == "https" && uri.host == trustedHost
                 return if (trusted) false else {
+                    // Never render untrusted origins inside the privileged WebView.
                     try { startActivity(Intent(Intent.ACTION_VIEW, uri)) } catch (_: Exception) { }
                     true
                 }
+            }
+
+            override fun onReceivedSslError(view: WebView?, handler: SslErrorHandler?, error: SslError?) {
+                // Fail closed. Never bypass invalid, expired or mismatched TLS certificates.
+                handler?.cancel()
             }
         }
 
@@ -62,7 +90,8 @@ class MainActivity : AppCompatActivity() {
                         return@runOnUiThread
                     }
                     val allowed = request.resources.filter {
-                        it == PermissionRequest.RESOURCE_AUDIO_CAPTURE || it == PermissionRequest.RESOURCE_VIDEO_CAPTURE
+                        it == PermissionRequest.RESOURCE_AUDIO_CAPTURE ||
+                            it == PermissionRequest.RESOURCE_VIDEO_CAPTURE
                     }.toTypedArray()
                     if (allowed.isNotEmpty()) request.grant(allowed) else request.deny()
                 }
