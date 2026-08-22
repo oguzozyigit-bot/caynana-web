@@ -5,7 +5,9 @@
     { "source": "/huma", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }] },
     { "source": "/huma/:path*", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }] },
     { "source": "/roblox", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }] },
-    { "source": "/roblox/:path*", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }] }
+    { "source": "/roblox/:path*", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }] },
+    { "source": "/playchat", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }] },
+    { "source": "/playchat/:path*", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }] }
   ],
   "rewrites": [
     { "source": "/css/:path*", "destination": "/css/:path*" },
@@ -18,6 +20,8 @@
     { "source": "/huma/:path*", "destination": "/huma/index.html" },
     { "source": "/roblox", "destination": "/roblox/index.html" },
     { "source": "/roblox/:path*", "destination": "/roblox/index.html" },
+    { "source": "/playchat", "destination": "/playchat/index.html" },
+    { "source": "/playchat/:path*", "destination": "/playchat/index.html" },
     { "source": "/:path*", "destination": "/index.html" }
   ]
 }
