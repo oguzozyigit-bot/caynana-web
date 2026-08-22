@@ -1,6 +1,10 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "headers": [
+    { "source": "/huma", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }] },
+    { "source": "/huma/:path*", "headers": [{ "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }] }
+  ],
   "rewrites": [
     { "source": "/css/:path*", "destination": "/css/:path*" },
     { "source": "/js/:path*", "destination": "/js/:path*" },
