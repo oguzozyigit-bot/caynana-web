@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>HÜMA'NIN PEMBE ODASI</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#ffc7e4;font-family:Arial,Helvetica,sans-serif;touch-action:none}canvas{display:block;width:100vw;height:100vh}.ui{position:fixed;inset:0;pointer-events:none;color:#8f2b60}.top{position:absolute;left:14px;right:14px;top:12px;display:flex;justify-content:space-between;gap:12px;font-weight:800;text-shadow:0 1px #fff}.msg{position:absolute;left:50%;top:13%;transform:translateX(-50%);background:#fff9;border:2px solid #ff6caf;padding:8px 14px;border-radius:18px;max-width:82vw;text-align:center;font-weight:800;transition:.2s}.title{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle at 50% 35%,#ffeaf5,#ffb8da 65%,#ff93c7);pointer-events:auto;text-align:center;padding:24px}.title h1{font-size:clamp(36px,9vw,86px);margin:0;color:#d83b83;text-shadow:0 4px #fff}.title p{max-width:560px;font-size:18px;line-height:1.4;color:#8e3e65}.btn{border:0;border-radius:999px;background:#ff4fa0;color:white;padding:15px 28px;font-size:20px;font-weight:900;box-shadow:0 8px 0 #c62c72;cursor:pointer}.btn:active{transform:translateY(5px);box-shadow:0 3px 0 #c62c72}.controls{position:absolute;left:14px;right:14px;bottom:18px;display:flex;justify-content:space-between;align-items:end}.pad,.action{pointer-events:auto}.pad{width:132px;height:132px;position:relative}.key,.action{position:absolute;border:2px solid #fff9;background:#ff5da599;color:#fff;border-radius:18px;font-weight:900;display:grid;place-items:center;user-select:none}.key{width:46px;height:46px}.up{left:43px;top:0}.down{left:43px;bottom:0}.left{left:0;top:43px}.right{right:0;top:43px}.action{position:relative;width:82px;height:82px;border-radius:50%;font-size:14px;background:#d94586cc}.danger .msg{background:#260019dd;color:#ff8fbe;border-color:#7d0038}.danger .top{color:#ffb1d0}.scan{position:fixed;inset:0;pointer-events:none;opacity:0;background:repeating-linear-gradient(0deg,#0000 0 3px,#3d001522 4px 5px);mix-blend-mode:multiply}.danger .scan{opacity:.65}.flash{position:fixed;inset:0;background:#fff;opacity:0;pointer-events:none}.ending{display:none;position:fixed;inset:0;z-index:9;background:#10000b;color:#ff83bd;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:30px;pointer-events:auto}.ending h2{font-size:clamp(42px,10vw,90px);margin:0 0 10px}.small{font-size:13px;opacity:.75}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div class="ui" id="ui">
+  <div class="top"><div id="stars">★ 0 / 12</div><div id="clock">00:00</div></div>
+  <div class="msg" id="msg">Pembe yıldızları topla 🌸</div>
+  <div class="controls">
+    <div class="pad">
+      <div class="key up" data-k="ArrowUp">▲</div><div class="key down" data-k="ArrowDown">▼</div><div class="key left" data-k="ArrowLeft">◀</div><div class="key right" data-k="ArrowRight">▶</div>
+    </div>
+    <div class="action" id="action">BAK</div>
+  </div>
+</div>
+<div class="scan"></div><div class="flash" id="flash"></div>
+<div class="title" id="title"><h1>HÜMA'NIN PEMBE ODASI</h1><p>Her şey çok normal. Sadece odada dolaş, yıldızları topla ve kapıyı aç. Hepsi bu. Gerçekten.</p><button class="btn" id="start">OYNA</button><p class="small">Kulaklıkla daha iyi. Mobil ve bilgisayarda çalışır.</p></div>
+<div class="ending" id="ending"><h2>HÜMA?</h2><p id="endText">Oyun bitti sanmıştın.</p><button class="btn" onclick="location.reload()">YENİDEN OYNA</button></div>
+<script>
+const c=document.getElementById('game'),x=c.getContext('2d');let W,H,dpr=Math.min(devicePixelRatio||1,2);
+function resize(){W=innerWidth;H=innerHeight;c.width=W*dpr;c.height=H*dpr;x.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);resize();
+const keys={};let started=false,startT=0,last=0,score=0,phase=0,shake=0,look=false,ended=false;
+const p={x:W*.5,y:H*.72,r:16,s:180};let stars=[];let watcher={x:0,y:0,a:0};
+function resetStars(){stars=[];for(let i=0;i<12;i++)stars.push({x:80+Math.random()*(W-160),y:100+Math.random()*(H-220),r:8+Math.random()*5,t:Math.random()*6.2,taken:false})}resetStars();
+function tone(freq=440,dur=.08,type='sine',vol=.035){try{const A=tone.a||(tone.a=new (AudioContext||webkitAudioContext)());const o=A.createOscillator(),g=A.createGain();o.type=type;o.frequency.value=freq;g.gain.value=vol;o.connect(g);g.connect(A.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+dur);o.stop(A.currentTime+dur)}catch(e){}}
+function noise(d=.12,v=.025){try{const A=tone.a||(tone.a=new (AudioContext||webkitAudioContext)()),b=A.createBuffer(1,A.sampleRate*d,A.sampleRate),a=b.getChannelData(0);for(let i=0;i<a.length;i++)a[i]=Math.random()*2-1;const s=A.createBufferSource(),g=A.createGain();s.buffer=b;g.gain.value=v;s.connect(g);g.connect(A.destination);s.start()}catch(e){}}
+start.onclick=()=>{started=true;startT=performance.now();title.style.display='none';tone(660,.12);setMsg('Pembe yıldızları topla 🌸')};
+function setMsg(t){msg.textContent=t}
+function phaseUpdate(t){const old=phase;if(score>=10||t>88)phase=4;else if(score>=7||t>62)phase=3;else if(score>=4||t>38)phase=2;else if(score>=2||t>20)phase=1;if(phase!==old){document.body.classList.toggle('danger',phase>=3);shake=phase>=3?10:4;noise(.25,.04);flash.style.opacity=.5;setTimeout(()=>flash.style.opacity=0,90);if(phase===1)setMsg('Bir şey değişti mi?');if(phase===2)setMsg('Kapı az önce burada mıydı?');if(phase===3)setMsg('ARKANA BAKMA.');if(phase===4)setMsg('SENİ GÖRDÜ.');}}
+function room(){let bg=phase<2?'#ffc9e5':phase===2?'#d88aaa':phase===3?'#5b1737':'#1a0612';x.fillStyle=bg;x.fillRect(0,0,W,H);x.save();x.translate(shake?(Math.random()-.5)*shake:0,shake?(Math.random()-.5)*shake:0);
+// walls
+x.fillStyle=phase<2?'#ffe4f1':'#b66083';x.fillRect(35,55,W-70,H-105);x.strokeStyle=phase<3?'#ff8fc2':'#4f0024';x.lineWidth=5;x.strokeRect(35,55,W-70,H-105);
+// rug
+x.fillStyle=phase<2?'#ff78b7':'#6e153d';x.beginPath();x.ellipse(W*.52,H*.66,Math.min(170,W*.3),75,0,0,7);x.fill();
+// bed
+x.fillStyle=phase<2?'#fff3fa':'#7b3656';x.fillRect(65,H*.28,130,95);x.fillStyle=phase<2?'#ff8fc5':'#351020';x.fillRect(78,H*.3,104,28);
+// door changes side
+let dx=phase<2?W-150:phase===2?55:W-165,dy=H*.2;x.fillStyle=phase<3?'#e76aa5':'#260011';x.fillRect(dx,dy,75,125);x.fillStyle='#ffd1e4';x.beginPath();x.arc(dx+60,dy+65,5,0,7);x.fill();
+// cute wall text becomes wrong
+x.textAlign='center';x.font='700 22px Arial';x.fillStyle=phase<2?'#d94d8b':'#5c0a2e';x.fillText(phase<2?'HÜMA ♥':phase===2?'HÜMA...':phase===3?'BİZ BURADAYIZ':'ARKANDA',W/2,92);
+// watcher
+if(phase>=2){watcher.a=Math.min(1,watcher.a+.01);let wx=phase===2?W*.18:W*.82,wy=H*.18;x.globalAlpha=.18+phase*.13;x.fillStyle='#120009';x.beginPath();x.arc(wx,wy,24,0,7);x.fill();x.fillRect(wx-17,wy+18,34,70);x.fillStyle='#ffb5d4';x.beginPath();x.arc(wx-8,wy-4,3,0,7);x.arc(wx+8,wy-4,3,0,7);x.fill();x.globalAlpha=1}
+x.restore()}
+function drawStars(){for(const s of stars){if(s.taken)continue;s.t+=.03;x.save();x.translate(s.x,s.y);x.rotate(s.t);x.fillStyle=phase<3?'#fff7b2':'#d75683';x.shadowBlur=phase<3?14:3;x.shadowColor=x.fillStyle;x.beginPath();for(let i=0;i<10;i++){let a=-Math.PI/2+i*Math.PI/5,r=i%2?5:12;x.lineTo(Math.cos(a)*r,Math.sin(a)*r)}x.closePath();x.fill();x.restore()}}
+function drawPlayer(){x.save();x.translate(p.x,p.y);x.fillStyle=phase<3?'#ff4f9f':'#e33979';x.beginPath();x.arc(0,0,p.r,0,7);x.fill();x.fillStyle='#fff';x.beginPath();x.arc(-5,-3,3,0,7);x.arc(5,-3,3,0,7);x.fill();if(phase>=3){x.fillStyle='#25000f';x.fillRect(-8,6,16,3)}else{x.strokeStyle='#fff';x.beginPath();x.arc(0,3,7,.2,2.9);x.stroke()}x.restore()}
+function update(dt){if(!started||ended)return;let vx=(keys.ArrowRight||keys.d?1:0)-(keys.ArrowLeft||keys.a?1:0),vy=(keys.ArrowDown||keys.s?1:0)-(keys.ArrowUp||keys.w?1:0);let n=Math.hypot(vx,vy)||1;p.x+=vx/n*p.s*dt;p.y+=vy/n*p.s*dt;p.x=Math.max(55,Math.min(W-55,p.x));p.y=Math.max(75,Math.min(H-70,p.y));for(const s of stars){if(!s.taken&&Math.hypot(p.x-s.x,p.y-s.y)<28){s.taken=true;score++;starsEl.textContent='★ '+score+' / 12';tone(520+score*28,.09,score>7?'sawtooth':'sine',.035);if(score===12)finish()}}}
+const starsEl=document.getElementById('stars'),msg=document.getElementById('msg'),title=document.getElementById('title'),flash=document.getElementById('flash');
+function finish(){ended=true;noise(.7,.08);shake=24;flash.style.background='#ff1d78';flash.style.opacity=.9;setTimeout(()=>{flash.style.opacity=0;ending.style.display='flex';endText.textContent='12 yıldızı da topladın. Ama odadan çıkan sen misin?';},650)}
+function loop(now){let dt=Math.min(.033,(now-last)/1000||0);last=now;let t=started?(now-startT)/1000:0;phaseUpdate(t);if(started)clock.textContent=String(Math.floor(t/60)).padStart(2,'0')+':'+String(Math.floor(t%60)).padStart(2,'0');room();drawStars();update(dt);drawPlayer();if(phase>=4&&!ended&&Math.random()<.004){flash.style.background='#000';flash.style.opacity=.8;setTimeout(()=>flash.style.opacity=0,55);tone(55,.15,'square',.05)}shake*=.92;requestAnimationFrame(loop)}requestAnimationFrame(loop);
+addEventListener('keydown',e=>{keys[e.key]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault()});addEventListener('keyup',e=>keys[e.key]=false);
+document.querySelectorAll('.key').forEach(b=>{const k=b.dataset.k;const on=e=>{e.preventDefault();keys[k]=true},off=e=>{e.preventDefault();keys[k]=false};b.addEventListener('pointerdown',on);b.addEventListener('pointerup',off);b.addEventListener('pointercancel',off);b.addEventListener('pointerleave',off)});
+action.addEventListener('pointerdown',e=>{e.preventDefault();look=true;if(phase<2){setMsg('Ne kadar tatlı bir oda ✨');tone(740,.07)}else if(phase===2){setMsg('Dolabın içinden ses geldi.');noise(.12,.025)}else if(phase===3){setMsg('BAKMAMAN SÖYLENMİŞTİ.');shake=18;noise(.25,.06)}else{setMsg('SEN ZATEN BAKIYORSUN.');shake=28;noise(.4,.08)}});
+</script>
+</body>
+</html>
