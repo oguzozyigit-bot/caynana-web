@@ -8,7 +8,8 @@
     { "source": "/favicon.ico", "destination": "/favicon.ico" },
     { "source": "/manifest.json", "destination": "/manifest.json" },
     { "source": "/sw.js", "destination": "/sw.js" },
-
+    { "source": "/huma", "destination": "/huma/index.html" },
+    { "source": "/huma/:path*", "destination": "/huma/index.html" },
     { "source": "/:path*", "destination": "/index.html" }
   ]
 }
